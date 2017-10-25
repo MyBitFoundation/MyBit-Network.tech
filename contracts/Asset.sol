@@ -1,5 +1,4 @@
-pragma solidity ^0.4.11;
-// TODO: make sure block.timestamp is secure 
+pragma solidity ^0.4.15;
 
 contract Asset {
 using SafeMath for *; 
@@ -13,9 +12,11 @@ using SafeMath for *;
 	uint256 public amountRaised;  
 	uint256 public deadline;
 	uint256 public creationDate;
+	uint256 public maximumNumberOfOwners; 
 	uint256 public id; 
 
-	uint256 public minimumFundingPeriod = 30 days;
+
+// -----------Payout Information----------------------
 	address public myBitFoundation; 
 	address public lockedTokenHolders;   // address to receive 2% of funding payout
 
@@ -55,16 +56,19 @@ using SafeMath for *;
             nextStage();
         _;
     }
+    modifier transitionNext() {
+        _;
+        nextStage();
+    }
 
    // probably not necessary...
    modifier onlyPayloadSize(uint size) {
      assert(msg.data.length == size + 4);
      _;
    } 
-											//  creator, title, description, goal, mountRaised, deadline 
-	function Asset(address _creator, uint256 _amountToBeRaised, uint256 _deadline, string _title, string _description, uint256 _id) {
+
+	function Asset(address _creator, uint256 _amountToBeRaised, uint256 _deadline, string _title, string _description, uint256 _ownerLimit, uint256 _id) {
 		require(_amountToBeRaised <= 0);
-		require(_deadline >= block.timestamp + minimumFundingPeriod);
 		myBit = msg.sender;  
 		projectCreator = _creator;
 		title = _title; 
@@ -72,15 +76,16 @@ using SafeMath for *;
 		amountToBeRaised = _amountToBeRaised;
 		amountRaised = 0; 
 		creationDate = block.timestamp; 
-		deadline = _deadline;
+		deadline = _deadline.add(now);
+		maximumNumberOfOwners = _ownerLimit; 
 		id = _id;
 		projectPaid = false;
 		assetCreated(projectCreator, title, description, amountToBeRaised, amountRaised, deadline); 
 	}
 
 	function fund() payable returns (uint256) {
-		if (block.timestamp >= deadline) { return 3; }      // not tested
-		// if (amountRaised >= amountToBeRaised) { return 2; }
+		if (block.timestamp >= deadline) { return 3; }      
+		if (amountRaised >= amountToBeRaised) { return 2; }
 		if (projectPaid) { return 1; }
 		if (contributionLedger[msg.sender] == 0) {
 			contributors.push(msg.sender);
@@ -116,6 +121,15 @@ using SafeMath for *;
 	function projectInfo() external constant returns (string, string, uint256, uint256, uint256, address) {
 		return (title ,description, amountRaised, amountToBeRaised, deadline, projectCreator);
 	}
+
+	function nextStage() internal {
+      if (stage == Stages.FundingPi) { 
+          stage = Stages.UpdatingLedger;
+        }
+        else { 
+          stage = Stages.FundingPi; 
+        }
+    }
 
 	function () { 
 		revert(); 
