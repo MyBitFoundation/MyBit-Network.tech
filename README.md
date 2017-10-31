@@ -20,6 +20,6 @@ This contract is where the network fees will be sent to and collected by users w
 
 # Creation Flow
 
-![Internal Contracts](https://github.com/MyBitFoundation/MyBitDapp/Images/MyBitDapp.png)
+![Internal Contracts](https://github.com/MyBitFoundation/MyBitDapp/tree/master/Images/MyBitDapp.png)
 
-![General Funding Flow](https://github.com/MyBitFoundation/MyBitDapp/Images/ContractCreation.png)
+![General Funding Flow](https://github.com/MyBitFoundation/MyBitDapp/tree/master/Images/ContractCreation.png)
