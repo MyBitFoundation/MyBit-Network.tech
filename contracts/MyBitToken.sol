@@ -1,6 +1,4 @@
 pragma solidity ^0.4.2;
-// For testing purposes
-
 contract owned {
 	address public owner;
 	function owned() {

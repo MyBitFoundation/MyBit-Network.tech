@@ -5,9 +5,8 @@ using SafeMath for *;
 
 	// Created by myBit, holds/distributes Ether for Project
 	address public projectCreator;
-	address public myBit;
-	string public title; 
-	string public description;
+	address public assetHub;
+	bytes32 public storageHash;
 	uint256 public amountToBeRaised;
 	uint256 public amountRaised;  
 	uint256 public deadline;
@@ -19,7 +18,7 @@ using SafeMath for *;
 // -----------Payout Information----------------------
 	address public myBitFoundation; 
 	address public lockedTokenHolders;   // address to receive 2% of funding payout
-
+	address public assetInstaller; 
 
 	mapping (address => uint256) contributionLedger;
 	address[] public contributors;
@@ -27,10 +26,20 @@ using SafeMath for *;
 
 	Stages stages;
 
+	bool private rentrancy_lock = false;
+
 	event assetCreated(address _creator, string _title, string _description, uint256 _amountToBeRaised, uint256 _amountRaised, uint256 _deadline); 
 
+
+	modifier nonReentrant() {
+		require(!rentrancy_lock);
+		rentrancy_lock = true;
+		_;
+		rentrancy_lock = false;
+	}
+
 	modifier hubOnly { 
-		require(msg.sender != myBit);
+		require(msg.sender != assetHub);
 		_;
 	}
 
@@ -61,38 +70,42 @@ using SafeMath for *;
         nextStage();
     }
 
-   // probably not necessary...
-   modifier onlyPayloadSize(uint size) {
-     assert(msg.data.length == size + 4);
-     _;
-   } 
+	// probably not necessary...
+	modifier onlyPayloadSize(uint size) {
+		assert(msg.data.length == size + 4);
+		_;
+	} 
 
-	function Asset(address _creator, uint256 _amountToBeRaised, uint256 _deadline, string _title, string _description, uint256 _ownerLimit, uint256 _id) {
-		require(_amountToBeRaised <= 0);
-		myBit = msg.sender;  
+	// TODO: Test storage on Swarm/BigchainDB/IPFS 
+	function Asset(address _creator, address _assetInstaller, uint256 _amountToBeRaised, uint256 _minimumFundingTime, bytes32 _storageHash, uint256 _ownerLimit, uint256 _id) {
+		require(_amountToBeRaised >= 0);
+		assetHub = msg.sender; 
+		assetInstaller = _assetInstaller; 
 		projectCreator = _creator;
-		title = _title; 
-		description = _description;
 		amountToBeRaised = _amountToBeRaised;
 		amountRaised = 0; 
 		creationDate = block.timestamp; 
-		deadline = _deadline.add(now);
+		deadline = _minimumFundingTime.add(now);
+		storageHash = _storageHash; 
 		maximumNumberOfOwners = _ownerLimit; 
 		id = _id;
 		projectPaid = false;
-		assetCreated(projectCreator, title, description, amountToBeRaised, amountRaised, deadline); 
+		assetCreated(projectCreator, title, description, amountToBeRaised, amountRaised, deadline, now); 
 	}
 
-	function fund() payable returns (uint256) {
-		if (block.timestamp >= deadline) { return 3; }      
+	function fund() 
+	payable 
+	atStage(Stages.FundingAsset)
+	underGoal
+	returns (bool) {
 		if (amountRaised >= amountToBeRaised) { return 2; }
 		if (projectPaid) { return 1; }
 		if (contributionLedger[msg.sender] == 0) {
 			contributors.push(msg.sender);
 		}
-		contributionLedger[msg.sender] += msg.value; 
+		contributionLedger[msg.sender] = contributionLedger[msg.sender].add(msg.value); 
 		amountRaised += msg.value;
-		return 0; 
+		return true; 
 	}
 
 	// TODO: calculate amount owed (Foundation, LockedHolders, Insurance, Manufacturer)

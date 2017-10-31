@@ -3,25 +3,26 @@ import './AssetHub.sol';
 import './SafeMath.sol';
 
 //  MyBitHub is where the Owner can create AssetHubs and add new asset types to the platform
+// TODO: This design will reach an inevitable limit once it has made x amount of hubs through ethereums gas limit
 contract MyBitHub is Owned {
 using SafeMath for *; 
 
-uint256 public assetSizeLimit;   // The number of assets each particular assetHub can hold
+
+uint256 public assetSizeLimit;   // The number of assets each particular assetHub can hold...is set in constructor. 
 
 
-mapping (uint256 => address) public assetHubs;    
-uint256[] public assetHubIDs;                      
-uint256 public numAssetHubs;   					
+mapping (uint256 => address) public assetHubs;      // ID lookup for AssetHubs created on the platform
+mapping (uint256 => bytes32) public assetType;		// ID lookup for the type of asset this hub creates
+uint256[] public assetHubIDs;                      // ID's of all AssetHubs created on MyBit platform
+uint256 public numAssetHubs;   					 // Total number of AssetHubs on the platform
+	
 
-
-// Store data so that we can know the type of asset...
-// option 1 -> store the bytes32 of an agreed string value
-mapping (uint256 => bytes32) public type;
-mapping (bytes32 => bool) public acceptedAssetTypes;
-mapping (bytes32 => address[]) public assetHubsOfType; 
-bytes32[] public allAssetTypes; 
-
-// option 2 -> store any ID and have a reference off-chain
+// Note: Strings cannot be used as keys in a mapping, so it is stored as bytes32 instead (also cheaper to store bytes32)
+mapping (bytes32 => bool) public acceptedAssetType;      // Is this type accepted on the platform
+mapping (bytes32 => bool) public needsNewHub; 
+mapping (bytes32 => address[]) public assetHubsOfType;   // All hubs created of this type
+mapping (bytes32 => uint256) public fundingTimeForType;  // time given for funding period for given type of asset
+bytes32[] public allAssetTypes;       // All known asset types on the platform
 
 
 
@@ -34,38 +35,46 @@ event assetHubCreated(string _type, string _description, uint256 _assetSizeLimit
 
 	function MyBitHub() { 
 		numAssetHubs = 0;
-		assetSizeLimit = 1000; 
+		assetSizeLimit = 10000; // TODO find safe number of assets each hub can hold
 	}
 
-	// TODO: Automate new hub creation when one reaches it's limit...this will need to be triggered by assethub itself
-	function createAssetHub(bytes32 _type, string _description, uint256 _fundingTimeLimit) internal returns (address) {
-		require(_fundingTimeLimit > 0);
-		require(acceptedAssetTypes[_type]);
-		require(bytes(_description).length > 0);
-		AssetHub newHub = new AssetHub(_type, _description, assetSizeLimit, _fundingTimeLimit, numAssetHubs);
+	// TODO: Automate new hub creation when one reaches it's limit....
+	// TODO: Must check that either no hubs of this type exist or the most recent one is full
+	// Creates a new contract called AssetHub, which can create Asset contracts
+	function createAssetHub(bytes32 _type) external returns (address) {
+		require(acceptedAssetType[_type]);
+		require(needsNewHub[_type]);
+		AssetHub newHub = new AssetHub(_type, assetSizeLimit, fundingTimeForType[_type], numAssetHubs);
 		assetHubs[numAssetHubs] = address(newHub);
 		assetHubIDs[numAssetHubs].push(numAssetHubs); 
 		numAssetHubs++;
+		needsNewHub[_type] = false; 
 		assetHubCreated(_title, _description, assetSizeLimit, (numAssetHubs - 1), msg.sender, address(newHub));
 		return address(newHub);
 	}
 
-	// TODO: 
-	function resolveFullAssetHub(uint256 _requestingHub, string _description, uint256 _fundingTimeLimit) external returns (address) { 
+	// TODO: Need clean way to create new AssetHub when previous one is full
+	// Have a daemon that listens for an event to call the contract?? (what if it goes down? )
+	function newHubNeeded(uint256 _requestingHub) external returns (bool) { 
 		require(assetHubs[_requestingHub] == msg.sender);
-		
+		needsNewHub[assetType[_requestingHub]] = true; 
+		return true; 
 
 	}
 
-	function changeAssetLimit(uint256 _newSize) onlyOwner external returns (bool) { 
+	// Owner can change number of assets future AssetHubs are able to create (may need to be modified as block gas limit is changed)
+	function changeHubCarryingCapacity(uint256 _newSize) onlyOwner external returns (bool) { 
 		assetSizeLimit = _newSize; 
 		return true; 
 	}
 
-	function addAssetType(bytes32 _newType) onlyOwner external returns (bool) { 
-		bytes32 assetType = keccak256(_newType);
-		require(!acceptedAssetTypes[assetType]); 
-		acceptedAssetTypes[assetType] = true;
+	// Allow a new asset type to be funded on the platform
+	function addAssetType(bytes32 _newType, uint256 _timeGivenForFunding) onlyOwner external returns (bool) { 
+		require(!acceptedAssetType[_newType]); 
+		acceptedAssetType[_newType] = true;
+		allAssetTypes.push(_newType);
+		fundingTimeForType[_newType] = _timeGivenForFunding;
+		needsNewHub[_newType] = true; 
 		return true;
 	}
 	
