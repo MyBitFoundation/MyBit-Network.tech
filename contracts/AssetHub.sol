@@ -22,7 +22,7 @@ modifier limitReached() {
 }
 
 
-// TODO: Should have mechanism to discard/archive old projects to avoid list from growing too large
+// TODO: Should have mechanism to discard/archive failed assets to avoid list from growing too large. Can't discard before people have withdrawn fundss
 mapping (uint256 => address) public assets;    // indexNumber -> Asset address
 uint256[] public assetIDs;                       // Array of active assets
 uint256 public numAssets;   					// Incrementing ID counter

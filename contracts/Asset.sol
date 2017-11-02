@@ -1,12 +1,15 @@
 pragma solidity ^0.4.15;
 
+import 'LockedTokens.sol'; 
+// TODO: what happens when someone suicides Ether into a funding period? 
+// TODO: WHen calculating percentages, sometimes Solidity rounds down which may leave some Ether in the contract
 contract Asset {
 using SafeMath for *; 
 
 	// Created by myBit, holds/distributes Ether for Project
 	address public projectCreator;
 	address public assetHub;
-	bytes32 public storageHash;
+	bytes32 public storageHash;   // Where the title and description + images are stored. (IPFS, Swarm, BigChainDB)
 	uint256 public amountToBeRaised;
 	uint256 public amountRaised;  
 	uint256 public deadline;
@@ -16,9 +19,16 @@ using SafeMath for *;
 
 
 // -----------Payout Information----------------------
-	address public myBitFoundation; 
-	address public lockedTokenHolders;   // address to receive 2% of funding payout
+	address public myBitFoundation;      // mybit foundation address 
+	LockedTokens public lockedTokens;   // address to receive 2% of funding payout
 	address public assetInstaller; 
+
+
+  uint256 public myBitFoundationPercentage = 1; 
+  uint256 public lockedTokensPercentage = 2; 
+  uint256 public insurancePercentage = 5;
+  uint256 public manufacturerPercentage = 92; 
+  uint256 public insuranceBalance; 
 
 	mapping (address => uint256) contributionLedger;
 	address[] public contributors;
@@ -50,8 +60,7 @@ using SafeMath for *;
 
 	enum Stages { 
 		FundingAsset,
-		SuccessfulFunding,
-		FailedFunding,
+		FundingSuccess,
 		ReceivingROI
 	}
 
@@ -60,16 +69,24 @@ using SafeMath for *;
         _;
     }
 
-    modifier timedTransitions() {
-        if (stage == Stages.FundingPi && now >= nextPaymentTimestamp)
-            nextStage();
-        _;
-    }
-    modifier transitionNext() {
-        _;
-        nextStage();
+    modifier fundingLimit() { 
+    	require(amountRaised <= amountToBeRaised); 
+    	_; 
+    	if (amountRaised >= amountToBeRaised) { 
+    		stage = Stages.FundingSuccess; 
+    	}
     }
 
+    modifier withinFundingTime() { 
+    	require(now <= deadline); 
+    	_; 
+    }
+
+    modifier fundingPeriodOver() { 
+      require(now >= deadline); 
+      _; 
+    }
+    
 	// probably not necessary...
 	modifier onlyPayloadSize(uint size) {
 		assert(msg.data.length == size + 4);
@@ -93,56 +110,64 @@ using SafeMath for *;
 		assetCreated(projectCreator, title, description, amountToBeRaised, amountRaised, deadline, now); 
 	}
 
+	// Users can invest in the asset here
+	// Requires that the funding goal hasn't been reached and that the funding period isn't over. Will move stage to FundingSuccess once goal is reached
 	function fund() 
 	payable 
 	atStage(Stages.FundingAsset)
-	underGoal
+	fundingLimit
 	returns (bool) {
-		if (amountRaised >= amountToBeRaised) { return 2; }
-		if (projectPaid) { return 1; }
 		if (contributionLedger[msg.sender] == 0) {
 			contributors.push(msg.sender);
 		}
-		contributionLedger[msg.sender] = contributionLedger[msg.sender].add(msg.value); 
-		amountRaised += msg.value;
+		amountRaised = amountRaised.add(msg.value);
+    contributionLedger[msg.sender] = contributionLedger[msg.sender].add(msg.value); 
 		return true; 
 	}
 
-	// TODO: calculate amount owed (Foundation, LockedHolders, Insurance, Manufacturer)
-	function payout() returns (uint256) { 
-
+	//  TODO: Send manufacturer remaining Ether or predefined percentage? Worried about rounding errors leaving excess Ether
+	function payout() 
+  atStage(Stages.FundingSuccess)
+  nonReentrant
+  returns (bool) {
+    uint256 myBitAmount = amountRaised.getFractionalAmount(myBitFoundationPercentage);
+    uint256 lockedTokenAmount = amountRaised.getFractionalAmount(lockedTokensPercentage); 
+    uint256 manufacturerAmount = amountRaised.getFractionalAmount(manufacturerAmount); 
+    insuranceBalance = amountRaised.getFractionalAmount(insurancePercentage); 
+    require(myBitFoundation.transfer(myBitAmount)); 
+    require(lockedTokens.receiveTransactionFee(lockedTokenAmount)); 
+    require(manufacturerAddress.transfer(this.balance));  // TODO: Have middle contract that we can send information to explaining the job or have them look it up? 
+    return true;
 	}
-	//  contributor can retrieve their funds here if campaign is over + failure. 
-	function refund() returns (uint256) { 
-		if (block.timestamp < deadline) { return 0; }      
+
+
+	function receiveROI() 
+  atStage(Stages.ReceivingROI)
+  returns (bool) { 
+    
+	}
+	//  contributors can retrieve their funds here if campaign is over + failure. 
+  // TODO: use require(!msg.sender.transfer(owed))??
+	function refund() 
+	atStage(Stages.FundingAsset)
+  fundingPeriodOver 
+  returns (bool) { 
 		if (amountRaised >= amountToBeRaised) { return 1; }
 		uint256 owed = contributionLedger[msg.sender];
 		contributionLedger[msg.sender] = 0;
 		amountRaised -= owed; 
-		if (!msg.sender.send(owed)) {
+		if (!msg.sender.transfer(owed)) {
 			amountRaised += owed; 
 			contributionLedger[msg.sender] = owed;
-			return 2;
+			return false;
 		 } 
-		return 3; 
+		return true; 
 	}
 
-	function getContributionAmount(address _contributor) external returns (uint256) { 
-		return contributionLedger[_contributor]; 
-	}
 
 	function projectInfo() external constant returns (string, string, uint256, uint256, uint256, address) {
 		return (title ,description, amountRaised, amountToBeRaised, deadline, projectCreator);
 	}
-
-	function nextStage() internal {
-      if (stage == Stages.FundingPi) { 
-          stage = Stages.UpdatingLedger;
-        }
-        else { 
-          stage = Stages.FundingPi; 
-        }
-    }
 
 	function () { 
 		revert(); 
