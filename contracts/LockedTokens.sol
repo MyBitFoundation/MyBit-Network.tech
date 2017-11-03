@@ -1,83 +1,158 @@
-pragma solidity ^0.4.11;
-import './MyBitHub.sol'; 
+pragma solidity ^0.4.15;
 import './SafeMath.sol';
-
-// Users will lock their tokens here
-contract LockedTokens is Owned{ 
-using SafeMath for *; 
+import './DateTime.sol';
 
 
 
-struct Lock { 
-  uint256 amountLocked; 
-  uint256 dateLocked; 
-  uint256 dateUnlocked; 
-  uint256 multiplier;
-  uint256 index;   // indicates its index within all of the users lockedTokens
-}
+
+	/*
+		Token Locking;
+				- Transfer tokens into tocken lockTokens
+				- event of Transfer
+				- call into lockedTokens to update ledger how much was sent in
+				- how long they want it locked for
+				- transfer back
+	*/
 
 
-// Can we delete particular structs? 
-// TODO: Could we save gas storing these as bytes32
-mapping (address => Lock[]) public userLocks; 
-address[] public allLockedUsers; 
 
 
-mapping (address => uint256) public amountOwed; 
-uint256 public totalNumberLockedTokens; 
+contract LockedTokens{
+using SafeMath for *;
 
-uint256 public balance; 
-mapping (uint256 => uint256) public multipliers;
-uint256 public lastPaymentCycle; 
+	DateTime dateTime = new DateTime();
 
-
-address public myBitToken;
-address public myBitHub;  
-
-// constructor
-function LockedTokens(address _myBitToken) public { 
-	myBitHub = msg.sender; 
-	myBitToken = _myBitToken; 
-  multipliers[45] = 667;
-  multipliers[90] = 1334;
-  multipliers[180] = 2668; 
-  multipliers[360] = 5336;
-}
-
-// TODO: User must approve this contract to transfer tokens for them
-function lockTokens(uint256 _numDays, uint256 _amount) public returns (bool) { 
-  require(multipliers[_numDays] != 0); 
-  require(depositTokens(msg.sender, _amount)); // TODO: should this be done before this function is called?? 
-
-  Lock toks = userLocks[msg.sender];   // TODO: initializing array of structs
-  toks.amountLocked = _amount; 
-  toks.dateLocked = block.timestamp;
-  toks.dateUnlocked = block.timestamp; // TODO: convert days to seconds, or input it as seconds originally 
-  toks.multiplier = multipliers[_numDays]; 
-
-}
+	enum Stages {
+		LockingTokens,
+		SuccessfulLocking,
+		FailedLocking,
+		Payout
+	}
 
 
-// TODO: If it can be settled on any day, ideally don't want to pay locked tokens that have passed lock date, but need to pay them what they are owed, so
-// would need to keep track of the balance every payment received which will cost too much ether in storage costs. 
-// TODO: Could just pay people past their expired lock date, as the effect is the same, and the multiplier bonus is capped at one year. Only difference is they can 
-// pull out the locked tokens once they are passed expired date, which they will no longer receive payment for. 
-// TODO: If payment is settled on pre-determined day, then we have to make sure that it is indeed settled on that day, which is hard to enforce aside from signalling
-// for the settlement ourselves
-function settlePayments() public returns (bool) { 
 
-}
+	struct Lock {
+		uint256 periodIndex; 	//What type of lock
+ 	  uint256 amountLocked;
+	  uint256 dateLocked;
+	  uint256 multiplier;
+	  uint256 index;   // indicates its index within all of the users lockedTokens
+	}
 
-function receiveTransactionFee() public returns (bool) { 
+	//----Epoch time values----//
+	uint256 public year;
+	uint256 public month;
+	uint256 public day;
+	uint256 public hour;
 
-}
+	//------------ Dates ----------//
+	uint256 public creationDate;
+	uint256[] public unlockDates;
 
-// TODO: Add mybit token interface
-function depositTokens(address _sender, uint256 _amount) internal 
-    returns (bool) {
-      return ERC20Interface(myBitToken).transferFrom(_sender, this, amount);
-}
 
-event feeReceived(address _assetFunded, uint256 _amount, uint256 _timestamp);
+	//-----User variables-----//
+	mapping (address => bool) public userLocked;
+	mapping (address => Lock[]) public userLocks;
+	mapping (address => uint256) public userIndex;
+	mapping (address => uint256) public balanceOf;
+	mapping (uint256 => uint256) public dayUsersLocked;
+	uint256 public totalUsersLocked;
+
+	//-----Payout Info------//
+	uint256[] public multipliers;
+	mapping (uint256 => uint256) balanceOfPeriodTransactionFee;
+	//----Token Contract----//
+	//CSToken public tokenContract;
+	address public tokenContractAddress;
+
+	//----Testing Variables----//
+	mapping (address => uint256) balanceOfUser;
+	uint256 public transactionFeePer45Days;
+
+
+	//----Events----//
+	event TokensLocked(address _user, uint256 _amount, uint256 _period, uint256 _multiplier);
+
+
+	function LockedTokens(uint256 amount) public payable {
+		creationDate == block.timestamp;
+		multipliers = [667, 1334, 2668, 5336]; // 45, 1334, 2668, 5336
+		unlockDates = [creationDate.add(45 days), creationDate.add(90 days), creationDate.add(180 days), creationDate.add(360 days)];
+	}
+
+	function updateBalance(uint256 _amount) external payable returns(bool){
+
+	}
+
+	function lockTokens(uint256 _period, uint256 _amount) public payable returns(bool){
+		require(_amount > 0);
+		require(balanceOf[msg.sender] >= _amount);
+		require(_period == 0 || _period == 1 || _period == 2 || _period == 3);
+		require(msg.sender != address(0));
+		require(userLocks[msg.sender][_period].dateLocked == 0);
+
+		uint256 currentTimeStamp = block.timestamp;
+		uint256 daysInCycleWhenLocked = (unlockDates[_period] - currentTimeStamp) / day;
+		uint256 multiplierForDays =  1-((daysInCycleWhenLocked-1)/90 * (1+multipliers[_period]));
+
+	  userLocks[msg.sender][_period] = Lock(
+			{periodIndex:_period,
+			 amountLocked:_amount,
+			 dateLocked:currentTimeStamp,
+			 multiplier: multiplierForDays,
+			 index: totalUsersLocked
+		 });
+
+		userIndex[msg.sender] = totalUsersLocked;
+		dayUsersLocked[_period] += 1;
+		userLocks[msg.sender][_period].dateLocked = block.timestamp;
+
+		if(userLocked[msg.sender] != true){
+			totalUsersLocked +=1;
+		}
+
+		TokensLocked(msg.sender,_amount,_period, multiplierForDays);
+	}
+
+	function receiveTransactionFee(uint256 _amount) public returns(bool){
+		balanceOfPeriodTransactionFee[0] += msg.value * (1+multipliers[0]);
+		balanceOfPeriodTransactionFee[1] += msg.value * (1+multipliers[1]);
+		balanceOfPeriodTransactionFee[2] += msg.value * (1+multipliers[2]);
+		balanceOfPeriodTransactionFee[3] += msg.value * (1+multipliers[3]);
+	}
+
+
+	function withdrawTransactionFee() public returns(bool){
+
+	}
+
+	function withdrawLockedTokens() public returns(bool){
+
+	}
+
+
+	//-----Getters-----//
+	function getDay45UnlockDate() constant public returns(uint256){
+		return unlockDates[0];
+	}
+
+	function getDay90UnlockDate() constant public returns(uint256){
+		return unlockDates[1];
+	}
+
+	function getDay180UnlockDate() constant public returns(uint256){
+		return  unlockDates[2];
+	}
+
+	function getDay360UnlockDate() constant public returns(uint256){
+		return  unlockDates[3];
+	}
+
+
+
+	function() public payable{
+		revert();
+	}
+
 
 }

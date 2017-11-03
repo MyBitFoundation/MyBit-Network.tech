@@ -1,14 +1,14 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.15;
 
 
-import "../ownership/Ownable.sol";
+import "./Owned.sol";
 
 
 /**
  * @title Destructible
  * @dev Base contract that can be destroyed by owner. All funds in contract will be sent to the owner.
  */
-contract Destructible is Ownable {
+contract Destructible is Owned {
 
   function Destructible() payable { }
 

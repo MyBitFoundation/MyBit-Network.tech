@@ -1,4 +1,4 @@
-pragma solidity ^0.4.2;
+pragma solidity ^0.4.5;
 contract owned {
 	address public owner;
 	function owned() {
@@ -38,13 +38,15 @@ contract CSToken is owned {
 		symbol = tokenSymbol;                               // Set the symbol for display purposes
 		decimals = decimalUnits;                            // Amount of decimals for display purposes
 	}
+
 	/* Send coins */
-	function transfer(address _to, uint256 _value) {
-		if (balanceOf[msg.sender] < _value) throw;           // Check if the sender has enough
-		if (balanceOf[_to] + _value < balanceOf[_to]) throw; // Check for overflows
+	function transfer(address _to, uint256 _value) returns(bool){
+		require(balanceOf[msg.sender] > _value);           // Check if the sender has enough
+	 	require(balanceOf[_to] + _value > balanceOf[_to]); // Check for overflows
 		balanceOf[msg.sender] -= _value;                     // Subtract from the sender
 		balanceOf[_to] += _value;                            // Add the same to the recipient
 		Transfer(msg.sender, _to, _value);                   // Notify anyone listening that this transfer took place
+		return true;
 	}
 	function mintToken(address target, uint256 mintedAmount) onlyowner {
 		balanceOf[target] += mintedAmount;
@@ -69,9 +71,9 @@ contract CSToken is owned {
 	}
 	/* A contract attempts to get the coins */
 	function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {
-		if (balanceOf[_from] < _value) throw;                 // Check if the sender has enough
-		if (balanceOf[_to] + _value < balanceOf[_to]) throw;  // Check for overflows
-		if (_value > allowance[_from][msg.sender]) throw;   // Check allowance
+		require(balanceOf[_from] > _value);                 // Check if the sender has enough
+		require(balanceOf[_to] + _value > balanceOf[_to]);  // Check for overflows
+		require(_value < allowance[_from][msg.sender]);   // Check allowance
 		balanceOf[_from] -= _value;                          // Subtract from the sender
 		balanceOf[_to] += _value;                            // Add the same to the recipient
 		allowance[_from][msg.sender] -= _value;
@@ -80,7 +82,11 @@ contract CSToken is owned {
 	}
 	/* This unnamed function is called whenever someone tries to send ether to it */
 	function () {
-		throw;     // Prevents accidental sending of ether
+		revert();     // Prevents accidental sending of ether
+	}
+
+	function getContractAddress() public returns(address){
+		return address(this);
 	}
 }
 contract Crowdsale is owned{
@@ -94,21 +100,28 @@ contract Crowdsale is owned{
         uint public deadline;
         uint public presaleDeadline;
         uint public tokensRaised;
-    
+
         uint constant presaleDuration = 19 days;
         uint constant saleDuration = 29 days;
         uint tokenMultiplier = 10;
-    
-    
+
+
         CSToken public tokenReward;
         mapping(address => uint256) public balanceOf;
         event GoalReached(address beneficiary, uint totalCollected);
         event FundTransfer(address backer, uint amount, bool isContribution);
         event NewStage (uint time, uint stage);
-    
-    
-        modifier saleFinished() { if (now < deadline && currentStage < 2) throw; _; }
-        modifier beforeDeadline() { if (now >= deadline) throw; _; }
+
+
+        modifier saleFinished() {
+					require(now < deadline && currentStage < 2);
+					_;
+				 }
+
+        modifier beforeDeadline() {
+					require(now <= deadline);
+					 _;
+				 }
 
 	function Crowdsale(
 	address _bounties
@@ -130,7 +143,7 @@ contract Crowdsale is owned{
 
 	}
 
-    
+
 	function mint(uint amount, uint tokens, address sender) internal {
 		balanceOf[sender] += amount;
 		tokensRaised += tokens;
@@ -162,15 +175,13 @@ contract Crowdsale is owned{
 		{
 			totalCollected -= change;
 			balanceOf[from] -= change;
-			if (!from.send(change)){
-				throw;
-			}
+			require(from.send(change));
 		}
 	}
 
 	function () payable beforeDeadline {
-		if(now < start) throw;
-		if(currentStage > 1) throw;
+		require(now > start);
+		require(currentStage <= 1);
 		if (crowdsaleStarted){
 			processPayment(msg.sender, msg.value);
 		} else {
@@ -178,17 +189,15 @@ contract Crowdsale is owned{
 			{
 				crowdsaleStarted = true;
 			} else {
-				if (msg.value < 1 ether) throw;
+				require(msg.value >= 1 ether);
 			}
-			processPayment(msg.sender, msg.value);    
+			processPayment(msg.sender, msg.value);
         }
     }
 
     function safeWithdrawal() saleFinished {
         if (bounties == msg.sender) {
-            if (!bounties.send(totalCollected)) {
-                throw;
-            }
+					require(bounties.send(totalCollected));
         }
     }
 }
