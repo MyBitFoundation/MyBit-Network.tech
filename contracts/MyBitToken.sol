@@ -21,6 +21,9 @@ contract CSToken is owned {
 	uint256 public totalSupply;
 	/* This creates an array with all balances */
 	mapping (address => uint256) public balanceOf;
+	mapping (address => uint256) public availableBalance;
+	mapping (address => uint256) public lockedBalance;
+
 	mapping (address => mapping (address => uint256)) public allowance;
 	/* This generates a public event on the blockchain that will notify clients */
 	event Transfer(address indexed from, address indexed to, uint256 value);
@@ -48,12 +51,14 @@ contract CSToken is owned {
 		Transfer(msg.sender, _to, _value);                   // Notify anyone listening that this transfer took place
 		return true;
 	}
+
 	function mintToken(address target, uint256 mintedAmount) onlyowner {
 		balanceOf[target] += mintedAmount;
 		totalSupply += mintedAmount;
 		Transfer(0, owner, mintedAmount);
 		Transfer(owner, target, mintedAmount);
 	}
+
 	/* Allow another contract to spend some tokens in your behalf */
 	function approve(address _spender, uint256 _value)
 	returns (bool success) {
