@@ -88,28 +88,27 @@ using SafeMath for *;
       numContracts.add(1);
   }
 
-  function approve(){}
 
-  function changeMultipliers(){}
 
-  function lockTokens(){}
-  function withdrawLockedTokens(){}
-  function withdrawTransactionFee(){}
-  function receieveTransactionFee(){}
-  function settleTransactionFee(){}
+  /*todo;
+    -Automatic transfer of myb once the contract has completed,
+    -create new token contract one it has been closed,
+    -paymentCycle for transaction fee withdrawls,
+    -fee withdrawls,
+    -getters
+  */
 
   function retrieveTransactionFee(uint256 _amount) isMyBitHub {
       require(_amount > 0 && numContracts == 4); // TODO; more validation needed
       // Get multiplier for contract then send correct amount
       for(uint256 period; period <3; period++){
-        transactionFeePerPeriodContracts[period].add(
-          msg.value.mul((1+periodMultiplier[period]));
+        transactionFeePerPeriodContracts[period] = getFractionalAmount(msg.value,periodMultiplier[period]);
         }
     }
 
-  function withdrawTransactionFee(){
-
-  }
+  function settleTransactionFee(){
+      calculateOwed(,,);
+    }
 
 
 

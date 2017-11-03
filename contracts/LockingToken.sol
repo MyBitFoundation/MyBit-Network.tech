@@ -38,11 +38,16 @@ using SafeMath for *;
   uint256 public totalUsersLocked;
   //uint256 public totalTransactionFee;
 
+  uint256 public fifteenCheckCycle;
+  bool public fifteenCheckCycleCompleted;
+  uint256 public checkCyclesCompleted;
+
+  bool public contractTimeMet;
+
   enum Stages {
     ApprovalSuccess,
     LockTokenSuccess
   }
-
 
   //---User variables---//
   mapping(address => Locked[]) userLocks;
@@ -50,6 +55,25 @@ using SafeMath for *;
 
   event approvalGranted(address _userAddr, uint256 _amount);
   event tokenLocked(address _addr, uint256 _totalBalanceUser, uint256 _amount);
+  event contractTimeMetE(address _addr, uint256 _totalTockens, uint256 _totalUsersLocked, uint256 _days)
+
+// fix wrong use of fifteenCheckCycle
+  modifier ContractTimeMet(){
+    if(!contractTimeMet || block.timestamp >= (fifteenCheckCycle - 25 minutes) &&
+            block.timestamp <= (fifteenCheckCycle.add(25 minutes))
+            && !fifteenCheckCycleCompleted){
+      fifteenCheckCycle + 15 days;
+      checkCyclesCompleted.add(1);
+      fifteenCheckCycleCompleted = true;
+      require(checkCyclesCompleted == days/15 days);
+      contractTimeMet = true;
+      contractTimeMetE(this, totalContractBalance, totalUsersLocked, days);
+    }
+
+    else{
+      fifteenCheckCycleCompleted = false;
+    }
+  }
 
   function lockingToken(uint256 _period, uint256 _days,
     uint256 _minFund, uint256 _maxFund, uint256 _maxMultiplier,
@@ -60,7 +84,8 @@ using SafeMath for *;
       maxFund = _maxFund;
       maxMultiplier = _maxMultiplier;
       creationTime = _creationTime;
-      unlockTime = creationTime.add(45 days);
+      fifteenCheckCycle = creationDate.add(15 days);
+      unlockTime = creationTime.add(_period.mul(days));
       myBitToken = myBitToken(_myBitTokenAddr);
   }
 
@@ -96,6 +121,13 @@ using SafeMath for *;
     balanceOf[_addr].add(_amount);
     totalContractBalance.add(_amount);
     tokenLocked(_addr, balanceOf[_addr], _amount);
+  }
+
+
+
+  //---GETTERS---//
+  function getTotalContractBalance() constant returns(uint256){
+    return totalContractBalance;
   }
 
   //TODO send myB tokens back once compelete, 5 minute intervals

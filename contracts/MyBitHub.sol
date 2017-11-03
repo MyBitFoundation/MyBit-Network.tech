@@ -2,6 +2,7 @@ pragma solidity ^0.4.15;
 import './AssetHub.sol';
 import './SafeMath.sol';
 import './Owned.sol';
+import './TokenHub.sol';
 
 //  MyBitHub is where the Owner can create AssetHubs and add new asset titles to the platform
 // TODO: This design will reach an inevitable limit once it has made x amount of hubs through ethereums gas limit
@@ -27,12 +28,16 @@ using SafeMath for *;
 	bytes32[] public allAssetTypes;       // All known asset titles on the platform
 
 
+	address public tokenHubAddr;
+
 	modifier onlyOwner {
 		require(msg.sender == owner);
 		_;
 	}
 
 	event assetHubCreated(bytes32 _title, string _description, uint256 _assetSizeLimit, uint256 _index, address creator, address projectAddress);
+	event tokenHubCreated(address tokenHubAddress);
+
 
 	function () public {
 		revert();
@@ -42,6 +47,9 @@ using SafeMath for *;
 		numAssetHubs = 0;
 		assetSizeLimit = 10000; // TODO find safe number of assets each hub can hold
 		owner = msg.sender;
+		require(tokenHubAddr !=address(0));
+		TokenHub newHub = new TokenHub();
+		tokenHubAddr = address(newHub);
 	}
 
 	// TODO: Automate new hub creation when one reaches it's limit....
@@ -57,6 +65,11 @@ using SafeMath for *;
 		needsNewHub[_title] = false;
 		assetHubCreated(_title, _description, assetSizeLimit, (numAssetHubs - 1), msg.sender, address(newHub));
 		return address(newHub);
+	}
+
+
+	function newTokenHub() external returns(bool){
+		
 	}
 
 	// TODO: Need clean way to create new AssetHub when previous one is full
