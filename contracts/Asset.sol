@@ -1,6 +1,6 @@
 pragma solidity ^0.4.15;
 
-import './LockedTokens.sol';
+import './TokenHub.sol';
 import './MyBitToken.sol';
 
 // TODO: what happens when someone suicides Ether into a funding period?
@@ -29,7 +29,7 @@ using SafeMath for *;
 
 // -----------Payout Information----------------------
 	address public myBitFoundation;      // mybit foundation address
-	LockedTokens public lockedTokens;   // address to receive 2% of funding payout
+	TokenHub public tokenHub;   // address to receive 2% of funding payout
 	address public assetInstaller;
 
 
@@ -142,7 +142,7 @@ using SafeMath for *;
     uint256 installerAmount = amountRaised.getFractionalAmount(installerPercentage);
     insuranceBalance = amountRaised.getFractionalAmount(insurancePercentage);
 	   myBitFoundation.transfer(myBitAmount);
-    lockedTokens.receiveTransactionFee.value(lockedTokenAmount);
+    TokenHub.receiveTransactionFee.value(lockedTokenAmount);
     assetInstaller.transfer(installerAmount);  // TODO: Have middle contract that we can send information to explaining the job or have them look it up?
 		if(amountRaised !=0){ 		// Send remaining amount if any does remain
 			assetInstaller.transfer(amountRaised);
