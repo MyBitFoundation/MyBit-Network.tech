@@ -66,10 +66,10 @@ using SafeMath for *;
 		assetHubCreated(_title, _description, assetSizeLimit, (numAssetHubs - 1), msg.sender, address(newHub));
 		return address(newHub);
 	}
-
+	
 
 	function newTokenHub() external returns(bool){
-		
+
 	}
 
 	// TODO: Need clean way to create new AssetHub when previous one is full

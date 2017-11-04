@@ -33,10 +33,15 @@ using SafeMath for *;
 
 
   Stages stages;
+  //store integer of address location
+
   mapping(address => uint256) public balanceOf;
+  mapping(address => bool) public hasLocked;
   uint256 public totalContractBalance;
   uint256 public totalUsersLocked;
   //uint256 public totalTransactionFee;
+
+  mapping (uint256 => address) public allAddresses;
 
   uint256 public fifteenCheckCycle;
   bool public fifteenCheckCycleCompleted;
@@ -50,8 +55,9 @@ using SafeMath for *;
   }
 
   //---User variables---//
-  mapping(address => Locked[]) userLocks;
-  mapping(address => uint256[]) userApproved;// How much each approval
+  mapping(address => Locked[]) public userLocks;
+  mapping(uint256 => address) public userTotalLocked;
+  mapping(address => uint256[]) public userApproved;// How much each approval
 
   event approvalGranted(address _userAddr, uint256 _amount);
   event tokenLocked(address _addr, uint256 _totalBalanceUser, uint256 _amount);
@@ -89,6 +95,11 @@ using SafeMath for *;
       myBitToken = myBitToken(_myBitTokenAddr);
   }
 
+  function unlockToken() public returns(bool){
+      require(balanceOf[msg.sender] > 0);
+      require(contractTimeMet);
+  }
+
   function approve(uint256 _amount) public returns(bool){
     require(_amount > 0 &&
             _amount >= minFund &&
@@ -99,11 +110,15 @@ using SafeMath for *;
     require(myBitToken.approveAndCall(
       msg.sender, _amount, bytes(_amount));
     userApproved[msg.sender].push(_amount);
+
     approvalGranted(msg.sender, bytes(msg.sender));
   }
 
   function receiveApproval(address _addr, uint256 _amount) external returns(bool){
     require(myBitToken.transferFrom(_addr, this, _amount));
+    userApproved[msg.sender].push(_amount);
+    allAddresses[totalUsersLocked] = _addr;
+
 
     uint256 currentTime = block.timestamp;
     uint256 currentDayCycle = (unlockTime - currentTime) / days;
@@ -117,9 +132,10 @@ using SafeMath for *;
         dateLocked : block.timestamp,
         multiplier : _multiplier}
       );
-    if(count)
+
     balanceOf[_addr].add(_amount);
     totalContractBalance.add(_amount);
+
     tokenLocked(_addr, balanceOf[_addr], _amount);
   }
 

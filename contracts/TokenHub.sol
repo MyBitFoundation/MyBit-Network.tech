@@ -55,6 +55,11 @@ using SafeMath for *;
 
   uint256 public numContracts;
 
+  //----Transaction Related----//
+  mapping (address => uint256[]) public userTotalOwedPerContract;
+  uint256 public totalOwed;
+
+
 
   //--Transaction fee related---//
   uint256[] public multipliers;
@@ -72,7 +77,7 @@ using SafeMath for *;
   }
 
 
-  //Accessible if anything wrong with deployed contracts.
+  // Should be called after UnlockTokens LockingToken.sol contractTimeMetE event is called(tempramental right now)
   function createLockingTokenContract(uint256 _period, uint256 _days, uint256 _minFund,
     uint256 _maxFund, uint256 _maxMultiplier) isMyBitHub public returns(bool){
       require(numContracts <= 3);
@@ -81,33 +86,37 @@ using SafeMath for *;
       LockingToken newLockingToken = new LockingToken(
         _period, _days, _minFund, _maxFund, _maxMultiplier, _creationTime,
         address(0));
-      periodMultiplier[_period] = _maxMultiplier;
-      periodContracts[_period] = address(newLockingToken);
-      contractCreationDate[address(newLockingToken)] = block.timestamp;
 
+      periodMultiplier[_period] = _maxMultiplier;
+      periodContracts[_period].push(newLockingToken);
+      contractCreationDate[address(newLockingToken)] = block.timestamp;
       numContracts.add(1);
   }
-
-
-
   /*todo;
     -Automatic transfer of myb once the contract has completed,
     -create new token contract one it has been closed,
-    -paymentCycle for transaction fee withdrawls,
+
     -fee withdrawls,
     -getters
   */
-
-  function retrieveTransactionFee(uint256 _amount) isMyBitHub {
+  function settleTransactionFee(uint256 _amount) isMyBitHub {
       require(_amount > 0 && numContracts == 4); // TODO; more validation needed
-      // Get multiplier for contract then send correct amount
-      for(uint256 period; period <3; period++){
-        transactionFeePerPeriodContracts[period] = getFractionalAmount(msg.value,periodMultiplier[period]);
+      for(uint256 _period=0; _period < numContracts; _period++){
+        transactionFeePerPeriodContracts[_period] = getFractionalAmount(msg.value,periodMultiplier[_period]);
+        totalOwed.add(transactionFeePerPeriodContracts[period]);
+        for(uint256 _addrIndex=0; _addrIndex < periodContracts[_period].totalUsersLocked; _addr ++;){
+          //go in get the address
+          address _currentUserAddr = periodContracts[_period].allAddresses[_addrIndex];
+          uint256 _balanceOf = periodContracts[_period].balanceOf[_currentUserAddr];
+          uint256 _owed = calculateOwed(periodContracts[_period].totalContractBalance,
+                                        balanceOf, transactionFeePerPeriodContracts[_period]);
+          totalOwed.add(_owed);
+          userTotalOwedPerContract[_currentUserAddr][_period] = _owed;
         }
+      }
     }
 
   function settleTransactionFee(){
-      calculateOwed(,,);
     }
 
 
