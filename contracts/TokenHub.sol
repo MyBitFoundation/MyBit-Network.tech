@@ -51,6 +51,8 @@ using SafeMath for *;
   mapping (uint256 => uint256) public transactionFeePerPeriodContracts;
   mapping (uint256 => uint256) public periodMultiplier;
 
+  mapping (uint256 => bool) public paymentCycleCompleted;
+
   uint256[] public contractsStored;
 
   uint256 public numContracts;
@@ -68,6 +70,10 @@ using SafeMath for *;
 
   event lockingTokenCreated(uint256 period, uint256 days, uint256 minFund,
      uint256 maxFund, uint256 maxMultipler, _creationTime, tokenContractAddress);
+
+  event contractPaymentCycleSettled();
+  event withdrawlSuccessful();
+
 
 
   function TokenHub() isMyBitHub external{
@@ -99,7 +105,7 @@ using SafeMath for *;
     -fee withdrawls,
     -getters
   */
-  function settleTransactionFee(uint256 _amount) isMyBitHub {
+  function settleTransactionFee(uint256 _amount) isMyBitHub public returns(bool) {
       require(_amount > 0 && numContracts == 4); // TODO; more validation needed
       for(uint256 _period=0; _period < numContracts; _period++){
         transactionFeePerPeriodContracts[_period] = getFractionalAmount(msg.value,periodMultiplier[_period]);
@@ -112,13 +118,27 @@ using SafeMath for *;
                                         balanceOf, transactionFeePerPeriodContracts[_period]);
           totalOwed.add(_owed);
           userTotalOwedPerContract[_currentUserAddr][_period] = _owed;
+          if(_addrIndex == periodContracts[_period].totalUsersLocked){
+            paymentCycleCompleted[_addrIndex] = true;
+            contractPaymentCycleSettled(periodContracts[_period],
+                                        transactionFeePerPeriodContracts[_period],
+                                        periodContracts[_period].totalUsersLocked,
+                                        periodContracts[_period].days,
+                                        periodContracts[_period].creationTime,
+                                        periodContracts[_period].unlockTime);
+          }
         }
       }
     }
 
-  function settleTransactionFee(){
-    }
+  function withdrawFees(uint256 _period, uint256 _amount) public returns(bool){
+      require(paymentCycleCompleted(_period));
+      require(userTotalOwedPerContract[msg.sender][_period] >= _amount);
+      require(userTotalOwedPerContract[msg.sender][_period] <= totalOwed);
+      msg.sender.transfer(_amount);
+      return true;
 
+    }
 
 
 

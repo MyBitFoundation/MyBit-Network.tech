@@ -91,7 +91,7 @@ using SafeMath for *;
       maxMultiplier = _maxMultiplier;
       creationTime = _creationTime;
       fifteenCheckCycle = creationDate.add(15 days);
-      unlockTime = creationTime.add(_period.mul(days));
+      unlockTime = creationTime.add(_period.mul(days)); //FIX
       myBitToken = myBitToken(_myBitTokenAddr);
   }
 
@@ -119,23 +119,19 @@ using SafeMath for *;
     userApproved[msg.sender].push(_amount);
     allAddresses[totalUsersLocked] = _addr;
 
-
     uint256 currentTime = block.timestamp;
     uint256 currentDayCycle = (unlockTime - currentTime) / days;
     uint256 _multiplier = 1-((currentDayCycle-1).div(90).mul((1 + multiplier)));
 
     if(userLocks[addr].countOfLocks == 0){totalUsersLocked.add(1);}
-
     userLocks[_addr] = Locked(
       { countOfLocks : userLocks[_addr].add(1),
         amountLocked : _amount,
         dateLocked : block.timestamp,
         multiplier : _multiplier}
       );
-
     balanceOf[_addr].add(_amount);
     totalContractBalance.add(_amount);
-
     tokenLocked(_addr, balanceOf[_addr], _amount);
   }
 
