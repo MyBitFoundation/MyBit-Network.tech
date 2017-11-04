@@ -39,7 +39,6 @@ using SafeMath for *;
 		_;
 	}
 
-
   function periodContractActive(uint256 _period){
       if(periodContracts[_period] != address(0)){return true;}
       return false;
@@ -50,38 +49,32 @@ using SafeMath for *;
   mapping (address => uint256) public contractCreationDate;
   mapping (uint256 => uint256) public transactionFeePerPeriodContracts;
   mapping (uint256 => uint256) public periodMultiplier;
-
   mapping (uint256 => bool) public paymentCycleCompleted;
-
   uint256[] public contractsStored;
-
   uint256 public numContracts;
 
   //----Transaction Related----//
   mapping (address => uint256[]) public userTotalOwedPerContract;
   uint256 public totalOwed;
 
-
-
   //--Transaction fee related---//
   uint256[] public multipliers;
   uint256 public creationHubDate;
 
-
   event lockingTokenCreated(uint256 period, uint256 days, uint256 minFund,
      uint256 maxFund, uint256 maxMultipler, _creationTime, tokenContractAddress);
 
-  event contractPaymentCycleSettled();
-  event withdrawlSuccessful();
+  event contractPaymentCycleSettled(address _contractAddress, uint256 _totalOwed,
+                                    uint256 _totalUsersOwed, uint256 _daysTotalContract,
+                                    uint256 _creationTime, uint256 _unlockTime);
 
-
+  event withdrawlSuccessful(address _addrWithdrawl, uint256 _amount);
 
   function TokenHub() isMyBitHub external{
       myBitHub = MyBitHub(msg.sender);
       creationHubDate = block.timestamp;
       numContracts = 0;
   }
-
 
   // Should be called after UnlockTokens LockingToken.sol contractTimeMetE event is called(tempramental right now)
   function createLockingTokenContract(uint256 _period, uint256 _days, uint256 _minFund,
@@ -98,13 +91,13 @@ using SafeMath for *;
       contractCreationDate[address(newLockingToken)] = block.timestamp;
       numContracts.add(1);
   }
+
   /*todo;
     -Automatic transfer of myb once the contract has completed,
     -create new token contract one it has been closed,
-
-    -fee withdrawls,
     -getters
   */
+
   function settleTransactionFee(uint256 _amount) isMyBitHub public returns(bool) {
       require(_amount > 0 && numContracts == 4); // TODO; more validation needed
       for(uint256 _period=0; _period < numContracts; _period++){
@@ -136,18 +129,8 @@ using SafeMath for *;
       require(userTotalOwedPerContract[msg.sender][_period] >= _amount);
       require(userTotalOwedPerContract[msg.sender][_period] <= totalOwed);
       msg.sender.transfer(_amount);
+      withdrawlSuccessful(msg.sender, _amount);
       return true;
 
     }
-
-
-
-  function TokenHub() public {
-		myBitHub = MyBitHub(msg.sender);
-
-	}
-
-
-
-
 }
