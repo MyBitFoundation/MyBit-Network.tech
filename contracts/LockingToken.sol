@@ -2,7 +2,7 @@ pragma solidity ^0.4.15;
 import './SafeMath.sol';
 import './DateTime.sol';
 import './myBitHub.sol';
-import './tokenHub.sol';
+import './TokenHub.sol';
 import './MyBitToken.sol';
 
 
@@ -12,9 +12,11 @@ using SafeMath for *;
 
 
 
-  uint256 public tokenHub;
+  //uint256 public tokenHub;
   uint256 public myBitHub;
   MyBitToken public myBitToken;
+  TokenHub public tokenHub;
+  address public tokenHubAddr;
 
   uint256 public periodType; 	// 0-45, 1-90, 2-180, 3-360
   uint256 public days;        // how many days this contract should last
@@ -36,6 +38,7 @@ using SafeMath for *;
   //store integer of address location
 
   mapping(address => uint256) public balanceOf;
+  mapping(uint256 => address) public indexOfAddress;
   mapping(address => bool) public hasLocked;
   uint256 public totalContractBalance;
   uint256 public totalUsersLocked;
@@ -62,12 +65,30 @@ using SafeMath for *;
   event approvalGranted(address _userAddr, uint256 _amount);
   event tokenLocked(address _addr, uint256 _totalBalanceUser, uint256 _amount);
   event contractTimeMetE(address _addr, uint256 _totalTockens, uint256 _totalUsersLocked, uint256 _days)
+  event transferFromE(address _from, address _to, uint256 _amount);
+  event allTokensTransfered(address _contractAddress, uint256 _contractBalance);
 
 // fix wrong use of fifteenCheckCycle
+
   modifier ContractTimeMet(){
+    require(block.timestamp >= (unlockTime - 25 minutes) &&
+            block.timestamp <= (unlockTime + 25 minutes) &&);
+            contractTimeMet = true;
+            contractTimeMetE(this, totalContractBalance, totalUsersLocked, days);
+      )
+  }
+
+  modifier isTokenHub(){
+    require(msg.sender == tokenHubAddr);
+    _;
+  }
+
+
+
+/*  modifier ContractTimeMet(){
     if(!contractTimeMet || block.timestamp >= (fifteenCheckCycle - 25 minutes) &&
-            block.timestamp <= (fifteenCheckCycle.add(25 minutes))
-            && !fifteenCheckCycleCompleted){
+            block.timestamp <= (fifteenCheckCycle.add(25 minutes)))
+            {
       fifteenCheckCycle + 15 days;
       checkCyclesCompleted.add(1);
       fifteenCheckCycleCompleted = true;
@@ -79,11 +100,11 @@ using SafeMath for *;
     else{
       fifteenCheckCycleCompleted = false;
     }
-  }
+  }*/
 
-  function lockingToken(uint256 _period, uint256 _days,
+  function LockingToken(uint256 _period, uint256 _days,
     uint256 _minFund, uint256 _maxFund, uint256 _maxMultiplier,
-    uint256 _creationTime, uint256 _myBitTokenAddr) external{
+    uint256 _creationTime, address _myBitTokenAddr, address _tokenHubAddr) external{
       periodType = _period;
       days = _days;
       minFund = _minFund;
@@ -93,11 +114,22 @@ using SafeMath for *;
       fifteenCheckCycle = creationDate.add(15 days);
       unlockTime = creationTime.add(_period.mul(days)); //FIX
       myBitToken = myBitToken(_myBitTokenAddr);
+      tokenHubAddr = _tokenHubAddr;
+      tokenHub = tokenHub(_tokenHubAddr);
   }
 
   function unlockToken() public returns(bool){
-      require(balanceOf[msg.sender] > 0);
       require(contractTimeMet);
+      uint256 _user;
+      for(_user = 0; _user < totalUsersLocked; _user++){
+        myBitToken.transferFrom(this, indexOfAddress[_user], balanceOf[indexOfAddress[_user]]);
+        totalContractBalance -= _balanceOf[indexOfAddress[_user]];
+        transferFromE(this, indexOfAddress[_user], balanceOf[indexOfAddress[_user]]);
+      }
+      require(_user == totalUsersLocked-1);
+      require(totalContractBalance == 0);
+      allTokensTransfered(this, totalContractBalance);
+      tokenHub.deleteLockingTokenContract(periodType, days, maxMultiplier, this);
   }
 
   function approve(uint256 _amount) public returns(bool){
@@ -116,7 +148,7 @@ using SafeMath for *;
 
   function receiveApproval(address _addr, uint256 _amount) external returns(bool){
     require(myBitToken.transferFrom(_addr, this, _amount));
-    userApproved[msg.sender].push(_amount);
+    userApproved[_addr].push(_amount);
     allAddresses[totalUsersLocked] = _addr;
 
     uint256 currentTime = block.timestamp;
@@ -135,6 +167,10 @@ using SafeMath for *;
     tokenLocked(_addr, balanceOf[_addr], _amount);
   }
 
+  function destroyContract() external isTokenHub returns(bool){
+    require(selfdestruct(tokenHubAddr));
+    return true;
+  }
 
 
   //---GETTERS---//
