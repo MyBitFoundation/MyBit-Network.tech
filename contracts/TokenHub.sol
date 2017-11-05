@@ -49,7 +49,6 @@ using SafeMath for *;
   mapping (address => uint256) public contractCreationDate;
   mapping (uint256 => uint256) public transactionFeePerPeriodContracts;
   mapping (uint256 => uint256) public periodMultiplier;
-  mapping (uint256 => bool) public paymentCycleCompleted;
   uint256[] public contractsStored;
   uint256 public numContracts;
 
@@ -100,44 +99,45 @@ using SafeMath for *;
       createLockingTokenContract(_period, _days, 0, 0, _maxMultiplier);
     }
 
-  function settleTransactionFee(uint256 _amount) public returns(bool) {
-      require(_amount > 0 && numContracts == 4); // TODO; more validation needed
-      for(uint256 _period=0; _period < numContracts; _period++){
-        transactionFeePerPeriodContracts[_period] = getFractionalAmount(msg.value,periodMultiplier[_period]);
-        totalOwed.add(transactionFeePerPeriodContracts[period]);
-        /*if(_period == numContracts-1){
-          paymentReward = totalOwed.div(50)
-        }*/
+
+  function receiveTransactionFee() public returns(bool){
+    require(msg.value > 0 && numContracts == 4);
+    paymentReward = msg.value.div(50);
+    totalOwed = msg.value - paymentReward;
+    for(uint256 _period = 0; _period < numContracts; _period++){
+      transactionFeePerPeriodContracts[_period].add(getFractionalAmount(totalOwed,periodMultiplier[_period]));
+    }
+  }
+
+
+  function settleTransactionFee() public returns(bool){
+    require(totalOwed > 0 && numContracts == 4); //validation that they are owed money
+    for(uint256 _period = 0; _period < numContracts; _period++){
         for(uint256 _addrIndex=0; _addrIndex < periodContracts[_period].totalUsersLocked; _addr ++;){
-          //go in get the address
           address _currentUserAddr = periodContracts[_period].allAddresses[_addrIndex];
           uint256 _balanceOf = periodContracts[_period].balanceOf[_currentUserAddr];
           uint256 _owed = calculateOwed(periodContracts[_period].totalContractBalance,
                                         balanceOf, transactionFeePerPeriodContracts[_period]);
-          totalOwed.add(_owed);
-          userTotalOwedPerContract[_currentUserAddr][_period] = _owed;
-          if(_addrIndex == periodContracts[_period].totalUsersLocked){
-            paymentCycleCompleted[_addrIndex] = true;
-            contractPaymentCycleSettled(periodContracts[_period],
-                                        transactionFeePerPeriodContracts[_period],
-                                        periodContracts[_period].totalUsersLocked,
-                                        periodContracts[_period].days,
-                                        periodContracts[_period].creationTime,
-                                        periodContracts[_period].unlockTime);
-          }
-        }
-      }
-      paymentReward = totalOwed.div(50);
+          userTotalOwedPerContract[_currentUserAddr][_period].add(_owed);
+            if(_addrIndex == periodContracts[_period].totalUsersLocked){
+              contractPaymentCycleSettled(periodContracts[_period],
+                                          transactionFeePerPeriodContracts[_period],
+                                          periodContracts[_period].totalUsersLocked,
+                                          periodContracts[_period].days,
+                                          periodContracts[_period].creationTime,
+                                          periodContracts[_period].unlockTime);
+                                        }
+                                      }
+                                    }
+    msg.sender.transfer(paymentReward) // Or split into their balanceOf in each contract
+    paymentReward = 0;
+    totalOwed = 0;
+ }
 
-    }
 
   function withdrawFees(uint256 _period, uint256 _amount) public returns(bool){
-      require(paymentCycleCompleted(_period));
       require(userTotalOwedPerContract[msg.sender][_period] >= _amount);
-      require(userTotalOwedPerContract[msg.sender][_period] <= totalOwed);
       msg.sender.transfer(_amount);
       withdrawlSuccessful(msg.sender, _amount);
       return true;
-
     }
-}

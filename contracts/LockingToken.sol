@@ -6,11 +6,8 @@ import './TokenHub.sol';
 import './MyBitToken.sol';
 
 
-
 contract lockingTokens{
 using SafeMath for *;
-
-
 
   //uint256 public tokenHub;
   uint256 public myBitHub;
@@ -75,7 +72,7 @@ using SafeMath for *;
             block.timestamp <= (unlockTime + 25 minutes) &&);
             contractTimeMet = true;
             contractTimeMetE(this, totalContractBalance, totalUsersLocked, days);
-      )
+    _;
   }
 
   modifier isTokenHub(){
@@ -83,28 +80,9 @@ using SafeMath for *;
     _;
   }
 
-
-
-/*  modifier ContractTimeMet(){
-    if(!contractTimeMet || block.timestamp >= (fifteenCheckCycle - 25 minutes) &&
-            block.timestamp <= (fifteenCheckCycle.add(25 minutes)))
-            {
-      fifteenCheckCycle + 15 days;
-      checkCyclesCompleted.add(1);
-      fifteenCheckCycleCompleted = true;
-      require(checkCyclesCompleted == days/15 days);
-      contractTimeMet = true;
-      contractTimeMetE(this, totalContractBalance, totalUsersLocked, days);
-    }
-
-    else{
-      fifteenCheckCycleCompleted = false;
-    }
-  }*/
-
   function LockingToken(uint256 _period, uint256 _days,
     uint256 _minFund, uint256 _maxFund, uint256 _maxMultiplier,
-    uint256 _creationTime, address _myBitTokenAddr, address _tokenHubAddr) external{
+    uint256 _creationTime, address _myBitTokenAddr, address _tokenHubAddr) external returns(bool){
       periodType = _period;
       days = _days;
       minFund = _minFund;
@@ -118,7 +96,8 @@ using SafeMath for *;
       tokenHub = tokenHub(_tokenHubAddr);
   }
 
-  function unlockToken() public returns(bool){
+  //User needs to call this;
+  function unlockToken() public ContractTimeMet returns(bool){
       require(contractTimeMet);
       uint256 _user;
       for(_user = 0; _user < totalUsersLocked; _user++){
@@ -133,17 +112,18 @@ using SafeMath for *;
   }
 
   function approve(uint256 _amount) public returns(bool){
+    //Check that its not ended
     require(_amount > 0 &&
             _amount >= minFund &&
             _amount <= maxFund &&
             msg.sender != address(0) &&
             myBitToken.balanceOf(msg.sender) >= _amount
             );
+    require()
     require(myBitToken.approveAndCall(
-      msg.sender, _amount, bytes(_amount));
+      msg.sender, _amount);
     userApproved[msg.sender].push(_amount);
-
-    approvalGranted(msg.sender, bytes(msg.sender));
+    approvalGranted(msg.sender, _amount);
   }
 
   function receiveApproval(address _addr, uint256 _amount) external returns(bool){
@@ -177,8 +157,6 @@ using SafeMath for *;
   function getTotalContractBalance() constant returns(uint256){
     return totalContractBalance;
   }
-
-  //TODO send myB tokens back once compelete, 5 minute intervals
 
 
 
