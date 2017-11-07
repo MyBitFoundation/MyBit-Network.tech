@@ -119,6 +119,7 @@ using SafeMath for *;
 		maximumNumberOfOwners = _ownerLimit;
 		id = _id;
 		projectPaid = false;
+		tokenHub = new TokenHub();
 		assetCreated(projectCreator, title, description, amountToBeRaised, amountRaised, deadline, now);
 	}
 
@@ -142,7 +143,7 @@ using SafeMath for *;
     uint256 installerAmount = amountRaised.getFractionalAmount(installerPercentage);
     insuranceBalance = amountRaised.getFractionalAmount(insurancePercentage);
 	   myBitFoundation.transfer(myBitAmount);
-    TokenHub.receiveTransactionFee.value(lockedTokenAmount);
+    tokenHub.receiveTransactionFee.value(lockedTokenAmount);
     assetInstaller.transfer(installerAmount);  // TODO: Have middle contract that we can send information to explaining the job or have them look it up?
 		if(amountRaised !=0){ 		// Send remaining amount if any does remain
 			assetInstaller.transfer(amountRaised);

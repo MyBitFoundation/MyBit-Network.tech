@@ -15,20 +15,9 @@ using SafeMath for *;
 
   address public owner;
   address public myBitHub;
-
-  //---Transaction fee Modifiers---//
-  modifier requiresEther(){}
-  modifier settleTransactionRewards(){}
-
-  //------Locking modifiers-------//
-  modifier lockingPeriodHadEnded(){}
-  modifier hasContractGotBalance(){}
-  modifier contractLocked(){}
+  LockingToken public lockingToken;
 
 
-  //--Locking and transaction modifiers--//
-  modifier hasLocked(){}
-  modifier limitTokenContracts(){}
   modifier isMyBitHub(){
     require(msg.sender == myBitHub);
     _;
@@ -39,7 +28,7 @@ using SafeMath for *;
 		_;
 	}
 
-  function periodContractActive(uint256 _period){
+  function periodContractNotActive(uint256 _period) public returns(bool){
       if(periodContracts[_period] != address(0)){return true;}
       return false;
     }
@@ -61,8 +50,8 @@ using SafeMath for *;
   uint256[] public multipliers;
   uint256 public creationHubDate;
 
-  event lockingTokenCreated(uint256 period, uint256 days, uint256 minFund,
-     uint256 maxFund, uint256 maxMultipler, _creationTime, tokenContractAddress);
+  event lockingTokenCreated(uint256 period, uint256 _days, uint256 minFund,
+     uint256 maxFund, uint256 maxMultipler, uint256 _creationTime, address tokenContractAddress);
 
   event contractPaymentCycleSettled(address _contractAddress, uint256 _totalOwed,
                                     uint256 _totalUsersOwed, uint256 _daysTotalContract,
@@ -70,7 +59,7 @@ using SafeMath for *;
 
   event withdrawlSuccessful(address _addrWithdrawl, uint256 _amount);
 
-  function TokenHub() isMyBitHub external{
+  function TokenHub() isMyBitHub public{
       myBitHub = MyBitHub(msg.sender);
       creationHubDate = block.timestamp;
       numContracts = 0;
@@ -81,13 +70,13 @@ using SafeMath for *;
     uint256 _maxFund, uint256 _maxMultiplier) public returns(bool){
       require(numContracts <= 3);
       require(_period == 0 || _period == 1 || _period == 2 || _period == 3);
-      require(!periodContractActive(_period));
+      require(periodContractNotActive(_period));
       LockingToken newLockingToken = new LockingToken(
-        _period, _days, _minFund, _maxFund, _maxMultiplier, _creationTime,
+        _period, _days, _minFund, _maxFund, _maxMultiplier, block.timestamp,
         address(0), this);
 
       periodMultiplier[_period] = _maxMultiplier;
-      periodContracts[_period].push(newLockingToken);
+      periodContracts[_period] = address(newLockingToken);
       contractCreationDate[address(newLockingToken)] = block.timestamp;
       numContracts.add(1);
   }
@@ -100,12 +89,12 @@ using SafeMath for *;
     }
 
 
-  function receiveTransactionFee() public returns(bool){
-    require(msg.value > 0 && numContracts == 4);
+  function receiveTransactionFee(uint256 _amount) public payable returns(bool){
+    require(msg.value > 0 && numContracts == 4 && _amount > 0);
     paymentReward = msg.value.div(50);
     totalOwed = msg.value - paymentReward;
     for(uint256 _period = 0; _period < numContracts; _period++){
-      transactionFeePerPeriodContracts[_period].add(getFractionalAmount(totalOwed,periodMultiplier[_period]));
+      transactionFeePerPeriodContracts[_period] + totalOwed.getFractionalAmount(periodMultiplier[_period]);
     }
   }
 
@@ -113,23 +102,24 @@ using SafeMath for *;
   function settleTransactionFee() public returns(bool){
     require(totalOwed > 0 && numContracts == 4); //validation that they are owed money
     for(uint256 _period = 0; _period < numContracts; _period++){
-        for(uint256 _addrIndex=0; _addrIndex < periodContracts[_period].totalUsersLocked; _addr ++;){
-          address _currentUserAddr = periodContracts[_period].allAddresses[_addrIndex];
-          uint256 _balanceOf = periodContracts[_period].balanceOf[_currentUserAddr];
-          uint256 _owed = calculateOwed(periodContracts[_period].totalContractBalance,
-                                        balanceOf, transactionFeePerPeriodContracts[_period]);
+      LockingToken instanceOfLockToken = LockingToken(periodContracts[_period]);
+        for(uint256 _addrIndex=0; _addrIndex < instanceOfLockToken.totalUsersLocked(); _addrIndex++){
+          address _currentUserAddr = instanceOfLockToken.allAddresses(_addrIndex);
+          uint256 _balanceOf = instanceOfLockToken.balanceOf(_currentUserAddr);
+          uint256 _owed = instanceOfLockToken.totalContractBalance().calculateOwed(
+                                        _balanceOf, transactionFeePerPeriodContracts[_period]);
           userTotalOwedPerContract[_currentUserAddr][_period].add(_owed);
-            if(_addrIndex == periodContracts[_period].totalUsersLocked){
-              contractPaymentCycleSettled(periodContracts[_period],
+            if(_addrIndex == instanceOfLockToken.totalUsersLocked()){
+              contractPaymentCycleSettled(address(instanceOfLockToken),
                                           transactionFeePerPeriodContracts[_period],
-                                          periodContracts[_period].totalUsersLocked,
-                                          periodContracts[_period].days,
-                                          periodContracts[_period].creationTime,
-                                          periodContracts[_period].unlockTime);
+                                          instanceOfLockToken.totalUsersLocked(),
+                                          instanceOfLockToken.daysToLast(),
+                                          instanceOfLockToken.creationTime(),
+                                          instanceOfLockToken.unlockTime());
                                         }
                                       }
                                     }
-    msg.sender.transfer(paymentReward) // Or split into their balanceOf in each contract
+    msg.sender.transfer(paymentReward); // Or split into their balanceOf in each contract
     paymentReward = 0;
     totalOwed = 0;
  }
@@ -141,3 +131,5 @@ using SafeMath for *;
       withdrawlSuccessful(msg.sender, _amount);
       return true;
     }
+
+  }

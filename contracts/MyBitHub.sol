@@ -66,11 +66,7 @@ using SafeMath for *;
 		assetHubCreated(_title, _description, assetSizeLimit, (numAssetHubs - 1), msg.sender, address(newHub));
 		return address(newHub);
 	}
-	
 
-	function newTokenHub() external returns(bool){
-
-	}
 
 	// TODO: Need clean way to create new AssetHub when previous one is full
 	// Have a daemon that listens for an event to call the contract?? (what if it goes down? )
@@ -95,7 +91,6 @@ using SafeMath for *;
 		needsNewHub[_newType] = true;
 		return true;
 	}
-
 
 // -------------------------------------------------------Getters-------------------------------------------------------
 
