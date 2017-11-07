@@ -96,6 +96,25 @@ using SafeMath for *;
     totalOwed = msg.value - paymentReward;
     }
 
+  //Needs updating to work with receiveTransactionFee 
+  function individualSettleTransactionFee() public returns(bool){
+    require(totalOwed > 0 && numContracts == 4);
+    for(uint256 _period = 0; _period < numContracts; _period++){
+      LockingToken instanceOfLockToken = LockingToken(periodContracts[_period]);
+      address _currentUserAddr = instanceOfLockToken.allAddresses(_addrIndex);
+      for(uint256 _lock=0; _lock < instanceOfLockToken.userCountOfLocks(_currentUserAddr); _lock++){
+        uint256 _amountOfLock = instanceOfLockToken.getUserAmountOfLock(_currentUserAddr, _lock);
+        uint256 _multiplierOfLock = instanceOfLockToken.getUserMultiplerOfLock(_currentUserAddr, _lock);
+        uint256 _fractionalAmount = totalOwed.getFractionalAmount(_multiplierOfLock);
+
+        uint256 _owed = instanceOfLockToken.totalContractBalance().calculateOwed(
+          _amountOfLock, _fractionalAmount);
+        userTotalOwedPerContract[_currentUserAddr][_period].add(_owed);
+        totalOwed -= _owed;
+      }
+    }
+  }
+
   /* Works out each individual fractional amount per locked balance for all contracts*/
   function settleTransactionFee() public returns(bool){
     require(totalOwed > 0 && numContracts == 4);
