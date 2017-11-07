@@ -136,11 +136,11 @@ using SafeMath for *;
     uint256 _multiplier = 1-((currentDayCycle-1).div(90).mul((1 + maxMultiplier)));
 
     if(userCountOfLocks[_addr] == 0){totalUsersLocked.add(1);}
-    userLocks[_addr][userCountOfLocks[_addr]] = Locked(
+    userLocks[_addr].push(Locked(
       { amountLocked : _amount,
         dateLocked : block.timestamp,
         multiplier : _multiplier}
-      );
+      ));
     userCountOfLocks[_addr].add(1);
     balanceOf[_addr].add(_amount);
     totalContractBalance.add(_amount);
@@ -156,6 +156,14 @@ using SafeMath for *;
   //---GETTERS---//
   function getTotalContractBalance() constant external returns(uint256){
     return totalContractBalance;
+  }
+
+  function getUserAmountOfLock(address _addr, uint256 _index) constant public returns(uint256){
+    return userLocks[_addr][_index].amountLocked;
+  }
+
+  function getUserMultiplerOfLock(address _addr, uint256 _index) constant public returns(uint256){
+    return userLocks[_addr][_index].multiplier;
   }
 
 
