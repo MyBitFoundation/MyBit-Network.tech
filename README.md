@@ -15,8 +15,11 @@ Each AssetHub has a limit on how many assets it can create, and once full, it mu
 ## Asset
 The asset contract is where the actual Ether will be stored while funding an asset. If the funding period is a success the asset contract will send the Ether to the manufacturer, lockedTokenHolders, MyBitFoundation and Insurance escrow. 
 
-## LockedTokens
-This contract is where the network fees will be sent to and collected by users who have locked MyBit
+## TokenHub
+This contract controls all of the LockingToken contracts that are spawned from TokenHub.  The 2 % fee is sent from the asset and is split among the different token contracts.  
+
+## LockingToken
+Locks the tokens in the contract, depending upon what day the user locks the token they get a particular multiplier.  Once the time limit has been reached, called when somebody tries to do UnlockTokens(), all the tokens are transferred back to the users.  
 
 # Creation Flow
 
