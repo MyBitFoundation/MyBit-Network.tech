@@ -1,53 +1,63 @@
-pragma solidity ^0.4.15;
-
-import './TokenHub.sol';
+pragma solidity ^0.4.18;
+import './SafeMath.sol';
+import './Owned.sol'; 
+import './Pausable.sol';
+import './LockedTokens.sol';
 import './MyBitToken.sol';
 
 // TODO: what happens when someone suicides Ether into a funding period?
 // TODO: WHen calculating percentages, sometimes Solidity rounds down which may leave some Ether in the contract
 
-
-//todo do not transfer from token contract
-
-
 contract Asset {
 using SafeMath for *;
 
 	// Created by myBit, holds/distributes Ether for Project
+  // ------------Project Information--------------
 	address public projectCreator;
 	address public assetHub;
-	//bytes32 public storageHash;   // Where the title and description + images are stored. (IPFS, Swarm, BigChainDB)
-	uint256 public amountToBeRaised;
-	uint256 public amountRaised;
+	bytes32 public storageHash;   // Where the title and description + images are stored. (IPFS, Swarm, BigChainDB)
 	uint256 public deadline;
 	uint256 public creationDate;
 	uint256 public maximumNumberOfOwners;
 	uint256 public id;
-	bytes32 public title;
-	string public description;
 
 
-// -----------Payout Information----------------------
+// -----------Beneficiary Addresses----------------------
 	address public myBitFoundation;      // mybit foundation address
-	TokenHub public tokenHub;   // address to receive 2% of funding payout
+	LockedTokens public lockedTokens;   // address to receive 2% of funding payout
 	address public assetInstaller;
+  address public insuranceContract;   // contract to hold insurance
 
-
+//------------Beneficiary amounts---------------
   uint256 public myBitFoundationPercentage = 1;
   uint256 public lockedTokensPercentage = 2;
   uint256 public insurancePercentage = 5;
   uint256 public installerPercentage = 92;
-  uint256 public insuranceBalance;
 
+
+// -----------Funder Information--------------
 	mapping (address => uint256) contributionLedger;
-	address[] public contributors;
-	bool public projectPaid;
+  address[] public contributors;    // AssetFunders
+  uint256 public amountToBeRaised;
+  uint256 public amountRaised;     // Amount raised from funding 
 
+
+  // -------Investment Returns--------------
+  uint256 public roiBalance;     // Return on investment. Amount received from Asset in the wild, not yet paid to investors
+  uint256 public totalROIReceived;   // Amount owed to funders
+  mapping (address => uint256) public owedToFunder;  // Amount owed to particular funder 
+  uint256 public paymentReward; 
+
+ // --------Stages & Timing------------
 	Stages stages;
-
 	bool private rentrancy_lock = false;
 
-	event assetCreated(address _creator, bytes32 _title, string _description, uint256 _amountToBeRaised, uint256 _amountRaised, uint256 _deadline, uint256 _now);
+
+  enum Stages {
+    FundingAsset,
+    FundingSuccess,
+    ReceivingROI
+  }
 
 	modifier nonReentrant() {
 		require(!rentrancy_lock);
@@ -66,12 +76,6 @@ using SafeMath for *;
 		_;
 	}
 
-	enum Stages {
-		FundingAsset,
-		FundingSuccess,
-		ReceivingROI
-	}
-
  	modifier atStage(Stages _stage) {
 		require(stages == _stage);
     _;
@@ -82,7 +86,6 @@ using SafeMath for *;
     _;
     if (amountRaised >= amountToBeRaised) {
     	stages = Stages.FundingSuccess;
-			payout();
 			}
   }
 
@@ -96,38 +99,37 @@ using SafeMath for *;
     _;
   }
 
-	// probably not necessary...
-	modifier onlyPayloadSize(uint size) {
-		assert(msg.data.length == size + 4);
-		_;
-	}
+  modifier requiresEther() { 
+    require(msg.value > 0);
+    _;
+  }
 
 
 	// TODO: Test storage on Swarm/BigchainDB/IPFS
-	function Asset(address _creator, address _assetInstaller, uint256 _amountToBeRaised, uint256 _minimumFundingTime, bytes32 _title, string _description, uint256 _ownerLimit, uint256 _id) public {
-		require(_amountToBeRaised > 0);
+	function Asset(address _creator, bytes32 _storageHash, address _assetInstaller, uint256 _amountToBeRaised, uint256 _minimumFundingTime, uint256 _ownerLimit, uint256 _id) 
+  public {
 		assetHub = msg.sender;
 		projectCreator = _creator;
 		assetInstaller = _assetInstaller;
 		amountToBeRaised = _amountToBeRaised;
 		amountRaised = 0;
-		title = _title;
-		description = _description;
 		creationDate = block.timestamp;
 		deadline = _minimumFundingTime.add(now);
-		//storageHash = _storageHash;
+		storageHash = _storageHash;
 		maximumNumberOfOwners = _ownerLimit;
 		id = _id;
-		projectPaid = false;
-		tokenHub = new TokenHub();
-		assetCreated(projectCreator, title, description, amountToBeRaised, amountRaised, deadline, now);
+		assetCreated(projectCreator, amountToBeRaised, amountRaised, deadline, now);
 	}
 
 	// Users can invest in the asset here
 	// Requires that the funding goal hasn't been reached and that the funding period isn't over. Will move stage to FundingSuccess once goal is reached
-	function fund() payable atStage(Stages.FundingAsset) fundingLimit external returns (bool) {
-		require(msg.value > 0);
-
+	function fund()
+  payable 
+  requiresEther 
+  atStage(Stages.FundingAsset) 
+  fundingLimit 
+  external 
+  returns (bool) {
 		if (contributionLedger[msg.sender] == 0) {
 			contributors.push(msg.sender);
 		}
@@ -137,45 +139,92 @@ using SafeMath for *;
 	}
 
 	//  TODO: Send installer remaining Ether or predefined percentage? Worried about rounding errors leaving excess Ether
-	function payout() atStage(Stages.FundingSuccess) nonReentrant public payable returns (bool) {
+  // TODO: reduce gas 
+	function payout() 
+  atStage(Stages.FundingSuccess) 
+  nonReentrant 
+  payable
+  external  
+  returns (bool) {
     uint256 myBitAmount = amountRaised.getFractionalAmount(myBitFoundationPercentage);
     uint256 lockedTokenAmount = amountRaised.getFractionalAmount(lockedTokensPercentage);
     uint256 installerAmount = amountRaised.getFractionalAmount(installerPercentage);
-    insuranceBalance = amountRaised.getFractionalAmount(insurancePercentage);
-	   myBitFoundation.transfer(myBitAmount);
-    tokenHub.receiveTransactionFee.value(lockedTokenAmount);
-    assetInstaller.transfer(installerAmount);  // TODO: Have middle contract that we can send information to explaining the job or have them look it up?
-		if(amountRaised !=0){ 		// Send remaining amount if any does remain
-			assetInstaller.transfer(amountRaised);
-		}
+    uint256 insuranceAmount = amountRaised.getFractionalAmount(insurancePercentage);
+    insuranceContract.transfer(insuranceAmount);
+	  myBitFoundation.transfer(myBitAmount);
+    lockedTokens.receiveTransactionFee.value(lockedTokenAmount);
+    assetInstaller.transfer(installerAmount);   // send the remainder of Ether left in the contract
+    stages = Stages.ReceivingROI; 
 		return true;
 	}
 
 
-	function receiveROI() atStage(Stages.ReceivingROI) returns (bool) {
+	function receiveROI() 
+  payable 
+  requiresEther 
+  atStage(Stages.ReceivingROI)
+  external 
+  returns (bool)  {
+    roiBalance = roiBalance.add(msg.value);
+    totalROIReceived = totalROIReceived.add(msg.value); 
+    receivedROI(msg.sender, msg.value, block.timestamp); 
+    return true; 
 
 	}
 
 	//  contributors can retrieve their funds here if campaign is over + failure.
-  // TODO: use require(!msg.sender.transfer(owed))??
-	function refund() atStage(Stages.FundingAsset) fundingPeriodOver external payable returns (bool) {
-		if (amountRaised >= amountToBeRaised) { return false; }
+  // TODO: reduce gas by not storing owed value
+	function refund() 
+  nonReentrant 
+  atStage(Stages.FundingAsset) 
+  fundingPeriodOver 
+  external
+  returns (bool) 
+  {
 		uint256 owed = contributionLedger[msg.sender];
-		//require();
+    contributionLedger[msg.sender] = 0;
+    amountRaised = amountRaised.sub(owed);
 		msg.sender.transfer(owed);
-		contributionLedger[msg.sender] = 0;
-		amountRaised -= owed;
 		return true;
-
 	}
 
+  function updateLedger()
+  atStage(Stages.ReceivingROI)
+  external
+  returns (bool) {
+    require(contributionLedger[msg.sender] > 0); 
+    paymentReward = roiBalance.div(50);    // give msg.sender 1/50 of the payment cycle (TODO: recalibrate these numbers)
+    assert (paymentReward > 0); 
+    roiBalance = roiBalance.sub(paymentReward); 
+    for (uint256 i=0; i < contributors.length; i++) { 
+      address thisFunder = contributors[i];
+      uint256 roi = roiBalance.calculateOwed(contributionLedger[thisFunder], roiBalance);    // using library to save gas
+      owedToFunder[thisFunder] = owedToFunder[thisFunder].add(roi);     // allow withdrawl of funders return on investment
+    }
+    return true; 
+  }
 
-	function projectInfo() external constant returns (bytes32, string, uint256, uint256, uint256, address) {
-		return (title ,description, amountRaised, amountToBeRaised, deadline, projectCreator);
+  function withdrawlReturns() 
+  nonReentrant 
+  atStage(Stages.ReceivingROI)
+  external 
+  returns (bool) { 
+    uint256 owed = owedToFunder[msg.sender];
+    owedToFunder[msg.sender] = 0;
+    roiBalance = roiBalance.sub(owed);
+    msg.sender.transfer(owed);
+    return true; 
+  } 
+
+	function projectInfo() external constant returns (uint256, uint256, uint256, address) {
+		return (amountRaised, amountToBeRaised, deadline, projectCreator);
 	}
 
-	function () {
+	function () public {
 		revert();
 	}
 
+  event assetCreated(address _creator, uint256 _amountToBeRaised, uint256 _amountRaised, uint256 _deadline, uint256 _now);
+  event receivedROI(address indexed _sender, uint256 indexed _amount, uint256 indexed _timestamp); 
+  event investmentRedeemed(address indexed _investor, uint256 indexed _amount, uint256 indexed _timestamp); 
 }
