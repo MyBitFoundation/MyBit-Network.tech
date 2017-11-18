@@ -2,6 +2,7 @@ pragma solidity ^0.4.15;
 
 import './TokenHub.sol';
 import './MyBitToken.sol';
+import './AssetHub.sol';
 
 // TODO: what happens when someone suicides Ether into a funding period?
 // TODO: WHen calculating percentages, sometimes Solidity rounds down which may leave some Ether in the contract
@@ -15,7 +16,6 @@ using SafeMath for *;
 
 	// Created by myBit, holds/distributes Ether for Project
 	address public projectCreator;
-	address public assetHub;
 	//bytes32 public storageHash;   // Where the title and description + images are stored. (IPFS, Swarm, BigChainDB)
 	uint256 public amountToBeRaised;
 	uint256 public amountRaised;
@@ -31,6 +31,8 @@ using SafeMath for *;
 	address public myBitFoundation;      // mybit foundation address
 	TokenHub public tokenHub;   // address to receive 2% of funding payout
 	address public assetInstaller;
+	address public assetHubAddr;
+	AssetHub public assetHub;
 
 
   uint256 public myBitFoundationPercentage = 1;
@@ -57,7 +59,7 @@ using SafeMath for *;
 	}
 
 	modifier hubOnly {
-		require(msg.sender != assetHub);
+		require(msg.sender != assetHubAddr);
 		_;
 	}
 
@@ -104,9 +106,10 @@ using SafeMath for *;
 
 
 	// TODO: Test storage on Swarm/BigchainDB/IPFS
-	function Asset(address _creator, address _assetInstaller, uint256 _amountToBeRaised, uint256 _minimumFundingTime, bytes32 _title, string _description, uint256 _ownerLimit, uint256 _id) public {
+	function Asset(address _creator, address _assetInstaller, uint256 _amountToBeRaised, uint256 _minimumFundingTime, bytes32 _title, string _description, uint256 _ownerLimit, uint256 _id, address _tokenHubAddr) public {
 		require(_amountToBeRaised > 0);
-		assetHub = msg.sender;
+		assetHubAddr = msg.sender;
+ 		assetHub = AssetHub(assetHubAddr);
 		projectCreator = _creator;
 		assetInstaller = _assetInstaller;
 		amountToBeRaised = _amountToBeRaised;
@@ -119,7 +122,7 @@ using SafeMath for *;
 		maximumNumberOfOwners = _ownerLimit;
 		id = _id;
 		projectPaid = false;
-		tokenHub = new TokenHub();
+		tokenHub = TokenHub(_tokenHubAddr);
 		assetCreated(projectCreator, title, description, amountToBeRaised, amountRaised, deadline, now);
 	}
 
@@ -143,7 +146,7 @@ using SafeMath for *;
     uint256 installerAmount = amountRaised.getFractionalAmount(installerPercentage);
     insuranceBalance = amountRaised.getFractionalAmount(insurancePercentage);
 	   myBitFoundation.transfer(myBitAmount);
-    tokenHub.receiveTransactionFee.value(lockedTokenAmount);
+		tokenHub.receiveTransactionFee.value(lockedTokenAmount);
     assetInstaller.transfer(installerAmount);  // TODO: Have middle contract that we can send information to explaining the job or have them look it up?
 		if(amountRaised !=0){ 		// Send remaining amount if any does remain
 			assetInstaller.transfer(amountRaised);
