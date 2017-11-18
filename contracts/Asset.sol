@@ -2,8 +2,8 @@ pragma solidity ^0.4.18;
 import './SafeMath.sol';
 import './Owned.sol'; 
 import './Pausable.sol';
-import './LockedTokens.sol';
 import './MyBitToken.sol';
+import './TokenHub.sol';
 
 // TODO: what happens when someone suicides Ether into a funding period?
 // TODO: WHen calculating percentages, sometimes Solidity rounds down which may leave some Ether in the contract
@@ -24,7 +24,7 @@ using SafeMath for *;
 
 // -----------Beneficiary Addresses----------------------
 	address public myBitFoundation;      // mybit foundation address
-	LockedTokens public lockedTokens;   // address to receive 2% of funding payout
+	TokenHub public tokenHub;   // address to receive 2% of funding payout
 	address public assetInstaller;
   address public insuranceContract;   // contract to hold insurance
 
@@ -152,7 +152,7 @@ using SafeMath for *;
     uint256 insuranceAmount = amountRaised.getFractionalAmount(insurancePercentage);
     insuranceContract.transfer(insuranceAmount);
 	  myBitFoundation.transfer(myBitAmount);
-    lockedTokens.receiveTransactionFee.value(lockedTokenAmount);
+    tokenHub.receiveTransactionFee.value(lockedTokenAmount);
     assetInstaller.transfer(installerAmount);   // send the remainder of Ether left in the contract
     stages = Stages.ReceivingROI; 
 		return true;
