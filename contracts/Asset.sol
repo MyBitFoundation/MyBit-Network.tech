@@ -2,7 +2,7 @@ pragma solidity ^0.4.18;
 import './SafeMath.sol';
 import './Owned.sol'; 
 import './Pausable.sol';
-import './LockedTokens.sol';
+import './TokenHub.sol';
 import './MyBitToken.sol';
 
 // TODO: what happens when someone suicides Ether into a funding period?
@@ -11,21 +11,21 @@ import './MyBitToken.sol';
 contract Asset {
 using SafeMath for *;
 
-	// Created by myBit, holds/distributes Ether for Project
+  // Created by myBit, holds/distributes Ether for Project
   // ------------Project Information--------------
-	address public projectCreator;
-	address public assetHub;
-	bytes32 public storageHash;   // Where the title and description + images are stored. (IPFS, Swarm, BigChainDB)
-	uint256 public deadline;
-	uint256 public creationDate;
-	uint256 public maximumNumberOfOwners;
-	uint256 public id;
+  address public projectCreator;
+  address public assetHub;
+  bytes32 public storageHash;   // Where the title and description + images are stored. (IPFS, Swarm, BigChainDB)
+  uint256 public deadline;
+  uint256 public creationDate;
+  uint256 public maximumNumberOfOwners;
+  uint256 public id;
 
 
 // -----------Beneficiary Addresses----------------------
-	address public myBitFoundation;      // mybit foundation address
-	LockedTokens public lockedTokens;   // address to receive 2% of funding payout
-	address public assetInstaller;
+  address public myBitFoundation;      // mybit foundation address
+  TokenHub public tokenHub;          // address to receive 2% of funding payout
+  address public assetInstaller;
   address public insuranceContract;   // contract to hold insurance
 
 //------------Beneficiary amounts---------------
@@ -36,7 +36,7 @@ using SafeMath for *;
 
 
 // -----------Funder Information--------------
-	mapping (address => uint256) contributionLedger;
+  mapping (address => uint256) contributionLedger;
   address[] public contributors;    // AssetFunders
   uint256 public amountToBeRaised;
   uint256 public amountRaised;     // Amount raised from funding 
@@ -49,8 +49,8 @@ using SafeMath for *;
   uint256 public paymentReward; 
 
  // --------Stages & Timing------------
-	Stages stages;
-	bool private rentrancy_lock = false;
+  Stages stages;
+  bool private rentrancy_lock = false;
 
 
   enum Stages {
@@ -59,25 +59,25 @@ using SafeMath for *;
     ReceivingROI
   }
 
-	modifier nonReentrant() {
-		require(!rentrancy_lock);
-		rentrancy_lock = true;
-		_;
-		rentrancy_lock = false;
-	}
+  modifier nonReentrant() {
+    require(!rentrancy_lock);
+    rentrancy_lock = true;
+    _;
+    rentrancy_lock = false;
+  }
 
-	modifier hubOnly {
-		require(msg.sender != assetHub);
-		_;
-	}
+  modifier hubOnly {
+    require(msg.sender != assetHub);
+    _;
+  }
 
-	modifier onlyCreator {
-		require(msg.sender != projectCreator);
-		_;
-	}
+  modifier onlyCreator {
+    require(msg.sender != projectCreator);
+    _;
+  }
 
- 	modifier atStage(Stages _stage) {
-		require(stages == _stage);
+  modifier atStage(Stages _stage) {
+    require(stages == _stage);
     _;
   }
 
@@ -85,8 +85,8 @@ using SafeMath for *;
     require(amountRaised <= amountToBeRaised);
     _;
     if (amountRaised >= amountToBeRaised) {
-    	stages = Stages.FundingSuccess;
-			}
+      stages = Stages.FundingSuccess;
+      }
   }
 
   modifier withinFundingTime() {
@@ -105,42 +105,42 @@ using SafeMath for *;
   }
 
 
-	// TODO: Test storage on Swarm/BigchainDB/IPFS
-	function Asset(address _creator, bytes32 _storageHash, address _assetInstaller, uint256 _amountToBeRaised, uint256 _minimumFundingTime, uint256 _ownerLimit, uint256 _id) 
+  // TODO: Test storage on Swarm/BigchainDB/IPFS
+  function Asset(address _creator, bytes32 _storageHash, address _assetInstaller, uint256 _amountToBeRaised, uint256 _minimumFundingTime, uint256 _ownerLimit, uint256 _id) 
   public {
-		assetHub = msg.sender;
-		projectCreator = _creator;
-		assetInstaller = _assetInstaller;
-		amountToBeRaised = _amountToBeRaised;
-		amountRaised = 0;
-		creationDate = block.timestamp;
-		deadline = _minimumFundingTime.add(now);
-		storageHash = _storageHash;
-		maximumNumberOfOwners = _ownerLimit;
-		id = _id;
-		assetCreated(projectCreator, amountToBeRaised, amountRaised, deadline, now);
-	}
+    assetHub = msg.sender;
+    projectCreator = _creator;
+    assetInstaller = _assetInstaller;
+    amountToBeRaised = _amountToBeRaised;
+    amountRaised = 0;
+    creationDate = block.timestamp;
+    deadline = _minimumFundingTime.add(now);
+    storageHash = _storageHash;
+    maximumNumberOfOwners = _ownerLimit;
+    id = _id;
+    assetCreated(projectCreator, amountToBeRaised, amountRaised, deadline, now);
+  }
 
-	// Users can invest in the asset here
-	// Requires that the funding goal hasn't been reached and that the funding period isn't over. Will move stage to FundingSuccess once goal is reached
-	function fund()
+  // Users can invest in the asset here
+  // Requires that the funding goal hasn't been reached and that the funding period isn't over. Will move stage to FundingSuccess once goal is reached
+  function fund()
   payable 
   requiresEther 
   atStage(Stages.FundingAsset) 
   fundingLimit 
   external 
   returns (bool) {
-		if (contributionLedger[msg.sender] == 0) {
-			contributors.push(msg.sender);
-		}
-		amountRaised = amountRaised.add(msg.value);
+    if (contributionLedger[msg.sender] == 0) {
+      contributors.push(msg.sender);
+    }
+    amountRaised = amountRaised.add(msg.value);
     contributionLedger[msg.sender] = contributionLedger[msg.sender].add(msg.value);
-		return true;
-	}
+    return true;
+  }
 
-	//  TODO: Send installer remaining Ether or predefined percentage? Worried about rounding errors leaving excess Ether
+  //  TODO: Send installer remaining Ether or predefined percentage? Worried about rounding errors leaving excess Ether
   // TODO: reduce gas 
-	function payout() 
+  function payout() 
   atStage(Stages.FundingSuccess) 
   nonReentrant 
   payable
@@ -151,15 +151,15 @@ using SafeMath for *;
     uint256 installerAmount = amountRaised.getFractionalAmount(installerPercentage);
     uint256 insuranceAmount = amountRaised.getFractionalAmount(insurancePercentage);
     insuranceContract.transfer(insuranceAmount);
-	  myBitFoundation.transfer(myBitAmount);
-    lockedTokens.receiveTransactionFee.value(lockedTokenAmount);
+    myBitFoundation.transfer(myBitAmount);
+    tokenHub.receiveTransactionFee.value(lockedTokenAmount);
     assetInstaller.transfer(installerAmount);   // send the remainder of Ether left in the contract
     stages = Stages.ReceivingROI; 
-		return true;
-	}
+    return true;
+  }
 
 
-	function receiveROI() 
+  function receiveROI() 
   payable 
   requiresEther 
   atStage(Stages.ReceivingROI)
@@ -170,23 +170,23 @@ using SafeMath for *;
     receivedROI(msg.sender, msg.value, block.timestamp); 
     return true; 
 
-	}
+  }
 
-	//  contributors can retrieve their funds here if campaign is over + failure.
+  //  contributors can retrieve their funds here if campaign is over + failure.
   // TODO: reduce gas by not storing owed value
-	function refund() 
+  function refund() 
   nonReentrant 
   atStage(Stages.FundingAsset) 
   fundingPeriodOver 
   external
   returns (bool) 
   {
-		uint256 owed = contributionLedger[msg.sender];
+    uint256 owed = contributionLedger[msg.sender];
     contributionLedger[msg.sender] = 0;
     amountRaised = amountRaised.sub(owed);
-		msg.sender.transfer(owed);
-		return true;
-	}
+    msg.sender.transfer(owed);
+    return true;
+  }
 
   function updateLedger()
   atStage(Stages.ReceivingROI)
@@ -216,13 +216,13 @@ using SafeMath for *;
     return true; 
   } 
 
-	function projectInfo() external constant returns (uint256, uint256, uint256, address) {
-		return (amountRaised, amountToBeRaised, deadline, projectCreator);
-	}
+  function projectInfo() external constant returns (uint256, uint256, uint256, address) {
+    return (amountRaised, amountToBeRaised, deadline, projectCreator);
+  }
 
-	function () public {
-		revert();
-	}
+  function () public {
+    revert();
+  }
 
   event assetCreated(address _creator, uint256 _amountToBeRaised, uint256 _amountRaised, uint256 _deadline, uint256 _now);
   event receivedROI(address indexed _sender, uint256 indexed _amount, uint256 indexed _timestamp); 
