@@ -12,6 +12,7 @@ contract Asset {
 using SafeMath for *;
 
 	// Created by myBit, holds/distributes Ether for Project
+  // ------------Project Information--------------
 	address public projectCreator;
 	address public assetHub;
 	bytes32 public storageHash;   // Where the title and description + images are stored. (IPFS, Swarm, BigChainDB)
@@ -21,30 +22,36 @@ using SafeMath for *;
 	uint256 public id;
 
 
-// -----------Payout Information----------------------
+// -----------Beneficiary Addresses----------------------
 	address public myBitFoundation;      // mybit foundation address
 	LockedTokens public lockedTokens;   // address to receive 2% of funding payout
 	address public assetInstaller;
   address public insuranceContract;   // contract to hold insurance
 
+//------------Beneficiary amounts---------------
   uint256 public myBitFoundationPercentage = 1;
   uint256 public lockedTokensPercentage = 2;
   uint256 public insurancePercentage = 5;
   uint256 public installerPercentage = 92;
 
+
+// -----------Funder Information--------------
 	mapping (address => uint256) contributionLedger;
+  address[] public contributors;    // AssetFunders
   uint256 public amountToBeRaised;
   uint256 public amountRaised;     // Amount raised from funding 
-  uint256 public amountEarned;     // Return on investment. Amount received from Asset in the wild
 
-	address[] public contributors;    // AssetFunders
-	bool public projectPaid;          // Have the installer + foundation + locked token holders been paid
 
+  // -------Investment Returns--------------
+  uint256 public roiBalance;     // Return on investment. Amount received from Asset in the wild, not yet paid to investors
+  uint256 public totalROIReceived;   // Amount owed to funders
+  mapping (address => uint256) public owedToFunder;  // Amount owed to particular funder 
+  uint256 public paymentReward; 
+
+ // --------Stages & Timing------------
 	Stages stages;
-
 	bool private rentrancy_lock = false;
 
-	event assetCreated(address _creator, uint256 _amountToBeRaised, uint256 _amountRaised, uint256 _deadline, uint256 _now);
 
   enum Stages {
     FundingAsset,
@@ -97,12 +104,6 @@ using SafeMath for *;
     _;
   }
 
-	// probably not necessary...
-	modifier onlyPayloadSize(uint size) {
-		assert(msg.data.length == size + 4);
-		_;
-	}
-
 
 	// TODO: Test storage on Swarm/BigchainDB/IPFS
 	function Asset(address _creator, bytes32 _storageHash, address _assetInstaller, uint256 _amountToBeRaised, uint256 _minimumFundingTime, uint256 _ownerLimit, uint256 _id) 
@@ -117,7 +118,6 @@ using SafeMath for *;
 		storageHash = _storageHash;
 		maximumNumberOfOwners = _ownerLimit;
 		id = _id;
-		projectPaid = false;
 		assetCreated(projectCreator, amountToBeRaised, amountRaised, deadline, now);
 	}
 
@@ -165,6 +165,10 @@ using SafeMath for *;
   atStage(Stages.ReceivingROI)
   external 
   returns (bool)  {
+    roiBalance = roiBalance.add(msg.value);
+    totalROIReceived = totalROIReceived.add(msg.value); 
+    receivedROI(msg.sender, msg.value, block.timestamp); 
+    return true; 
 
 	}
 
@@ -188,7 +192,15 @@ using SafeMath for *;
   atStage(Stages.ReceivingROI)
   external
   returns (bool) {
-    // TODO: update ledger as in demo
+    require(contributionLedger[msg.sender] > 0); 
+    paymentReward = roiBalance.div(50);    // give msg.sender 1/50 of the payment cycle (TODO: recalibrate these numbers)
+    assert (paymentReward > 0); 
+    roiBalance = roiBalance.sub(paymentReward); 
+    for (uint256 i=0; i < contributors.length; i++) { 
+      address thisFunder = contributors[i];
+      uint256 roi = roiBalance.calculateOwed(contributionLedger[thisFunder], roiBalance);    // using library to save gas
+      owedToFunder[thisFunder] = owedToFunder[thisFunder].add(roi);     // allow withdrawl of funders return on investment
+    }
     return true; 
   }
 
@@ -197,9 +209,9 @@ using SafeMath for *;
   atStage(Stages.ReceivingROI)
   external 
   returns (bool) { 
-    uint256 owed = contributionLedger[msg.sender];
-    contributionLedger[msg.sender] = 0;
-    amountEarned = amountEarned.sub(owed);
+    uint256 owed = owedToFunder[msg.sender];
+    owedToFunder[msg.sender] = 0;
+    roiBalance = roiBalance.sub(owed);
     msg.sender.transfer(owed);
     return true; 
   } 
@@ -212,4 +224,7 @@ using SafeMath for *;
 		revert();
 	}
 
+  event assetCreated(address _creator, uint256 _amountToBeRaised, uint256 _amountRaised, uint256 _deadline, uint256 _now);
+  event receivedROI(address indexed _sender, uint256 indexed _amount, uint256 indexed _timestamp); 
+  event investmentRedeemed(address indexed _investor, uint256 indexed _amount, uint256 indexed _timestamp); 
 }

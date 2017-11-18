@@ -8,7 +8,7 @@ import './AssetHub.sol';
 contract MyBitHub is Owned {
 using SafeMath for *;
 
-	uint256 public assetSizeLimit = 10000; // TODO find safe number of assets each hub can hold   // The number of assets each particular assetHub can hold...is set in constructor.
+	uint256 public assetSizeLimit = 1000000; // TODO find safe number of assets each hub can hold   // The number of assets each particular assetHub can hold...is set in constructor.
 
 	mapping (uint256 => address) public assetHubs;      // ID lookup for AssetHubs created on the platform
 	mapping (uint256 => bytes32) public assetType;		// ID lookup for the title of asset this hub creates
@@ -28,8 +28,6 @@ using SafeMath for *;
 		require(msg.sender == owner);
 		_;
 	}
-
-	event assetHubCreated(bytes32 _hubType, uint256 _assetSizeLimit, uint256 _index, address creator, address projectAddress);
 
 	function () public {
 		revert();
@@ -64,6 +62,7 @@ using SafeMath for *;
 	returns (bool) {
 		require(assetHubs[_requestingHub] == msg.sender);
 		needsNewHub[assetType[_requestingHub]] = true;
+		callForNewHub(assetType[_requestingHub], _requestingHub, block.timestamp); 
 		return true;
 	}
 
@@ -86,9 +85,19 @@ using SafeMath for *;
 		allAssetTypes.push(_newType);
 		fundingTimeForType[_newType] = _timeGivenForFunding;
 		needsNewHub[_newType] = true;
+		assetTypeAdded(_newType, _timeGivenForFunding, block.timestamp); 
 		return true;
 	}
 
+	function changeFundingTimeForAsset(bytes32 _assetType, uint256 _newTimeGivenForFunding) 
+	onlyOwner
+	external
+	returns (bool) { 
+		require(acceptedAssetType[_assetType]); 
+		require(_newTimeGivenForFunding > 0);
+		fundingTimeForType[_assetType] = _newTimeGivenForFunding; 
+		return true; 
+	}
 
 // -------------------------------------------------------Getters-------------------------------------------------------
 
@@ -99,5 +108,9 @@ using SafeMath for *;
 	function getAssetHubsOfType(bytes32 _assetType) view external returns (address[]) { 
 		return assetHubsOfType[_assetType]; 
 	}
+
+	event assetHubCreated(bytes32 _hubType, uint256 _assetSizeLimit, uint256 _index, address creator, address projectAddress);
+	event assetTypeAdded(bytes32 indexed _newType, uint256 indexed _timeGivenForFunding, uint256 indexed _timestamp);
+	event callForNewHub(bytes32 _assetType, uint256 _assetHubID, uint256 _timestamp); 
 
 }

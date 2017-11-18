@@ -7,6 +7,7 @@ import './Asset.sol';
 
 // The registry and access point for Assets of this title.
 // Created from myBitHub + extension of owner contract
+// TODO: How many assets can the hub hold? 
 contract AssetHub is Owned {
 using SafeMath for *;
 
@@ -32,7 +33,7 @@ uint256 public numAssets;   					// Incrementing ID counter
 uint256 public minimumFundingTime;     // Minimum amount of time given for the funding of assets
 
 uint256 public maxNumberOfAssets;				// Maximum number of assets that the AssetHub can hold
-uint256 public maxNumberOfOwners;     // Maximum number of owners for each asset.....
+uint256 public maxNumberOfOwners = 10000;    // Maximum number of owners for each asset.....
 
 MyBitHub public myBitHub;           // The central hub that created this assetHub
 bytes32 public thisAssetType;      // Type of asset...ie. Solar, Car,
@@ -40,7 +41,8 @@ uint256 public thisAssetHubID;     // ID of assetHub...can lookup in MyBitHub
 
 
 event assetCreated(address _creator, address _assetInstaller, uint256 _amountToBeRaised, uint256 _maxNumberOfOwners, address _projectAddress, uint256 _index);
-
+event assetHubCreated(address indexed _hub, bytes32 indexed _type, uint256 indexed _timestamp); 
+event assetHubFull(uint256 _numAssets, uint256 _timestamp); 
 
 	function () public {
 		revert();
@@ -52,8 +54,8 @@ event assetCreated(address _creator, address _assetInstaller, uint256 _amountToB
 		thisAssetType = _assetType;
 		minimumFundingTime = _minimumFundingTime;
 		maxNumberOfAssets = _maxNumberOfAssets;
-		maxNumberOfOwners = 10000;
 		thisAssetHubID = _index;
+		assetHubCreated(msg.sender, _assetType, block.timestamp); 
 	}
 
 	// Creates a new project contract. Requires Ether to cover the gas costs
@@ -76,6 +78,7 @@ event assetCreated(address _creator, address _assetInstaller, uint256 _amountToB
 	internal 
 	returns (bool){
 		require(myBitHub.newHubNeeded(thisAssetHubID));
+		assetHubFull(numAssets, block.timestamp); 
 		return true;
 	}
 
