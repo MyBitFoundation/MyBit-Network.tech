@@ -3,6 +3,7 @@ import './Asset.sol';
 import './SafeMath.sol';
 import './MyBitHub.sol';
 import './Owned.sol';
+import './TokenHub.sol';
 
 // The registry and access point for Assets of this title.
 // Created from myBitHub + extension of owner contract
@@ -36,6 +37,8 @@ uint256 public assetOwnershipLimit;    // maximum number of owners for each asse
 MyBitHub public myBitHub;           // The central hub that created this assetHub
 bytes32 public thisAssetType;      // Type of asset...ie. Solar, Car,
 uint256 public thisAssetHubID;     // ID of assetHub...can lookup in MyBitHub
+address public tokenHubAddr;
+TokenHub public tokenHub;
 
 
 event assetCreated(bytes32 _title, string _description, uint256 _amountToBeRaised, address _creator, address _projectAddress, uint256 _index, uint256 _assetSizeLimit);
@@ -45,23 +48,26 @@ event assetCreated(bytes32 _title, string _description, uint256 _amountToBeRaise
 		revert();
 	}
 	// Created by MyBitHub. Has fixed asset size limit
-	function AssetHub(bytes32 _title, uint256 _assetSizeLimit, uint256 _minimumFundingTime, uint256 _index) public {
+	function AssetHub(bytes32 _title, uint256 _assetSizeLimit, uint256 _minimumFundingTime, uint256 _index, address _tokenHubAddr) public {
 		myBitHub = MyBitHub(msg.sender);
 		thisAssetType = _title;
 		minimumFundingTime = _minimumFundingTime;
 		assetSizeLimit = _assetSizeLimit;
 		assetOwnershipLimit = 5000;
 		thisAssetHubID = _index;
+		tokenHubAddr = _tokenHubAddr;
+		tokenHub = TokenHub(tokenHubAddr);
 	}
 
 	// Creates a new project contract. Requires Ether to cover the gas costs
 	// TODO: Trigger creation of new asset hub (of same title) when this reaches limit
 	function createAsset(uint256 _amountToBeRaised, bytes32 _title, string _description, address _assetInstaller) underAssetLimit limitReached external returns (address) {
-		Asset newAsset = new Asset(msg.sender, _assetInstaller, _amountToBeRaised, minimumFundingTime, _title, _description, assetOwnershipLimit, numAssets);
+		Asset newAsset = new Asset(msg.sender, _assetInstaller, _amountToBeRaised, minimumFundingTime, _title, _description, assetOwnershipLimit, numAssets, tokenHubAddr);
 		assetIDs.push(numAssets);
 		assets[numAssets] = address(newAsset);
 		assetCreated(_title, _description, _amountToBeRaised, msg.sender, address(newAsset), numAssets, assetSizeLimit);
 		numAssets++;
+		tokenHub.addAssetAccepted(address(newAsset));
 		return address(newAsset);
 	}
 

@@ -29,6 +29,7 @@ using SafeMath for *;
 
 
 	address public tokenHubAddr;
+	tokenHubAddr public tokenHub;
 
 	modifier onlyOwner {
 		require(msg.sender == owner);
@@ -47,9 +48,6 @@ using SafeMath for *;
 		numAssetHubs = 0;
 		assetSizeLimit = 10000; // TODO find safe number of assets each hub can hold
 		owner = msg.sender;
-		require(tokenHubAddr !=address(0));
-		TokenHub newHub = new TokenHub();
-		tokenHubAddr = address(newHub);
 	}
 
 	// TODO: Automate new hub creation when one reaches it's limit....
@@ -58,13 +56,31 @@ using SafeMath for *;
 	function createAssetHub(bytes32 _title, string _description) external returns (address) {
 		require(acceptedAssetType[_title]);
 		require(needsNewHub[_title]);
-		AssetHub newHub = new AssetHub(_title, assetSizeLimit, fundingTimeForType[_title], numAssetHubs);
+		AssetHub newHub = new AssetHub(_title, assetSizeLimit, fundingTimeForType[_title], numAssetHubs, tokenHubAddr);
 		assetHubs[numAssetHubs] = address(newHub);
 		assetHubIDs.push(numAssetHubs);
+		//hub.addAssetHub(assetHubs[numAssetHubs]);
+
 		numAssetHubs++;
 		needsNewHub[_title] = false;
 		assetHubCreated(_title, _description, assetSizeLimit, (numAssetHubs - 1), msg.sender, address(newHub));
 		return address(newHub);
+	}
+
+	function createTokenHub(address _myBitTokenAddr)external isOwner eturns(address){
+		require(tokenHubAddr == address(0x0));
+		TokenHub tokenHub = new TokenHub(_myBitTokenAddr);
+		tokenHubAddr = address(tokenHub);
+		tokenHubCreated(_tokenHubAddr);
+		return tokenHubAddr;
+	}
+
+	function createInitialLocks() external isOwner returns(bool){
+ 		require(tokenHub.createTokenLockContract(0, 45, 0, 67));
+		require(tokenHub.createTokenLockContract(1, 90, 0, 134));
+		require(tokenHub.createTokenLockContract(2, 180, 0, 266));
+		require(tokenHub.createTokenLockContract(3, 360, 0, 533));
+		return true;
 	}
 
 
@@ -91,7 +107,6 @@ using SafeMath for *;
 		needsNewHub[_newType] = true;
 		return true;
 	}
-
 // -------------------------------------------------------Getters-------------------------------------------------------
 
 	function getAssetIDs() constant external returns (uint256[]) {

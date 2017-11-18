@@ -12,7 +12,8 @@ contract owned {
 	}
 }
 contract tokenRecipient { function receiveApproval(address _from, uint256 _value, address _token, bytes _extraData); }
-contract CSToken is owned {
+
+contract MyBitToken is owned {
 	/* Public variables of the token */
 	string public standard = 'Token 0.1';
 	string public name;
@@ -27,8 +28,9 @@ contract CSToken is owned {
 	mapping (address => mapping (address => uint256)) public allowance;
 	/* This generates a public event on the blockchain that will notify clients */
 	event Transfer(address indexed from, address indexed to, uint256 value);
+	event ApprovalGranted(address _this, address _userAddr, uint256 value);
 	/* Initializes contract with initial supply tokens to the creator of the contract */
-	function CSToken(
+	function MyBitToken(
 	uint256 initialSupply,
 	string tokenName,
 	uint8 decimalUnits,
@@ -63,6 +65,7 @@ contract CSToken is owned {
 	function approve(address _spender, uint256 _value)
 	returns (bool success) {
 		allowance[msg.sender][_spender] = _value;
+		ApprovalGranted(this, msg.sender, _value);
 		return true;
 	}
 	/* Approve and then comunicate the approved contract in a single tx */
@@ -78,7 +81,7 @@ contract CSToken is owned {
 	function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {
 		require(balanceOf[_from] > _value);                 // Check if the sender has enough
 		require(balanceOf[_to] + _value > balanceOf[_to]);  // Check for overflows
-		require(_value < allowance[_from][msg.sender]);   // Check allowance
+		require(_value <= allowance[_from][msg.sender]);   // Check allowance
 		balanceOf[_from] -= _value;                          // Subtract from the sender
 		balanceOf[_to] += _value;                            // Add the same to the recipient
 		allowance[_from][msg.sender] -= _value;
@@ -93,116 +96,4 @@ contract CSToken is owned {
 	function getContractAddress() public returns(address){
 		return address(this);
 	}
-}
-contract Crowdsale is owned{
-        uint public start = 1498651200;
-        uint public currentStage = 0;
-        bool public crowdsaleStarted = false;
-        uint[] public prices;
-        uint[] public tresholds;
-        address public bounties;
-        uint public totalCollected;
-        uint public deadline;
-        uint public presaleDeadline;
-        uint public tokensRaised;
-
-        uint constant presaleDuration = 19 days;
-        uint constant saleDuration = 29 days;
-        uint tokenMultiplier = 10;
-
-
-        CSToken public tokenReward;
-        mapping(address => uint256) public balanceOf;
-        event GoalReached(address beneficiary, uint totalCollected);
-        event FundTransfer(address backer, uint amount, bool isContribution);
-        event NewStage (uint time, uint stage);
-
-
-        modifier saleFinished() {
-					require(now < deadline && currentStage < 2);
-					_;
-				 }
-
-        modifier beforeDeadline() {
-					require(now <= deadline);
-					 _;
-				 }
-
-	function Crowdsale(
-	address _bounties
-	) {
-		tokenReward = new CSToken(0, 'MyBit Token', 8, 'MyB');
-		tokenMultiplier = tokenMultiplier**tokenReward.decimals();
-		tokenReward.mintToken(_bounties, 1100000 * tokenMultiplier);
-		presaleDeadline = start + presaleDuration;
-		deadline = start + presaleDuration + saleDuration;
-		tresholds.push(1250000 * tokenMultiplier);
-		tresholds.push(3000000 * tokenMultiplier);
-		tresholds.push(2**256 - 1);
-		prices.push(7500 szabo / tokenMultiplier);
-		prices.push(10 finney / tokenMultiplier);
-		prices.push(2**256 - 1);
-
-
-		bounties = _bounties;
-
-	}
-
-
-	function mint(uint amount, uint tokens, address sender) internal {
-		balanceOf[sender] += amount;
-		tokensRaised += tokens;
-		totalCollected += amount;
-		tokenReward.mintToken(sender, tokens);
-		tokenReward.mintToken(owner, tokens * 1333333 / 10000000);
-		tokenReward.mintToken(bounties, tokens * 1666667 / 10000000);
-		FundTransfer(sender, amount, true);
-	}
-
-	function processPayment(address from, uint amount) internal beforeDeadline
-	{
-		FundTransfer(from, amount, false);
-		uint price = prices[currentStage];
-		uint256 tokenAmount = amount / price;
-		if (tokensRaised + tokenAmount > tresholds[currentStage])
-		{
-			uint256 currentTokens = tresholds[currentStage] - tokensRaised;
-			uint256 currentAmount = currentTokens * price;
-			mint(currentAmount, currentTokens, from);
-			currentStage++;
-			NewStage(now, currentStage);
-			processPayment(from, amount - currentAmount);
-			return;
-		}
-	        mint(amount, tokenAmount, from);
-		uint256 change = amount - tokenAmount * price;
-		if(change > 0)
-		{
-			totalCollected -= change;
-			balanceOf[from] -= change;
-			require(from.send(change));
-		}
-	}
-
-	function () payable beforeDeadline {
-		require(now > start);
-		require(currentStage <= 1);
-		if (crowdsaleStarted){
-			processPayment(msg.sender, msg.value);
-		} else {
-			if (now > presaleDeadline)
-			{
-				crowdsaleStarted = true;
-			} else {
-				require(msg.value >= 1 ether);
-			}
-			processPayment(msg.sender, msg.value);
-        }
-    }
-
-    function safeWithdrawal() saleFinished {
-        if (bounties == msg.sender) {
-					require(bounties.send(totalCollected));
-        }
-    }
 }
