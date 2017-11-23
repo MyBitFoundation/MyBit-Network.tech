@@ -44,9 +44,9 @@ library SafeMath {
   // NOTE: Experimental function. Trying to avoid settling all payments at once
   // _numberOfMultipliedTokens = total number of locked tokens * full multpliers
   // Calculates amount of tokens 
-  function addMultiplier(uint256 _numberOfMultipliedTokens, uint256 _percentageIntoPeriod, uint256 _multiplierPercentage) internal pure returns (uint256) { 
-    uint256 relativeMultiplier = mul(_multiplierPercentage, _percentageIntoPeriod); 
-    return mul(_numberOfMultipliedTokens, relativeMultiplier); 
+  function addMultiplier(uint256 _numberOfTokens, uint256 _multiplierPercentage) internal pure returns (uint256) { 
+    uint256 multipliedTokens = mul(_numberOfTokens, _multiplierPercentage); 
+    return div(multipliedTokens, 100);
   }
 
 
