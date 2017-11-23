@@ -2,7 +2,6 @@ pragma solidity ^0.4.18;
 import './SafeMath.sol';
 import './Owned.sol'; 
 import './Pausable.sol';
-import './TokenHub.sol';
 import './MyBitToken.sol';
 
 // TODO: what happens when someone suicides Ether into a funding period?
@@ -20,18 +19,16 @@ using SafeMath for *;
   uint256 public creationDate;
   uint256 public maximumNumberOfOwners;
   uint256 public id;
-
+  uint256 public maintenanceFund;   
 
 // -----------Beneficiary Addresses----------------------
-  address public myBitFoundation;      // mybit foundation address
-  TokenHub public tokenHub;          // address to receive 2% of funding payout
+  address public myBitFoundation = address(0);      // mybit foundation address
   address public assetInstaller;
-  address public insuranceContract;   // contract to hold insurance
 
 //------------Beneficiary amounts---------------
   uint256 public myBitFoundationPercentage = 1;
   uint256 public lockedTokensPercentage = 2;
-  uint256 public insurancePercentage = 5;
+  uint256 public maintenancePercentage = 5;
   uint256 public installerPercentage = 92;
 
 
@@ -49,7 +46,7 @@ using SafeMath for *;
   uint256 public paymentReward; 
 
  // --------Stages & Timing------------
-  Stages stages;
+  Stages public stages;
   bool private rentrancy_lock = false;
 
 
@@ -143,16 +140,13 @@ using SafeMath for *;
   function payout() 
   atStage(Stages.FundingSuccess) 
   nonReentrant 
-  payable
   external  
   returns (bool) {
     uint256 myBitAmount = amountRaised.getFractionalAmount(myBitFoundationPercentage);
     uint256 lockedTokenAmount = amountRaised.getFractionalAmount(lockedTokensPercentage);
     uint256 installerAmount = amountRaised.getFractionalAmount(installerPercentage);
-    uint256 insuranceAmount = amountRaised.getFractionalAmount(insurancePercentage);
-    insuranceContract.transfer(insuranceAmount);
+    maintenanceFund = amountRaised.getFractionalAmount(maintenancePercentage);
     myBitFoundation.transfer(myBitAmount);
-    tokenHub.receiveTransactionFee.value(lockedTokenAmount);
     assetInstaller.transfer(installerAmount);   // send the remainder of Ether left in the contract
     stages = Stages.ReceivingROI; 
     return true;
@@ -188,6 +182,7 @@ using SafeMath for *;
     return true;
   }
 
+  // TODO: could keep track of last settlement balance to allow single withdrawls
   function updateLedger()
   atStage(Stages.ReceivingROI)
   external
