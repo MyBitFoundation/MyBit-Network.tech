@@ -17,10 +17,10 @@ contract TokenHub is Owned{
     _;
   }
 
-  modifier isAssetHub(){
+  /*modifier isAssetHub(){
     require(assetHubAddr[msg.sender]);
     _;
-  }
+  }*/
 
   modifier isAcceptedAsset(){
     require(asssetAccepted[msg.sender]);
@@ -38,7 +38,7 @@ contract TokenHub is Owned{
 	}
 
   modifier isEitherOwnerOrThis(){
-    require(msg.sender == this ||
+    require(
             msg.sender == owner);
     _;
   }
@@ -48,6 +48,15 @@ contract TokenHub is Owned{
     require(tokenLock.getCurrentDays % 15);
     _;
   }*/
+
+  event transactionFeeRecieved(address _from, uint256 _amount, uint256 _totalTransactionFee);
+  event withdrawTransactionFeeE(address _from, uint256 _period, uint256 _lock, uint256 _transactionFeeOwed);
+  event usersShareOfPoolE(address _userAddr, uint256 _period, uint256 _lock,
+    uint256 amountLockedMultiplier, uint256 transactionFeeWhenLocked);
+
+  event secondUsersShareOfPoolE(uint256 applicableTransactionFee, uint256 totalTokensLockedWithMultiplier,
+          uint256 poolOwnership, uint256 transactionFeeOwed, uint256 totalTransactionFee,
+          uint256 transactionFeeWhenLocked, uint256 amountLockedMultiplier);
 
   function periodContractNotActive(uint256 _period) public returns(bool){
       if(periodContracts[_period] == address(0x0)){return true;}
@@ -60,6 +69,8 @@ contract TokenHub is Owned{
   address public myBitHubAddr;
   mapping(address => bool) asssetAccepted;
 
+  uint256 public transferAmountTest;
+
   uint256 public totalLocks;  // Contract total locks
   uint256 public activeLocks; // Total active locks
   uint256 public totalTokensLocked;   //Total tokens locked
@@ -67,7 +78,7 @@ contract TokenHub is Owned{
 
 
 
-  mapping (address => uint256[][]) public userOwed;
+  mapping (address => mapping(uint256 => mapping(uint256 => uint256))) public userOwed;
   mapping (address => uint256[]) public withdrawnPeriods;
   mapping (address => uint256[][]) public userTransactionFeeWithrawnAt;
 
@@ -77,32 +88,23 @@ contract TokenHub is Owned{
   uint256[] public contractsStored;
   uint256 public numContracts;
 
-  mapping (uint256 => uint256) public multiplierPerPeriod;
-  mapping (uint256 => uint256) public periodToDays;
 
 
   function TokenHub(address _myBitTokenAddr){
     myBitHubAddr = msg.sender;
     myBitTokenAddr = _myBitTokenAddr;
-    //assetHubAddr.push(_assetHubAddr);
-    multiplierPerPeriod[0] = 67; // 0.067
-    periodToDays[0] = 45;
-    multiplierPerPeriod[1] = 134;// 0.134
-     periodToDays[1] = 90;
-    multiplierPerPeriod[2] = 266;// 0.266
-    periodToDays[2] = 180;
-    multiplierPerPeriod[3] = 533;// 0.533
-    periodToDays[3] = 360;
+    owner = this;
   }
 
-  function addAssetAccepted(address _assetAccepted) isMyBitHub returns(bool){
+  /*function addAssetAccepted(address _assetAccepted) isAssetHub returns(bool){
     asssetAccepted[_assetAccepted] =  true;
     return true;
-  }
+  }*/
 
+  //isEitherOwnerOrThis
   function createTokenLockContract(uint256 _period, uint256 _days,
      uint256 _minFund, uint256 _multiplier)
-     public isEitherOwnerOrThis returns(bool){
+     public  returns(bool){
     require(numContracts <= 3);
     require(_period == 0 || _period == 1 || _period == 2 || _period == 3);
     require(periodContractNotActive(_period));
@@ -126,29 +128,44 @@ contract TokenHub is Owned{
     }
 
 
-  function withdrawTransactionFee(uint256 _period, uint256 _startingTime){
+  function withdrawTransactionFee(uint256 _period, uint256 _lock) public returns(bool){
     TokenLock tokenLock = TokenLock(periodContracts[_period]);
     uint256 currentDays = tokenLock.getCurrentDays();
     require(currentDays % 15 != 0);///---
 
-    var (transactionFeeOwed, applicableTransactionFee, index) = getUsersShareOfPool(msg.sender, _period, _startingTime);
-    uint256 currentDayDenomination = currentDays / 15;
+    var (transactionFeeOwed) = getUsersShareOfPool(msg.sender, _period, _lock);
 
-    userOwed[msg.sender][_period][_startingTime] += transactionFeeOwed;
-    msg.sender.transfer(userOwed[msg.sender][_period][_startingTime]);
-    userOwed[msg.sender][_period][_startingTime] -= transactionFeeOwed;
-    tokenLock.updateUsersTransactionFeeWhenLocked(_period, msg.sender, index, totalTransactionFee);
+    userOwed[msg.sender][_period][_lock] += transactionFeeOwed;
+    msg.sender.transfer(userOwed[msg.sender][_period][_lock]);
+    withdrawTransactionFeeE(msg.sender, _period, _lock, userOwed[msg.sender][_period][_lock]);
+    userOwed[msg.sender][_period][_lock] -= transactionFeeOwed;
+
+    tokenLock.updateUsersTransactionFeeWhenLocked(_period, msg.sender, _lock, totalTransactionFee);
   }
 
-  function getUsersShareOfPool(address _userAddr, uint256 _period, uint256 _startingTime) public constant returns(uint256, uint256, uint256){
+  function getUsersShareOfPool(address _userAddr, uint256 _period, uint256 _lock) public constant returns(uint256){
     TokenLock tokenLock = TokenLock(periodContracts[_period]);
-    var (amountLockedMultiplier, transactionFeeWhenLocked, index) = tokenLock.getUsersLockWithMultipler(_userAddr, _period, _startingTime);
+    var (amountLockedMultiplier, transactionFeeWhenLocked) = tokenLock.getUsersLockWithMultipler(_userAddr, _period, _lock);
+
+    //usersShareOfPoolE(_userAddr,_period,_lock, amountLockedMultiplier, transactionFeeWhenLocked);
 
     require(amountLockedMultiplier != 0);
-    uint256 applicableTransactionFee = totalTransactionFee - transactionFeeWhenLocked;
-    uint256 poolOwnership = amountLockedMultiplier / getTotalTokensLockedWithMultiplier();
-    uint256 transactionFeeOwed = applicableTransactionFee * poolOwnership;
-    return (transactionFeeOwed, applicableTransactionFee, index);
+    uint256 applicableTransactionFee;
+    if(totalTransactionFee == transactionFeeWhenLocked){
+      applicableTransactionFee = transactionFeeWhenLocked;
+    }
+    else{
+      applicableTransactionFee = totalTransactionFee - transactionFeeWhenLocked;
+    }
+    uint256 totalTokensLockedWithMultiplier =  getTotalTokensLockedWithMultiplier();
+    uint256 poolOwnership = (amountLockedMultiplier*1000000000) / totalTokensLockedWithMultiplier;
+    uint256 transactionFeeOwed = (applicableTransactionFee * poolOwnership) / 1000000000 ;
+
+
+    secondUsersShareOfPoolE(applicableTransactionFee, totalTokensLockedWithMultiplier, poolOwnership, transactionFeeOwed,
+      totalTransactionFee, transactionFeeWhenLocked, amountLockedMultiplier);
+
+    return transactionFeeOwed;
   }
 
 
@@ -158,13 +175,15 @@ contract TokenHub is Owned{
       TokenLock tokenLock = TokenLock(periodContracts[_period]);
       totalTokensLockedWithMultiplier += tokenLock.getTotalTokensLockedWithMultiplier();
     }
-    return totalTokensLockedWithMultiplier;
+    return tokenLock.getTotalTokensLockedWithMultiplier();
   }
 
 
-  function receiveTransactionFee() external isAcceptedAsset payable{
+  function receiveTransactionFee() external payable returns(bool){ //isAcceptedAsset
     require(msg.value > 0);
-    totalTransactionFee.add(msg.value);
+    totalTransactionFee += msg.value;
+    transactionFeeRecieved(msg.sender, msg.value, totalTransactionFee);
+    return true;
   }
 
   function getCurrentTransactionFee() external constant returns(uint256){
