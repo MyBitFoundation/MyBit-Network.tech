@@ -2,92 +2,60 @@ pragma solidity ^0.4.18;
 import './SafeMath.sol';
 import './Owned.sol';
 import './Pausable.sol'; 
-import './AssetHub.sol';
-//  MyBitHub is where the Owner can create AssetHubs and add new asset titles to the platform
-// TODO: This design will reach an inevitable limit once it has made x amount of hubs through ethereums gas limit
-contract MyBitHub is Owned {
+import './Asset.sol';
+
+
+// TODO: Can this contract hold a million assets?? 
+contract MyBitHub is Pausable {
 using SafeMath for *;
 
-	uint256 public assetSizeLimit = 1000000; // TODO find safe number of assets each hub can hold   // The number of assets each particular assetHub can hold...is set in constructor.
 
-	mapping (uint256 => address) public assetHubs;      // ID lookup for AssetHubs created on the platform
-	mapping (uint256 => bytes32) public assetType;		// ID lookup for the title of asset this hub creates
-	uint256[] public assetHubIDs;                      // ID's of all AssetHubs created on MyBit platform
-	uint256 public numAssetHubs;   					 // Total number of AssetHubs on the platform
-
-
-	// Note: Strings cannot be used as keys in a mapping, so it is stored as bytes32 instead (also cheaper to store bytes32)
+// ------------------Asset Type Info-------------------
+	// Note: The type of asset is the sha3() of it's string identifier. ie. Solar, ATM, Miner
 	mapping (bytes32 => bool) public acceptedAssetType;      // Is this title accepted on the platform
-	mapping (bytes32 => bool) public needsNewHub;
-	mapping (bytes32 => address[]) public assetHubsOfType;   // All hubs created of this title
 	mapping (bytes32 => uint256) public fundingTimeForType;  // time given for funding period for given title of asset
-	bytes32[] public allAssetTypes;       // All known asset titles on the platform
 
 
-	modifier onlyOwner {
-		require(msg.sender == owner);
-		_;
-	}
+  // -------------Asset Info------------------------------
+	mapping (address => bytes32) public assetType;		// ID lookup for the title of asset this hub creates....TODO: is this necessary? 
+	mapping (bytes32 => address[]) public assets;  // Address location of assets
+	bytes32[] public allAssetTypes;       // All known asset types on the platform
 
-	function () public {
-		revert();
-	}
 
 	function MyBitHub() public {
-		numAssetHubs = 0;
-		
 	}
 
-	// TODO: Automate new hub creation when one reaches it's limit....
-	// TODO: Must check that either no hubs of this title exist or the most recent one is full
-	// Creates a new contract called AssetHub, which can create Asset contracts
-	function createAssetHub(bytes32 _hubType) 
+	// TODO: How to stop people from spamming wrong assets? (maybe charge upfront to begun funding period)
+	function createAsset(bytes32 _storageHash, uint256 _amountToBeRaised, address _assetInstaller, bytes32 _assetType) 
+	whenNotPaused
 	external 
 	returns (address) {
-		require(acceptedAssetType[_hubType]);
-		require(needsNewHub[_hubType]);
-		AssetHub newHub = new AssetHub(_hubType, assetSizeLimit, fundingTimeForType[_hubType], numAssetHubs);
-		assetHubs[numAssetHubs] = address(newHub);
-		assetHubIDs.push(numAssetHubs);
-		numAssetHubs++;
-		needsNewHub[_hubType] = false;
-		assetHubCreated(_hubType, assetSizeLimit, (numAssetHubs - 1), msg.sender, address(newHub));
-		return address(newHub);
+		require(acceptedAssetType[_assetType]); 
+		require(_storageHash != bytes32(0)); 
+		require(_amountToBeRaised >= 0); 
+		require(_assetInstaller != address(0)); 
+		Asset newAsset = new Asset(msg.sender, _storageHash, _assetInstaller, _amountToBeRaised, fundingTimeForType[_assetType], assets[_assetType].length);
+		assets[_assetType].push(address(newAsset));
+		assetType[address(newAsset)] = _assetType; 
+		assetCreated(msg.sender, _assetInstaller, _assetType, _amountToBeRaised, address(newAsset), assets[_assetType].length);
+		return address(newAsset);
 	}
 
-	// TODO: Need clean way to create new AssetHub when previous one is full
-	// Have a daemon that listens for an event to call the contract?? (what if it goes down? )
-	function newHubNeeded(uint256 _requestingHub) 
-	external 
-	returns (bool) {
-		require(assetHubs[_requestingHub] == msg.sender);
-		needsNewHub[assetType[_requestingHub]] = true;
-		callForNewHub(assetType[_requestingHub], _requestingHub, block.timestamp); 
-		return true;
-	}
-
-	// Owner can change number of assets future AssetHubs are able to create (may need to be modified as block gas limit is changed)
-	function changeHubCarryingCapacity(uint256 _newSize) 
-	onlyOwner 
-	external 
-	returns (bool) {
-		assetSizeLimit = _newSize;
-		return true;
-	}
-
-	// Allow a new asset title to be funded on the platform
+		// Allow a new asset title to be funded on the platform
 	function addAssetType(bytes32 _newType, uint256 _timeGivenForFunding) 
 	onlyOwner 
 	external 
 	returns (bool) {
 		require(!acceptedAssetType[_newType]);
+		require(_timeGivenForFunding >= 0); 
+		require(_newType != bytes32(0)); 
 		acceptedAssetType[_newType] = true;
 		allAssetTypes.push(_newType);
 		fundingTimeForType[_newType] = _timeGivenForFunding;
-		needsNewHub[_newType] = true;
 		assetTypeAdded(_newType, _timeGivenForFunding, block.timestamp); 
 		return true;
 	}
+
 
 	function changeFundingTimeForAsset(bytes32 _assetType, uint256 _newTimeGivenForFunding) 
 	onlyOwner
@@ -101,16 +69,34 @@ using SafeMath for *;
 
 // -------------------------------------------------------Getters-------------------------------------------------------
 
-	function getAssetIDs() view external returns (uint256[]) {
-		return assetHubIDs;
+	function getAssetsOfType(bytes32 _assetType)
+	 view 
+	 external 
+	 returns (address[]) { 
+		return assets[_assetType]; 
 	}
 
-	function getAssetHubsOfType(bytes32 _assetType) view external returns (address[]) { 
-		return assetHubsOfType[_assetType]; 
+	function getNumAssetsOfType(bytes32 _assetType)
+		view
+		external
+		returns (uint256){ 
+			return assets[_assetType].length; 
+		}
+
+	function getAllAssetTypes()
+	view
+	external
+	returns (bytes32[]) { 
+		return allAssetTypes;
+	}
+	
+
+	function () public {
+		revert();
 	}
 
-	event assetHubCreated(bytes32 _hubType, uint256 _assetSizeLimit, uint256 _index, address creator, address projectAddress);
+
+	event assetCreated(address _creator, address _installer, bytes32 _hubType, uint256 _amountToBeRaised, address projectAddress, uint256 _index);
 	event assetTypeAdded(bytes32 indexed _newType, uint256 indexed _timeGivenForFunding, uint256 indexed _timestamp);
-	event callForNewHub(bytes32 _assetType, uint256 _assetHubID, uint256 _timestamp); 
 
 }
