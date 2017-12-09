@@ -2,11 +2,10 @@ pragma solidity ^0.4.18;
 import './SafeMath.sol';
 import './Owned.sol'; 
 import './Pausable.sol';
-import './MyBitToken.sol';
 
 // TODO: what happens when someone suicides Ether into a funding period?
 // TODO: WHen calculating percentages, sometimes Solidity rounds down which may leave some Ether in the contract
-
+// TODO: When period fails, trigger MYBitHub to delete storage and suicide contract. 
 contract Asset {
 using SafeMath for *;
 
@@ -16,10 +15,12 @@ using SafeMath for *;
   address public assetHub;
   bytes32 public storageHash;   // Where the title and description + images are stored. (IPFS, Swarm, BigChainDB)
   uint256 public deadline;
-  uint256 public creationDate;
-  uint256 public maximumNumberOfOwners;
-  uint256 public id;
-  uint256 public maintenanceFund;   
+  uint256 public creationDate;    // Maybe just index this in a log to save gas? 
+  uint256 public id;             // Location in MyBitHub assets[type] mapping => list storage
+  uint256 public maintenanceFund;          // Balance saved in case asset needs maintenance...TODO: balance must be stored somewhere else
+
+  uint256 public amountToBeRaised;
+  uint256 public amountRaised;     // Amount raised from funding 
 
 // -----------Beneficiary Addresses----------------------
   address public myBitFoundation = address(0);      // mybit foundation address
@@ -33,17 +34,16 @@ using SafeMath for *;
 
 
 // -----------Funder Information--------------
-  mapping (address => uint256) contributionLedger;
+  uint256 public totalShares;
+  mapping (address => uint256) public shares;
+  uint256 public totalPaidToFunders; 
+  mapping (address => uint256) public paidToFunder;    // Amount investor has withdrawn
   address[] public contributors;    // AssetFunders
-  uint256 public amountToBeRaised;
-  uint256 public amountRaised;     // Amount raised from funding 
 
 
   // -------Investment Returns--------------
-  uint256 public roiBalance;     // Return on investment. Amount received from Asset in the wild, not yet paid to investors
-  uint256 public totalROIReceived;   // Amount owed to funders
-  mapping (address => uint256) public owedToFunder;  // Amount owed to particular funder 
-  uint256 public paymentReward; 
+  uint256 public roiBalance;     // Amount received from Asset, not yet paid to investors
+  uint256 public totalROIReceived;   // Total amount received from Asset
 
  // --------Stages & Timing------------
   Stages public stages;
@@ -56,7 +56,106 @@ using SafeMath for *;
     ReceivingROI
   }
 
-  modifier nonReentrant() {
+  // TODO: Test storage on Swarm/BigchainDB/IPFS
+  function Asset(address _creator, bytes32 _storageHash, address _assetInstaller, uint256 _amountToBeRaised, uint256 _minimumFundingTime, uint256 _id) 
+  public {
+    assetHub = msg.sender;
+    projectCreator = _creator;
+    assetInstaller = _assetInstaller;
+    amountToBeRaised = _amountToBeRaised;
+    amountRaised = 0;
+    creationDate = block.timestamp;
+    deadline = _minimumFundingTime.add(now);
+    storageHash = _storageHash;
+    id = _id;
+    assetCreated(projectCreator, _storageHash, amountToBeRaised, amountRaised, deadline, now);
+  }
+
+  // Users can invest in the asset here
+  // Requires that the funding goal hasn't been reached and that the funding period isn't over. Will move stage to FundingSuccess once goal is reached
+  function fund()
+  payable 
+  nonReentrant
+  requiresEther 
+  atStage(Stages.FundingAsset) 
+  fundingLimit 
+  external 
+  returns (bool) {
+    if (shares[msg.sender] == 0) {
+      contributors.push(msg.sender);
+    }
+    amountRaised = amountRaised.add(msg.value);
+    shares[msg.sender] = shares[msg.sender].add(msg.value);
+    return true;
+  }
+
+  //  TODO: Send installer remaining Ether or predefined percentage? Worried about rounding errors leaving excess Ether
+  // TODO: reduce gas 
+  function payout() 
+  atStage(Stages.FundingSuccess) 
+  nonReentrant 
+  external  
+  returns (bool) {
+    uint256 myBitAmount = amountRaised.getFractionalAmount(myBitFoundationPercentage);
+    uint256 lockedTokenAmount = amountRaised.getFractionalAmount(lockedTokensPercentage);
+    uint256 installerAmount = amountRaised.getFractionalAmount(installerPercentage);
+    maintenanceFund = amountRaised.getFractionalAmount(maintenancePercentage);
+    // assert ((myBitAmount + lockedTokenAmount + installerAmount + maintenanceFund) == amountRaised);   // This might not add up
+    myBitFoundation.transfer(myBitAmount);
+    assetInstaller.transfer(this.balance.sub(maintenanceFund));   // send the remainder of Ether
+    stages = Stages.ReceivingROI; 
+    return true;
+  }
+
+
+  function receiveROI() 
+  payable 
+  requiresEther 
+  atStage(Stages.ReceivingROI)
+  external 
+  returns (bool)  {
+    roiBalance = roiBalance.add(msg.value);
+    totalROIReceived = totalROIReceived.add(msg.value); 
+    receivedROI(msg.sender, msg.value, block.timestamp); 
+    return true; 
+
+  }
+
+  //  contributors can retrieve their funds here if campaign is over + failure.
+  // TODO: reduce gas by not storing owed value
+  function refund() 
+  nonReentrant 
+  atStage(Stages.FundingAsset) 
+  fundingPeriodOver 
+  external
+  returns (bool) 
+  {
+    uint256 owed = shares[msg.sender];
+    shares[msg.sender] = 0;
+    amountRaised = amountRaised.sub(owed);
+    msg.sender.transfer(owed);
+    return true;
+  }
+
+    // TODO: is this method able to be tradeable ....ie. transfer shares when still owed a balance 
+    // TODO: the percentage of shares traded, must also transfer the same percentage of paidToFunder
+    function withdrawl()
+    nonReentrant
+    atStage(Stages.ReceivingROI)
+    external 
+    returns (bool){
+      require(shares[msg.sender] > 0);
+      uint256 totalReceived = this.balance.add(totalPaidToFunders);
+      uint256 payment = totalReceived.mul(shares[msg.sender]).div(totalShares).sub(paidToFunder[msg.sender]);
+      assert (payment != 0);
+      assert (this.balance >= payment);
+      paidToFunder[msg.sender] = paidToFunder[msg.sender].add(payment);
+      totalPaidToFunders = totalPaidToFunders.add(payment);
+      msg.sender.transfer(payment);
+      return true;
+  }
+
+    modifier nonReentrant() {
     require(!rentrancy_lock);
     rentrancy_lock = true;
     _;
@@ -65,11 +164,6 @@ using SafeMath for *;
 
   modifier hubOnly {
     require(msg.sender != assetHub);
-    _;
-  }
-
-  modifier onlyCreator {
-    require(msg.sender != projectCreator);
     _;
   }
 
@@ -102,116 +196,10 @@ using SafeMath for *;
   }
 
 
-  // TODO: Test storage on Swarm/BigchainDB/IPFS
-  function Asset(address _creator, bytes32 _storageHash, address _assetInstaller, uint256 _amountToBeRaised, uint256 _minimumFundingTime, uint256 _ownerLimit, uint256 _id) 
-  public {
-    assetHub = msg.sender;
-    projectCreator = _creator;
-    assetInstaller = _assetInstaller;
-    amountToBeRaised = _amountToBeRaised;
-    amountRaised = 0;
-    creationDate = block.timestamp;
-    deadline = _minimumFundingTime.add(now);
-    storageHash = _storageHash;
-    maximumNumberOfOwners = _ownerLimit;
-    id = _id;
-    assetCreated(projectCreator, amountToBeRaised, amountRaised, deadline, now);
-  }
-
-  // Users can invest in the asset here
-  // Requires that the funding goal hasn't been reached and that the funding period isn't over. Will move stage to FundingSuccess once goal is reached
-  function fund()
-  payable 
-  requiresEther 
-  atStage(Stages.FundingAsset) 
-  fundingLimit 
+  function projectInfo() 
   external 
-  returns (bool) {
-    if (contributionLedger[msg.sender] == 0) {
-      contributors.push(msg.sender);
-    }
-    amountRaised = amountRaised.add(msg.value);
-    contributionLedger[msg.sender] = contributionLedger[msg.sender].add(msg.value);
-    return true;
-  }
-
-  //  TODO: Send installer remaining Ether or predefined percentage? Worried about rounding errors leaving excess Ether
-  // TODO: reduce gas 
-  function payout() 
-  atStage(Stages.FundingSuccess) 
-  nonReentrant 
-  external  
-  returns (bool) {
-    uint256 myBitAmount = amountRaised.getFractionalAmount(myBitFoundationPercentage);
-    uint256 lockedTokenAmount = amountRaised.getFractionalAmount(lockedTokensPercentage);
-    uint256 installerAmount = amountRaised.getFractionalAmount(installerPercentage);
-    maintenanceFund = amountRaised.getFractionalAmount(maintenancePercentage);
-    myBitFoundation.transfer(myBitAmount);
-    assetInstaller.transfer(installerAmount);   // send the remainder of Ether left in the contract
-    stages = Stages.ReceivingROI; 
-    return true;
-  }
-
-
-  function receiveROI() 
-  payable 
-  requiresEther 
-  atStage(Stages.ReceivingROI)
-  external 
-  returns (bool)  {
-    roiBalance = roiBalance.add(msg.value);
-    totalROIReceived = totalROIReceived.add(msg.value); 
-    receivedROI(msg.sender, msg.value, block.timestamp); 
-    return true; 
-
-  }
-
-  //  contributors can retrieve their funds here if campaign is over + failure.
-  // TODO: reduce gas by not storing owed value
-  function refund() 
-  nonReentrant 
-  atStage(Stages.FundingAsset) 
-  fundingPeriodOver 
-  external
-  returns (bool) 
-  {
-    uint256 owed = contributionLedger[msg.sender];
-    contributionLedger[msg.sender] = 0;
-    amountRaised = amountRaised.sub(owed);
-    msg.sender.transfer(owed);
-    return true;
-  }
-
-  // TODO: could keep track of last settlement balance to allow single withdrawls
-  function updateLedger()
-  atStage(Stages.ReceivingROI)
-  external
-  returns (bool) {
-    require(contributionLedger[msg.sender] > 0); 
-    paymentReward = roiBalance.div(50);    // give msg.sender 1/50 of the payment cycle (TODO: recalibrate these numbers)
-    assert (paymentReward > 0); 
-    roiBalance = roiBalance.sub(paymentReward); 
-    for (uint256 i=0; i < contributors.length; i++) { 
-      address thisFunder = contributors[i];
-      uint256 roi = roiBalance.calculateOwed(contributionLedger[thisFunder], roiBalance);    // using library to save gas
-      owedToFunder[thisFunder] = owedToFunder[thisFunder].add(roi);     // allow withdrawl of funders return on investment
-    }
-    return true; 
-  }
-
-  function withdrawlReturns() 
-  nonReentrant 
-  atStage(Stages.ReceivingROI)
-  external 
-  returns (bool) { 
-    uint256 owed = owedToFunder[msg.sender];
-    owedToFunder[msg.sender] = 0;
-    roiBalance = roiBalance.sub(owed);
-    msg.sender.transfer(owed);
-    return true; 
-  } 
-
-  function projectInfo() external constant returns (uint256, uint256, uint256, address) {
+  view 
+  returns (uint256, uint256, uint256, address) {
     return (amountRaised, amountToBeRaised, deadline, projectCreator);
   }
 
@@ -219,7 +207,7 @@ using SafeMath for *;
     revert();
   }
 
-  event assetCreated(address _creator, uint256 _amountToBeRaised, uint256 _amountRaised, uint256 _deadline, uint256 _now);
+  event assetCreated(address _creator, bytes32 _storageHash, uint256 _amountToBeRaised, uint256 _amountRaised, uint256 _deadline, uint256 _now);
   event receivedROI(address indexed _sender, uint256 indexed _amount, uint256 indexed _timestamp); 
   event investmentRedeemed(address indexed _investor, uint256 indexed _amount, uint256 indexed _timestamp); 
 }
