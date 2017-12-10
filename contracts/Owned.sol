@@ -6,10 +6,16 @@ contract Owned {
 
   event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
-  function Owned() public {
+  function Owned() 
+  public {
     owner = msg.sender;
   }
 
+  function validate(address _sender) 
+  view 
+  returns (bool) {
+    return _sender == owner;
+  }
 
   modifier onlyOwner() {
     require(msg.sender == owner);
