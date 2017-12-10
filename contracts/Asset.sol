@@ -1,7 +1,6 @@
 pragma solidity ^0.4.18;
 import './SafeMath.sol';
-import './Owned.sol'; 
-import './Pausable.sol';
+import './MyBitHub.sol'; 
 
 // TODO: what happens when someone suicides Ether into a funding period?
 // TODO: WHen calculating percentages, sometimes Solidity rounds down which may leave some Ether in the contract
@@ -9,18 +8,17 @@ import './Pausable.sol';
 contract Asset {
 using SafeMath for *;
 
+  MyBitHub public myBitHub;
+
   // Created by myBit, holds/distributes Ether for Project
   // ------------Project Information--------------
-  address public projectCreator;
-  address public assetHub;
+  address public projectCreator;    // Address that initiated the project 
   bytes32 public storageHash;   // Where the title and description + images are stored. (IPFS, Swarm, BigChainDB)
-  uint256 public deadline;
+  uint256 public deadline;        // When the funding period is over 
   uint256 public creationDate;    // Maybe just index this in a log to save gas? 
   uint256 public id;             // Location in MyBitHub assets[type] mapping => list storage
-  uint256 public maintenanceFund;          // Balance saved in case asset needs maintenance...TODO: balance must be stored somewhere else
 
   uint256 public amountToBeRaised;
-  uint256 public amountRaised;     // Amount raised from funding 
 
 // -----------Beneficiary Addresses----------------------
   address public myBitFoundation = address(0);      // mybit foundation address
@@ -29,20 +27,17 @@ using SafeMath for *;
 //------------Beneficiary amounts---------------
   uint256 public myBitFoundationPercentage = 1;
   uint256 public lockedTokensPercentage = 2;
-  uint256 public maintenancePercentage = 5;
-  uint256 public installerPercentage = 92;
+  uint256 public installerPercentage = 97;
 
 
 // -----------Funder Information--------------
-  uint256 public totalShares;
-  mapping (address => uint256) public shares;
-  uint256 public totalPaidToFunders; 
-  mapping (address => uint256) public paidToFunder;    // Amount investor has withdrawn
+  uint256 public amountRaised;          // Total amount funded for project 
+  mapping (address => uint256) public shares;     // Portion of the total funded amount held by this individual
   address[] public contributors;    // AssetFunders
-
+  uint256 public totalPaidToFunders;          // Total amount of Ether redeemed 
+  mapping (address => uint256) public paidToFunder;    // Amount investor has withdrawn
 
   // -------Investment Returns--------------
-  uint256 public roiBalance;     // Amount received from Asset, not yet paid to investors
   uint256 public totalROIReceived;   // Total amount received from Asset
 
  // --------Stages & Timing------------
@@ -59,7 +54,7 @@ using SafeMath for *;
   // TODO: Test storage on Swarm/BigchainDB/IPFS
   function Asset(address _creator, bytes32 _storageHash, address _assetInstaller, uint256 _amountToBeRaised, uint256 _minimumFundingTime, uint256 _id) 
   public {
-    assetHub = msg.sender;
+    myBitHub = MyBitHub(msg.sender);
     projectCreator = _creator;
     assetInstaller = _assetInstaller;
     amountToBeRaised = _amountToBeRaised;
@@ -79,6 +74,7 @@ using SafeMath for *;
   requiresEther 
   atStage(Stages.FundingAsset) 
   fundingLimit 
+  whenNotPaused
   external 
   returns (bool) {
     if (shares[msg.sender] == 0) {
@@ -94,15 +90,16 @@ using SafeMath for *;
   function payout() 
   atStage(Stages.FundingSuccess) 
   nonReentrant 
+  whenNotPaused
   external  
   returns (bool) {
     uint256 myBitAmount = amountRaised.getFractionalAmount(myBitFoundationPercentage);
     uint256 lockedTokenAmount = amountRaised.getFractionalAmount(lockedTokensPercentage);
     uint256 installerAmount = amountRaised.getFractionalAmount(installerPercentage);
-    maintenanceFund = amountRaised.getFractionalAmount(maintenancePercentage);
-    // assert ((myBitAmount + lockedTokenAmount + installerAmount + maintenanceFund) == amountRaised);   // This might not add up
+    assert (myBitAmount != 0 && lockedTokenAmount != 0 && installerAmount != 0);   // This might not add up
+    // TODO: send to locked contract
     myBitFoundation.transfer(myBitAmount);
-    assetInstaller.transfer(this.balance.sub(maintenanceFund));   // send the remainder of Ether
+    assetInstaller.transfer(this.balance);   // send the remainder of Ether
     stages = Stages.ReceivingROI; 
     return true;
   }
@@ -114,7 +111,6 @@ using SafeMath for *;
   atStage(Stages.ReceivingROI)
   external 
   returns (bool)  {
-    roiBalance = roiBalance.add(msg.value);
     totalROIReceived = totalROIReceived.add(msg.value); 
     receivedROI(msg.sender, msg.value, block.timestamp); 
     return true; 
@@ -127,9 +123,9 @@ using SafeMath for *;
   nonReentrant 
   atStage(Stages.FundingAsset) 
   fundingPeriodOver 
+  whenNotPaused
   external
-  returns (bool) 
-  {
+  returns (bool) {
     uint256 owed = shares[msg.sender];
     shares[msg.sender] = 0;
     amountRaised = amountRaised.sub(owed);
@@ -137,34 +133,52 @@ using SafeMath for *;
     return true;
   }
 
-    // TODO: is this method able to be tradeable ....ie. transfer shares when still owed a balance 
-    // TODO: the percentage of shares traded, must also transfer the same percentage of paidToFunder
-    function withdrawl()
-    nonReentrant
-    atStage(Stages.ReceivingROI)
-    external 
-    returns (bool){
-      require(shares[msg.sender] > 0);
-      uint256 totalReceived = this.balance.add(totalPaidToFunders);
-      uint256 payment = totalReceived.mul(shares[msg.sender]).div(totalShares).sub(paidToFunder[msg.sender]);
-      assert (payment != 0);
-      assert (this.balance >= payment);
-      paidToFunder[msg.sender] = paidToFunder[msg.sender].add(payment);
-      totalPaidToFunders = totalPaidToFunders.add(payment);
-      msg.sender.transfer(payment);
-      return true;
+  // TODO: is this method able to be tradeable ....ie. transfer shares when still owed a balance 
+  // TODO: the percentage of shares traded, must also transfer the same percentage of paidToFunder
+  function withdraw()
+  nonReentrant
+  atStage(Stages.ReceivingROI)
+  whenNotPaused
+  external 
+  returns (bool){
+    require(shares[msg.sender] > 0);
+    uint256 totalReceived = this.balance.add(totalPaidToFunders);
+    assert (totalROIReceived == totalReceived); 
+    uint256 payment = totalReceived.mul(shares[msg.sender]).div(amountRaised).sub(paidToFunder[msg.sender]);
+    assert (payment != 0);
+    assert (this.balance >= payment);
+    paidToFunder[msg.sender] = paidToFunder[msg.sender].add(payment);
+    totalPaidToFunders = totalPaidToFunders.add(payment);
+    msg.sender.transfer(payment);
+    investmentRedeemed(msg.sender, payment, block.timestamp); 
+    return true;
+}
+  // TODO: Decide who has permission for this
+  function changeAssetInstaller(address _newInstaller) 
+  onlyOwner
+  external
+  returns (bool) { 
+    require(_newInstaller != address(0)); 
+    assetInstaller = _newInstaller; 
+    return true; 
   }
 
-    modifier nonReentrant() {
+  modifier nonReentrant() {
     require(!rentrancy_lock);
     rentrancy_lock = true;
     _;
     rentrancy_lock = false;
   }
 
-  modifier hubOnly {
-    require(msg.sender != assetHub);
-    _;
+
+  modifier onlyOwner { 
+    require(myBitHub.validate(msg.sender)); 
+    _; 
+  }
+  
+  modifier whenNotPaused { 
+    require(!myBitHub.checkPause()); 
+    _; 
   }
 
   modifier atStage(Stages _stage) {
@@ -209,5 +223,5 @@ using SafeMath for *;
 
   event assetCreated(address _creator, bytes32 _storageHash, uint256 _amountToBeRaised, uint256 _amountRaised, uint256 _deadline, uint256 _now);
   event receivedROI(address indexed _sender, uint256 indexed _amount, uint256 indexed _timestamp); 
-  event investmentRedeemed(address indexed _investor, uint256 indexed _amount, uint256 indexed _timestamp); 
+  event investmentRedeemed(address indexed _funder, uint256 indexed _amount, uint256 indexed _timestamp);
 }
