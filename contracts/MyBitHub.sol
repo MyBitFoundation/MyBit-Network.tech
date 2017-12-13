@@ -5,10 +5,14 @@ import './Pausable.sol';
 import './Asset.sol';
 
 
-// TODO: Can this contract hold a million assets?? 
+// TODO: Find carrying capacity of this contract
 contract MyBitHub is Pausable {
 using SafeMath for *;
 
+//------------Beneficiary amounts---------------
+  uint256 public myBitFoundationPercentage = 1;
+  uint256 public lockedTokensPercentage = 2;
+  uint256 public installerPercentage = 97;
 
 // ------------------Asset Type Info-------------------
 	// Note: The type of asset is the sha3() of it's string identifier. ie. Solar, ATM, Miner
@@ -25,7 +29,7 @@ using SafeMath for *;
 	function MyBitHub() public {
 	}
 
-	// TODO: How to stop people from spamming wrong assets? (maybe charge upfront to begun funding period)
+	// TODO: Stop people from spamming wrong assets?  (Ie. upfront cost + approval process)
 	function createAsset(bytes32 _storageHash, uint256 _amountToBeRaised, address _assetInstaller, bytes32 _assetType) 
 	whenNotPaused
 	external 
