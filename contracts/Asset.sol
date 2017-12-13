@@ -24,11 +24,6 @@ using SafeMath for *;
   address public myBitFoundation = address(0);      // mybit foundation address
   address public assetInstaller;
 
-//------------Beneficiary amounts---------------
-  uint256 public myBitFoundationPercentage = 1;
-  uint256 public lockedTokensPercentage = 2;
-  uint256 public installerPercentage = 97;
-
 
 // -----------Funder Information--------------
   uint256 public amountRaised;          // Total amount funded for project 
@@ -93,10 +88,10 @@ using SafeMath for *;
   whenNotPaused
   external  
   returns (bool) {
-    uint256 myBitAmount = amountRaised.getFractionalAmount(myBitFoundationPercentage);
-    uint256 lockedTokenAmount = amountRaised.getFractionalAmount(lockedTokensPercentage);
-    uint256 installerAmount = amountRaised.getFractionalAmount(installerPercentage);
-    assert (myBitAmount != 0 && lockedTokenAmount != 0 && installerAmount != 0);   // This might not add up
+    uint256 myBitAmount = amountRaised.getFractionalAmount(myBitHub.myBitFoundationPercentage());
+    uint256 lockedTokenAmount = amountRaised.getFractionalAmount(myBitHub.lockedTokensPercentage());
+    uint256 installerAmount = amountRaised.getFractionalAmount(myBitHub.installerPercentage());
+    assert (myBitAmount != 0 && lockedTokenAmount != 0 && installerAmount != 0);   
     // TODO: send to locked contract
     myBitFoundation.transfer(myBitAmount);
     assetInstaller.transfer(this.balance);   // send the remainder of Ether
@@ -105,14 +100,14 @@ using SafeMath for *;
   }
 
 
-  function receiveROI() 
+  function receiveROI(string _note) 
   payable 
   requiresEther 
   atStage(Stages.ReceivingROI)
   external 
   returns (bool)  {
     totalROIReceived = totalROIReceived.add(msg.value); 
-    receivedROI(msg.sender, msg.value, block.timestamp); 
+    receivedROI(msg.sender, msg.value, _note, block.timestamp); 
     return true; 
 
   }
@@ -222,6 +217,6 @@ using SafeMath for *;
   }
 
   event assetCreated(address _creator, bytes32 _storageHash, uint256 _amountToBeRaised, uint256 _amountRaised, uint256 _deadline, uint256 _now);
-  event receivedROI(address indexed _sender, uint256 indexed _amount, uint256 indexed _timestamp); 
+  event receivedROI(address indexed _sender, uint256 indexed _amount, string _note, uint256 indexed _timestamp); 
   event investmentRedeemed(address indexed _funder, uint256 indexed _amount, uint256 indexed _timestamp);
 }
