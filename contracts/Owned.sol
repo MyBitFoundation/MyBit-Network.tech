@@ -1,7 +1,10 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 contract Owned {
   address public owner;
+
+  // ------------Approval--------------
+  mapping (address => bool) public userApproved;   // users who are approved to create assets
 
 
   event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -22,11 +25,33 @@ contract Owned {
     _;
   }
 
-
-  function transferOwnership(address newOwner) onlyOwner external {
-    require(newOwner != address(0));
-    OwnershipTransferred(owner, newOwner);
-    owner = newOwner;
+  function approveUser(address _newUser)
+  onlyOwner
+  external
+  returns (bool) { 
+    userApproved[_newUser] = true; 
+    return true;
   }
 
-}
+  function removeUser(address _user)
+  onlyOwner
+  external
+  returns (bool) { 
+    userApproved[_user] = false; 
+    return true;
+  }
+
+  function transferOwnership(address _newOwner) 
+  onlyOwner 
+  external {
+    require(_newOwner != address(0));
+    OwnershipTransferred(owner, _newOwner);
+    owner = _newOwner;
+  }
+
+  modifier onlyApproved { 
+    require(userApproved[msg.sender]); 
+    _; 
+  }
+
+  }
