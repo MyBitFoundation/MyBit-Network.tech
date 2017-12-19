@@ -10,16 +10,9 @@ using SafeMath for *;
   MyBitHub public myBitHub; 
 
   // ------------Project Information--------------
-  address public projectCreator;    // Address that initiated the project 
-  bytes32 public storageHash;   // Where the title and description + images are stored. (IPFS, Swarm, BigChainDB)
+  bytes32 public storageHash;    // Where descriptive information + images are stored for this asset. (IPFS, Swarm, BigChainDB)
   uint256 public fundingDeadline;        // When the funding period is over 
   uint256 public amountToBeRaised;  // Amount required for funding to be success 
-  bytes32 public assetType;        // The type of asset (ie. Solar, ATM, Miner etc..)
-
-// -----------Beneficiary Addresses----------------------
-  address public myBitFoundation = 0x0089cc346a75b584aae57459d8de170a3af10dff;      // ropsten testnet address TODO: Get real foundation address
-  address public assetInstaller;
-
 
 // -----------Funder Information--------------
   uint256 public amountRaised;          // Total amount funded for project 
@@ -45,21 +38,19 @@ using SafeMath for *;
   // The constructor is called when someone initiates a new funding period for an asset
   // @Param: Creator of this asset contract
   // @Param: The location of this assets information found on IPFS
-  // @Param: The Ether address of the asset installer. 
+  // @Param: The ID of the installer chosen for this asset 
   // @Param: The amount of Wei to be raised in order to install asset
   // @Param: The amount of time allowed for asset to try and reach it's funding goal 
   // @Param: The type of asset being funded (ie. Solar, Mining, ATM)
-  function Asset(address _creator, bytes32 _storageHash, address _assetInstaller, uint256 _amountToBeRaised, uint256 _maximumFundingTime, bytes32 _assetType) 
+  function Asset(address _creator, bytes32 _storageHash, bytes32 _installerID, uint256 _amountToBeRaised, uint256 _maximumFundingTime, bytes32 _assetType) 
   public {
     myBitHub = MyBitHub(msg.sender);
-    projectCreator = _creator;
-    assetInstaller = _assetInstaller;
     amountToBeRaised = _amountToBeRaised;
     amountRaised = 0;
     fundingDeadline = _maximumFundingTime.add(now);
     storageHash = _storageHash;
-    assetType = _assetType; 
-    LogAssetCreated(projectCreator, _storageHash, amountToBeRaised, fundingDeadline, now);
+    LogAssetInfo(_assetType, _installerID, _storageHash); 
+    LogAssetCreated(_creator, _amountToBeRaised, now);
   }
 
   // Users can send Ether here to fund asset if funding goal hasn't been reached and the funding period isn't over. 
@@ -73,7 +64,7 @@ using SafeMath for *;
   external 
   returns (bool) {
     if (shares[msg.sender] == 0) {
-      LogNewFunder(msg.sender, block.timestamp); 
+      LogNewFunder(msg.sender, block.timestamp);    // Create event to reference list of funders
     }
     amountRaised = amountRaised.add(msg.value);
     shares[msg.sender] = shares[msg.sender].add(msg.value);
@@ -83,8 +74,8 @@ using SafeMath for *;
 
   // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
   function payout() 
-  atStage(Stages.FundingSuccess) 
   nonReentrant 
+  atStage(Stages.FundingSuccess) 
   whenNotPaused
   external  
   returns (bool) {
@@ -92,12 +83,14 @@ using SafeMath for *;
     uint256 lockedTokenAmount = amountRaised.getFractionalAmount(myBitHub.lockedTokensPercentage());
     uint256 installerAmount = amountRaised.getFractionalAmount(myBitHub.installerPercentage());
     // lockedTokens.transfer(lockedTokenAmount);
+    address myBitFoundation = myBitHub.myBitFoundation(); 
+    address assetEscrow = myBitHub.assetEscrow();
     myBitFoundation.transfer(myBitAmount);
-    assetInstaller.transfer(this.balance);   // Note: Asset installer will likely receive small amount more, due rounding
+    assetEscrow.transfer(this.balance);   // Note: Asset installer will likely receive small amount more, due rounding
     stage = Stages.AssetLive; 
     LogAssetPayoutMyBitFoundation(myBitFoundation, myBitAmount, block.timestamp);
     // LogAssetPayoutLockedTokenHolders(address(lockedTokens), lockedTokenAmount, block.timestamp); 
-    LogAssetPayoutInstaller(assetInstaller, installerAmount, block.timestamp); 
+    LogAssetPayoutInstaller(assetEscrow, installerAmount, block.timestamp); 
     return true;
   }
 
@@ -219,7 +212,8 @@ using SafeMath for *;
   event LogAssetPayoutMyBitFoundation(address indexed _myBitFoundation, uint256 indexed _myBitAmount, uint256 indexed _timestamp);
   event LogAssetPayoutLockedTokenHolders(address indexed _lockedTokenContract, uint256 indexed _lockedTokenAmount, uint256 indexed _timestamp); 
   event LogAssetPayoutInstaller(address indexed _assetInstaller, uint256 indexed installerAmount, uint256 indexed _timestamp); 
-  event LogAssetCreated(address indexed _creator, bytes32 _storageHash, uint256 indexed _amountToBeRaised, uint256 _fundingDeadline, uint256 indexed _now);
+  event LogAssetCreated(address indexed _creator, uint256 _amountToBeRaised, uint256 indexed _timestamp);
+  event LogAssetInfo(bytes32 _assetType, bytes32 _installerID, bytes32 _storageHash); 
   event LogIncomeReceived(address indexed _sender, uint256 indexed _amount, uint256 indexed _timestamp); 
   event LogInvestmentReceived(address indexed _funder, uint256 indexed _amount, uint256 indexed _timestamp);
   event LogAssetNote(string _note, uint256 _timestamp);
