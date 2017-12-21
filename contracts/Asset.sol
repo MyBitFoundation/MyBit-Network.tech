@@ -1,60 +1,159 @@
 pragma solidity ^0.4.18;
 import './SafeMath.sol';
-import './Owned.sol'; 
-import './Pausable.sol';
-import './MyBitToken.sol';
+import './MyBitHub.sol'; 
 
-// TODO: what happens when someone suicides Ether into a funding period?
-// TODO: WHen calculating percentages, sometimes Solidity rounds down which may leave some Ether in the contract
 
+// Created by MyBitHub, holds/distributes Ether for single Asset 
 contract Asset {
 using SafeMath for *;
 
-  // Created by myBit, holds/distributes Ether for Project
+  MyBitHub public myBitHub; 
+
   // ------------Project Information--------------
-  address public projectCreator;
-  address public assetHub;
-  bytes32 public storageHash;   // Where the title and description + images are stored. (IPFS, Swarm, BigChainDB)
-  uint256 public deadline;
-  uint256 public creationDate;
-  uint256 public maximumNumberOfOwners;
-  uint256 public id;
-  uint256 public maintenanceFund;   
-
-// -----------Beneficiary Addresses----------------------
-  address public myBitFoundation = address(0);      // mybit foundation address
-  address public assetInstaller;
-
-//------------Beneficiary amounts---------------
-  uint256 public myBitFoundationPercentage = 1;
-  uint256 public lockedTokensPercentage = 2;
-  uint256 public maintenancePercentage = 5;
-  uint256 public installerPercentage = 92;
-
+  bytes32 public storageHash;    // Where descriptive information + images are stored for this asset. (IPFS, Swarm, BigChainDB)
+  uint256 public fundingDeadline;        // When the funding period is over 
+  uint256 public amountToBeRaised;  // Amount required for funding to be success 
 
 // -----------Funder Information--------------
-  mapping (address => uint256) contributionLedger;
-  address[] public contributors;    // AssetFunders
-  uint256 public amountToBeRaised;
-  uint256 public amountRaised;     // Amount raised from funding 
-
+  uint256 public amountRaised;          // Total amount funded for project 
+  mapping (address => uint256) public shares;     // Portion of the total funded amount held by this individual
+  mapping (address => uint256) public paidToFunder;    // Amount investor has withdrawn
 
   // -------Investment Returns--------------
-  uint256 public roiBalance;     // Return on investment. Amount received from Asset in the wild, not yet paid to investors
-  uint256 public totalROIReceived;   // Amount owed to funders
-  mapping (address => uint256) public owedToFunder;  // Amount owed to particular funder 
-  uint256 public paymentReward; 
+  uint256 public totalIncomeEarned;   // Total amount received from Asset
+  uint256 public totalPaidToFunders;          // Total amount of Ether redeemed 
 
  // --------Stages & Timing------------
-  Stages public stages;
-  bool private rentrancy_lock = false;
+  Stages public stage;
+  bool private rentrancy_lock = false;    // Prevents re-entrancy attack
 
 
   enum Stages {
     FundingAsset,
     FundingSuccess,
-    ReceivingROI
+    FundingFailed,
+    AssetLive
   }
+
+  // The constructor is called when someone initiates a new funding period for an asset
+  // @Param: Creator of this asset contract
+  // @Param: The location of this assets information found on IPFS
+  // @Param: The ID of the installer chosen for this asset 
+  // @Param: The amount of Wei to be raised in order to install asset
+  // @Param: The amount of time allowed for asset to try and reach it's funding goal 
+  // @Param: The type of asset being funded (ie. Solar, Mining, ATM)
+  function Asset(address _creator, bytes32 _storageHash, bytes32 _installerID, uint256 _amountToBeRaised, uint256 _maximumFundingTime, bytes32 _assetType) 
+  public {
+    myBitHub = MyBitHub(msg.sender);
+    amountToBeRaised = _amountToBeRaised;
+    amountRaised = 0;
+    fundingDeadline = _maximumFundingTime.add(now);
+    storageHash = _storageHash;
+    LogAssetInfo(_assetType, _installerID, _storageHash); 
+    LogAssetCreated(_creator, _amountToBeRaised, now);
+  }
+
+  // Users can send Ether here to fund asset if funding goal hasn't been reached and the funding period isn't over. 
+  function fund()
+  payable 
+  nonReentrant
+  requiresEther 
+  atStage(Stages.FundingAsset) 
+  whenNotPaused
+  fundingLimit 
+  external 
+  returns (bool) {
+    if (shares[msg.sender] == 0) {
+      LogNewFunder(msg.sender, block.timestamp);    // Create event to reference list of funders
+    }
+    amountRaised = amountRaised.add(msg.value);
+    shares[msg.sender] = shares[msg.sender].add(msg.value);
+    LogAssetFunded(msg.sender, msg.value, block.timestamp);
+    return true;
+  }
+
+  // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
+  function payout() 
+  nonReentrant 
+  atStage(Stages.FundingSuccess) 
+  whenNotPaused
+  external  
+  returns (bool) {
+    uint256 myBitAmount = amountRaised.getFractionalAmount(myBitHub.myBitFoundationPercentage());
+    uint256 lockedTokenAmount = amountRaised.getFractionalAmount(myBitHub.lockedTokensPercentage());
+    uint256 installerAmount = amountRaised.getFractionalAmount(myBitHub.installerPercentage());
+    // lockedTokens.transfer(lockedTokenAmount);
+    address myBitFoundation = myBitHub.myBitFoundation(); 
+    address assetEscrow = myBitHub.assetEscrow();
+    myBitFoundation.transfer(myBitAmount);
+    assetEscrow.transfer(this.balance);   // Note: Asset installer will likely receive small amount more, due rounding
+    stage = Stages.AssetLive; 
+    LogAssetPayoutMyBitFoundation(myBitFoundation, myBitAmount, block.timestamp);
+    // LogAssetPayoutLockedTokenHolders(address(lockedTokens), lockedTokenAmount, block.timestamp); 
+    LogAssetPayoutInstaller(assetEscrow, installerAmount, block.timestamp); 
+    return true;
+  }
+
+  // Revenue produced by the asset will be sent here
+  // @Param: A note that can be left by the payee
+  function receiveIncome(string _note) 
+  payable 
+  requiresEther 
+  atStage(Stages.AssetLive)
+  external 
+  returns (bool)  {
+    totalIncomeEarned = totalIncomeEarned.add(msg.value); 
+    LogIncomeReceived(msg.sender, msg.value, block.timestamp);
+    LogAssetNote(_note, block.timestamp); 
+    return true; 
+
+  }
+
+  // This function needs to be called to allow refunds to be made. Signals to the myBitHub contract that funding has failed
+  function initiateRefund()
+  atStage(Stages.FundingAsset)
+  fundingPeriodOver
+  external
+  returns (bool) { 
+    require(myBitHub.assetFailedFunding(amountRaised)); 
+    stage = Stages.FundingFailed; 
+    return true; 
+  }
+
+  // Contributors can retrieve their funds here if campaign is over + failure.
+  function refund() 
+  nonReentrant 
+  atStage(Stages.FundingFailed) 
+  whenNotPaused
+  external
+  returns (bool) {
+    uint256 owed = shares[msg.sender];
+    shares[msg.sender] = 0;
+    amountRaised = amountRaised.sub(owed);
+    msg.sender.transfer(owed);
+    LogRefund(msg.sender, owed, block.timestamp); 
+    return true;
+  }
+
+
+  // Asset funders can receive their share of the income here
+  // TODO: the percentage of shares traded, must also transfer the same percentage of paidToFunder
+  function withdrawal()
+  nonReentrant
+  atStage(Stages.AssetLive)
+  whenNotPaused
+  external 
+  returns (bool){
+    require(shares[msg.sender] > 0);
+    uint256 totalReceived = this.balance.add(totalPaidToFunders);
+    uint256 payment = totalReceived.mul(shares[msg.sender]).div(amountRaised).sub(paidToFunder[msg.sender]);
+    paidToFunder[msg.sender] = paidToFunder[msg.sender].add(payment);
+    totalPaidToFunders = totalPaidToFunders.add(payment);
+    msg.sender.transfer(payment);
+    LogInvestmentReceived(msg.sender, payment, block.timestamp); 
+    return true;
+}
+
 
   modifier nonReentrant() {
     require(!rentrancy_lock);
@@ -63,18 +162,18 @@ using SafeMath for *;
     rentrancy_lock = false;
   }
 
-  modifier hubOnly {
-    require(msg.sender != assetHub);
-    _;
+  modifier onlyOwner { 
+    require(myBitHub.validate(msg.sender)); 
+    _; 
   }
-
-  modifier onlyCreator {
-    require(msg.sender != projectCreator);
-    _;
+  
+  modifier whenNotPaused { 
+    require(!myBitHub.checkPause()); 
+    _; 
   }
 
   modifier atStage(Stages _stage) {
-    require(stages == _stage);
+    require(stage == _stage);
     _;
   }
 
@@ -82,17 +181,18 @@ using SafeMath for *;
     require(amountRaised <= amountToBeRaised);
     _;
     if (amountRaised >= amountToBeRaised) {
-      stages = Stages.FundingSuccess;
+      require(myBitHub.assetSuccessfullyFunded());
+      stage = Stages.FundingSuccess;
       }
   }
 
   modifier withinFundingTime() {
-    require(now <= deadline);
+    require(now <= fundingDeadline);
     _;
   }
 
   modifier fundingPeriodOver() {
-    require(now >= deadline);
+    require(now >= fundingDeadline);
     _;
   }
 
@@ -102,124 +202,19 @@ using SafeMath for *;
   }
 
 
-  // TODO: Test storage on Swarm/BigchainDB/IPFS
-  function Asset(address _creator, bytes32 _storageHash, address _assetInstaller, uint256 _amountToBeRaised, uint256 _minimumFundingTime, uint256 _ownerLimit, uint256 _id) 
-  public {
-    assetHub = msg.sender;
-    projectCreator = _creator;
-    assetInstaller = _assetInstaller;
-    amountToBeRaised = _amountToBeRaised;
-    amountRaised = 0;
-    creationDate = block.timestamp;
-    deadline = _minimumFundingTime.add(now);
-    storageHash = _storageHash;
-    maximumNumberOfOwners = _ownerLimit;
-    id = _id;
-    assetCreated(projectCreator, amountToBeRaised, amountRaised, deadline, now);
-  }
-
-  // Users can invest in the asset here
-  // Requires that the funding goal hasn't been reached and that the funding period isn't over. Will move stage to FundingSuccess once goal is reached
-  function fund()
-  payable 
-  requiresEther 
-  atStage(Stages.FundingAsset) 
-  fundingLimit 
-  external 
-  returns (bool) {
-    if (contributionLedger[msg.sender] == 0) {
-      contributors.push(msg.sender);
-    }
-    amountRaised = amountRaised.add(msg.value);
-    contributionLedger[msg.sender] = contributionLedger[msg.sender].add(msg.value);
-    return true;
-  }
-
-  //  TODO: Send installer remaining Ether or predefined percentage? Worried about rounding errors leaving excess Ether
-  // TODO: reduce gas 
-  function payout() 
-  atStage(Stages.FundingSuccess) 
-  nonReentrant 
-  external  
-  returns (bool) {
-    uint256 myBitAmount = amountRaised.getFractionalAmount(myBitFoundationPercentage);
-    uint256 lockedTokenAmount = amountRaised.getFractionalAmount(lockedTokensPercentage);
-    uint256 installerAmount = amountRaised.getFractionalAmount(installerPercentage);
-    maintenanceFund = amountRaised.getFractionalAmount(maintenancePercentage);
-    myBitFoundation.transfer(myBitAmount);
-    assetInstaller.transfer(installerAmount);   // send the remainder of Ether left in the contract
-    stages = Stages.ReceivingROI; 
-    return true;
-  }
-
-
-  function receiveROI() 
-  payable 
-  requiresEther 
-  atStage(Stages.ReceivingROI)
-  external 
-  returns (bool)  {
-    roiBalance = roiBalance.add(msg.value);
-    totalROIReceived = totalROIReceived.add(msg.value); 
-    receivedROI(msg.sender, msg.value, block.timestamp); 
-    return true; 
-
-  }
-
-  //  contributors can retrieve their funds here if campaign is over + failure.
-  // TODO: reduce gas by not storing owed value
-  function refund() 
-  nonReentrant 
-  atStage(Stages.FundingAsset) 
-  fundingPeriodOver 
-  external
-  returns (bool) 
-  {
-    uint256 owed = contributionLedger[msg.sender];
-    contributionLedger[msg.sender] = 0;
-    amountRaised = amountRaised.sub(owed);
-    msg.sender.transfer(owed);
-    return true;
-  }
-
-  // TODO: could keep track of last settlement balance to allow single withdrawls
-  function updateLedger()
-  atStage(Stages.ReceivingROI)
-  external
-  returns (bool) {
-    require(contributionLedger[msg.sender] > 0); 
-    paymentReward = roiBalance.div(50);    // give msg.sender 1/50 of the payment cycle (TODO: recalibrate these numbers)
-    assert (paymentReward > 0); 
-    roiBalance = roiBalance.sub(paymentReward); 
-    for (uint256 i=0; i < contributors.length; i++) { 
-      address thisFunder = contributors[i];
-      uint256 roi = roiBalance.calculateOwed(contributionLedger[thisFunder], roiBalance);    // using library to save gas
-      owedToFunder[thisFunder] = owedToFunder[thisFunder].add(roi);     // allow withdrawl of funders return on investment
-    }
-    return true; 
-  }
-
-  function withdrawlReturns() 
-  nonReentrant 
-  atStage(Stages.ReceivingROI)
-  external 
-  returns (bool) { 
-    uint256 owed = owedToFunder[msg.sender];
-    owedToFunder[msg.sender] = 0;
-    roiBalance = roiBalance.sub(owed);
-    msg.sender.transfer(owed);
-    return true; 
-  } 
-
-  function projectInfo() external constant returns (uint256, uint256, uint256, address) {
-    return (amountRaised, amountToBeRaised, deadline, projectCreator);
-  }
-
   function () public {
     revert();
   }
 
-  event assetCreated(address _creator, uint256 _amountToBeRaised, uint256 _amountRaised, uint256 _deadline, uint256 _now);
-  event receivedROI(address indexed _sender, uint256 indexed _amount, uint256 indexed _timestamp); 
-  event investmentRedeemed(address indexed _investor, uint256 indexed _amount, uint256 indexed _timestamp); 
+  event LogNewFunder(address indexed _funder, uint256 indexed _timestamp); 
+  event LogAssetFunded(address indexed _funder, uint256 indexed _amount, uint256 indexed _timestamp); 
+  event LogRefund(address indexed _funder, uint256 indexed _amount, uint256 indexed _timestamp); 
+  event LogAssetPayoutMyBitFoundation(address indexed _myBitFoundation, uint256 indexed _myBitAmount, uint256 indexed _timestamp);
+  event LogAssetPayoutLockedTokenHolders(address indexed _lockedTokenContract, uint256 indexed _lockedTokenAmount, uint256 indexed _timestamp); 
+  event LogAssetPayoutInstaller(address indexed _assetInstaller, uint256 indexed installerAmount, uint256 indexed _timestamp); 
+  event LogAssetCreated(address indexed _creator, uint256 _amountToBeRaised, uint256 indexed _timestamp);
+  event LogAssetInfo(bytes32 _assetType, bytes32 _installerID, bytes32 _storageHash); 
+  event LogIncomeReceived(address indexed _sender, uint256 indexed _amount, uint256 indexed _timestamp); 
+  event LogInvestmentReceived(address indexed _funder, uint256 indexed _amount, uint256 indexed _timestamp);
+  event LogAssetNote(string _note, uint256 _timestamp);
 }

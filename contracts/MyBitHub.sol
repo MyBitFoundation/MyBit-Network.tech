@@ -2,115 +2,126 @@ pragma solidity ^0.4.18;
 import './SafeMath.sol';
 import './Owned.sol';
 import './Pausable.sol'; 
-import './AssetHub.sol';
-//  MyBitHub is where the Owner can create AssetHubs and add new asset titles to the platform
-// TODO: This design will reach an inevitable limit once it has made x amount of hubs through ethereums gas limit
-contract MyBitHub is Owned {
+import './Asset.sol';
+
+
+// This contract is in charge of creating individual asset contracts. It acts as a reference for locations of Assets and other funding parameters
+contract MyBitHub is Pausable {
 using SafeMath for *;
 
-	uint256 public assetSizeLimit = 1000000; // TODO find safe number of assets each hub can hold   // The number of assets each particular assetHub can hold...is set in constructor.
-
-	mapping (uint256 => address) public assetHubs;      // ID lookup for AssetHubs created on the platform
-	mapping (uint256 => bytes32) public assetType;		// ID lookup for the title of asset this hub creates
-	uint256[] public assetHubIDs;                      // ID's of all AssetHubs created on MyBit platform
-	uint256 public numAssetHubs;   					 // Total number of AssetHubs on the platform
+//-----------Platform Addresses----------------
+address public myBitFoundation;      // ropsten testnet address TODO: Get real foundation address
+address public assetEscrow;     // The location where asset funding is sent to be converted to Fiat
 
 
-	// Note: Strings cannot be used as keys in a mapping, so it is stored as bytes32 instead (also cheaper to store bytes32)
-	mapping (bytes32 => bool) public acceptedAssetType;      // Is this title accepted on the platform
-	mapping (bytes32 => bool) public needsNewHub;
-	mapping (bytes32 => address[]) public assetHubsOfType;   // All hubs created of this title
-	mapping (bytes32 => uint256) public fundingTimeForType;  // time given for funding period for given title of asset
-	bytes32[] public allAssetTypes;       // All known asset titles on the platform
+//------------Beneficiary amounts---------------
+  uint256 public myBitFoundationPercentage = 1;     // Percentage of funding given to MyBit foundation
+  uint256 public lockedTokensPercentage = 2;        // Percentage of funding given to locked token holders
+  uint256 public installerPercentage = 97;          // Percentage of funding given to asset installer 
+
+// ------------------Asset Type Info-------------------
+  // Note: The type of asset is the sha3() of it's string identifier. ie. Solar, ATM, Miner
+  uint256 public fundingTime;            // The amount of time given for an assets funding period
 
 
-	modifier onlyOwner {
-		require(msg.sender == owner);
-		_;
-	}
+  // -------------Asset Info------------------------------
+  // NOTE: Could store asset information in log events to save gas 
+  mapping (uint256 => address) public assets;  // Address location of assets. Initialized once funding is success
+  uint256 public assetCounter;          // Counter that keeps track of number of assets
+  mapping (address => bool) public beingFunded;     // Is this asset currently going through funding stage
 
-	function () public {
-		revert();
-	}
 
-	function MyBitHub() public {
-		numAssetHubs = 0;
-		
-	}
 
-	// TODO: Automate new hub creation when one reaches it's limit....
-	// TODO: Must check that either no hubs of this title exist or the most recent one is full
-	// Creates a new contract called AssetHub, which can create Asset contracts
-	function createAssetHub(bytes32 _hubType) 
-	external 
-	returns (address) {
-		require(acceptedAssetType[_hubType]);
-		require(needsNewHub[_hubType]);
-		AssetHub newHub = new AssetHub(_hubType, assetSizeLimit, fundingTimeForType[_hubType], numAssetHubs);
-		assetHubs[numAssetHubs] = address(newHub);
-		assetHubIDs.push(numAssetHubs);
-		numAssetHubs++;
-		needsNewHub[_hubType] = false;
-		assetHubCreated(_hubType, assetSizeLimit, (numAssetHubs - 1), msg.sender, address(newHub));
-		return address(newHub);
-	}
+  function MyBitHub(address _myBitFoundation, address _assetEscrow) public {
+    fundingTime = 300;   // TODO: this is only for testing 
+    myBitFoundation = _myBitFoundation;  
+    assetEscrow = _assetEscrow; 
+  }
 
-	// TODO: Need clean way to create new AssetHub when previous one is full
-	// Have a daemon that listens for an event to call the contract?? (what if it goes down? )
-	function newHubNeeded(uint256 _requestingHub) 
-	external 
-	returns (bool) {
-		require(assetHubs[_requestingHub] == msg.sender);
-		needsNewHub[assetType[_requestingHub]] = true;
-		callForNewHub(assetType[_requestingHub], _requestingHub, block.timestamp); 
-		return true;
-	}
+  // This is called by the asset contract if it achieves it's funding goal
+  function assetSuccessfullyFunded()
+  external
+  returns (bool) { 
+    require(beingFunded[msg.sender]);
+    delete beingFunded[msg.sender]; 
+    assets[assetCounter] = msg.sender;
+    LogAssetFundingSuccess(msg.sender, assetCounter, block.timestamp); 
+    assetCounter++;
+    return true; 
+  }
 
-	// Owner can change number of assets future AssetHubs are able to create (may need to be modified as block gas limit is changed)
-	function changeHubCarryingCapacity(uint256 _newSize) 
-	onlyOwner 
-	external 
-	returns (bool) {
-		assetSizeLimit = _newSize;
-		return true;
-	}
+  // This is called by the asset contract if it does not achieve it's funding goal
+  function assetFailedFunding(uint256 _amountRaised)
+  external
+  returns (bool) { 
+    require(beingFunded[msg.sender]);
+    delete beingFunded[msg.sender];
+    LogAssetFundingFailed(msg.sender, _amountRaised, block.timestamp); 
+    return true;
+  }
 
-	// Allow a new asset title to be funded on the platform
-	function addAssetType(bytes32 _newType, uint256 _timeGivenForFunding) 
-	onlyOwner 
-	external 
-	returns (bool) {
-		require(!acceptedAssetType[_newType]);
-		acceptedAssetType[_newType] = true;
-		allAssetTypes.push(_newType);
-		fundingTimeForType[_newType] = _timeGivenForFunding;
-		needsNewHub[_newType] = true;
-		assetTypeAdded(_newType, _timeGivenForFunding, block.timestamp); 
-		return true;
-	}
+  // This money creates an Asset contract to commence funding stage of it's lifecycle. The location is logged in an event. 
+  function createAsset(bytes32 _storageHash, uint256 _amountToBeRaised, bytes32 _installerID, bytes32 _assetType) 
+  whenNotPaused
+  onlyApproved
+  external 
+  returns (address) {
+    require(_storageHash != bytes32(0)); 
+    require(_amountToBeRaised >= 0); 
+    Asset newAsset = new Asset(msg.sender, _storageHash, _installerID, _amountToBeRaised, fundingTime, _assetType);
+    beingFunded[address(newAsset)] = true; 
+    LogAssetFundingStarted(msg.sender, address(newAsset), _assetType);      // Use indexed event to keep track of pending assets
+    return address(newAsset);
+  }
 
-	function changeFundingTimeForAsset(bytes32 _assetType, uint256 _newTimeGivenForFunding) 
-	onlyOwner
-	external
-	returns (bool) { 
-		require(acceptedAssetType[_assetType]); 
-		require(_newTimeGivenForFunding > 0);
-		fundingTimeForType[_assetType] = _newTimeGivenForFunding; 
-		return true; 
-	}
+  // Removes assets that are no longer functioning. 
+  function removeAsset(uint256 _id) 
+  onlyOwner
+  returns(bool) {
+    require(assets[_id] != address(0));
+    require(assetCounter > 0); 
+    LogAssetRemoved(assets[_id], _id, block.timestamp); 
+    assets[_id] = assets[(assetCounter - 1)];    // Move latest asset to this position
+    assetCounter--; 
+    LogAssetMoved(assets[_id], assetCounter, block.timestamp); 
+    return true; 
+  }
 
+  // Change the default funding time for the asset 
+  function changeFundingTime(uint256 _newTimeGivenForFunding) 
+  onlyOwner
+  external
+  returns (bool) { 
+    require(_newTimeGivenForFunding > 0);
+    fundingTime = _newTimeGivenForFunding;
+    LogFundingTimeChanged(_newTimeGivenForFunding, block.timestamp); 
+    return true; 
+  }
+
+  function changeAssetEscrow(address _newAddress)
+  onlyOwner
+  external
+  returns (bool) { 
+    require(_newAddress != address(0)); 
+    assetEscrow = _newAddress; 
+    LogAssetEscrowChanged(_newAddress, block.timestamp); 
+    return true;
+  }
+
+  
 // -------------------------------------------------------Getters-------------------------------------------------------
 
-	function getAssetIDs() view external returns (uint256[]) {
-		return assetHubIDs;
-	}
 
-	function getAssetHubsOfType(bytes32 _assetType) view external returns (address[]) { 
-		return assetHubsOfType[_assetType]; 
-	}
+  function () public {
+    revert();
+  }
 
-	event assetHubCreated(bytes32 _hubType, uint256 _assetSizeLimit, uint256 _index, address creator, address projectAddress);
-	event assetTypeAdded(bytes32 indexed _newType, uint256 indexed _timeGivenForFunding, uint256 indexed _timestamp);
-	event callForNewHub(bytes32 _assetType, uint256 _assetHubID, uint256 _timestamp); 
 
+  event LogAssetFundingStarted(address indexed _creator, address indexed _assetLocation, bytes32 indexed _assetType);
+  event LogAssetFundingFailed(address indexed _assetLocation, uint256 indexed _amountRaised, uint256 indexed _timestamp); 
+  event LogAssetFundingSuccess(address indexed _assetLocation, uint256 indexed _id, uint256 indexed _timestamp); 
+  event LogAssetRemoved(address indexed _removedAsset, uint256 indexed _id, uint256 indexed _timestamp); 
+  event LogAssetMoved(address indexed _removedAsset, uint256 indexed _id, uint256 indexed _timestamp);
+  event LogFundingTimeChanged(uint256 _newFundingTime, uint256 _timestamp);  
+  event LogAssetEscrowChanged(address _newEscrowLocation, uint256 _timestamp); 
 }
