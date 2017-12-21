@@ -28,7 +28,7 @@ contract MyBitToken is owned {
 	mapping (address => mapping (address => uint256)) public allowance;
 	/* This generates a public event on the blockchain that will notify clients */
 	event Transfer(address indexed from, address indexed to, uint256 value);
-	event ApprovalGranted(address _this, address _userAddr, uint256 value);
+	event ApprovalGranted(address _this, address _spender, address _userAddr, uint256 value);
 	/* Initializes contract with initial supply tokens to the creator of the contract */
 	function MyBitToken(
 	uint256 initialSupply,
@@ -46,8 +46,8 @@ contract MyBitToken is owned {
 
 	/* Send coins */
 	function transfer(address _to, uint256 _value) returns(bool){
-		require(balanceOf[msg.sender] > _value);           // Check if the sender has enough
-	 	require(balanceOf[_to] + _value > balanceOf[_to]); // Check for overflows
+		require(balanceOf[msg.sender] >= _value);           // Check if the sender has enough
+	 	require(balanceOf[_to] + _value >= balanceOf[_to]); // Check for overflows
 		balanceOf[msg.sender] -= _value;                     // Subtract from the sender
 		balanceOf[_to] += _value;                            // Add the same to the recipient
 		Transfer(msg.sender, _to, _value);                   // Notify anyone listening that this transfer took place
@@ -65,7 +65,7 @@ contract MyBitToken is owned {
 	function approve(address _spender, uint256 _value)
 	returns (bool success) {
 		allowance[msg.sender][_spender] = _value;
-		ApprovalGranted(this, msg.sender, _value);
+		ApprovalGranted(this, _spender, msg.sender, _value);
 		return true;
 	}
 	/* Approve and then comunicate the approved contract in a single tx */
@@ -78,9 +78,9 @@ contract MyBitToken is owned {
 		}
 	}
 	/* A contract attempts to get the coins */
-	function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {
-		require(balanceOf[_from] > _value);                 // Check if the sender has enough
-		require(balanceOf[_to] + _value > balanceOf[_to]);  // Check for overflows
+	function transferFrom(address _from, address _to, uint256 _value) returns (bool) {
+		require(balanceOf[_from] >= _value);                 // Check if the sender has enough
+		require(balanceOf[_to] + _value >= balanceOf[_to]);  // Check for overflows
 		require(_value <= allowance[_from][msg.sender]);   // Check allowance
 		balanceOf[_from] -= _value;                          // Subtract from the sender
 		balanceOf[_to] += _value;                            // Add the same to the recipient
