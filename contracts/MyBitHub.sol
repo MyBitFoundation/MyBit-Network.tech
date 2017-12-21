@@ -28,8 +28,9 @@ address public assetEscrow;     // The location where asset funding is sent to b
   // NOTE: Could store asset information in log events to save gas 
   mapping (uint256 => address) public assets;  // Address location of assets. Initialized once funding is success
   uint256 public assetCounter;          // Counter that keeps track of number of assets
-
   mapping (address => bool) public beingFunded;     // Is this asset currently going through funding stage
+
+
 
   function MyBitHub(address _myBitFoundation, address _assetEscrow) public {
     fundingTime = 300;   // TODO: this is only for testing 
@@ -73,8 +74,7 @@ address public assetEscrow;     // The location where asset funding is sent to b
     return address(newAsset);
   }
 
-  // Removes assets that are no longer functioning
-  // TODO: Is it feasible that an asset gets added while this function is half way through running? Should pause if so. 
+  // Removes assets that are no longer functioning. 
   function removeAsset(uint256 _id) 
   onlyOwner
   returns(bool) {
@@ -98,6 +98,16 @@ address public assetEscrow;     // The location where asset funding is sent to b
     return true; 
   }
 
+  function changeAssetEscrow(address _newAddress)
+  onlyOwner
+  external
+  returns (bool) { 
+    require(_newAddress != address(0)); 
+    assetEscrow = _newAddress; 
+    LogAssetEscrowChanged(_newAddress, block.timestamp); 
+    return true;
+  }
+
   
 // -------------------------------------------------------Getters-------------------------------------------------------
 
@@ -113,4 +123,5 @@ address public assetEscrow;     // The location where asset funding is sent to b
   event LogAssetRemoved(address indexed _removedAsset, uint256 indexed _id, uint256 indexed _timestamp); 
   event LogAssetMoved(address indexed _removedAsset, uint256 indexed _id, uint256 indexed _timestamp);
   event LogFundingTimeChanged(uint256 _newFundingTime, uint256 _timestamp);  
+  event LogAssetEscrowChanged(address _newEscrowLocation, uint256 _timestamp); 
 }
