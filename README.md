@@ -2,27 +2,25 @@
 
 # Contracts
 
+## Design Overview
+Assets on MyBitPlatform will be represented by their own Asset contract. The accounting and funding of each individual asset will go through their respective contracts. These contracts are created by the contract called MyBitHub. Wherever possible, data is stored in event logs in order to minimize gas usage. 
+
 ## MyBitHub
-This is where AssetHubs are created and owner can allow new types of Assets to be created on the platform. 
-When a new AssetHub is created, this hub will create that contract and store it's location for later lookup
+MyBitHub is where Assets are created. It stores relevant information to the funding and operation of assets. 
 Asset types are stored in bytes32 and Assethubs can only be created if the type is approved and there is no available assetHubs of that type deployed
 
-## AssetHub
-Asset hubs are of a certain type (ie. Solar, ATM, RealEstate etc..)
-The AssetHubs are where users will create new Assets to be funded. 
-Each AssetHub has a limit on how many assets it can create, and once full, it must signal to MyBitHub to create a new AssetHub of this type
-
 ## Asset
-The asset contract is where the actual Ether will be stored while funding an asset. If the funding period is a success the asset contract will send the Ether to the manufacturer, lockedTokenHolders, MyBitFoundation and Insurance escrow. 
+The asset contract is where the actual Ether will be stored while funding an asset. If the funding period is a success the asset contract will send the Ether to the manufacturer, MyBitFoundation and users staking tokens. After funding the asset contract will receive income produced by the assets, where funders can claim their share. 
 
 ## TokenHub
 This contract controls all of the LockingToken contracts that are spawned from TokenHub.  The 2 % fee is sent from the asset and is split among the different token contracts.  
 
-## LockingToken
+## TokenStaking
 Locks the tokens in the contract, depending upon what day the user locks the token they get a particular multiplier.  Once the time limit has been reached, called when somebody tries to do UnlockTokens(), all the tokens are transferred back to the users.  
 
-# Creation Flow
+## Owned 
+The owned contract is in charge of authorization information. It will be a reference for who is authorized to access certain functionality on the platform. 
 
-![Internal Contracts](https://github.com/MyBitFoundation/MyBitDapp/tree/master/Images/MyBitDapp.png)
+## Pausible 
+This contract inherits the Owned contract, and it enables owner to pause or unpause certain functionality on the platform. 
 
-![General Funding Flow](https://github.com/MyBitFoundation/MyBitDapp/tree/master/Images/ContractCreation.png)
