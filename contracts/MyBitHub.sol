@@ -63,7 +63,7 @@ address public assetEscrow;     // The location where asset funding is sent to b
   // This money creates an Asset contract to commence funding stage of it's lifecycle. The location is logged in an event. 
   function createAsset(bytes32 _storageHash, uint256 _amountToBeRaised, bytes32 _installerID, bytes32 _assetType) 
   whenNotPaused
-  onlyApproved
+  onlyApproved(0)
   external 
   returns (address) {
     require(_storageHash != bytes32(0)); 
@@ -107,6 +107,8 @@ address public assetEscrow;     // The location where asset funding is sent to b
     LogAssetEscrowChanged(_newAddress, block.timestamp); 
     return true;
   }
+
+// ----------------------------------------------------Modifiers----------------------------------------------------
 
   
 // -------------------------------------------------------Getters-------------------------------------------------------
