@@ -32,8 +32,8 @@ def test_successfulFunding(chain):
     print(isChecksum(chain, accounts[0]))
     myBitFoundation = accounts[4]
     assetEscrow = accounts[5]
-    approval, _ = chain.provider.get_or_deploy_contract('Approval')
-    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address])
+    # myBitHub, _ = chain.provider.get_or_deploy_contract('myBitHub')
+    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow])
     Asset = chain.provider.get_contract_factory('Asset')
 
     owner = myBitHub.call().owner()
@@ -52,8 +52,8 @@ def test_successfulFunding(chain):
     firstProjectGoal = convertEtherToWei(chain, 20)
     assetInstaller = bytes.fromhex(keccak_256("SolarCity".encode('utf-8')).hexdigest())
     firstAssetCreator = accounts[9]
-    txHash = approval.transact({"from": owner}).approveUser(firstAssetCreator)
-    assert approval.call().userApproved(firstAssetCreator) == True
+    txHash = myBitHub.transact({"from": owner}).approveUser(firstAssetCreator, 0)
+    assert myBitHub.call().userApproved(firstAssetCreator, 0) == True
     firstAsset = myBitHub.call({"from": firstAssetCreator}).createAsset(ipfsHash, firstProjectGoal, assetInstaller, solarAssetType)
     txHash = myBitHub.transact({"from": firstAssetCreator}).createAsset(ipfsHash, firstProjectGoal, assetInstaller, solarAssetType)
     receipt = getReceiptMined(chain, txHash)
@@ -65,14 +65,17 @@ def test_successfulFunding(chain):
     # ---------------Testing Asset funding-----------------------
     firstFunder = accounts[1]
     fundingAmount = convertEtherToWei(chain, 5)
+    txHash = myBitHub.transact({"from": owner}).approveUser(firstFunder, 0)
     txHash = solarAsset.transact({"from": firstFunder, "value":fundingAmount}).fund()
     assert solarAsset.call().amountRaised() == fundingAmount
     assert solarAsset.call().stage() == 0
     secondFunder = accounts[2]
+    txHash = myBitHub.transact({"from": owner}).approveUser(secondFunder, 0)
     secondFundingAmount = convertEtherToWei(chain, 5)
     txHash = solarAsset.transact({"from": secondFunder, "value":secondFundingAmount}).fund()
     txHash = solarAsset.transact({"from": firstFunder, "value":fundingAmount}).fund()
     thirdFunder = accounts[3]
+    txHash = myBitHub.transact({"from": owner}).approveUser(thirdFunder, 0)
     thirdFundAmount = secondFundingAmount
     txHash = solarAsset.transact({"from": thirdFunder, "value":fundingAmount}).fund()
     assert solarAsset.call().amountRaised() == solarAsset.call().amountToBeRaised()
@@ -112,8 +115,8 @@ def test_successfulFunding(chain):
     atmAssetInstaller = bytes.fromhex(keccak_256("arabco".encode('utf-8')).hexdigest())
     secondAsset = myBitHub.call({"from": firstAssetCreator}).createAsset(ipfsHash, secondProjectGoal, atmAssetInstaller, atmAssetType)
     txHash = myBitHub.transact({"from": firstAssetCreator}).createAsset(ipfsHash, secondProjectGoal, atmAssetInstaller, atmAssetType)
-    txHash = approval.transact().removeUser(firstAssetCreator)
-    assert approval.call().userApproved(firstAssetCreator) == False
+    txHash = myBitHub.transact().removeUser(firstAssetCreator, 0)
+    assert myBitHub.call().userApproved(firstAssetCreator, 0) == False
     atmAsset = Asset(secondAsset)
     firstFunder = accounts[1]
     txHash = atmAsset.transact({"from": firstFunder, "value":secondProjectGoal}).fund()
@@ -132,8 +135,8 @@ def test_pause(chain):
     accounts = chain.web3.eth.accounts
     myBitFoundation = accounts[4]
     assetEscrow = accounts[5]
-    approval, _ = chain.provider.get_or_deploy_contract('Approval')
-    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address])
+    # myBitHub, _ = chain.provider.get_or_deploy_contract('myBitHub')
+    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow])
     Asset = chain.provider.get_contract_factory('Asset')
 
     # -----------Check Owner------------
@@ -142,8 +145,8 @@ def test_pause(chain):
 
     # ------Approve Funder------------
     approvedFunder = accounts[1]
-    txHash = approval.transact().approveUser(approvedFunder)
-    assert approval.call().userApproved(approvedFunder) == True
+    txHash = myBitHub.transact().approveUser(approvedFunder, 0)
+    assert myBitHub.call().userApproved(approvedFunder, 0) == True
     someHash = bytes.fromhex(keccak_256("someStorageHash".encode('utf-8')).hexdigest())
     fakeType = bytes.fromhex(keccak_256("fakeType".encode('utf-8')).hexdigest())
     firstProjectGoal = convertEtherToWei(chain, 20)
@@ -165,8 +168,8 @@ def test_refund(chain):
     accounts = chain.web3.eth.accounts
     myBitFoundation = accounts[4]
     assetEscrow = accounts[5]
-    approval, _ = chain.provider.get_or_deploy_contract('Approval')
-    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address])
+    # myBitHub, _ = chain.provider.get_or_deploy_contract('myBitHub')
+    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow])
     myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub')
     Asset = chain.provider.get_contract_factory('Asset')
     funderOne = accounts[1]
@@ -175,12 +178,14 @@ def test_refund(chain):
     fundAmountTwo = convertEtherToWei(chain, 20)
     funderThree = accounts[3]    
     fundAmountThree = convertEtherToWei(chain, 30)
-    txHash = approval.transact().approveUser(accounts[0])
-    assert approval.call().userApproved(accounts[0]) == True
-    # txHash = approval.transact().approveUser(funderTwo)
-    # assert approval.call().userApproved(funderTwo) == True   
-    # txHash = approval.transact().approveUser(funderThree)
-    # assert approval.call().userApproved(funderThree) == True        
+    txHash = myBitHub.transact().approveUser(accounts[0], 0)
+    assert myBitHub.call().userApproved(accounts[0], 0) == True
+    txHash = myBitHub.transact().approveUser(funderOne, 0)
+    assert myBitHub.call().userApproved(funderOne, 0) == True
+    txHash = myBitHub.transact().approveUser(funderTwo, 0)
+    assert myBitHub.call().userApproved(funderTwo, 0) == True   
+    txHash = myBitHub.transact().approveUser(funderThree, 0)
+    assert myBitHub.call().userApproved(funderThree, 0) == True        
     solarAssetType = bytes.fromhex(keccak_256("solar".encode('utf-8')).hexdigest())
     storageHash = bytes.fromhex(keccak_256("thishashwillbeareferencetoadecentralizedstoragebox".encode('utf-8')).hexdigest())
     amountToRaise = convertEtherToWei(chain, 100)
