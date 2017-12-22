@@ -2,43 +2,15 @@ pragma solidity ^0.4.18;
 
 contract Owned {
   address public owner;
+  mapping (address => mapping (uint8 => bool)) public userApproved;   // 0: Approved to fund assets/create assets,  1: Approved to lock tokens,  2: Approved to trade/exchange tokens
 
   // ------------Approval--------------
-  mapping (address => bool) public userApproved;   // users who are approved to create assets
-
 
   event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
   function Owned() 
   public {
     owner = msg.sender;
-  }
-
-  function validate(address _sender) 
-  view 
-  returns (bool) {
-    return _sender == owner;
-  }
-
-  modifier onlyOwner() {
-    require(msg.sender == owner);
-    _;
-  }
-
-  function approveUser(address _newUser)
-  onlyOwner
-  external
-  returns (bool) { 
-    userApproved[_newUser] = true; 
-    return true;
-  }
-
-  function removeUser(address _user)
-  onlyOwner
-  external
-  returns (bool) { 
-    userApproved[_user] = false; 
-    return true;
   }
 
   function transferOwnership(address _newOwner) 
@@ -49,9 +21,31 @@ contract Owned {
     owner = _newOwner;
   }
 
-  modifier onlyApproved { 
-    require(userApproved[msg.sender]); 
+  function approveUser(address _newUser, uint8 _accessLevel)
+  onlyOwner
+  external
+  returns (bool) { 
+    userApproved[_newUser][_accessLevel] = true; 
+    return true;
+  }
+
+  function removeUser(address _user, uint8 _accessLevel)
+  onlyOwner
+  external
+  returns (bool) { 
+    userApproved[_user][_accessLevel] = false; 
+    return true;
+  }
+
+
+  modifier onlyApproved(uint8 _accessLevel) { 
+    require(userApproved[msg.sender][_accessLevel]); 
     _; 
   }
 
+  modifier onlyOwner() {
+    require(msg.sender == owner);
+    _;
   }
+
+}

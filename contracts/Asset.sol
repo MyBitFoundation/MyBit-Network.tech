@@ -60,7 +60,8 @@ using SafeMath for *;
   requiresEther 
   atStage(Stages.FundingAsset) 
   whenNotPaused
-  fundingLimit 
+  fundingLimit
+  onlyApproved(0)
   external 
   returns (bool) {
     if (shares[msg.sender] == 0) {
@@ -163,12 +164,18 @@ using SafeMath for *;
   }
 
   modifier onlyOwner { 
-    require(myBitHub.validate(msg.sender)); 
+    require(myBitHub.owner() == msg.sender); 
+    _; 
+  }
+
+  modifier onlyApproved(uint8 _accessLevel) { 
+    require(myBitHub.userApproved(msg.sender, _accessLevel));
     _; 
   }
   
+  
   modifier whenNotPaused { 
-    require(!myBitHub.checkPause()); 
+    require(!myBitHub.paused()); 
     _; 
   }
 
