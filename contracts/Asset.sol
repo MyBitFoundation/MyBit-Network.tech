@@ -1,16 +1,20 @@
 pragma solidity ^0.4.18;
 import './SafeMath.sol';
 import './MyBitHub.sol'; 
+import './TokenHub.sol';
+import './Approval.sol'; 
 
 
 // Created by MyBitHub, holds/distributes Ether for single Asset 
+// TODO: make storageHash malleable?? 
 contract Asset {
 using SafeMath for *;
 
   MyBitHub public myBitHub; 
+  Approval public approval; 
 
   // ------------Project Information--------------
-  bytes32 public storageHash;    // Where descriptive information + images are stored for this asset. (IPFS, Swarm, BigChainDB)
+  bytes32 public storageHash;    // Where descriptive information + images are stored for this asset. Also acts as an ID in MyBitHub (IPFS, Swarm, BigChainDB)
   uint256 public fundingDeadline;        // When the funding period is over 
   uint256 public amountToBeRaised;  // Amount required for funding to be success 
 
@@ -42,13 +46,14 @@ using SafeMath for *;
   // @Param: The amount of Wei to be raised in order to install asset
   // @Param: The amount of time allowed for asset to try and reach it's funding goal 
   // @Param: The type of asset being funded (ie. Solar, Mining, ATM)
-  function Asset(address _creator, bytes32 _storageHash, bytes32 _installerID, uint256 _amountToBeRaised, uint256 _maximumFundingTime, bytes32 _assetType) 
+  function Asset(address _creator, bytes32 _storageHash, bytes32 _installerID, uint256 _amountToBeRaised, uint256 _maximumFundingTime, bytes32 _assetType, address _approval) 
   public {
     myBitHub = MyBitHub(msg.sender);
     amountToBeRaised = _amountToBeRaised;
     amountRaised = 0;
     fundingDeadline = _maximumFundingTime.add(now);
     storageHash = _storageHash;
+    approval = Approval(_approval); 
     LogAssetInfo(_assetType, _installerID, _storageHash); 
     LogAssetCreated(_creator, _amountToBeRaised, now);
   }
@@ -56,12 +61,11 @@ using SafeMath for *;
   // Users can send Ether here to fund asset if funding goal hasn't been reached and the funding period isn't over. 
   function fund()
   payable 
-  nonReentrant
   requiresEther 
   atStage(Stages.FundingAsset) 
   whenNotPaused
   fundingLimit
-  onlyApproved(0)
+  onlyApproved(1)
   external 
   returns (bool) {
     if (shares[msg.sender] == 0) {
@@ -83,14 +87,15 @@ using SafeMath for *;
     uint256 myBitAmount = amountRaised.getFractionalAmount(myBitHub.myBitFoundationPercentage());
     uint256 lockedTokenAmount = amountRaised.getFractionalAmount(myBitHub.lockedTokensPercentage());
     uint256 installerAmount = amountRaised.getFractionalAmount(myBitHub.installerPercentage());
-    // lockedTokens.transfer(lockedTokenAmount);
     address myBitFoundation = myBitHub.myBitFoundation(); 
     address assetEscrow = myBitHub.assetEscrow();
+    TokenHub tokenHub = TokenHub(myBitHub.tokenHub()); 
+    tokenHub.receiveTransactionFee.value(lockedTokenAmount);
     myBitFoundation.transfer(myBitAmount);
     assetEscrow.transfer(this.balance);   // Note: Asset installer will likely receive small amount more, due rounding
     stage = Stages.AssetLive; 
     LogAssetPayoutMyBitFoundation(myBitFoundation, myBitAmount, block.timestamp);
-    // LogAssetPayoutLockedTokenHolders(address(lockedTokens), lockedTokenAmount, block.timestamp); 
+    LogAssetPayoutLockedTokenHolders(address(tokenHub), lockedTokenAmount, block.timestamp); 
     LogAssetPayoutInstaller(assetEscrow, installerAmount, block.timestamp); 
     return true;
   }
@@ -139,6 +144,7 @@ using SafeMath for *;
 
   // Asset funders can receive their share of the income here
   // TODO: the percentage of shares traded, must also transfer the same percentage of paidToFunder
+  // TODO: Can do these calculations in a library
   function withdrawal()
   nonReentrant
   atStage(Stages.AssetLive)
@@ -154,7 +160,22 @@ using SafeMath for *;
     LogInvestmentReceived(msg.sender, payment, block.timestamp); 
     return true;
 }
-
+  
+  // TODO: create exchange and restrict access to that 
+  // TODO: check that paidToFunder isn't being rounded down
+  // Trades shares of an asset to other user. Must trade relative amount paid to Funder to balance withdrawl amount. 
+  // ie. must trade over the same relative amount paid out. So person buying shares will also be recognized as being paid out for those shares in the past
+  function tradeShares(address _from, address _to, uint256 _amount) 
+  external 
+  returns(bool) {
+    require(shares[_from] >= _amount);
+    shares[_from] = shares[_from].sub(_amount);
+    shares[_to] = shares[_to].add(_amount);
+    uint256 paidToThisFunder = paidToFunder[_from].mul(_amount).div(shares[_from]);   
+    paidToFunder[_to] = paidToFunder[_to].add(paidToThisFunder); 
+    paidToFunder[_from] = paidToFunder[_from].sub(paidToThisFunder); 
+    return true;
+  }
 
   modifier nonReentrant() {
     require(!rentrancy_lock);
@@ -163,19 +184,13 @@ using SafeMath for *;
     rentrancy_lock = false;
   }
 
-  modifier onlyOwner { 
-    require(myBitHub.owner() == msg.sender); 
-    _; 
-  }
-
   modifier onlyApproved(uint8 _accessLevel) { 
-    require(myBitHub.userApproved(msg.sender, _accessLevel));
+    require(approval.userAccess(msg.sender) == _accessLevel);
     _; 
   }
-  
   
   modifier whenNotPaused { 
-    require(!myBitHub.paused()); 
+    require(!approval.paused()); 
     _; 
   }
 
@@ -188,7 +203,7 @@ using SafeMath for *;
     require(amountRaised <= amountToBeRaised);
     _;
     if (amountRaised >= amountToBeRaised) {
-      require(myBitHub.assetSuccessfullyFunded());
+      require(myBitHub.assetSuccessfullyFunded(storageHash));
       stage = Stages.FundingSuccess;
       }
   }

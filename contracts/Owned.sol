@@ -1,12 +1,13 @@
 pragma solidity ^0.4.18;
 
+// This contract handles authorization and freezing of the dapp
+// TODO: make authorization levels
 contract Owned {
   address public owner;
-  mapping (address => mapping (uint8 => bool)) public userApproved;   // 0: Approved to fund assets/create assets,  1: Approved to lock tokens,  2: Approved to trade/exchange tokens
+  address public authority; 
 
-  // ------------Approval--------------
+  bool public paused = false;
 
-  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
   function Owned() 
   public {
@@ -21,26 +22,18 @@ contract Owned {
     owner = _newOwner;
   }
 
-  function approveUser(address _newUser, uint8 _accessLevel)
-  onlyOwner
-  external
-  returns (bool) { 
-    userApproved[_newUser][_accessLevel] = true; 
-    return true;
+  function pause() 
+  onlyOwner  
+  public {
+    paused = true;
+    Pause(block.timestamp);
   }
 
-  function removeUser(address _user, uint8 _accessLevel)
-  onlyOwner
-  external
-  returns (bool) { 
-    userApproved[_user][_accessLevel] = false; 
-    return true;
-  }
-
-
-  modifier onlyApproved(uint8 _accessLevel) { 
-    require(userApproved[msg.sender][_accessLevel]); 
-    _; 
+  function unpause() 
+  onlyOwner  
+  public {
+    paused = false;
+    Unpause(block.timestamp);
   }
 
   modifier onlyOwner() {
@@ -48,4 +41,7 @@ contract Owned {
     _;
   }
 
+  event Pause(uint256 _timestamp);
+  event Unpause(uint256 _timestamp);
+  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 }

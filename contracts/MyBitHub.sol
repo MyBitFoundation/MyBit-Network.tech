@@ -1,52 +1,48 @@
 pragma solidity ^0.4.18;
 import './SafeMath.sol';
-import './Owned.sol';
-import './Pausable.sol'; 
+import './Approval.sol'; 
 import './Asset.sol';
 
 
 // This contract is in charge of creating individual asset contracts. It acts as a reference for locations of Assets and other funding parameters
-contract MyBitHub is Pausable {
-using SafeMath for *;
+contract MyBitHub {
+  using SafeMath for *;
 
-//-----------Platform Addresses----------------
-address public myBitFoundation;      // ropsten testnet address TODO: Get real foundation address
-address public assetEscrow;     // The location where asset funding is sent to be converted to Fiat
-
+  //-----------Platform Addresses----------------
+  address public myBitFoundation;      // The MyBit Foundation address 
+  address public assetEscrow;     // The location where asset funding is sent to be converted to Fiat
+  address public tokenHub; 
+  Approval public approval; 
 
 //------------Beneficiary amounts---------------
   uint256 public myBitFoundationPercentage = 1;     // Percentage of funding given to MyBit foundation
   uint256 public lockedTokensPercentage = 2;        // Percentage of funding given to locked token holders
   uint256 public installerPercentage = 97;          // Percentage of funding given to asset installer 
 
-// ------------------Asset Type Info-------------------
-  // Note: The type of asset is the sha3() of it's string identifier. ie. Solar, ATM, Miner
+
+  // -------------Asset Info------------------------------
+  mapping (bytes32 => address) public assets;  // Address location of assets. Initialized once funding is success
+  mapping (address => bool) public beingFunded;     // Is this asset currently going through funding stage
   uint256 public fundingTime;            // The amount of time given for an assets funding period
 
 
-  // -------------Asset Info------------------------------
-  // NOTE: Could store asset information in log events to save gas 
-  mapping (uint256 => address) public assets;  // Address location of assets. Initialized once funding is success
-  uint256 public assetCounter;          // Counter that keeps track of number of assets
-  mapping (address => bool) public beingFunded;     // Is this asset currently going through funding stage
 
-
-
-  function MyBitHub(address _myBitFoundation, address _assetEscrow) public {
-    fundingTime = 300;   // TODO: this is only for testing 
-    myBitFoundation = _myBitFoundation;  
-    assetEscrow = _assetEscrow; 
+  function MyBitHub(address _myBitFoundation, address _assetEscrow, address _approval, address _tokenHub) public {
+      fundingTime = 300;   // TODO: this is only for testing 
+      myBitFoundation = _myBitFoundation;  
+      assetEscrow = _assetEscrow;
+      approval = Approval(_approval); 
+      tokenHub = _tokenHub; 
   }
 
   // This is called by the asset contract if it achieves it's funding goal
-  function assetSuccessfullyFunded()
+  function assetSuccessfullyFunded(bytes32 _assetID)
   external
   returns (bool) { 
     require(beingFunded[msg.sender]);
     delete beingFunded[msg.sender]; 
-    assets[assetCounter] = msg.sender;
-    LogAssetFundingSuccess(msg.sender, assetCounter, block.timestamp); 
-    assetCounter++;
+    assets[_assetID] = msg.sender;
+    LogAssetFundingSuccess(msg.sender, _assetID, block.timestamp); 
     return true; 
   }
 
@@ -61,38 +57,39 @@ address public assetEscrow;     // The location where asset funding is sent to b
   }
 
   // This money creates an Asset contract to commence funding stage of it's lifecycle. The location is logged in an event. 
+  // TODO: check if storageHash is already being used
   function createAsset(bytes32 _storageHash, uint256 _amountToBeRaised, bytes32 _installerID, bytes32 _assetType) 
   whenNotPaused
-  onlyApproved(0)
+  noEmptyBytes(_storageHash)
+  noEmptyBytes(_installerID)
+  noEmptyBytes(_assetType)
+  notZero(_amountToBeRaised)
   external 
   returns (address) {
-    require(_storageHash != bytes32(0)); 
-    require(_amountToBeRaised >= 0); 
-    Asset newAsset = new Asset(msg.sender, _storageHash, _installerID, _amountToBeRaised, fundingTime, _assetType);
+    require(approval.userAccess(msg.sender) >= 1); 
+    require(assets[_storageHash] == address(0)); 
+    Asset newAsset = new Asset(msg.sender, _storageHash, _installerID, _amountToBeRaised, fundingTime, _assetType, address(approval));
     beingFunded[address(newAsset)] = true; 
     LogAssetFundingStarted(msg.sender, address(newAsset), _assetType);      // Use indexed event to keep track of pending assets
     return address(newAsset);
   }
 
   // Removes assets that are no longer functioning. 
-  function removeAsset(uint256 _id) 
+  function removeAsset(bytes32 _id) 
   onlyOwner
+  noEmptyAddress(assets[_id])
   returns(bool) {
-    require(assets[_id] != address(0));
-    require(assetCounter > 0); 
+    delete assets[_id]; 
     LogAssetRemoved(assets[_id], _id, block.timestamp); 
-    assets[_id] = assets[(assetCounter - 1)];    // Move latest asset to this position
-    assetCounter--; 
-    LogAssetMoved(assets[_id], assetCounter, block.timestamp); 
     return true; 
   }
 
   // Change the default funding time for the asset 
   function changeFundingTime(uint256 _newTimeGivenForFunding) 
   onlyOwner
+  notZero(_newTimeGivenForFunding)
   external
   returns (bool) { 
-    require(_newTimeGivenForFunding > 0);
     fundingTime = _newTimeGivenForFunding;
     LogFundingTimeChanged(_newTimeGivenForFunding, block.timestamp); 
     return true; 
@@ -100,19 +97,43 @@ address public assetEscrow;     // The location where asset funding is sent to b
 
   function changeAssetEscrow(address _newAddress)
   onlyOwner
+  noEmptyAddress(_newAddress)
   external
   returns (bool) { 
-    require(_newAddress != address(0)); 
     assetEscrow = _newAddress; 
     LogAssetEscrowChanged(_newAddress, block.timestamp); 
     return true;
   }
 
-// ----------------------------------------------------Modifiers----------------------------------------------------
-
   
 // -------------------------------------------------------Getters-------------------------------------------------------
+  
+  modifier noEmptyBytes(bytes32 _data) {
+    require(_data != bytes32(0)); 
+    _;
+  }
 
+  modifier noEmptyAddress(address _addr) { 
+    require(_addr != address(0)); 
+    _; 
+  }
+
+  modifier notZero(uint256 _uint) { 
+    require(_uint != 0); 
+    _;
+  }
+
+  modifier onlyOwner { 
+    require(msg.sender == approval.owner()); 
+    _;
+  }
+
+  modifier whenNotPaused { 
+    require(approval.paused() == false); 
+    _; 
+  }
+  
+  
 
   function () public {
     revert();
@@ -121,9 +142,8 @@ address public assetEscrow;     // The location where asset funding is sent to b
 
   event LogAssetFundingStarted(address indexed _creator, address indexed _assetLocation, bytes32 indexed _assetType);
   event LogAssetFundingFailed(address indexed _assetLocation, uint256 indexed _amountRaised, uint256 indexed _timestamp); 
-  event LogAssetFundingSuccess(address indexed _assetLocation, uint256 indexed _id, uint256 indexed _timestamp); 
-  event LogAssetRemoved(address indexed _removedAsset, uint256 indexed _id, uint256 indexed _timestamp); 
-  event LogAssetMoved(address indexed _removedAsset, uint256 indexed _id, uint256 indexed _timestamp);
+  event LogAssetFundingSuccess(address indexed _assetLocation, bytes32 indexed _id, uint256 indexed _timestamp); 
+  event LogAssetRemoved(address indexed _removedAsset, bytes32 indexed _id, uint256 indexed _timestamp); 
   event LogFundingTimeChanged(uint256 _newFundingTime, uint256 _timestamp);  
   event LogAssetEscrowChanged(address _newEscrowLocation, uint256 _timestamp); 
 }
