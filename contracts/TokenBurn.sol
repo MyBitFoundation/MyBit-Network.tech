@@ -32,13 +32,14 @@ returns (bool) {
   uint256 accessCostMyB = accessCostUSD[_accessLevelDesired];   // TODO: using this instead of oracle for now
   require(myBitToken.transferFrom(msg.sender, this, accessCostMyB));
   require(approval.approveUser(msg.sender, _accessLevelDesired)); 
+  numTokensBurnt += accessCostMyB;
   LogMyBitBurnt(msg.sender, accessCostMyB, block.timestamp); 
   return true;
 }
 
 modifier basicVerification(uint8 _newAccessLevel) { 
   uint8 currentLevel = approval.userAccess(msg.sender);
-  require(currentLevel >= 0);    // Must have basic KYC verification 
+  require(currentLevel >= 1);    // Must have basic KYC verification 
   require(currentLevel < _newAccessLevel);       // Dont allow burning to downgrade access level
   _; 
 }
