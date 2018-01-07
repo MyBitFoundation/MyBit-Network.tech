@@ -3,6 +3,7 @@ import './SafeMath.sol';
 import './MyBitHub.sol'; 
 import './TokenHub.sol';
 import './Approval.sol'; 
+import './MarketPlace.sol'; 
 
 
 // Created by MyBitHub, holds/distributes Ether for single Asset 
@@ -11,7 +12,8 @@ contract Asset {
 using SafeMath for *;
 
   MyBitHub public myBitHub; 
-  Approval public approval; 
+  Approval public approval;
+  address public marketPlace; 
 
   // ------------Project Information--------------
   bytes32 public storageHash;    // Where descriptive information + images are stored for this asset. Also acts as an ID in MyBitHub (IPFS, Swarm, BigChainDB)
@@ -41,7 +43,7 @@ using SafeMath for *;
 
   // The constructor is called when someone initiates a new funding period for an asset
   // @Param: Creator of this asset contract
-  // @Param: The location of this assets information found on IPFS
+  // @Param: The location of this assets information found on IPFS. Also serves as an ID within MyBitHub contract 
   // @Param: The ID of the installer chosen for this asset 
   // @Param: The amount of Wei to be raised in order to install asset
   // @Param: The amount of time allowed for asset to try and reach it's funding goal 
@@ -85,14 +87,19 @@ using SafeMath for *;
   external  
   returns (bool) {
     uint256 myBitAmount = amountRaised.getFractionalAmount(myBitHub.myBitFoundationPercentage());
+    uint256 testAmount = amountRaised.mul(myBitHub.myBitFoundationPercentage()).div(100); 
+    assert (myBitAmount == testAmount); 
     uint256 lockedTokenAmount = amountRaised.getFractionalAmount(myBitHub.lockedTokensPercentage());
+    testAmount = amountRaised.mul(myBitHub.lockedTokensPercentage()).div(100); 
+    assert (lockedTokenAmount == testAmount); 
     uint256 installerAmount = amountRaised.getFractionalAmount(myBitHub.installerPercentage());
     address myBitFoundation = myBitHub.myBitFoundation(); 
     address assetEscrow = myBitHub.assetEscrow();
-    TokenHub tokenHub = TokenHub(myBitHub.tokenHub()); 
+    TokenHub tokenHub = TokenHub(myBitHub.tokenHub());
+    marketPlace = myBitHub.marketPlace();
     tokenHub.receiveTransactionFee.value(lockedTokenAmount);
     myBitFoundation.transfer(myBitAmount);
-    assetEscrow.transfer(this.balance);   // Note: Asset installer will likely receive small amount more, due rounding
+    assetEscrow.transfer(this.balance);   // Note: Asset installer will likely receive small amount more, due to rounding
     stage = Stages.AssetLive; 
     LogAssetPayoutMyBitFoundation(myBitFoundation, myBitAmount, block.timestamp);
     LogAssetPayoutLockedTokenHolders(address(tokenHub), lockedTokenAmount, block.timestamp); 
@@ -160,6 +167,7 @@ using SafeMath for *;
     LogInvestmentReceived(msg.sender, payment, block.timestamp); 
     return true;
 }
+
   
   // TODO: create exchange and restrict access to that 
   // TODO: check that paidToFunder isn't being rounded down
@@ -167,7 +175,8 @@ using SafeMath for *;
   // ie. must trade over the same relative amount paid out. So person buying shares will also be recognized as being paid out for those shares in the past
   function tradeShares(address _from, address _to, uint256 _amount) 
   external 
-  returns(bool) {
+  returns (bool) {
+    require(msg.sender == marketPlace); 
     require(shares[_from] >= _amount);
     shares[_from] = shares[_from].sub(_amount);
     shares[_to] = shares[_to].add(_amount);

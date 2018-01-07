@@ -86,9 +86,12 @@ def test_successfulFunding(chain):
     approval, _ = chain.provider.get_or_deploy_contract('Approval')
     tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, approval.address])
     tokenHub, _ = chain.provider.get_or_deploy_contract('TokenHub', deploy_args=[myBitToken.address])
-    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenHub.address])
+    marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address])
+    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenHub.address, marketPlace.address])
     Asset = chain.provider.get_contract_factory('Asset')
 
+
+    txHash = marketPlace.transact().setMyBitHub(myBitHub.address)
     txHash = approval.transact().setBurnAddress(tokenBurn.address)
     assert approval.call().tokenBurn().upper() == tokenBurn.address.upper()
     # assert sha3(chain, owner) == sha3(chain, accounts[0])   # complains about different letters being capitalized
@@ -212,13 +215,14 @@ def test_pause(chain):
     myBitFoundation = accounts[4]
     assetEscrow = accounts[5]
     totalSupply = 281207344012426    # MyBitHub = chain.provider.get_contract_factory("MyBitHub")
-    # myBitHub, _ = MyBitHub.deploy({"gas":4000000}, args=[myBitFoundation, assetEscrow, approval.address, tokenHub.address])
     myBitToken, _ = chain.provider.get_or_deploy_contract('MyBitToken', deploy_args=[totalSupply, "MyBit Token", 8, "MyB"])
     approval, _ = chain.provider.get_or_deploy_contract('Approval')
+    marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address])
     tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, approval.address])
     tokenHub, _ = chain.provider.get_or_deploy_contract('TokenHub', deploy_args=[myBitToken.address])
-    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenHub.address])
+    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenHub.address, marketPlace.address])
     Asset = chain.provider.get_contract_factory('Asset')
+
 
     txHash = approval.transact().setBurnAddress(tokenBurn.address)
     assert approval.call().tokenBurn().upper() == tokenBurn.address.upper()
@@ -266,14 +270,14 @@ def test_refund(chain):
     myBitFoundation = accounts[4]
     assetEscrow = accounts[5]
     totalSupply = 281207344012426
-    # MyBitHub = chain.provider.get_contract_factory("MyBitHub")
-    # myBitHub, _ = MyBitHub.deploy({"gas":4000000}, args=[myBitFoundation, assetEscrow, approval.address, tokenHub.address])
     myBitToken, _ = chain.provider.get_or_deploy_contract('MyBitToken', deploy_args=[totalSupply, "MyBit Token", 8, "MyB"])
     approval, _ = chain.provider.get_or_deploy_contract('Approval')
+    marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address])
     tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, approval.address])
     tokenHub, _ = chain.provider.get_or_deploy_contract('TokenHub', deploy_args=[myBitToken.address])
-    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenHub.address])
+    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenHub.address, marketPlace.address])
     Asset = chain.provider.get_contract_factory('Asset')
+
 
     txHash = approval.transact().setBurnAddress(tokenBurn.address)
     assert approval.call().tokenBurn().upper() == tokenBurn.address.upper()
@@ -329,6 +333,7 @@ def test_refund(chain):
     assert solarAsset.call().amountRaised() == fundAmountThree
     solarAsset.transact({"from": funderThree}).refund()
     assert solarAsset.call().amountRaised() == 0
+
 
 
 
