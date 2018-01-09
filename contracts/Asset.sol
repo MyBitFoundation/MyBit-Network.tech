@@ -86,18 +86,15 @@ using SafeMath for *;
   whenNotPaused
   external  
   returns (bool) {
-    uint256 myBitAmount = amountRaised.getFractionalAmount(myBitHub.myBitFoundationPercentage());
-    uint256 testAmount = amountRaised.mul(myBitHub.myBitFoundationPercentage()).div(100); 
-    assert (myBitAmount == testAmount); 
-    uint256 lockedTokenAmount = amountRaised.getFractionalAmount(myBitHub.lockedTokensPercentage());
-    testAmount = amountRaised.mul(myBitHub.lockedTokensPercentage()).div(100); 
-    assert (lockedTokenAmount == testAmount); 
-    uint256 installerAmount = amountRaised.getFractionalAmount(myBitHub.installerPercentage());
+    uint256 myBitAmount = amountRaised.mul(myBitHub.myBitFoundationPercentage()).div(100); 
+    uint256 lockedTokenAmount = amountRaised.mul(myBitHub.lockedTokensPercentage()).div(100); 
+    uint256 installerAmount =amountRaised.mul(myBitHub.installerPercentage()).div(100);
     address myBitFoundation = myBitHub.myBitFoundation(); 
     address assetEscrow = myBitHub.assetEscrow();
-    TokenHub tokenHub = TokenHub(myBitHub.tokenHub());
-    marketPlace = myBitHub.marketPlace();
-    tokenHub.receiveTransactionFee.value(lockedTokenAmount);
+    assert (myBitAmount.add(lockedTokenAmount).add(installerAmount) == amountRaised);       // TODO: for testing 
+    TokenHub tokenHub = TokenHub(myBitHub.tokenHub());      // Ask MyBitHUb for tokenHub address 
+    marketPlace = myBitHub.marketPlace();           // initialize marketPlace
+    tokenHub.receiveTransactionFee.value(lockedTokenAmount); 
     myBitFoundation.transfer(myBitAmount);
     assetEscrow.transfer(this.balance);   // Note: Asset installer will likely receive small amount more, due to rounding
     stage = Stages.AssetLive; 
@@ -169,13 +166,14 @@ using SafeMath for *;
 }
 
   
-  // TODO: create exchange and restrict access to that 
+  // TODO: can users send from address(0)
   // TODO: check that paidToFunder isn't being rounded down
   // Trades shares of an asset to other user. Must trade relative amount paid to Funder to balance withdrawl amount. 
   // ie. must trade over the same relative amount paid out. So person buying shares will also be recognized as being paid out for those shares in the past
   function tradeShares(address _from, address _to, uint256 _amount) 
   external 
   returns (bool) {
+    require(marketPlace != address(0));
     require(msg.sender == marketPlace); 
     require(shares[_from] >= _amount);
     shares[_from] = shares[_from].sub(_amount);

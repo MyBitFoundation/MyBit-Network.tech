@@ -298,7 +298,7 @@ def test_refund(chain):
     fundAmountThree = convertEtherToWei(chain, 30)
 
     #---------------Burn Tokens to Create Asset---------------
-    ownerCreator = accounts[0]
+    ownerCreator = accounts[0]   
     burnForAccess(myBitToken, tokenBurn, ownerCreator, 2)
     assert approval.call().userAccess(ownerCreator) == 2
 
@@ -321,12 +321,12 @@ def test_refund(chain):
     currentBlock = getBlockNumber(chain)
     timestamp = getTimestamp(chain, currentBlock)
     while (solarAsset.call().fundingDeadline() > timestamp):
-        mine(chain, 20)
+        mine(chain, 10)
         currentBlock = getBlockNumber(chain)
         timestamp = getTimestamp(chain, currentBlock)
-    assert solarAsset.call().stage() == 0
+    assert solarAsset.call().stage() == 0       # Stage = Funding Asset
     solarAsset.transact().initiateRefund()
-    assert solarAsset.call().stage() == 2
+    assert solarAsset.call().stage() == 2       # Stage = funding failed 
     solarAsset.transact({"from": funderOne}).refund()
     assert solarAsset.call().amountRaised() == (fundAmountThree + fundAmountTwo)
     solarAsset.transact({"from": funderTwo}).refund()

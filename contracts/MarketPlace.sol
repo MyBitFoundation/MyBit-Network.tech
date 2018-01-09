@@ -6,6 +6,9 @@ import './SafeMath.sol';
 
 
 // TODO: verify that correct assetcontract address has been given 
+// TODO: set time limit on orders?? 
+// TODO: add functionality to delete orders
+// TODO: check buy orders existdd
 // Note: Users can only have 1 sell order and 1 buy order for each individual asset, as the orders are stored as as sha3 hash of assetAddress + sender address 
 // Note: Users who do not withdrawl asset earnings will also trade away the right to those earnings. 
 contract MarketPlace { 
@@ -49,23 +52,24 @@ contract MarketPlace {
   }
 
   // Gives Ether sent to initatior of this sellOrder and transfers shares of asset to purchaser
-  function BuyAsset(bytes32 _sellOrderID)
+  function buyAsset(bytes32 _sellOrderID)
   public 
   payable 
   nonReentrant
   onlyApproved
   returns (bool){ 
     Sell thisOrder = sellOrders[_sellOrderID];
-    require(msg.value > (thisOrder.amount.mul(thisOrder.price))); 
+    require(msg.value >= (thisOrder.amount.mul(thisOrder.price))); 
     Asset thisAsset = Asset(thisOrder.assetContract); 
     require(thisAsset.shares(thisOrder.initiator) >= thisOrder.amount);
-    require(thisAsset.tradeShares(thisOrder.initiator, msg.sender, thisOrder.amount)); 
+    // require(thisAsset.tradeShares(thisOrder.initiator, msg.sender, thisOrder.amount)); 
     weiOwed[thisOrder.initiator] = weiOwed[thisOrder.initiator].add(msg.value);
     delete sellOrders[_sellOrderID]; 
+    LogSellOrderCompleted(_sellOrderID, thisOrder.assetContract, msg.sender); 
     return true;
   }
 
-  function SellAsset(bytes32 _buyOrderID) 
+  function sellAsset(bytes32 _buyOrderID) 
   public 
   nonReentrant 
   onlyApproved
@@ -77,6 +81,7 @@ contract MarketPlace {
     weiDeposited[thisOrder.initiator] = weiDeposited[thisOrder.initiator].sub(thisOrder.amount.mul(thisOrder.price)); 
     weiOwed[msg.sender] = weiOwed[msg.sender].add(thisOrder.amount.mul(thisOrder.price)); 
     delete buyOrders[_buyOrderID]; 
+    LogBuyOrderCompleted(_buyOrderID, thisOrder.assetContract, msg.sender); 
     return true; 
   }
 
@@ -84,14 +89,18 @@ contract MarketPlace {
   external
   nonReentrant
   onlyApproved
+  payable
   aboveZero(_amount, _price)
   validAsset(_assetContract)
   returns (bool) {
-    Buy thisOrder = buyOrders[keccak256(_assetContract, msg.sender)];   // This will get overwritten if user tries to create more than one buy order 
+    bytes32 id = keccak256(_assetContract, msg.sender);
+    Buy thisOrder = buyOrders[id];   // This will get overwritten if user tries to create more than one buy order 
     thisOrder.initiator = msg.sender;
     thisOrder.assetContract = _assetContract;
     thisOrder.amount = _amount; 
     thisOrder.price = _price; 
+    weiDeposited[msg.sender] = weiDeposited[msg.sender].add(msg.value); 
+    LogBuyOrderCreated(id, _assetContract, msg.sender);
     return true;
   }
 
@@ -101,12 +110,14 @@ contract MarketPlace {
   onlyApproved
   aboveZero(_amount, _price)
   validAsset(_assetContract)
-  returns (bool) { 
-    Sell thisOrder = sellOrders[keccak256(_assetContract, msg.sender)]; // This will get overwritten if user tries to create more than one buy order 
+  returns (bool) {
+    bytes32 id = keccak256(_assetContract, msg.sender);
+    Sell thisOrder = sellOrders[id]; // This will get overwritten if user tries to create more than one buy order 
     thisOrder.initiator = msg.sender; 
     thisOrder.assetContract = _assetContract; 
     thisOrder.amount = _amount; 
     thisOrder.price = _price; 
+    LogSellOrderCreated(id, _assetContract, msg.sender); 
     return true; 
   }
 
@@ -138,7 +149,6 @@ contract MarketPlace {
     _; 
   }
   
-
   // Must have access level of 2 to use
   modifier onlyApproved() { 
     require(approval.userAccess(msg.sender) >= 4); 
@@ -152,10 +162,31 @@ contract MarketPlace {
     reentrancyLock = false;
   }
 
-  // function getBuyOrder(address _assetAddress)
-  // external
-  // view { 
+  event LogSellOrderCreated(bytes32 indexed _id, address indexed _assetAddress, address indexed _creator); 
+  event LogBuyOrderCreated(bytes32 indexed _id, address indexed _assetAddress, address indexed _creator); 
+  event LogBuyOrderCompleted(bytes32 indexed _id, address indexed _assetAddress, address indexed _purchaser);
+  event LogSellOrderCompleted(bytes32 indexed _id, address indexed _assetAddress, address indexed _purchaser); 
 
-  // }
+  function getOrderID(address _user, address _contract)
+  external
+  view
+  returns(bytes32) {
+    return keccak256(_contract, _user); 
+  }
+  
+
+  function getBuyOrder(bytes32 _orderHash)
+  external
+  view 
+  returns (address, address, uint256, uint256) { 
+    return (buyOrders[_orderHash].initiator, buyOrders[_orderHash].assetContract, buyOrders[_orderHash].amount, buyOrders[_orderHash].price); 
+  }
+
+  function getSellOrder(bytes32 _orderHash)
+  external
+  view 
+  returns (address, address, uint256, uint256) { 
+    return (sellOrders[_orderHash].initiator, sellOrders[_orderHash].assetContract, sellOrders[_orderHash].amount, sellOrders[_orderHash].price); 
+  }
 
 }
