@@ -1,7 +1,7 @@
 pragma solidity ^0.4.18;
 
 // This contract handles authorization and freezing of the dapp
-// TODO: make authorization levels
+// TODO: make pause() levels
 contract Owned {
   address public owner;
   address public authority; 

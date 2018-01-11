@@ -4,11 +4,10 @@ import './Asset.sol';
 import './SafeMath.sol'; 
 
 
-
-// TODO: verify that correct assetcontract address has been given 
 // TODO: set time limit on orders?? 
 // TODO: add functionality to delete orders
 // TODO: check buy orders existdd
+// TODO: check asset is done funding 
 // Note: Users can only have 1 sell order and 1 buy order for each individual asset, as the orders are stored as as sha3 hash of assetAddress + sender address 
 // Note: Users who do not withdrawl asset earnings will also trade away the right to those earnings. 
 contract MarketPlace { 
@@ -57,22 +56,25 @@ contract MarketPlace {
   payable 
   nonReentrant
   onlyApproved
+  needsToWithdraw(sellOrders[_sellOrderID].assetContract, sellOrders[_sellOrderID].initiator)
   returns (bool){ 
     Sell thisOrder = sellOrders[_sellOrderID];
     require(msg.value >= (thisOrder.amount.mul(thisOrder.price))); 
     Asset thisAsset = Asset(thisOrder.assetContract); 
     require(thisAsset.shares(thisOrder.initiator) >= thisOrder.amount);
-    // require(thisAsset.tradeShares(thisOrder.initiator, msg.sender, thisOrder.amount)); 
+    require(thisAsset.tradeShares(thisOrder.initiator, msg.sender, thisOrder.amount)); 
     weiOwed[thisOrder.initiator] = weiOwed[thisOrder.initiator].add(msg.value);
     delete sellOrders[_sellOrderID]; 
     LogSellOrderCompleted(_sellOrderID, thisOrder.assetContract, msg.sender); 
     return true;
   }
 
+  // TODO: add asset contract to parameter
   function sellAsset(bytes32 _buyOrderID) 
   public 
   nonReentrant 
   onlyApproved
+  needsToWithdraw(buyOrders[_buyOrderID].assetContract, msg.sender)
   returns (bool){ 
     Buy thisOrder = buyOrders[_buyOrderID]; 
     Asset thisAsset = Asset(thisOrder.assetContract); 
@@ -110,6 +112,7 @@ contract MarketPlace {
   onlyApproved
   aboveZero(_amount, _price)
   validAsset(_assetContract)
+  hasEnoughShares(_assetContract, _amount)
   returns (bool) {
     bytes32 id = keccak256(_assetContract, msg.sender);
     Sell thisOrder = sellOrders[id]; // This will get overwritten if user tries to create more than one buy order 
@@ -121,7 +124,35 @@ contract MarketPlace {
     return true; 
   }
 
-  function Withdrawl() 
+  // Deletes previously made Buy order. Returns deposited Wei for Buy order.
+  // @Param: Buy OrderID
+  function deleteBuyOrder(bytes32 _orderID)
+  external
+  nonReentrant
+  onlyApproved
+  returns (bool) {
+    Buy thisBuyOrder = buyOrders[_orderID]; 
+    require(thisBuyOrder.initiator == msg.sender);
+    uint256 returnValue = thisBuyOrder.amount.mul(thisBuyOrder.price); 
+    delete buyOrders[_orderID];
+    weiDeposited[msg.sender] = weiDeposited[msg.sender].sub(returnValue); 
+    msg.sender.transfer(returnValue); 
+    return true; 
+  }
+
+  // Deletes previously made Sell order. 
+  // @Param: Sell order ID
+  function deleteSellOrder(bytes32 _orderID)
+  nonReentrant
+  onlyApproved
+  returns (bool) {
+      Sell thisSellOrder = sellOrders[_orderID]; 
+      require(thisSellOrder.initiator == msg.sender); 
+      delete sellOrders[_orderID]; 
+      return true;
+  }
+
+  function withdraw() 
   public
   nonReentrant 
   onlyApproved
@@ -132,7 +163,6 @@ contract MarketPlace {
     return true; 
   }
 
-
   function() { 
     revert(); 
   }
@@ -141,6 +171,21 @@ contract MarketPlace {
     Asset thisAsset = Asset(_assetAddress); 
     require(myBitHub.assets(thisAsset.storageHash()) == _assetAddress);     // Check if this asset is registered with MyBitHub     _; 
     _; 
+  }
+
+  modifier hasEnoughShares(address _assetAddress, uint256 _requiredShares) { 
+    Asset thisAsset = Asset(_assetAddress); 
+    require(thisAsset.shares(msg.sender) >= _requiredShares); 
+    _; 
+  }
+
+  // TODO: maybe move this check in asset contract
+  modifier needsToWithdraw(address _assetAddress, address _seller) { 
+    Asset thisAsset = Asset(_assetAddress);
+    uint256 totalReceived = _assetAddress.balance.add(thisAsset.totalPaidToFunders());
+    uint256 payment = totalReceived.mul(thisAsset.shares(_seller)).div(thisAsset.amountRaised()).sub(thisAsset.paidToFunder(_seller));
+    require(payment == 0); 
+    _;
   }
   
 

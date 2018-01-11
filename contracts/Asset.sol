@@ -8,6 +8,7 @@ import './MarketPlace.sol';
 
 // Created by MyBitHub, holds/distributes Ether for single Asset 
 // TODO: make storageHash malleable?? 
+// NOTE: If money is suicided into this contract funders will share the Ether as income 
 contract Asset {
 using SafeMath for *;
 
@@ -147,17 +148,17 @@ using SafeMath for *;
 
 
   // Asset funders can receive their share of the income here
-  // TODO: the percentage of shares traded, must also transfer the same percentage of paidToFunder
   // TODO: Can do these calculations in a library
-  function withdrawal()
+  function withdraw()
   nonReentrant
   atStage(Stages.AssetLive)
   whenNotPaused
   external 
   returns (bool){
     require(shares[msg.sender] > 0);
-    uint256 totalReceived = this.balance.add(totalPaidToFunders);
-    uint256 payment = totalReceived.mul(shares[msg.sender]).div(amountRaised).sub(paidToFunder[msg.sender]);
+    uint256 totalReceived = this.balance.add(totalPaidToFunders);    // TODO: use totalIncomeEarned or this.balance? 
+    uint256 payment = (totalReceived.mul(shares[msg.sender]).div(amountRaised)).sub(paidToFunder[msg.sender]);
+    assert (payment != 0); 
     paidToFunder[msg.sender] = paidToFunder[msg.sender].add(payment);
     totalPaidToFunders = totalPaidToFunders.add(payment);
     msg.sender.transfer(payment);
@@ -166,21 +167,25 @@ using SafeMath for *;
 }
 
   
-  // TODO: can users send from address(0)
-  // TODO: check that paidToFunder isn't being rounded down
+
+  // TODO: make sure user withdraws before trading shares 
   // Trades shares of an asset to other user. Must trade relative amount paid to Funder to balance withdrawl amount. 
   // ie. must trade over the same relative amount paid out. So person buying shares will also be recognized as being paid out for those shares in the past
+  // Invariants: Marketplace is set once payout has occured (funding success). Can only be called by marketplace contract. User must have enough shares to make trade. 
+  // @Param address selling shares 
+  // @Param address buying shares 
+  // @Param number of shares being traded 
   function tradeShares(address _from, address _to, uint256 _amount) 
   external 
   returns (bool) {
     require(marketPlace != address(0));
     require(msg.sender == marketPlace); 
     require(shares[_from] >= _amount);
+    uint256 relativePaidOutAmount = (paidToFunder[_from].mul(_amount)).div(shares[_from]);
+    paidToFunder[_to] = paidToFunder[_to].add(relativePaidOutAmount); 
+    paidToFunder[_from] = paidToFunder[_from].sub(relativePaidOutAmount); 
     shares[_from] = shares[_from].sub(_amount);
     shares[_to] = shares[_to].add(_amount);
-    uint256 paidToThisFunder = paidToFunder[_from].mul(_amount).div(shares[_from]);   
-    paidToFunder[_to] = paidToFunder[_to].add(paidToThisFunder); 
-    paidToFunder[_from] = paidToFunder[_from].sub(paidToThisFunder); 
     return true;
   }
 
