@@ -62,10 +62,12 @@ def test_MarketPlace(chain):
     myBitToken, _ = chain.provider.get_or_deploy_contract('MyBitToken', deploy_args=[totalSupply, "MyBit Token", 8, "MyB"])
     approval, _ = chain.provider.get_or_deploy_contract('Approval')
     tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, approval.address])
-    tokenHub, _ = chain.provider.get_or_deploy_contract('TokenHub', deploy_args=[myBitToken.address])
+    tokenStake, _ = chain.provider.get_or_deploy_contract('TokenStake', deploy_args=[myBitToken.address, approval.address])
     marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address])
-    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenHub.address, marketPlace.address])
+    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenStake.address, marketPlace.address])
     Asset = chain.provider.get_contract_factory('Asset')
+    # Use this instead of web3.py hash functions for simplicity 
+    hashFunctions, _ = chain.provider.get_or_deploy_contract('HashFunctions')
 
 
     # Set Address references 
@@ -153,7 +155,7 @@ def test_MarketPlace(chain):
     funderOneBuyValue = funderOneSharesToBuy * funderOnePrice
 
     # get the buy order hash 
-    buyOrderHashOne = marketPlace.call().getOrderID(funderOne, atmAsset)
+    buyOrderHashOne = hashFunctions.call().getOrderID(funderOne, atmAsset)
     txHash = marketPlace.transact({"from": funderOne, "value": funderOneBuyValue}).createBuyOrder(funderOneSharesToBuy, funderOnePrice, atmAsset)
 
     # Check that buy order variables were set properly 
@@ -189,7 +191,7 @@ def test_MarketPlace(chain):
     assert AssetContract.call().shares(funderOne) > funderOneSharesToSell
 
     # get the buy order hash 
-    sellOrderHashOne = marketPlace.call().getOrderID(funderOne, atmAsset)
+    sellOrderHashOne = hashFunctions.call().getOrderID(funderOne, atmAsset)
     txHash = marketPlace.transact({"from": funderOne}).createSellOrder(funderOneSharesToSell, funderOnePrice, atmAsset)
 
     # Check that variables were set properly after sell order
@@ -256,7 +258,7 @@ def test_MarketPlace(chain):
     oneAndTwoPaidToFunder = AssetContract.call().paidToFunder(funderOne) + AssetContract.call().paidToFunder(funderTwo)
 
     # get the buy order hash 
-    buyOrderHashOne = marketPlace.call().getOrderID(funderOne, atmAsset)
+    buyOrderHashOne = hashFunctions.call().getOrderID(funderOne, atmAsset)
     txHash = marketPlace.transact({"from": funderOne, "value": funderOneBuyValue}).createBuyOrder(funderOneSharesToBuy, funderOnePrice, atmAsset)
 
     # FunderTwo fills the buy order 
@@ -297,7 +299,7 @@ def test_MarketPlace(chain):
     funderThreeValueToBuy = funderThreeSharesToBuy * funderThreePrice
 
     # get the buy order hash & create order
-    buyOrderHash = marketPlace.call().getOrderID(funderThree, atmAsset)
+    buyOrderHash = hashFunctions.call().getOrderID(funderThree, atmAsset)
     txHash = marketPlace.transact({"from": funderThree, "value": funderThreeValueToBuy}).createBuyOrder(funderThreeSharesToBuy, funderThreePrice, atmAsset)
 
     # check values 
@@ -323,7 +325,7 @@ def test_MarketPlace(chain):
 
 
     # get the buy order hash & create order
-    sellOrderHash = marketPlace.call().getOrderID(funderFour, atmAsset)
+    sellOrderHash = hashFunctions.call().getOrderID(funderFour, atmAsset)
     txHash = marketPlace.transact({"from": funderFour}).createSellOrder(funderFourSharesToSell, funderFourPrice, atmAsset)
 
     # # check values 
@@ -340,3 +342,7 @@ def test_MarketPlace(chain):
     initiator, assetAddress, amount, price = marketPlace.call().getBuyOrder(sellOrderHash)
     assert amount == 0
     assert price == 0
+
+    # TODO: test can't trade before withdrawing funds 
+
+    

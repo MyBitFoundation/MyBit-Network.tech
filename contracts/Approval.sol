@@ -2,10 +2,11 @@ pragma solidity ^0.4.18;
 import './Owned.sol';
 
   // There are 3 levels of access on the platform. First is basic acess (creating/funding assets), Second is ability to stake, Third is ability to trade assets
-  // TODO: inheritance = same address
+  // TODO: Give users a backup address 
 contract Approval is Owned{ 
   address public tokenBurn; 
 
+  mapping (address => address) public backupAddress;    // User can set a backup address incase of loss 
   mapping (address => uint8) public userAccess;   // 0: Not approved for anything, 1: KYC approved, 2: Approved to fund assets/create assets,  3: Approved to lock tokens,  4: Approved to trade/exchange tokens
   mapping (address => bool) public blackListed;    // Banned users
 

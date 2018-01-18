@@ -60,13 +60,15 @@ def spreadMyBitTokens(chain, myBitContract, accounts):
 
 def burnForAccess(tokenContract, burnContract, thisAddress, accesslevel):
     accessCost = {}
-    accessCost[1] = 10;
-    accessCost[2] = 100;
-    accessCost[3] = 1000;
+    accessCost[2] = 10;
+    accessCost[3] = 100;
+    accessCost[4] = 1000;
+    userBalance = tokenContract.call().balanceOf(thisAddress)
     tokenContract.transact({"from": thisAddress}).approve(burnContract.address, accessCost[accesslevel])
     assert tokenContract.call().allowance(thisAddress, burnContract.address) == accessCost[accesslevel]
     burnContract.transact({"from": thisAddress}).burnTokens(accesslevel)
     assert burnContract.call().numTokensBurnt() >= accessCost[accesslevel]
+    return tokenContract.call().balanceOf(thisAddress) == (userBalance - accessCost[accesslevel])
 
 
 def kycApprove(approvalContract, accounts):
@@ -81,13 +83,13 @@ def test_successfulFunding(chain):
     assetEscrow = accounts[5]
     totalSupply = 281207344012426
     # MyBitHub = chain.provider.get_contract_factory("MyBitHub")
-    # myBitHub, _ = MyBitHub.deploy({"gas":4000000}, args=[myBitFoundation, assetEscrow, approval.address, tokenHub.address])
+    # myBitHub, _ = MyBitHub.deploy({"gas":4000000}, args=[myBitFoundation, assetEscrow, approval.address, tokenStake.address])
     myBitToken, _ = chain.provider.get_or_deploy_contract('MyBitToken', deploy_args=[totalSupply, "MyBit Token", 8, "MyB"])
     approval, _ = chain.provider.get_or_deploy_contract('Approval')
     tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, approval.address])
-    tokenHub, _ = chain.provider.get_or_deploy_contract('TokenHub', deploy_args=[myBitToken.address])
+    tokenStake, _ = chain.provider.get_or_deploy_contract('TokenStake', deploy_args=[myBitToken.address, approval.address])
     marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address])
-    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenHub.address, marketPlace.address])
+    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenStake.address, marketPlace.address])
     Asset = chain.provider.get_contract_factory('Asset')
 
 
@@ -115,7 +117,7 @@ def test_successfulFunding(chain):
 
     #---------------Burn Tokens to Create Asset---------------
     firstAssetCreator = accounts[9]
-    burnForAccess(myBitToken, tokenBurn, firstAssetCreator, 2)
+    assert burnForAccess(myBitToken, tokenBurn, firstAssetCreator, 2)
     assert approval.call().userAccess(firstAssetCreator) == 2
 
     # # ------------Create Asset------------------------
@@ -164,24 +166,40 @@ def test_successfulFunding(chain):
     receipt = getReceiptMined(chain, txHash)
     assert solarAsset.call().stage() == 3
     firstROIPayment = convertEtherToWei(chain, 10)
-    # ----------------Check Receiving ROI---------------------
+
+    # ---------------------------Check Receiving ROI---------------------------------------
+    amountRaised = solarAsset.call().amountRaised()
     solarAsset.transact({"value": firstROIPayment}).receiveIncome("First ROI payment")
     assert solarAsset.call().totalIncomeEarned() == firstROIPayment
-    solarAsset.transact({"from": firstFunder}).withdrawal()
-    assert solarAsset.call().paidToFunder(firstFunder) == (firstROIPayment * .5)
-    assert solarAsset.call().totalPaidToFunders() == solarAsset.call().paidToFunder(firstFunder)
-    solarAsset.transact({"from": secondFunder}).withdrawal()
-    solarAsset.transact({"from": thirdFunder}).withdrawal()
-    firstFunderPaid = solarAsset.call().paidToFunder(firstFunder)
-    secondFunderPaid = solarAsset.call().paidToFunder(secondFunder)
-    thirdFunderPaid = solarAsset.call().paidToFunder(thirdFunder)
-    assert secondFunderPaid < firstFunderPaid
-    assert secondFunderPaid == thirdFunderPaid
-    assert solarAsset.call().totalPaidToFunders() == firstFunderPaid + secondFunderPaid + thirdFunderPaid
+
+    # ----------------Check First Funder Withdraw-----------
+    solarAsset.transact({"from": firstFunder}).withdraw()
+    firstFunderROI = solarAsset.call().paidToFunder(firstFunder)
+    # Get percentage of shares first funder 
+    firstFunderPercentageOfShares = solarAsset.call().shares(firstFunder) / amountRaised
+    assert firstFunderROI == (firstROIPayment * firstFunderPercentageOfShares)
+    assert solarAsset.call().totalPaidToFunders() == firstFunderROI
+
+    # ----------Check Second Funder Withdraw---------------
+    solarAsset.transact({"from": secondFunder}).withdraw()
+    secondFunderROI = solarAsset.call().paidToFunder(secondFunder)
+    # Get percentage of shares second funder 
+    secondFunderPercentageOfShares = solarAsset.call().shares(secondFunder) / amountRaised
+    assert secondFunderROI == (firstROIPayment * secondFunderPercentageOfShares)
+    assert solarAsset.call().totalPaidToFunders() == (firstFunderROI + secondFunderROI)
+
+    # -----------Check Third Funder Withdraw--------
+    solarAsset.transact({"from": thirdFunder}).withdraw()
+    thirdFunderROI = solarAsset.call().paidToFunder(thirdFunder)
+    # Get percentage of shares third funder
+    thirdFunderPercentageOfShares = solarAsset.call().shares(thirdFunder) / amountRaised
+    assert thirdFunderROI == (firstROIPayment * thirdFunderPercentageOfShares)
+    assert solarAsset.call().totalPaidToFunders() == firstFunderROI + secondFunderROI + thirdFunderROI
+    assert solarAsset.call().totalPaidToFunders() == firstROIPayment
 
     #---------------Burn Tokens to Create Asset---------------
     secondAssetCreator = accounts[8]
-    burnForAccess(myBitToken, tokenBurn, secondAssetCreator, 2)
+    assert burnForAccess(myBitToken, tokenBurn, secondAssetCreator, 2)
     assert approval.call().userAccess(secondAssetCreator) == 2
 
     # -------------------Test second createAsset()--------------------------
@@ -219,8 +237,8 @@ def test_pause(chain):
     approval, _ = chain.provider.get_or_deploy_contract('Approval')
     marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address])
     tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, approval.address])
-    tokenHub, _ = chain.provider.get_or_deploy_contract('TokenHub', deploy_args=[myBitToken.address])
-    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenHub.address, marketPlace.address])
+    tokenStake, _ = chain.provider.get_or_deploy_contract('TokenStake', deploy_args=[myBitToken.address, approval.address])
+    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenStake.address, marketPlace.address])
     Asset = chain.provider.get_contract_factory('Asset')
 
 
@@ -242,7 +260,7 @@ def test_pause(chain):
 
     #---------------Burn Tokens to Create Asset---------------
     approvedCreator = accounts[9]
-    burnForAccess(myBitToken, tokenBurn, approvedCreator, 2)
+    assert burnForAccess(myBitToken, tokenBurn, approvedCreator, 2)
     assert approval.call().userAccess(approvedCreator) == 2
 
 
@@ -274,8 +292,8 @@ def test_refund(chain):
     approval, _ = chain.provider.get_or_deploy_contract('Approval')
     marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address])
     tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, approval.address])
-    tokenHub, _ = chain.provider.get_or_deploy_contract('TokenHub', deploy_args=[myBitToken.address])
-    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenHub.address, marketPlace.address])
+    tokenStake, _ = chain.provider.get_or_deploy_contract('TokenStake', deploy_args=[myBitToken.address, approval.address])
+    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenStake.address, marketPlace.address])
     Asset = chain.provider.get_contract_factory('Asset')
 
 
@@ -299,7 +317,7 @@ def test_refund(chain):
 
     #---------------Burn Tokens to Create Asset---------------
     ownerCreator = accounts[0]   
-    burnForAccess(myBitToken, tokenBurn, ownerCreator, 2)
+    assert burnForAccess(myBitToken, tokenBurn, ownerCreator, 2)
     assert approval.call().userAccess(ownerCreator) == 2
 
     solarAssetType = bytes.fromhex(keccak_256("solar".encode('utf-8')).hexdigest())

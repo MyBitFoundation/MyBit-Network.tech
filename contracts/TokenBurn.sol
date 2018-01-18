@@ -18,9 +18,9 @@ function TokenBurn(address _myBitToken, address _approval)
 public {
   myBitToken = MyBitToken(_myBitToken);
   approval = Approval(_approval); 
-  accessCostUSD[1] = 10;
-  accessCostUSD[2] = 100;
-  accessCostUSD[3] = 1000;
+  accessCostUSD[2] = 10;
+  accessCostUSD[3] = 100;
+  accessCostUSD[4] = 1000;
 }
 
 // Transfer tokens into this contract. 
