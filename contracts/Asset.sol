@@ -1,7 +1,7 @@
 pragma solidity ^0.4.18;
 import './SafeMath.sol';
 import './MyBitHub.sol'; 
-import './TokenHub.sol';
+import './TokenStake.sol';
 import './Approval.sol'; 
 import './MarketPlace.sol'; 
 
@@ -93,14 +93,14 @@ using SafeMath for *;
     address myBitFoundation = myBitHub.myBitFoundation(); 
     address assetEscrow = myBitHub.assetEscrow();
     assert (myBitAmount.add(lockedTokenAmount).add(installerAmount) == amountRaised);       // TODO: for testing 
-    TokenHub tokenHub = TokenHub(myBitHub.tokenHub());      // Ask MyBitHUb for tokenHub address 
+    TokenStake tokenStake = TokenStake(myBitHub.tokenStake());      // Ask MyBitHUb for token staking address 
     marketPlace = myBitHub.marketPlace();           // initialize marketPlace
-    tokenHub.receiveTransactionFee.value(lockedTokenAmount); 
+    tokenStake.receiveTransactionFee.value(lockedTokenAmount); 
     myBitFoundation.transfer(myBitAmount);
-    assetEscrow.transfer(this.balance);   // Note: Asset installer will likely receive small amount more, due to rounding
+    assetEscrow.transfer(this.balance);  
     stage = Stages.AssetLive; 
     LogAssetPayoutMyBitFoundation(myBitFoundation, myBitAmount, block.timestamp);
-    LogAssetPayoutLockedTokenHolders(address(tokenHub), lockedTokenAmount, block.timestamp); 
+    LogAssetPayoutLockedTokenHolders(address(tokenStake), lockedTokenAmount, block.timestamp); 
     LogAssetPayoutInstaller(assetEscrow, installerAmount, block.timestamp); 
     return true;
   }
@@ -117,7 +117,6 @@ using SafeMath for *;
     LogIncomeReceived(msg.sender, msg.value, block.timestamp);
     LogAssetNote(_note, block.timestamp); 
     return true; 
-
   }
 
   // This function needs to be called to allow refunds to be made. Signals to the myBitHub contract that funding has failed
@@ -167,8 +166,6 @@ using SafeMath for *;
 }
 
   
-
-  // TODO: make sure user withdraws before trading shares 
   // Trades shares of an asset to other user. Must trade relative amount paid to Funder to balance withdrawl amount. 
   // ie. must trade over the same relative amount paid out. So person buying shares will also be recognized as being paid out for those shares in the past
   // Invariants: Marketplace is set once payout has occured (funding success). Can only be called by marketplace contract. User must have enough shares to make trade. 

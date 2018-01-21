@@ -2,7 +2,6 @@ pragma solidity ^0.4.18;
 import './Owned.sol';
 
   // There are 3 levels of access on the platform. First is basic acess (creating/funding assets), Second is ability to stake, Third is ability to trade assets
-  // TODO: Give users a backup address 
 contract Approval is Owned{ 
   address public tokenBurn; 
 
@@ -18,6 +17,16 @@ contract Approval is Owned{
   external
   onlyOwner { 
     tokenBurn = _tokenBurn; 
+  }
+
+  // TODO: test
+  function setBackupAddress(address _backupAddress)
+  external
+  notBlacklisted
+  returns (bool) { 
+    require(userAccess[msg.sender] > 0);
+    backupAddress[msg.sender] = _backupAddress; 
+    return true;
   }
 
   // Called by tokenburn contract and owner. Burn contract checks that accesslevel 0 is approved before adding later ones. 

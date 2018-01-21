@@ -4,10 +4,8 @@ import './Asset.sol';
 import './SafeMath.sol'; 
 
 
-// TODO: set time limit on orders?? 
-// TODO: add functionality to delete orders
+
 // TODO: check buy orders existdd
-// TODO: check asset is done funding 
 // Note: Users can only have 1 sell order and 1 buy order for each individual asset, as the orders are stored as as sha3 hash of assetAddress + sender address 
 // Note: Users who do not withdrawl asset earnings will also trade away the right to those earnings. 
 contract MarketPlace { 
@@ -56,6 +54,7 @@ contract MarketPlace {
   payable 
   nonReentrant
   onlyApproved
+  sellOrderExists(_sellOrderID)
   needsToWithdraw(sellOrders[_sellOrderID].assetContract, sellOrders[_sellOrderID].initiator)
   returns (bool){ 
     Sell thisOrder = sellOrders[_sellOrderID];
@@ -69,11 +68,12 @@ contract MarketPlace {
     return true;
   }
 
-  // TODO: add asset contract to parameter
+ 
   function sellAsset(bytes32 _buyOrderID) 
   public 
   nonReentrant 
   onlyApproved
+  buyOrderExists(_buyOrderID)
   needsToWithdraw(buyOrders[_buyOrderID].assetContract, msg.sender)
   returns (bool){ 
     Buy thisOrder = buyOrders[_buyOrderID]; 
@@ -152,6 +152,7 @@ contract MarketPlace {
       return true;
   }
 
+  // User can withdraw the wei they are owed here 
   function withdraw() 
   public
   nonReentrant 
@@ -167,8 +168,9 @@ contract MarketPlace {
     revert(); 
   }
 
-  modifier validAsset(address _assetAddress) { 
-    Asset thisAsset = Asset(_assetAddress); 
+  modifier validAsset(address _assetAddress) {
+    require (_assetAddress != address(0));
+    Asset thisAsset = Asset(_assetAddress);
     require(myBitHub.assets(thisAsset.storageHash()) == _assetAddress);     // Check if this asset is registered with MyBitHub     _; 
     _; 
   }
@@ -187,7 +189,16 @@ contract MarketPlace {
     require(payment == 0); 
     _;
   }
-  
+
+  modifier buyOrderExists(bytes32 _orderID) {
+    require (buyOrders[_orderID].initiator != address(0)); 
+    _;
+  }
+
+  modifier sellOrderExists(bytes32 _orderID) {
+    require (sellOrders[_orderID].initiator != address(0)); 
+    _;
+  }  
 
   modifier aboveZero(uint256 _amount, uint256 _price) { 
     require(_amount.mul(_price) > 0); 
@@ -212,13 +223,6 @@ contract MarketPlace {
   event LogBuyOrderCompleted(bytes32 indexed _id, address indexed _assetAddress, address indexed _purchaser);
   event LogSellOrderCompleted(bytes32 indexed _id, address indexed _assetAddress, address indexed _purchaser); 
 
-  function getOrderID(address _user, address _contract)
-  external
-  view
-  returns(bytes32) {
-    return keccak256(_contract, _user); 
-  }
-  
 
   function getBuyOrder(bytes32 _orderHash)
   external
