@@ -1,354 +1,185 @@
-  pragma solidity 0.4.18; // - https://consensys.github.io/smart-contract-best-practices/recommendations/#lock-pragmas-to-specific-compiler-version
-
-  import './SafeMath.sol';
-  import './MyBitToken.sol';
-  import './TokenHub.sol';
-
-  /*
-    TODO; Description.
-  */
-
-  contract TokenLock{
-    using SafeMath for *;
+pragma solidity ^0.4.18;
+import './SafeMath.sol';
+import './MyBitHub.sol'; 
+import './MyBitToken.sol'; 
+import './Approval.sol'; 
 
 
-    function () payable public {
-      revert();
-    }
+// NOTE: If no stakers during period Wei is sent, then it will be unclaimed
+// TODO: prevent users from accidentally transferring in tokens 
+contract TokenStake { 
+using SafeMath for *; 
 
-    // --------------------------Modifiers-------------------------- //
-    modifier isTokenHub(){
-      require(msg.sender == tokenHubAddr);
-      _;
-    }
+  // --------MyBit Contracts-----------------
+  MyBitToken public myBitToken; 
+  Approval public approval; 
 
-    modifier ContractTimeMet(){
-      require(block.timestamp >= (unlockTime - 25 minutes));
-              contractTimeMet = true;
-              ContractTimeMetLog(this, totalTokensLocked, totalUsersLocked, daysToLast);
-      _;
-    }
+  //-----User variables-----//
+  mapping (address => uint) public feesOwed; 
+  mapping (bytes32 => Stake) public stakes; 
 
+  //-----Payout Info------//
+  uint[] public multipliers;
+  uint[] public stakeTimes; 
+  uint[] public numberOfNonces; 
+  uint public totalStakedTokens; 
+  
+  //----Token Contract----//
+  address public tokenContractAddress;
 
-    // --------------------------Events-------------------------- //
-    // - https://consensys.github.io/smart-contract-best-practices/recommendations/#differentiate-functions-and-events
+ //-----Period Info-------// 
+  uint public periodLength; 
+  uint public nextPeriod;
+  mapping (uint => uint) public multipliedTokensInPeriod;
+  mapping (uint => uint) public feesReceivedAtNonce; 
+  uint public periodNonce; 
 
-    event TokenInContractLog(address _userAddr, address _tokenAddress, uint256 _amount, uint256 _usersUsableBalance, uint256 _periodType);
-    event TokenLockLog(address _userAddr, address _contractAddress, uint256 _totalUserLocks,
-      uint256 _totalAvailableBalance, uint256 _amount, uint256 _period);
-    event TokenLockInfoLog(address _userAddr, uint256 _period, uint256 _daysLockedAt, uint256 _amount, uint256 _tokensIncludingMultiplier,
-        uint256 _multiplier, uint256 _lockCount);
-    event TokenLockInfoLog1(address _userAddr, uint256 _period, uint256 _unlockTime, uint256 _startingTime, uint256 _lastWithdrawl, uint256 _transactionFeeWhenLocked,
-    uint256 _lockCount);
-    event ContractTimeMetLog(address _addr, uint256 _totalTockens, uint256 _totalUsersLocked, uint256 _days);
-    event TransferFromLog(address _from, address _to, uint256 _amount);
-    event AllTokensTransferedLog(address _contractAddress, uint256 _contractBalance);
-    event TokenContractIsBeingDestroyedLog(address _contractAddress);
-    event UpdatedTransactionLockLog(address _userAddr, uint256 _currentTransactionFee);
+  bool private rentrancy_lock = false;    // Prevents re-entrancy attack
 
 
-    // --------------------------Variables-------------------------- //
-    address public tokenHubAddr;    // TokenHub contract address
-    TokenHub public tokenHub;       // TokenHub contract instance
 
-    address public myBitTokenAddr;  // MyBitToken contract address
-    MyBitToken public myBitToken;   // MyBitToken contract instance
-
-    uint256 public periodType; 	    // 0-45 days, 1-90 days, 2-180 days, 3-360 days
-    uint256 public daysToLast;      // Days this contract should last
-    uint256 public minFund;         // For future incase it gets spammed
-    uint256 public creationTime;    // Creation time of contract in epoch
-    uint256 public maxMultiplier;   // First day multiplier of the locking period.(NOT USED CAN BE REMOVED)
-    uint256 public unlockTime;      // Time when this contract period ends and tokens can be unlocked
-
-    uint256 public totalTokensLocked;  // Raw total tokens locked in this locking period contract.
-    uint256 public totalTokensLockedWithMultiplier;  // Total of tokens with attached day multiplier when locked
-    mapping (address => uint256) tokenBalanceOf;     // Token balance of each user associated with address
-    mapping (address => uint256) usersUsableBalance; // Users address associated with usable balance, gets updated when this address is approved for transfers by the MyBitToken contract
-    uint256 public totalUsersLocked;                 // Total amount of users locked in this period
-    uint256 public nextUnlockIndex;                  // Next index of user to unlock
-
-    mapping(address => Locked[]) public userLocks;   // User address associated with array of their locks for this period
-    mapping(address => uint256) public userCountOfLocks;  // Users count of locks
-    mapping(uint256 => address) public indexOfAddress;    // Key; the index of their lock, value; user address
-    mapping(address => uint256) public addressIndex;      // Key; user address, value; their index
-
-    bool public contractTimeMet;  // If the unlock time has been met
-
-    uint256[] public rates;       // Each day for each period type has a different multiplier rate
-
-    // Each time a user locks, this is created
-    struct Locked{
-      uint256 daysLockedAt;
-      uint256 amountLocked;
-      uint256 amountLockedIncludingMultiplier;
-      uint256 multiplier;
-      uint256 endingTime;
-      uint256 startingTime;
-      uint256 lastWithdrawl;
-      uint256 transactionFeeWhenLocked;
-    }
-
-
-  /*
-    TODO; TokenHub address isn't known yet :/ Someone can create one then call tokenhub
-    @param _period;     The desired period type for the new contract.
-    @@param _days;      How many days this new token locking contract should be active for.
-    @param _minFund;    Minimum amount of MyBit tokens required to lock each time.(NOT USED)
-    @param _creationTime;  Epoch time when this function was called(COULD CHANGE THIS SO ITS BLOCK.TIMESTAMP IN THIS CONTRACT)
-    @param _multiplier; First day multiplier of the locking period.(NOT USED CAN BE REMOVED)
-    @param _myBitTokenAddr; Address of MyBitToken contract
-    @param _tokenHubAddr;   Address of TokenHub contract
-    @modifier isTokenHub; Only callable by TokenHub
-    @return Boolean stating whether or not the contract has been created
-    @desc Called by tokenhub to create new tokenLocking contract.
-  */
-  function TokenLock(uint256 _period, uint256 _days,
-    uint256 _minFund, uint256 _creationTime, uint256 _multiplier,
-    address _myBitTokenAddr, address _tokenHubAddr) public isTokenHub{
-      periodType = _period;
-      daysToLast = _days;
-      minFund = _minFund;
-      creationTime = _creationTime;
-      maxMultiplier = _multiplier;
-      unlockTime = creationTime + (daysToLast * 1 days);
-      myBitTokenAddr = _myBitTokenAddr;
-      myBitToken = MyBitToken(_myBitTokenAddr);
-      tokenHubAddr = _tokenHubAddr;
-      tokenHub = TokenHub(_tokenHubAddr);
-      addRates();
-    }
-
-
-    /*
-      @modifier ContractTimeMet ensure that the contract unlock time has been met.
-      @return boolean that all tokens have been unlocked
-      @desc Loops through all users and their locks, then transfers them back to
-              the user.
-      TODO; only allow locked users to do this?
-      TODO; reward for doing this
-      TODO; Check for overflows!https://consensys.github.io/smart-contract-best-practices/known_attacks/#integer-overflow-and-underflow
-    */
-    function unlockToken() external ContractTimeMet returns(bool){
-        require(contractTimeMet);
-        require(totalTokensLocked != 0);
-
-        // Dos with Block Gas Limit prevention - https://consensys.github.io/smart-contract-best-practices/known_attacks/#dos-with-block-gas-limit
-        uint256 i = nextUnlockIndex;
-        while(i < totalUsersLocked && msg.gas > 200000){
-          address _userAddress = indexOfAddress[i];
-          require(myBitToken.transferFrom(this, _userAddress, tokenBalanceOf[_userAddress]));
-          totalTokensLocked -= tokenBalanceOf[_userAddress];
-          TransferFromLog(this, _userAddress, tokenBalanceOf[_userAddress]);
-        }
-        nextUnlockIndex = i;
-
-        require(totalTokensLocked == 0 && nextUnlockIndex == totalUsersLocked);
-        AllTokensTransferedLog(this, totalTokensLocked);
-        tokenHub.deleteLockingTokenContract(periodType, daysToLast, maxMultiplier, this);
-      }
-
-
-    /*
-      @param _addr;  Approved user address
-      @param _amount; Amount approved attached to user address
-      @return bool when users balance has been increase
-      @desc Gets called by an external event in MyBitToken contract once the user has verified
-              that this contract can spend a certain amount of tokens.  Then tokens are transferred
-              from the users address to this token contracts control.  An event is then triggered
-              which is used to called tokenLock.
-    */
-    function approvalGiven(address _addr, uint256 _amount) external returns(bool){
-      require(myBitToken.transferFrom(_addr, this, _amount));
-      usersUsableBalance[_addr] += _amount;
-      tokenBalanceOf[_addr] += _amount;
-      TokenInContractLog(_addr, this, _amount, usersUsableBalance[_addr], periodType);
-    }
-
-    /*
-      @param _period;  Validation that this locking contract is the correct period for locking
-      @param _amount;  Amount to locking
-      @param _userAddr; User address to lock contracts
-      @return Boolean true or false if successfully locking
-      @desc Locks the users MyBit tokens to this contract address.
-
-      TODO; maybe msg.sender instead of pasing in address, but they dont loose out anyways if
-              someone else does it for them.
-    */
-    function lockToken(uint256 _period, uint256 _amount, address _userAddr) public returns(bool){
-      require(_period == 0 || _period == 1 || _period == 2 || _period ==3);
-      require(usersUsableBalance[_userAddr] >= _amount);
-      uint256 currentTime = block.timestamp;
-      uint256 _daysLockedAt = (currentTime - creationTime) /  1 days;
-      uint256 _multiplier = rates[_daysLockedAt];
-      uint256 _tokensIncludingMultiplier =  (_amount * _multiplier) * 100;
-      uint256 _transactionFeeWhenLocked = tokenHub.getCurrentTransactionFee();
-
-      userLocks[_userAddr].push(Locked({
-        daysLockedAt : _daysLockedAt,
-        amountLocked : _amount,
-        amountLockedIncludingMultiplier : _tokensIncludingMultiplier,
-        multiplier : _multiplier,
-        endingTime : unlockTime,
-        startingTime : currentTime,
-        lastWithdrawl : 0,
-        transactionFeeWhenLocked : _transactionFeeWhenLocked
-        }));
-
-     if(userCountOfLocks[_userAddr] == 0){
-       indexOfAddress[totalUsersLocked] = _userAddr;
-       addressIndex[_userAddr] = totalUsersLocked;
-       totalUsersLocked += 1;
-     }
-
-     TokenLockInfoLog(_userAddr, _period, _daysLockedAt, _amount, _tokensIncludingMultiplier, _multiplier, userCountOfLocks[_userAddr]);
-     TokenLockInfoLog1(_userAddr, _period, unlockTime, currentTime, 0, _transactionFeeWhenLocked, userCountOfLocks[_userAddr]);
-
-     userCountOfLocks[_userAddr] += 1;
-     usersUsableBalance[_userAddr] -= _amount;
-     totalTokensLocked += _amount;
-     totalTokensLockedWithMultiplier += _tokensIncludingMultiplier;
-
-     require(tokenHub.updateTotalTokensLockedWithMultiplier(_tokensIncludingMultiplier, _period));
-
-     TokenLockLog(_userAddr, this, userCountOfLocks[_userAddr], usersUsableBalance[_userAddr], _amount, _period);
-     return true;
-      }
-
-    /*
-      @modifier isTokenHub; Only callable by tokenhub.
-      @desc Called by tokenhub once all the tokens have been unlocked to destroy this contract.
-      https://consensys.github.io/smart-contract-best-practices/recommendations/#prefer-newer-solidity-constructs
-    */
-    function destroyContract() external isTokenHub returns(bool){
-        selfdestruct(tokenHubAddr);
-        TokenContractIsBeingDestroyedLog(this);
-        return true;
-      }
-
-    /*
-
-    */
-    function updateUsersTransactionFeeWhenLocked(uint256 _period, address _userAddr, uint256 _lock, uint256 _currentTransactionFee) external isTokenHub returns(bool){
-      require(_period == periodType);
-      userLocks[_userAddr][_lock].transactionFeeWhenLocked = _currentTransactionFee;
-      UpdatedTransactionLockLog(_userAddr, _currentTransactionFee);
-
-      return true;
-    }
-
-    function getUsersAmountLockedIncludingMultipler(address _userAddr, uint256 _period, uint256 _lock) public constant returns(uint256){
-      require(_period == periodType);
-      return userLocks[_userAddr][_lock].amountLockedIncludingMultiplier;
-    }
-
-    function getTransactionFeeWhenLocked(address _userAddr, uint256 _period, uint256 _lock) public constant returns(uint256){
-      require(_period == periodType);
-      return userLocks[_userAddr][_lock].transactionFeeWhenLocked;
-    }
-
-    function getUserLockedArrayLenth(address _userAddr) public constant returns(uint256){
-      return userLocks[_userAddr].length;
-    }
-
-    function getCurrentDays() public constant returns(uint256){
-      return (creationTime - block.timestamp) / 1 days;
-    }
-
-    function getMaxDays() public constant returns(uint256){
-      return daysToLast;
-    }
-
-    function getTotalTokensLocked() public constant returns(uint256){
-      return totalTokensLocked;
-    }
-
-    function getTotalTokensLockedWithMultiplier() public constant returns(uint256){
-      return totalTokensLockedWithMultiplier;
-    }
-
-    function getAddressIndex(address _userAddr) public constant returns (uint256){
-      return addressIndex[_userAddr];
-    }
-
-    function getUnlockTime() public constant returns(uint256){
-      return unlockTime;
-    }
-
-    function getCurrentTime() public constant returns(uint256){
-      return block.timestamp;
-    }
-
-    function getTotalUsersLocked() public constant returns(uint256){
-      return totalUsersLocked;
-    }
-
-    function getTokenHubAddress() public constant returns(address){
-      return tokenHubAddr;
-    }
-
-    function userHasLock(address _user, uint256 _lock) external constant isTokenHub returns(bool){
-      require(userLocks[_user][_lock].amountLocked != 0);
-      return true;
-    }
-
-    //----Testing Alterations---///
-    function changeUnlockTime(uint256 _newUnlockTime) external returns(bool){
-      unlockTime = _newUnlockTime;
-      return true;
-    }
-
-
-    /* TODO; Fix ratessssss!!!!!!
-    */
-    function addRates() public returns(uint256){
-      //if(periodType == 0){
-        rates.push(1043288888888890);
-        rates.push(1019577777777780);
-        rates.push(995866666666667);
-        rates.push(972155555555555);
-        rates.push(948444444444444);
-        rates.push(924733333333333);
-        rates.push(901022222222222);
-        rates.push(877311111111111);
-        rates.push(853600000000000);
-        rates.push(829888888888889);
-        rates.push(806177777777778);
-        rates.push(782466666666666);
-        rates.push(758755555555555);
-        rates.push(735044444444444);
-        rates.push(711333333333333);
-        rates.push(687622222222222);
-        rates.push(663911111111111);
-        rates.push(640200000000000);
-        rates.push(616488888888889);
-        rates.push(592777777777778);
-        rates.push(569066666666667);
-        rates.push(545355555555555);
-        rates.push(521644444444444);
-        rates.push(497933333333333);
-        rates.push(474222222222222);
-        rates.push(450511111111111);
-        rates.push(426800000000000);
-        rates.push(403088888888889);
-        rates.push(379377777777778);
-        rates.push(355666666666667);
-        rates.push(331955555555556);
-        rates.push(308244444444444);
-        rates.push(284533333333333);
-        rates.push(260822222222222);
-        rates.push(237111111111111);
-        rates.push(213400000000000);
-        rates.push(189688888888889);
-        rates.push(165977777777778);
-        rates.push(142266666666667);
-        rates.push(118555555555556);
-        rates.push(94844444444445);
-        rates.push(71133333333333);
-        rates.push(47422222222222);
-        rates.push(23711111111111);
-      //}
-
-    }
-
+  struct Stake {
+    uint periodIndex;  //The length of the lock
+    uint amountStaked;
+    uint multipliedAmount; 
+    uint multipliedAmountFirstNonce; 
+    uint nonceAtStake;
+    uint nonceAtUnlock;
+    uint blockAtStake; 
   }
+
+
+  function TokenStake(address _myBitToken, address _approval) 
+  public {
+    myBitToken = MyBitToken(_myBitToken);
+    approval = Approval(_approval); 
+    multipliers = [625,1250, 2500, 5000]; 
+    // stakeTimes = [277714, 1388571, 2777142, 5554285];
+    stakeTimes = [45, 90, 180, 360];           // TODO: Testing numbers 
+    numberOfNonces = [1, 2, 4, 8];
+    periodLength = 45; 
+    nextPeriod = periodLength.add(block.number); 
+    periodNonce = 0; 
+  }
+
+
+  // Once users approve TokenStaking contract, they can stake tokens here
+  // NOTE: If user locks same number of tokens on the same block, they will lose their tokens as their mapping will be overwritten
+  // @Param: The period index: 0:45, 1:90, 2:180, 3:360 
+  function lockTokens(uint _period, uint _amount)
+  external
+  periodUpToDate
+  onlyApproved
+  returns (bool) { 
+    require (_amount > 0 && _period < 4);
+    require (myBitToken.transferFrom(msg.sender, this, _amount));
+    Stake thisStake = stakes[keccak256(msg.sender, block.number, _amount)];
+    thisStake.nonceAtStake = periodNonce;
+    thisStake.periodIndex = _period;
+    thisStake.amountStaked = _amount;
+    thisStake.blockAtStake = block.number; 
+    thisStake.multipliedAmount = _amount.add(multipliers[_period].mul(_amount).div(10000));
+    thisStake.multipliedAmountFirstNonce = thisStake.multipliedAmount.mul((nextPeriod.sub(block.number))).div(periodLength);
+    thisStake.nonceAtUnlock = periodNonce.add(numberOfNonces[_period]); 
+    multipliedTokensInPeriod[periodNonce] = multipliedTokensInPeriod[periodNonce].add(thisStake.multipliedAmountFirstNonce); 
+    fillMultipliedTokensForNonce(periodNonce.add(1), thisStake.nonceAtUnlock, thisStake.multipliedAmount);
+    LogTokensStaked(msg.sender, block.number, keccak256(msg.sender, block.number, _amount)); 
+    return true;
+}
+
+  // Once required lock time has passed users can retrieve their funds here 
+  function unlockTokens(bytes32 _lockID) 
+  external
+  nonReentrant
+  periodUpToDate
+  onlyApproved
+  ownerOfLock(_lockID)
+  stakingFinished(_lockID)
+  returns (bool) {
+    Stake thisStake = stakes[_lockID]; 
+    myBitToken.transfer(msg.sender, thisStake.amountStaked);   // If transfer() fails the call will bubble up
+    uint owedToUser = feesReceivedAtNonce[thisStake.nonceAtStake].calculateOwed(multipliedTokensInPeriod[thisStake.nonceAtStake], thisStake.multipliedAmountFirstNonce);
+    for (uint i = (thisStake.nonceAtStake + 1); i < thisStake.nonceAtUnlock; i++) {
+      owedToUser = owedToUser.add(feesReceivedAtNonce[i].calculateOwed(multipliedTokensInPeriod[i], thisStake.multipliedAmount)); 
+    }
+    delete stakes[_lockID];
+    msg.sender.transfer(owedToUser); 
+    LogTokenWithdraw(msg.sender, block.number, _lockID); 
+    return true;
+  }
+
+  // Asset contracts send fee here 
+  function receiveTransactionFee() 
+  external 
+  payable
+  requiresEther
+  periodUpToDate 
+  returns (bool) 
+  { 
+    feesReceivedAtNonce[periodNonce] = feesReceivedAtNonce[periodNonce].add(msg.value);
+    LogFeeReceived(msg.sender, block.number, msg.value); 
+    return true;
+  }
+
+  function fillMultipliedTokensForNonce(uint256 _startingNonce, uint _endingNonce, uint256 _totalMultipliedAmount)
+  internal { 
+    for (_startingNonce; _startingNonce < _endingNonce; _startingNonce++) { 
+      multipliedTokensInPeriod[_startingNonce] = multipliedTokensInPeriod[_startingNonce].add(_totalMultipliedAmount); 
+    }
+  }
+
+// ------------------------------------Getters-------------------------------------------------
+  function getStakeInfo(bytes32 _stakeID)
+  view
+  external 
+  returns(uint, uint, uint, uint, uint, uint, uint) { 
+    return (stakes[_stakeID].periodIndex, stakes[_stakeID].amountStaked, stakes[_stakeID].multipliedAmountFirstNonce, stakes[_stakeID].multipliedAmount, stakes[_stakeID].nonceAtStake, stakes[_stakeID].nonceAtUnlock, stakes[_stakeID].blockAtStake); 
+  }  
+
+  function() 
+  public {
+    revert();
+  }
+
+  modifier onlyApproved { 
+    require(approval.userAccess(msg.sender) >= 3); 
+    _;
+  }
+
+  modifier requiresEther {
+    require(msg.value > 0);
+    _;
+  }
+
+  modifier nonReentrant() {
+    require(!rentrancy_lock);
+    rentrancy_lock = true;
+    _;
+    rentrancy_lock = false;
+  }
+
+  modifier ownerOfLock(bytes32 _ID) { 
+    Stake thisStake = stakes[_ID];
+    require(_ID == keccak256(msg.sender, thisStake.blockAtStake, thisStake.amountStaked)); 
+    _;
+  }
+
+  modifier stakingFinished(bytes32 _ID) {
+    require(stakes[_ID].nonceAtUnlock <= periodNonce);
+    _;
+  }
+
+  modifier periodUpToDate { 
+    while (block.number >= nextPeriod) { 
+      periodNonce++;
+      nextPeriod = nextPeriod.add(periodLength); 
+    }
+    _;
+  }
+
+  event LogFeeReceived(address indexed _sender, uint indexed _blockNumber, uint indexed _amount); 
+  event LogTokensStaked(address indexed _staker, uint indexed _blockNumber, bytes32 indexed _ID); 
+  event LogTokenWithdraw(address indexed _staker, uint indexed _blockNumber, bytes32 indexed _ID);
+
+
+}

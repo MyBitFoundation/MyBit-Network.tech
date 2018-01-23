@@ -42,6 +42,7 @@ library SafeMath {
     return div(mul(_incomeEarned, _userShares), _totalShares);
   }  
 
+
   // Give the total amount and the percentage as a whole number to get the fractional amount
   // NOTE: parameters must be given as a whole number
   // NOTE: Solidity will round down when faced with a fraction

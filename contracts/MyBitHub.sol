@@ -11,7 +11,7 @@ contract MyBitHub {
   //-----------Platform Addresses----------------
   address public myBitFoundation;      // The MyBit Foundation address 
   address public assetEscrow;     // The location where asset funding is sent to be converted to Fiat
-  address public tokenHub;      // Location of tokenHub contract 
+  address public tokenStake;      // Location of tokenStake contract 
   address public marketPlace;     // Location of the Asset marketpalce 
   Approval public approval;     // Contract bytecode of Approval contract 
 
@@ -28,13 +28,13 @@ contract MyBitHub {
 
 
 
-  function MyBitHub(address _myBitFoundation, address _assetEscrow, address _approval, address _tokenHub, address _marketPlace) 
+  function MyBitHub(address _myBitFoundation, address _assetEscrow, address _approval, address _tokenStake, address _marketPlace) 
   public {
       fundingTime = 300;   // TODO: this is only for testing 
       myBitFoundation = _myBitFoundation;  
       assetEscrow = _assetEscrow;
       approval = Approval(_approval); 
-      tokenHub = _tokenHub; 
+      tokenStake = _tokenStake; 
       marketPlace = _marketPlace; 
   }
 

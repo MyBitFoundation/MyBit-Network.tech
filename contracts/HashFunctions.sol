@@ -23,6 +23,7 @@ contract HashFunctions {
   }
 
 
+
 function ()
 public {
   revert();
