@@ -6,6 +6,7 @@ import './SafeMath.sol';
 
 
 // TODO: check buy orders existdd
+// TODO: add pause mechanisms
 // Note: Users can only have 1 sell order and 1 buy order for each individual asset, as the orders are stored as as sha3 hash of assetAddress + sender address 
 // Note: Users who do not withdrawl asset earnings will also trade away the right to those earnings. 
 contract MarketPlace { 
@@ -209,6 +210,11 @@ contract MarketPlace {
   modifier onlyApproved() { 
     require(approval.userAccess(msg.sender) >= 4); 
     _; 
+  }
+
+  modifier whenNotPaused(uint8 _level) { 
+    require(!approval.paused(this, _level)); 
+    _;
   }
 
   modifier nonReentrant() {

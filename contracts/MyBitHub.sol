@@ -17,7 +17,7 @@ contract MyBitHub {
 
 //------------Beneficiary amounts---------------
   uint256 public myBitFoundationPercentage = 1;     // Percentage of funding given to MyBit foundation
-  uint256 public lockedTokensPercentage = 2;        // Percentage of funding given to locked token holders
+  uint256 public stakedTokenPercentage = 2;        // Percentage of funding given to locked token holders
   uint256 public installerPercentage = 97;          // Percentage of funding given to asset installer 
 
 
@@ -60,9 +60,8 @@ contract MyBitHub {
   }
 
   // This money creates an Asset contract to commence funding stage of it's lifecycle. The location is logged in an event. 
-  // TODO: check if storageHash is already being used
   function createAsset(bytes32 _storageHash, uint256 _amountToBeRaised, bytes32 _installerID, bytes32 _assetType) 
-  whenNotPaused
+  whenNotPaused(1)
   noEmptyBytes(_storageHash)
   noEmptyBytes(_installerID)
   noEmptyBytes(_assetType)
@@ -131,8 +130,8 @@ contract MyBitHub {
     _;
   }
 
-  modifier whenNotPaused { 
-    require(approval.paused() == false); 
+  modifier whenNotPaused(uint8 _level) { 
+    require(!approval.paused(this, _level)); 
     _; 
   }
   

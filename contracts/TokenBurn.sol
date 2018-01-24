@@ -27,6 +27,7 @@ public {
 function burnTokens(uint8 _accessLevelDesired)
 external 
 basicVerification(_accessLevelDesired)
+whenNotPaused(1)
 returns (bool) {
   // uint256 accessCostMyB = Oraclize(accessCostUSD[_accessLevelDesired]);    // Get USD -> MYB price 
   uint256 accessCostMyB = accessCostUSD[_accessLevelDesired];   // TODO: using this instead of oracle for now
@@ -43,6 +44,11 @@ modifier basicVerification(uint8 _newAccessLevel) {
   require(currentLevel < _newAccessLevel);       // Dont allow burning to downgrade access level
   _; 
 }
+
+modifier whenNotPaused(uint8 _level) { 
+    require(!approval.paused(this, _level)); 
+    _;
+  }
 
 event LogMyBitBurnt(address _burner, uint256 _amount, uint256 _timestamp);
 

@@ -60,7 +60,7 @@ def test_MarketPlace(chain):
     assetEscrow = accounts[5]
     totalSupply = 281207344012426
     myBitToken, _ = chain.provider.get_or_deploy_contract('MyBitToken', deploy_args=[totalSupply, "MyBit Token", 8, "MyB"])
-    approval, _ = chain.provider.get_or_deploy_contract('Approval')
+    approval, _ = chain.provider.get_or_deploy_contract('Approval', deploy_args=[accounts[0], accounts[1]])
     tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, approval.address])
     tokenStake, _ = chain.provider.get_or_deploy_contract('TokenStake', deploy_args=[myBitToken.address, approval.address])
     marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address])
@@ -224,7 +224,6 @@ def test_MarketPlace(chain):
     # Send Asset income 
     incomeReceived = convertEtherToWei(chain, 2)
     txHash = AssetContract.transact({"value": incomeReceived}).receiveIncome("January funding from Trusted ATM")
-    assert AssetContract.call().totalIncomeEarned() == incomeReceived
 
     # Calculate amount owed  -> will be equal to paidToFunder
     assetAmountRaised = AssetContract.call().amountRaised()

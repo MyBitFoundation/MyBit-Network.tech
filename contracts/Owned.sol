@@ -1,39 +1,48 @@
 pragma solidity ^0.4.18;
 
 // This contract handles authorization and freezing of the dapp
-// TODO: make pause() levels
+// TODO: add kill functionality??
 contract Owned {
   address public owner;
-  address public authority; 
+  address public ownerBackup; 
 
-  bool public paused = false;
+  // Pause levels: 1 = pause basic functionality, 2 = pause withdraws
+  mapping (address => mapping (uint8 => bool)) public paused;    // Address = contract address to pause,  uint8 = level of pause
 
 
   function Owned() 
   public {
-    owner = msg.sender;
+  }
+
+  function changeToBackupOwner(address _newBackup)
+  noZeroAddress(_newBackup)
+  external { 
+    require (msg.sender == ownerBackup); 
+    owner = msg.sender; 
+    ownerBackup = _newBackup; 
   }
 
   function transferOwnership(address _newOwner) 
-  onlyOwner 
+  onlyOwner
+  noZeroAddress(_newOwner)
   external {
     require(_newOwner != address(0));
-    OwnershipTransferred(owner, _newOwner);
     owner = _newOwner;
+    OwnershipTransferred(owner, _newOwner);
   }
 
-  function pause() 
+  function pause(address _contract, uint8 _level) 
   onlyOwner  
   public {
-    paused = true;
-    Pause(block.timestamp);
+    paused[_contract][_level] = true;
+    Pause(_contract, _level, block.timestamp);
   }
 
-  function unpause() 
+  function unpause(address _contract, uint8 _level) 
   onlyOwner  
   public {
-    paused = false;
-    Unpause(block.timestamp);
+    paused[_contract][_level] = false;
+    Unpause(_contract, _level, block.timestamp);
   }
 
   modifier onlyOwner() {
@@ -41,7 +50,12 @@ contract Owned {
     _;
   }
 
-  event Pause(uint256 _timestamp);
-  event Unpause(uint256 _timestamp);
+  modifier noZeroAddress(address _param) { 
+    require (_param != address(0)); 
+    _;
+  }
+
+  event Pause(address _contract, uint8 _level, uint256 _timestamp);
+  event Unpause(address _contract, uint8 _level, uint256 _timestamp);
   event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 }

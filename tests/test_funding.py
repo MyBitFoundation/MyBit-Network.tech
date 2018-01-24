@@ -85,7 +85,7 @@ def test_successfulFunding(chain):
     # MyBitHub = chain.provider.get_contract_factory("MyBitHub")
     # myBitHub, _ = MyBitHub.deploy({"gas":4000000}, args=[myBitFoundation, assetEscrow, approval.address, tokenStake.address])
     myBitToken, _ = chain.provider.get_or_deploy_contract('MyBitToken', deploy_args=[totalSupply, "MyBit Token", 8, "MyB"])
-    approval, _ = chain.provider.get_or_deploy_contract('Approval')
+    approval, _ = chain.provider.get_or_deploy_contract('Approval', deploy_args=[accounts[0], accounts[1]])
     tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, approval.address])
     tokenStake, _ = chain.provider.get_or_deploy_contract('TokenStake', deploy_args=[myBitToken.address, approval.address])
     marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address])
@@ -170,7 +170,6 @@ def test_successfulFunding(chain):
     # ---------------------------Check Receiving ROI---------------------------------------
     amountRaised = solarAsset.call().amountRaised()
     solarAsset.transact({"value": firstROIPayment}).receiveIncome("First ROI payment")
-    assert solarAsset.call().totalIncomeEarned() == firstROIPayment
 
     # ----------------Check First Funder Withdraw-----------
     solarAsset.transact({"from": firstFunder}).withdraw()
@@ -234,7 +233,7 @@ def test_pause(chain):
     assetEscrow = accounts[5]
     totalSupply = 281207344012426    # MyBitHub = chain.provider.get_contract_factory("MyBitHub")
     myBitToken, _ = chain.provider.get_or_deploy_contract('MyBitToken', deploy_args=[totalSupply, "MyBit Token", 8, "MyB"])
-    approval, _ = chain.provider.get_or_deploy_contract('Approval')
+    approval, _ = chain.provider.get_or_deploy_contract('Approval', deploy_args=[accounts[0], accounts[1]])
     marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address])
     tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, approval.address])
     tokenStake, _ = chain.provider.get_or_deploy_contract('TokenStake', deploy_args=[myBitToken.address, approval.address])
@@ -272,11 +271,11 @@ def test_pause(chain):
     receipt = getReceiptMined(chain, txHash)
     firstAssetCheck = receipt['logs'][0]['address']    # assert myBitHub.call().beingFunded()
     assert myBitHub.call().beingFunded(firstAssetCheck) == True
-    txHash = approval.transact().pause()
-    assert approval.call().paused() == True
+    txHash = approval.transact().pause(myBitHub.address, 1)
+    assert approval.call().paused(myBitHub.address, 1) == True
     someHashTwo = bytes.fromhex(keccak_256("someStorageHashTwo".encode('utf-8')).hexdigest())
     # txHash = myBitHub.transact({"from": approvedCreator}).createAsset(someHashTwo, firstProjectGoal, assetInstaller, fakeType)      #This fails as it should
-    txHash = approval.transact().unpause()
+    txHash = approval.transact().unpause(myBitHub.address, 1)
     someHash = bytes.fromhex(keccak_256("someStorageHash".encode('utf-8')).hexdigest())
     txHash = myBitHub.transact({"from": approvedCreator}).createAsset(someHashTwo, firstProjectGoal, assetInstaller, fakeType)      #This fails
     receipt = getReceiptMined(chain, txHash)
@@ -289,7 +288,7 @@ def test_refund(chain):
     assetEscrow = accounts[5]
     totalSupply = 281207344012426
     myBitToken, _ = chain.provider.get_or_deploy_contract('MyBitToken', deploy_args=[totalSupply, "MyBit Token", 8, "MyB"])
-    approval, _ = chain.provider.get_or_deploy_contract('Approval')
+    approval, _ = chain.provider.get_or_deploy_contract('Approval', deploy_args=[accounts[0], accounts[1]])
     marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address])
     tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, approval.address])
     tokenStake, _ = chain.provider.get_or_deploy_contract('TokenStake', deploy_args=[myBitToken.address, approval.address])

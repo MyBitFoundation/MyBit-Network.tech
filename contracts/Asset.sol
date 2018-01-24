@@ -27,7 +27,6 @@ using SafeMath for *;
   mapping (address => uint256) public paidToFunder;    // Amount investor has withdrawn
 
   // -------Investment Returns--------------
-  uint256 public totalIncomeEarned;   // Total amount received from Asset
   uint256 public totalPaidToFunders;          // Total amount of Ether redeemed 
 
  // --------Stages & Timing------------
@@ -66,7 +65,7 @@ using SafeMath for *;
   payable 
   requiresEther 
   atStage(Stages.FundingAsset) 
-  whenNotPaused
+  whenNotPaused(1)
   fundingLimit
   onlyApproved(1)
   external 
@@ -84,23 +83,23 @@ using SafeMath for *;
   function payout() 
   nonReentrant 
   atStage(Stages.FundingSuccess) 
-  whenNotPaused
+  whenNotPaused(2)
   external  
   returns (bool) {
     uint256 myBitAmount = amountRaised.mul(myBitHub.myBitFoundationPercentage()).div(100); 
-    uint256 lockedTokenAmount = amountRaised.mul(myBitHub.lockedTokensPercentage()).div(100); 
+    uint256 stakedTokenAmount = amountRaised.mul(myBitHub.stakedTokenPercentage()).div(100); 
     uint256 installerAmount =amountRaised.mul(myBitHub.installerPercentage()).div(100);
     address myBitFoundation = myBitHub.myBitFoundation(); 
     address assetEscrow = myBitHub.assetEscrow();
-    assert (myBitAmount.add(lockedTokenAmount).add(installerAmount) == amountRaised);       // TODO: for testing 
+    assert (myBitAmount.add(stakedTokenAmount).add(installerAmount) == amountRaised);       // TODO: for testing 
     TokenStake tokenStake = TokenStake(myBitHub.tokenStake());      // Ask MyBitHUb for token staking address 
     marketPlace = myBitHub.marketPlace();           // initialize marketPlace
-    tokenStake.receiveTransactionFee.value(lockedTokenAmount); 
+    tokenStake.receiveTransactionFee.value(stakedTokenAmount); 
     myBitFoundation.transfer(myBitAmount);
     assetEscrow.transfer(this.balance);  
     stage = Stages.AssetLive; 
     LogAssetPayoutMyBitFoundation(myBitFoundation, myBitAmount, block.timestamp);
-    LogAssetPayoutLockedTokenHolders(address(tokenStake), lockedTokenAmount, block.timestamp); 
+    LogAssetPayoutLockedTokenHolders(address(tokenStake), stakedTokenAmount, block.timestamp); 
     LogAssetPayoutInstaller(assetEscrow, installerAmount, block.timestamp); 
     return true;
   }
@@ -113,7 +112,6 @@ using SafeMath for *;
   atStage(Stages.AssetLive)
   external 
   returns (bool)  {
-    totalIncomeEarned = totalIncomeEarned.add(msg.value); 
     LogIncomeReceived(msg.sender, msg.value, block.timestamp);
     LogAssetNote(_note, block.timestamp); 
     return true; 
@@ -134,7 +132,7 @@ using SafeMath for *;
   function refund() 
   nonReentrant 
   atStage(Stages.FundingFailed) 
-  whenNotPaused
+  whenNotPaused(2)
   external
   returns (bool) {
     uint256 owed = shares[msg.sender];
@@ -151,11 +149,11 @@ using SafeMath for *;
   function withdraw()
   nonReentrant
   atStage(Stages.AssetLive)
-  whenNotPaused
+  whenNotPaused(2)
   external 
   returns (bool){
     require(shares[msg.sender] > 0);
-    uint256 totalReceived = this.balance.add(totalPaidToFunders);    // TODO: use totalIncomeEarned or this.balance? 
+    uint256 totalReceived = this.balance.add(totalPaidToFunders);   
     uint256 payment = (totalReceived.mul(shares[msg.sender]).div(amountRaised)).sub(paidToFunder[msg.sender]);
     assert (payment != 0); 
     paidToFunder[msg.sender] = paidToFunder[msg.sender].add(payment);
@@ -198,8 +196,8 @@ using SafeMath for *;
     _; 
   }
   
-  modifier whenNotPaused { 
-    require(!approval.paused()); 
+  modifier whenNotPaused(uint8 _level) { 
+    require(!approval.paused(this, _level)); 
     _; 
   }
 

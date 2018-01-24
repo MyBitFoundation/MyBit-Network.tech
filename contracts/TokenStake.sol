@@ -7,6 +7,7 @@ import './Approval.sol';
 
 // NOTE: If no stakers during period Wei is sent, then it will be unclaimed
 // TODO: prevent users from accidentally transferring in tokens 
+// TODO: add pause mechanism
 contract TokenStake { 
 using SafeMath for *; 
 
@@ -146,6 +147,11 @@ using SafeMath for *;
     _;
   }
 
+  modifier whenNotPaused(uint8 _level) { 
+    require(!approval.paused(this, _level)); 
+    _;
+  }
+  
   modifier requiresEther {
     require(msg.value > 0);
     _;
