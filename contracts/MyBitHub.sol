@@ -30,7 +30,7 @@ contract MyBitHub {
 
   function MyBitHub(address _myBitFoundation, address _assetEscrow, address _approval, address _tokenStake, address _marketPlace) 
   public {
-      fundingTime = 300;   // TODO: this is only for testing 
+      fundingTime = 3000;   // TODO: this is only for testing 
       myBitFoundation = _myBitFoundation;  
       assetEscrow = _assetEscrow;
       approval = Approval(_approval); 
@@ -61,12 +61,12 @@ contract MyBitHub {
 
   // This money creates an Asset contract to commence funding stage of it's lifecycle. The location is logged in an event. 
   function createAsset(bytes32 _storageHash, uint256 _amountToBeRaised, bytes32 _installerID, bytes32 _assetType) 
+  external 
   whenNotPaused(1)
   noEmptyBytes(_storageHash)
   noEmptyBytes(_installerID)
   noEmptyBytes(_assetType)
   notZero(_amountToBeRaised)
-  external 
   returns (address) {
     require(approval.userAccess(msg.sender) >= 1); 
     require(assets[_storageHash] == address(0)); 
@@ -78,6 +78,7 @@ contract MyBitHub {
 
   // Removes assets that are no longer functioning. 
   function removeAsset(bytes32 _id) 
+  external
   onlyOwner
   noEmptyAddress(assets[_id])
   returns(bool) {
@@ -88,9 +89,9 @@ contract MyBitHub {
 
   // Change the default funding time for the asset 
   function changeFundingTime(uint256 _newTimeGivenForFunding) 
+  external
   onlyOwner
   notZero(_newTimeGivenForFunding)
-  external
   returns (bool) { 
     fundingTime = _newTimeGivenForFunding;
     LogFundingTimeChanged(_newTimeGivenForFunding, block.timestamp); 
@@ -98,9 +99,9 @@ contract MyBitHub {
   }
 
   function changeAssetEscrow(address _newAddress)
+  external
   onlyOwner
   noEmptyAddress(_newAddress)
-  external
   returns (bool) { 
     assetEscrow = _newAddress; 
     LogAssetEscrowChanged(_newAddress, block.timestamp); 
@@ -137,7 +138,8 @@ contract MyBitHub {
   
   
 
-  function () public {
+  function () 
+  public {
     revert();
   }
 

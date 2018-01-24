@@ -51,14 +51,14 @@ contract MarketPlace {
 
   // Gives Ether sent to initatior of this sellOrder and transfers shares of asset to purchaser
   function buyAsset(bytes32 _sellOrderID)
-  public 
+  external 
   payable 
   nonReentrant
   onlyApproved
   sellOrderExists(_sellOrderID)
   needsToWithdraw(sellOrders[_sellOrderID].assetContract, sellOrders[_sellOrderID].initiator)
   returns (bool){ 
-    Sell thisOrder = sellOrders[_sellOrderID];
+    Sell memory thisOrder = sellOrders[_sellOrderID];
     require(msg.value >= (thisOrder.amount.mul(thisOrder.price))); 
     Asset thisAsset = Asset(thisOrder.assetContract); 
     require(thisAsset.shares(thisOrder.initiator) >= thisOrder.amount);
@@ -77,7 +77,7 @@ contract MarketPlace {
   buyOrderExists(_buyOrderID)
   needsToWithdraw(buyOrders[_buyOrderID].assetContract, msg.sender)
   returns (bool){ 
-    Buy thisOrder = buyOrders[_buyOrderID]; 
+    Buy memory thisOrder = buyOrders[_buyOrderID]; 
     Asset thisAsset = Asset(thisOrder.assetContract); 
     require(thisAsset.shares(msg.sender) >= thisOrder.amount); 
     require(thisAsset.tradeShares(msg.sender, thisOrder.initiator, thisOrder.amount)); 
@@ -97,7 +97,7 @@ contract MarketPlace {
   validAsset(_assetContract)
   returns (bool) {
     bytes32 id = keccak256(_assetContract, msg.sender);
-    Buy thisOrder = buyOrders[id];   // This will get overwritten if user tries to create more than one buy order 
+    Buy storage thisOrder = buyOrders[id];   // This will get overwritten if user tries to create more than one buy order 
     thisOrder.initiator = msg.sender;
     thisOrder.assetContract = _assetContract;
     thisOrder.amount = _amount; 
@@ -116,7 +116,7 @@ contract MarketPlace {
   hasEnoughShares(_assetContract, _amount)
   returns (bool) {
     bytes32 id = keccak256(_assetContract, msg.sender);
-    Sell thisOrder = sellOrders[id]; // This will get overwritten if user tries to create more than one buy order 
+    Sell storage thisOrder = sellOrders[id]; // This will get overwritten if user tries to create more than one buy order 
     thisOrder.initiator = msg.sender; 
     thisOrder.assetContract = _assetContract; 
     thisOrder.amount = _amount; 
@@ -132,7 +132,7 @@ contract MarketPlace {
   nonReentrant
   onlyApproved
   returns (bool) {
-    Buy thisBuyOrder = buyOrders[_orderID]; 
+    Buy memory thisBuyOrder = buyOrders[_orderID]; 
     require(thisBuyOrder.initiator == msg.sender);
     uint256 returnValue = thisBuyOrder.amount.mul(thisBuyOrder.price); 
     delete buyOrders[_orderID];
@@ -144,10 +144,11 @@ contract MarketPlace {
   // Deletes previously made Sell order. 
   // @Param: Sell order ID
   function deleteSellOrder(bytes32 _orderID)
+  external
   nonReentrant
   onlyApproved
   returns (bool) {
-      Sell thisSellOrder = sellOrders[_orderID]; 
+      Sell memory thisSellOrder = sellOrders[_orderID]; 
       require(thisSellOrder.initiator == msg.sender); 
       delete sellOrders[_orderID]; 
       return true;
@@ -155,7 +156,7 @@ contract MarketPlace {
 
   // User can withdraw the wei they are owed here 
   function withdraw() 
-  public
+  external
   nonReentrant 
   onlyApproved
   returns (bool){
@@ -165,7 +166,8 @@ contract MarketPlace {
     return true; 
   }
 
-  function() { 
+  function() 
+  external { 
     revert(); 
   }
 
@@ -208,7 +210,7 @@ contract MarketPlace {
   
   // Must have access level of 2 to use
   modifier onlyApproved() { 
-    require(approval.userAccess(msg.sender) >= 4); 
+    require(approval.userAccess(msg.sender) == 4); 
     _; 
   }
 

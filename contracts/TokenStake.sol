@@ -74,7 +74,7 @@ using SafeMath for *;
   returns (bool) { 
     require (_amount > 0 && _period < 4);
     require (myBitToken.transferFrom(msg.sender, this, _amount));
-    Stake thisStake = stakes[keccak256(msg.sender, block.number, _amount)];
+    Stake storage thisStake = stakes[keccak256(msg.sender, block.number, _amount)];
     thisStake.nonceAtStake = periodNonce;
     thisStake.periodIndex = _period;
     thisStake.amountStaked = _amount;
@@ -83,6 +83,7 @@ using SafeMath for *;
     thisStake.multipliedAmountFirstNonce = thisStake.multipliedAmount.mul((nextPeriod.sub(block.number))).div(periodLength);
     thisStake.nonceAtUnlock = periodNonce.add(numberOfNonces[_period]); 
     multipliedTokensInPeriod[periodNonce] = multipliedTokensInPeriod[periodNonce].add(thisStake.multipliedAmountFirstNonce); 
+    totalStakedTokens = totalStakedTokens.add(_amount);
     fillMultipliedTokensForNonce(periodNonce.add(1), thisStake.nonceAtUnlock, thisStake.multipliedAmount);
     LogTokensStaked(msg.sender, block.number, keccak256(msg.sender, block.number, _amount)); 
     return true;
@@ -97,7 +98,7 @@ using SafeMath for *;
   ownerOfLock(_lockID)
   stakingFinished(_lockID)
   returns (bool) {
-    Stake thisStake = stakes[_lockID]; 
+    Stake memory thisStake = stakes[_lockID]; 
     myBitToken.transfer(msg.sender, thisStake.amountStaked);   // If transfer() fails the call will bubble up
     uint owedToUser = feesReceivedAtNonce[thisStake.nonceAtStake].calculateOwed(multipliedTokensInPeriod[thisStake.nonceAtStake], thisStake.multipliedAmountFirstNonce);
     for (uint i = (thisStake.nonceAtStake + 1); i < thisStake.nonceAtUnlock; i++) {
@@ -118,7 +119,7 @@ using SafeMath for *;
   returns (bool) 
   { 
     feesReceivedAtNonce[periodNonce] = feesReceivedAtNonce[periodNonce].add(msg.value);
-    LogFeeReceived(msg.sender, block.number, msg.value); 
+    LogFeeReceived(msg.sender, periodNonce, msg.value); 
     return true;
   }
 
@@ -165,7 +166,7 @@ using SafeMath for *;
   }
 
   modifier ownerOfLock(bytes32 _ID) { 
-    Stake thisStake = stakes[_ID];
+    Stake memory thisStake = stakes[_ID];
     require(_ID == keccak256(msg.sender, thisStake.blockAtStake, thisStake.amountStaked)); 
     _;
   }
@@ -183,7 +184,7 @@ using SafeMath for *;
     _;
   }
 
-  event LogFeeReceived(address indexed _sender, uint indexed _blockNumber, uint indexed _amount); 
+  event LogFeeReceived(address indexed _sender, uint indexed _currentNonce, uint indexed _amount); 
   event LogTokensStaked(address indexed _staker, uint indexed _blockNumber, bytes32 indexed _ID); 
   event LogTokenWithdraw(address indexed _staker, uint indexed _blockNumber, bytes32 indexed _ID);
 

@@ -12,6 +12,7 @@ contract Approval is Owned{
   function Approval(address _owner, address _ownerBackup) 
   noEmptyAddress(_owner)
   noEmptyAddress(_ownerBackup)
+  public
   { 
     owner = _owner;
     ownerBackup = _ownerBackup; 
@@ -58,6 +59,7 @@ contract Approval is Owned{
   returns (bool) { 
     require(_accessLevel < 5 && _accessLevel != 0);
     userAccess[_newUser] = _accessLevel; 
+    LogUserApproved(_newUser, _accessLevel, block.timestamp); 
     return true;
   }
 
@@ -70,6 +72,7 @@ contract Approval is Owned{
     if (_blacklist) {
       blackListed[_user] = true; 
     } 
+    LogUserRemoved(_user, _newAccessLevel, block.timestamp); 
     return true;
   }
 
@@ -93,5 +96,8 @@ contract Approval is Owned{
     require(!blackListed[msg.sender]);
     _;
   }
+
+  event LogUserApproved(address _user, uint8 _approvalLevel, uint256 _timestamp); 
+  event LogUserRemoved(address _user, uint8 _newApprovalLevel, uint256 _timestamp); 
 
 }

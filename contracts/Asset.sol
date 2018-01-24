@@ -62,13 +62,13 @@ using SafeMath for *;
 
   // Users can send Ether here to fund asset if funding goal hasn't been reached and the funding period isn't over. 
   function fund()
+  external 
   payable 
   requiresEther 
   atStage(Stages.FundingAsset) 
   whenNotPaused(1)
   fundingLimit
   onlyApproved(1)
-  external 
   returns (bool) {
     if (shares[msg.sender] == 0) {
       LogNewFunder(msg.sender, block.timestamp);    // Create event to reference list of funders
@@ -81,10 +81,10 @@ using SafeMath for *;
 
   // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
   function payout() 
+  external  
   nonReentrant 
   atStage(Stages.FundingSuccess) 
   whenNotPaused(2)
-  external  
   returns (bool) {
     uint256 myBitAmount = amountRaised.mul(myBitHub.myBitFoundationPercentage()).div(100); 
     uint256 stakedTokenAmount = amountRaised.mul(myBitHub.stakedTokenPercentage()).div(100); 
@@ -107,10 +107,10 @@ using SafeMath for *;
   // Revenue produced by the asset will be sent here
   // @Param: A note that can be left by the payee
   function receiveIncome(string _note) 
+  external 
   payable 
   requiresEther 
   atStage(Stages.AssetLive)
-  external 
   returns (bool)  {
     LogIncomeReceived(msg.sender, msg.value, block.timestamp);
     LogAssetNote(_note, block.timestamp); 
@@ -119,9 +119,9 @@ using SafeMath for *;
 
   // This function needs to be called to allow refunds to be made. Signals to the myBitHub contract that funding has failed
   function initiateRefund()
+  external
   atStage(Stages.FundingAsset)
   fundingPeriodOver
-  external
   returns (bool) { 
     require(myBitHub.assetFailedFunding(amountRaised)); 
     stage = Stages.FundingFailed; 
@@ -130,10 +130,10 @@ using SafeMath for *;
 
   // Contributors can retrieve their funds here if campaign is over + failure.
   function refund() 
+  external
   nonReentrant 
   atStage(Stages.FundingFailed) 
   whenNotPaused(2)
-  external
   returns (bool) {
     uint256 owed = shares[msg.sender];
     shares[msg.sender] = 0;
@@ -147,10 +147,10 @@ using SafeMath for *;
   // Asset funders can receive their share of the income here
   // TODO: Can do these calculations in a library
   function withdraw()
+  external 
   nonReentrant
   atStage(Stages.AssetLive)
   whenNotPaused(2)
-  external 
   returns (bool){
     require(shares[msg.sender] > 0);
     uint256 totalReceived = this.balance.add(totalPaidToFunders);   
@@ -192,7 +192,7 @@ using SafeMath for *;
   }
 
   modifier onlyApproved(uint8 _accessLevel) { 
-    require(approval.userAccess(msg.sender) == _accessLevel);
+    require(approval.userAccess(msg.sender) >= _accessLevel);
     _; 
   }
   

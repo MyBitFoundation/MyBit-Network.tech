@@ -42,6 +42,7 @@ modifier basicVerification(uint8 _newAccessLevel) {
   uint8 currentLevel = approval.userAccess(msg.sender);
   require(currentLevel >= 1);    // Must have basic KYC verification 
   require(currentLevel < _newAccessLevel);       // Dont allow burning to downgrade access level
+  require (_newAccessLevel < 5); 
   _; 
 }
 
