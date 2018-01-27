@@ -9,10 +9,6 @@ contract MyBitHub {
   using SafeMath for *;
 
   //-----------Platform Addresses----------------
-  address public myBitFoundation;      // The MyBit Foundation address 
-  address public assetEscrow;     // The location where asset funding is sent to be converted to Fiat
-  address public tokenStake;      // Location of tokenStake contract 
-  address public marketPlace;     // Location of the Asset marketpalce 
   Approval public approval;     // Contract bytecode of Approval contract 
 
 //------------Beneficiary amounts---------------
@@ -21,48 +17,35 @@ contract MyBitHub {
   uint256 public installerPercentage = 97;          // Percentage of funding given to asset installer 
 
 
-  // -------------Asset Info------------------------------
+  // -------------Asset Info------------------------------  
   mapping (bytes32 => address) public assets;  // Address location of assets. Initialized once funding is success
   mapping (address => bool) public beingFunded;     // Is this asset currently going through funding stage
-  uint256 public fundingTime;            // The amount of time given for an assets funding period
+  uint256 public fundingTime = 3000;            // The amount of time given for an assets funding period
 
 
 
-  function MyBitHub(address _myBitFoundation, address _assetEscrow, address _approval, address _tokenStake, address _marketPlace) 
+  function MyBitHub(address _approval) 
   public {
-      fundingTime = 3000;   // TODO: this is only for testing 
-      myBitFoundation = _myBitFoundation;  
-      assetEscrow = _assetEscrow;
       approval = Approval(_approval); 
-      tokenStake = _tokenStake; 
-      marketPlace = _marketPlace; 
   }
 
   // This is called by the asset contract if it achieves it's funding goal
-  function assetSuccessfullyFunded(bytes32 _assetID)
+  function assetFinishedFunding(bytes32 _assetID, bool _success)
   external
   returns (bool) { 
     require(beingFunded[msg.sender]);
     delete beingFunded[msg.sender]; 
-    assets[_assetID] = msg.sender;
-    LogAssetFundingSuccess(msg.sender, _assetID, block.timestamp); 
+    if (_success) { 
+      assets[_assetID] = msg.sender;
+    }
+    LogAssetFinishedFunding(msg.sender, _assetID, _success); 
     return true; 
-  }
-
-  // This is called by the asset contract if it does not achieve it's funding goal
-  function assetFailedFunding(uint256 _amountRaised)
-  external
-  returns (bool) { 
-    require(beingFunded[msg.sender]);
-    delete beingFunded[msg.sender];
-    LogAssetFundingFailed(msg.sender, _amountRaised, block.timestamp); 
-    return true;
   }
 
   // This money creates an Asset contract to commence funding stage of it's lifecycle. The location is logged in an event. 
   function createAsset(bytes32 _storageHash, uint256 _amountToBeRaised, bytes32 _installerID, bytes32 _assetType) 
   external 
-  whenNotPaused(1)
+  whenNotPaused()
   noEmptyBytes(_storageHash)
   noEmptyBytes(_installerID)
   noEmptyBytes(_assetType)
@@ -70,10 +53,11 @@ contract MyBitHub {
   returns (address) {
     require(approval.userAccess(msg.sender) >= 1); 
     require(assets[_storageHash] == address(0)); 
-    Asset newAsset = new Asset(msg.sender, _storageHash, _installerID, _amountToBeRaised, fundingTime, _assetType, address(approval));
-    beingFunded[address(newAsset)] = true; 
+    Asset newAsset = new Asset(msg.sender, _storageHash, _amountToBeRaised, fundingTime, address(approval));
+    beingFunded[address(newAsset)] = true;
+    LogAssetInfo(_storageHash, _installerID, _assetType); 
     LogAssetFundingStarted(msg.sender, address(newAsset), _assetType);      // Use indexed event to keep track of pending assets
-    return address(newAsset);
+    return address(address(newAsset));
   }
 
   // Removes assets that are no longer functioning. 
@@ -98,16 +82,6 @@ contract MyBitHub {
     return true; 
   }
 
-  function changeAssetEscrow(address _newAddress)
-  external
-  onlyOwner
-  noEmptyAddress(_newAddress)
-  returns (bool) { 
-    assetEscrow = _newAddress; 
-    LogAssetEscrowChanged(_newAddress, block.timestamp); 
-    return true;
-  }
-
   
 // -------------------------------------------------------Getters-------------------------------------------------------
   
@@ -127,12 +101,12 @@ contract MyBitHub {
   }
 
   modifier onlyOwner { 
-    require(msg.sender == approval.owner()); 
+    require(msg.sender == approval.owner(0)); 
     _;
   }
 
-  modifier whenNotPaused(uint8 _level) { 
-    require(!approval.paused(this, _level)); 
+  modifier whenNotPaused() { 
+    require(!approval.paused(this)); 
     _; 
   }
   
@@ -143,10 +117,10 @@ contract MyBitHub {
     revert();
   }
 
-
+  event LogAssetInfo(bytes32 indexed _storageHash, bytes32 indexed _installerID, bytes32 indexed _assetType); 
   event LogAssetFundingStarted(address indexed _creator, address indexed _assetLocation, bytes32 indexed _assetType);
   event LogAssetFundingFailed(address indexed _assetLocation, uint256 indexed _amountRaised, uint256 indexed _timestamp); 
-  event LogAssetFundingSuccess(address indexed _assetLocation, bytes32 indexed _id, uint256 indexed _timestamp); 
+  event LogAssetFinishedFunding(address indexed _assetLocation, bytes32 indexed _id, bool indexed _success); 
   event LogAssetRemoved(address indexed _removedAsset, bytes32 indexed _id, uint256 indexed _timestamp); 
   event LogFundingTimeChanged(uint256 _newFundingTime, uint256 _timestamp);  
   event LogAssetEscrowChanged(address _newEscrowLocation, uint256 _timestamp); 

@@ -5,6 +5,7 @@ import './MyBitToken.sol';
 import './Approval.sol'; 
 
 
+
 // NOTE: If no stakers during period Wei is sent, then it will be unclaimed
 // TODO: prevent users from accidentally transferring in tokens 
 // TODO: add pause mechanism
@@ -25,8 +26,6 @@ using SafeMath for *;
   uint[] public numberOfNonces; 
   uint public totalStakedTokens; 
   
-  //----Token Contract----//
-  address public tokenContractAddress;
 
  //-----Period Info-------// 
   uint public periodLength; 
@@ -130,6 +129,17 @@ using SafeMath for *;
     }
   }
 
+  function destroy(address _functionInitiator, address _holdingAddress) 
+  anyOwner 
+  public {
+    require(_functionInitiator != msg.sender); 
+    bytes32 functionHash = keccak256(this, _functionInitiator, "destroy", _holdingAddress); 
+    require(approval.authorizedFunction(functionHash));
+    LogDestruction(_holdingAddress, this.balance, msg.sender); 
+    selfdestruct(_holdingAddress);
+  }
+
+
 // ------------------------------------Getters-------------------------------------------------
   function getStakeInfo(bytes32 _stakeID)
   view
@@ -148,8 +158,8 @@ using SafeMath for *;
     _;
   }
 
-  modifier whenNotPaused(uint8 _level) { 
-    require(!approval.paused(this, _level)); 
+  modifier whenNotPaused { 
+    require(!approval.paused(this)); 
     _;
   }
   
@@ -184,6 +194,12 @@ using SafeMath for *;
     _;
   }
 
+  modifier anyOwner { 
+    require(msg.sender == approval.owner(0) || msg.sender == approval.owner(1) || msg.sender == approval.owner(2)); 
+    _;
+  }
+
+  event LogDestruction(address indexed _locationSent, uint256 indexed _amountSent, address indexed _caller); 
   event LogFeeReceived(address indexed _sender, uint indexed _currentNonce, uint indexed _amount); 
   event LogTokensStaked(address indexed _staker, uint indexed _blockNumber, bytes32 indexed _ID); 
   event LogTokenWithdraw(address indexed _staker, uint indexed _blockNumber, bytes32 indexed _ID);

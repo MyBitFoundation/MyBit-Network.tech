@@ -7,14 +7,12 @@ import './MarketPlace.sol';
 
 
 // Created by MyBitHub, holds/distributes Ether for single Asset 
-// TODO: make storageHash malleable?? 
 // NOTE: If money is suicided into this contract funders will share the Ether as income 
 contract Asset {
 using SafeMath for *;
 
   MyBitHub public myBitHub; 
   Approval public approval;
-  address public marketPlace; 
 
   // ------------Project Information--------------
   bytes32 public storageHash;    // Where descriptive information + images are stored for this asset. Also acts as an ID in MyBitHub (IPFS, Swarm, BigChainDB)
@@ -48,7 +46,7 @@ using SafeMath for *;
   // @Param: The amount of Wei to be raised in order to install asset
   // @Param: The amount of time allowed for asset to try and reach it's funding goal 
   // @Param: The type of asset being funded (ie. Solar, Mining, ATM)
-  function Asset(address _creator, bytes32 _storageHash, bytes32 _installerID, uint256 _amountToBeRaised, uint256 _maximumFundingTime, bytes32 _assetType, address _approval) 
+  function Asset(address _creator, bytes32 _storageHash, uint256 _amountToBeRaised, uint256 _maximumFundingTime, address _approval) 
   public {
     myBitHub = MyBitHub(msg.sender);
     amountToBeRaised = _amountToBeRaised;
@@ -56,7 +54,6 @@ using SafeMath for *;
     fundingDeadline = _maximumFundingTime.add(now);
     storageHash = _storageHash;
     approval = Approval(_approval); 
-    LogAssetInfo(_assetType, _installerID, _storageHash); 
     LogAssetCreated(_creator, _amountToBeRaised, now);
   }
 
@@ -66,7 +63,7 @@ using SafeMath for *;
   payable 
   requiresEther 
   atStage(Stages.FundingAsset) 
-  whenNotPaused(1)
+  whenNotPaused()
   fundingLimit
   onlyApproved(1)
   returns (bool) {
@@ -84,16 +81,15 @@ using SafeMath for *;
   external  
   nonReentrant 
   atStage(Stages.FundingSuccess) 
-  whenNotPaused(2)
+  whenNotPaused()
   returns (bool) {
     uint256 myBitAmount = amountRaised.mul(myBitHub.myBitFoundationPercentage()).div(100); 
     uint256 stakedTokenAmount = amountRaised.mul(myBitHub.stakedTokenPercentage()).div(100); 
     uint256 installerAmount =amountRaised.mul(myBitHub.installerPercentage()).div(100);
-    address myBitFoundation = myBitHub.myBitFoundation(); 
-    address assetEscrow = myBitHub.assetEscrow();
+    address myBitFoundation = approval.myBitContracts(keccak256("MyBitFoundation")); 
+    address assetEscrow =  approval.myBitContracts(keccak256("AssetEscrow"));
     assert (myBitAmount.add(stakedTokenAmount).add(installerAmount) == amountRaised);       // TODO: for testing 
-    TokenStake tokenStake = TokenStake(myBitHub.tokenStake());      // Ask MyBitHUb for token staking address 
-    marketPlace = myBitHub.marketPlace();           // initialize marketPlace
+    TokenStake tokenStake = TokenStake(approval.myBitContracts(keccak256("TokenStake")));      // Ask MyBitHUb for token staking address 
     tokenStake.receiveTransactionFee.value(stakedTokenAmount); 
     myBitFoundation.transfer(myBitAmount);
     assetEscrow.transfer(this.balance);  
@@ -123,7 +119,7 @@ using SafeMath for *;
   atStage(Stages.FundingAsset)
   fundingPeriodOver
   returns (bool) { 
-    require(myBitHub.assetFailedFunding(amountRaised)); 
+    require(myBitHub.assetFinishedFunding(storageHash, false)); 
     stage = Stages.FundingFailed; 
     return true; 
   }
@@ -133,7 +129,7 @@ using SafeMath for *;
   external
   nonReentrant 
   atStage(Stages.FundingFailed) 
-  whenNotPaused(2)
+  whenNotPaused()
   returns (bool) {
     uint256 owed = shares[msg.sender];
     shares[msg.sender] = 0;
@@ -145,12 +141,11 @@ using SafeMath for *;
 
 
   // Asset funders can receive their share of the income here
-  // TODO: Can do these calculations in a library
   function withdraw()
   external 
   nonReentrant
   atStage(Stages.AssetLive)
-  whenNotPaused(2)
+  whenNotPaused()
   returns (bool){
     require(shares[msg.sender] > 0);
     uint256 totalReceived = this.balance.add(totalPaidToFunders);   
@@ -172,9 +167,9 @@ using SafeMath for *;
   // @Param number of shares being traded 
   function tradeShares(address _from, address _to, uint256 _amount) 
   external 
+  atStage(Stages.AssetLive)
   returns (bool) {
-    require(marketPlace != address(0));
-    require(msg.sender == marketPlace); 
+    require(msg.sender == approval.myBitContracts(keccak256("MarketPlace"))); 
     require(shares[_from] >= _amount);
     uint256 relativePaidOutAmount = (paidToFunder[_from].mul(_amount)).div(shares[_from]);
     paidToFunder[_to] = paidToFunder[_to].add(relativePaidOutAmount); 
@@ -182,6 +177,15 @@ using SafeMath for *;
     shares[_from] = shares[_from].sub(_amount);
     shares[_to] = shares[_to].add(_amount);
     return true;
+  }
+
+  function destroy(address _functionInitiator, address _holdingAddress) 
+  anyOwner 
+  public {
+    require(_functionInitiator != msg.sender); 
+    require(approval.authorizedFunction(keccak256(this, _functionInitiator, "destroy", _holdingAddress)));
+    LogDestruction(_holdingAddress, this.balance, msg.sender); 
+    selfdestruct(_holdingAddress);
   }
 
   modifier nonReentrant() {
@@ -196,8 +200,8 @@ using SafeMath for *;
     _; 
   }
   
-  modifier whenNotPaused(uint8 _level) { 
-    require(!approval.paused(this, _level)); 
+  modifier whenNotPaused() { 
+    require(!approval.paused(this)); 
     _; 
   }
 
@@ -207,10 +211,10 @@ using SafeMath for *;
   }
 
   modifier fundingLimit() {
-    require(amountRaised <= amountToBeRaised);
+    require(amountRaised < amountToBeRaised);
     _;
     if (amountRaised >= amountToBeRaised) {
-      require(myBitHub.assetSuccessfullyFunded(storageHash));
+      require(myBitHub.assetFinishedFunding(storageHash, true));
       stage = Stages.FundingSuccess;
       }
   }
@@ -229,12 +233,18 @@ using SafeMath for *;
     require(msg.value > 0);
     _;
   }
-
+  
+  modifier anyOwner { 
+    require(msg.sender == approval.owner(0) || msg.sender == approval.owner(1) || msg.sender == approval.owner(2)); 
+    _;
+  }
 
   function () public {
     revert();
   }
 
+
+  event LogDestruction(address indexed _locationSent, uint256 indexed _amountSent, address indexed _caller); 
   event LogNewFunder(address indexed _funder, uint256 indexed _timestamp); 
   event LogAssetFunded(address indexed _funder, uint256 indexed _amount, uint256 indexed _timestamp); 
   event LogRefund(address indexed _funder, uint256 indexed _amount, uint256 indexed _timestamp); 

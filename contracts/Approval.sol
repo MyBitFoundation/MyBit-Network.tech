@@ -5,25 +5,32 @@ import './Owned.sol';
 contract Approval is Owned{ 
   address public tokenBurn; 
 
+  // NOTE: MyBitFoundation, AssetEscrow, TokenStake, TokenBurn, MarketPlace must all be set here 
+  mapping (bytes32 => address) public myBitContracts;    // The hash of the name of MyBit related contracts will be here + MyBitFoundation + Asset escrow  
+
+
   mapping (address => address) public backupAddress;    // User can set a backup address incase of loss 
   mapping (address => uint8) public userAccess;   // 0: Not approved for anything, 1: KYC approved, 2: Approved to fund assets/create assets,  3: Approved to stake tokens,  4: Approved to trade/exchange tokens
   mapping (address => bool) public blackListed;    // Banned users
 
-  function Approval(address _owner, address _ownerBackup) 
+  function Approval(address _owner, address _ownerTwo, address _ownerThree) 
   noEmptyAddress(_owner)
-  noEmptyAddress(_ownerBackup)
+  noEmptyAddress(_ownerTwo)
+  noEmptyAddress(_ownerThree)
   public
   { 
-    owner = _owner;
-    ownerBackup = _ownerBackup; 
+    owner[0] = _owner;
+    owner[1] = _ownerTwo;
+    owner[2] = _ownerThree;
   }
 
-  // Owner can set the tokenburn contract here
-  function setBurnAddress(address _tokenBurn)
-  external
+
+  function setMyBitContract(string _contractName, address _contractAddress)
+  external 
   onlyOwner { 
-    tokenBurn = _tokenBurn; 
+    myBitContracts[keccak256(_contractName)] = _contractAddress;
   }
+
 
   // TODO: test
   function setBackupAddress(address _backupAddress)
@@ -88,7 +95,7 @@ contract Approval is Owned{
 
     // Allow owner or burning contract to give access to user
   modifier onlyTokenBurnOrOwner() { 
-    require(msg.sender == tokenBurn || msg.sender == owner); 
+    require(msg.sender == myBitContracts[keccak256("TokenBurn")] || msg.sender == owner[0]); 
     _;
   }
   

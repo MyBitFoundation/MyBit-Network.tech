@@ -1,4 +1,5 @@
 pragma solidity ^0.4.18;
+import './Approval.sol';
 import './MyBitHub.sol';
 import './Asset.sol'; 
 import './SafeMath.sol'; 
@@ -36,20 +37,15 @@ contract MarketPlace {
     uint256 price; 
   }
 
-  function MarketPlace(address _approval)
+  function MarketPlace(address _approval, address _myBitHub)
   public {
     approval = Approval(_approval); 
-  }
-
-  function setMyBitHub(address _myBitHub)
-  external
-  returns (bool) {
-    require(msg.sender == approval.owner()); 
     myBitHub = MyBitHub(_myBitHub);
-    return true; 
   }
 
   // Gives Ether sent to initatior of this sellOrder and transfers shares of asset to purchaser
+  // Note: Check if creator of sell order has enough shares left 
+  // @Param: ID of the sell order to be bought
   function buyAsset(bytes32 _sellOrderID)
   external 
   payable 
@@ -137,7 +133,7 @@ contract MarketPlace {
     uint256 returnValue = thisBuyOrder.amount.mul(thisBuyOrder.price); 
     delete buyOrders[_orderID];
     weiDeposited[msg.sender] = weiDeposited[msg.sender].sub(returnValue); 
-    msg.sender.transfer(returnValue); 
+    weiOwed[msg.sender] = weiOwed[msg.sender].add(returnValue); 
     return true; 
   }
 
@@ -164,6 +160,16 @@ contract MarketPlace {
     weiOwed[msg.sender] = 0;
     msg.sender.transfer(owed);
     return true; 
+  }
+
+  function destroy(address _functionInitiator, address _holdingAddress) 
+  anyOwner 
+  public {
+    require(_functionInitiator != msg.sender); 
+    bytes32 functionHash = keccak256(this, _functionInitiator, "destroy", _holdingAddress); 
+    require(approval.authorizedFunction(functionHash));
+    LogDestruction(_holdingAddress, this.balance, msg.sender); 
+    selfdestruct(_holdingAddress);
   }
 
   function() 
@@ -214,8 +220,8 @@ contract MarketPlace {
     _; 
   }
 
-  modifier whenNotPaused(uint8 _level) { 
-    require(!approval.paused(this, _level)); 
+  modifier whenNotPaused() { 
+    require(!approval.paused(this)); 
     _;
   }
 
@@ -226,24 +232,31 @@ contract MarketPlace {
     reentrancyLock = false;
   }
 
+  modifier anyOwner { 
+    require(msg.sender == approval.owner(0) || msg.sender == approval.owner(1) || msg.sender == approval.owner(2)); 
+    _;
+  }
+
+  event LogDestruction(address indexed _locationSent, uint256 indexed _amountSent, address indexed _caller); 
+
   event LogSellOrderCreated(bytes32 indexed _id, address indexed _assetAddress, address indexed _creator); 
   event LogBuyOrderCreated(bytes32 indexed _id, address indexed _assetAddress, address indexed _creator); 
   event LogBuyOrderCompleted(bytes32 indexed _id, address indexed _assetAddress, address indexed _purchaser);
   event LogSellOrderCompleted(bytes32 indexed _id, address indexed _assetAddress, address indexed _purchaser); 
 
 
-  function getBuyOrder(bytes32 _orderHash)
-  external
-  view 
-  returns (address, address, uint256, uint256) { 
-    return (buyOrders[_orderHash].initiator, buyOrders[_orderHash].assetContract, buyOrders[_orderHash].amount, buyOrders[_orderHash].price); 
-  }
+  // function getBuyOrder(bytes32 _orderHash)
+  // external
+  // view 
+  // returns (address, address, uint256, uint256) { 
+  //   return (buyOrders[_orderHash].initiator, buyOrders[_orderHash].assetContract, buyOrders[_orderHash].amount, buyOrders[_orderHash].price); 
+  // }
 
-  function getSellOrder(bytes32 _orderHash)
-  external
-  view 
-  returns (address, address, uint256, uint256) { 
-    return (sellOrders[_orderHash].initiator, sellOrders[_orderHash].assetContract, sellOrders[_orderHash].amount, sellOrders[_orderHash].price); 
-  }
+  // function getSellOrder(bytes32 _orderHash)
+  // external
+  // view 
+  // returns (address, address, uint256, uint256) { 
+  //   return (sellOrders[_orderHash].initiator, sellOrders[_orderHash].assetContract, sellOrders[_orderHash].amount, sellOrders[_orderHash].price); 
+  // }
 
 }

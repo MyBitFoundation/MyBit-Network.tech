@@ -22,6 +22,11 @@ contract HashFunctions {
     return keccak256(_staker, _blockNumber, _amount); 
   }
 
+  function sha3(string _name) 
+  external
+  view returns (bytes32){
+    return keccak256(_name);
+  }
 
 
 function ()
