@@ -58,6 +58,7 @@ using SafeMath for *;
   }
 
   // Users can send Ether here to fund asset if funding goal hasn't been reached and the funding period isn't over. 
+  // Invariants: Requires Eth be sent with transaction |  Must be in funding stage. Must be under goal | Must have KYC approved. | contract is not paused
   function fund()
   external 
   payable 
@@ -77,6 +78,8 @@ using SafeMath for *;
   }
 
   // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
+  // Invariants: Must be in stage FundingSuccess | MyBitFoundation + AssetEscrow  + TokenStake addresses are set | Contract is not paused
+  // Note: MyBitFoundation + AssetEscrow cannot be contracts.
   function payout() 
   external  
   nonReentrant 
@@ -101,6 +104,7 @@ using SafeMath for *;
   }
 
   // Revenue produced by the asset will be sent here
+  // Invariants: Requires Eth is sent with transaction | Asset must be in "live" stage
   // @Param: A note that can be left by the payee
   function receiveIncome(string _note) 
   external 
@@ -113,7 +117,8 @@ using SafeMath for *;
     return true; 
   }
 
-  // This function needs to be called to allow refunds to be made. Signals to the myBitHub contract that funding has failed
+  // This function needs to be called to allow refunds to be made. Signals to the myBitHub contract that funding has failed + moves stage to Funding failed
+  // Invariants: Must be still be in funding stage | must be passed deadline
   function initiateRefund()
   external
   atStage(Stages.FundingAsset)
@@ -124,13 +129,15 @@ using SafeMath for *;
     return true; 
   }
 
-  // Contributors can retrieve their funds here if campaign is over + failure.
+  // Contributors can retrieve their funds here if campaign is finished + failure and initateRefund() has been called.
+  // Invariants: sender must have shares | Must be in failed funding stage || No re-entry | Contract must not be paused
   function refund() 
   external
   nonReentrant 
   atStage(Stages.FundingFailed) 
   whenNotPaused()
   returns (bool) {
+    require (shares[msg.sender] > 0);
     uint256 owed = shares[msg.sender];
     shares[msg.sender] = 0;
     amountRaised = amountRaised.sub(owed);
@@ -141,6 +148,7 @@ using SafeMath for *;
 
 
   // Asset funders can receive their share of the income here
+  // Invariants: Asset must be live. Sender must have shares in the asset. There must be income earned.
   function withdraw()
   external 
   nonReentrant
@@ -160,8 +168,8 @@ using SafeMath for *;
 
   
   // Trades shares of an asset to other user. Must trade relative amount paid to Funder to balance withdrawl amount. 
-  // ie. must trade over the same relative amount paid out. So person buying shares will also be recognized as being paid out for those shares in the past
-  // Invariants: Marketplace is set once payout has occured (funding success). Can only be called by marketplace contract. User must have enough shares to make trade. 
+  // Must trade over relative amount of paidToFunder, So person buying shares will also be recognized as being paid out for those shares in the past
+  // Invariants: Can only be called by marketplace contract. User must have enough shares to make trade. 
   // @Param address selling shares 
   // @Param address buying shares 
   // @Param number of shares being traded 
@@ -179,6 +187,8 @@ using SafeMath for *;
     return true;
   }
 
+  // Must be authorized by 1 of the 3 owners and then can be called by any of the other 2
+  // Invariants: Must be 1 of 3 owners. Cannot be called by same owner who authorized the function to be called. 
   function destroy(address _functionInitiator, address _holdingAddress) 
   anyOwner 
   public {

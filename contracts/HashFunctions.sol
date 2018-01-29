@@ -24,10 +24,17 @@ contract HashFunctions {
 
   function sha3(string _name) 
   external
-  view returns (bytes32){
+  view 
+  returns (bytes32){
     return keccak256(_name);
   }
 
+  function getAuthorizeHash(address _contractAddress, address _owner, string _fnName, address _recipient)
+  external 
+  view 
+  returns (bytes32) { 
+    return keccak256(_contractAddress, _owner, _fnName, _recipient); 
+  }
 
 function ()
 public {

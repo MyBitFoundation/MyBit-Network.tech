@@ -1,9 +1,10 @@
 pragma solidity ^0.4.18;
 import './Owned.sol';
 
-  // There are 3 levels of access on the platform. First is basic acess (creating/funding assets), Second is ability to stake, Third is ability to trade assets
+// There are 3 levels of access on the platform. First is basic acess (creating/funding assets), Second is ability to stake, Third is ability to trade assets
+// Approval contract controls access to certain functions and contains the address of the different contracts used witin the Dapp 
+// myBitContracts must all be set before any assets are funded
 contract Approval is Owned{ 
-  address public tokenBurn; 
 
   // NOTE: MyBitFoundation, AssetEscrow, TokenStake, TokenBurn, MarketPlace must all be set here 
   mapping (bytes32 => address) public myBitContracts;    // The hash of the name of MyBit related contracts will be here + MyBitFoundation + Asset escrow  
@@ -11,7 +12,6 @@ contract Approval is Owned{
 
   mapping (address => address) public backupAddress;    // User can set a backup address incase of loss 
   mapping (address => uint8) public userAccess;   // 0: Not approved for anything, 1: KYC approved, 2: Approved to fund assets/create assets,  3: Approved to stake tokens,  4: Approved to trade/exchange tokens
-  mapping (address => bool) public blackListed;    // Banned users
 
   function Approval(address _owner, address _ownerTwo, address _ownerThree) 
   noEmptyAddress(_owner)
@@ -35,7 +35,6 @@ contract Approval is Owned{
   // TODO: test
   function setBackupAddress(address _backupAddress)
   external
-  notBlacklisted
   mustHaveKYC
   noEmptyAddress(_backupAddress)
   returns (bool) { 
@@ -46,7 +45,6 @@ contract Approval is Owned{
   // TODO: test
   function switchToBackup(address _oldAddress, address _newBackup)
   external
-  notBlacklisted
   mustHaveKYC
   noEmptyAddress(_oldAddress)
   noEmptyAddress(_newBackup)
@@ -57,10 +55,12 @@ contract Approval is Owned{
     return true;
   }
 
-  // Called by tokenburn contract and owner. Burn contract checks that accesslevel 0 is approved before adding later ones. 
+  // Users can be approved to use the MyBit platform here, by burning tokens or approved by owner address. 
+  // Invariants: Only called by Token Burning contract or Owner.  New address cannot be empty. Access level must be between 1-4
+  // @Param: Address of new user. 
+  // @Param: The level of access granted by owner/burningcontract
   function approveUser(address _newUser, uint8 _accessLevel)
   onlyTokenBurnOrOwner
-  notBlacklisted
   noEmptyAddress(_newUser)
   external
   returns (bool) { 
@@ -71,23 +71,25 @@ contract Approval is Owned{
   }
 
   // Owner can remove access for users if needed
-  function removeUser(address _user, uint8 _newAccessLevel, bool _blacklist)
+  // Invariants: Only owner can call. 
+  // @Param: User to be removed
+  function removeUser(address _user)
   onlyOwner
   external
   returns (bool) { 
-    userAccess[_user] = _newAccessLevel;
-    if (_blacklist) {
-      blackListed[_user] = true; 
-    } 
-    LogUserRemoved(_user, _newAccessLevel, block.timestamp); 
+    delete userAccess[_user];
+    delete backupAddress[_user];
+    LogUserRemoved(_user, block.timestamp); 
     return true;
   }
 
+  // Deny empty address parameters
   modifier noEmptyAddress(address _param) {
     require(_param != address(0)); 
     _;
   }
 
+  // User must have identification approved
   modifier mustHaveKYC { 
     require(userAccess[msg.sender] > 0); 
     _;
@@ -98,13 +100,9 @@ contract Approval is Owned{
     require(msg.sender == myBitContracts[keccak256("TokenBurn")] || msg.sender == owner[0]); 
     _;
   }
-  
-  modifier notBlacklisted() { 
-    require(!blackListed[msg.sender]);
-    _;
-  }
 
+  event LogBackupAddressUsed(address _oldAddress, address _newAddress, uint256 _timestamp); 
   event LogUserApproved(address _user, uint8 _approvalLevel, uint256 _timestamp); 
-  event LogUserRemoved(address _user, uint8 _newApprovalLevel, uint256 _timestamp); 
+  event LogUserRemoved(address _user, uint256 _timestamp); 
 
 }

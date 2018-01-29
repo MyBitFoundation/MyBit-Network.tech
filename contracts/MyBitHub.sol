@@ -29,7 +29,9 @@ contract MyBitHub {
       approval = Approval(_approval); 
   }
 
-  // This is called by the asset contract if it achieves it's funding goal
+  // This is called by the asset contract, once funding period has elapsed 
+  // @Param: The ID of the asset being funded (StorageHash)
+  // @Param: Whether or not the funding period was a success
   function assetFinishedFunding(bytes32 _assetID, bool _success)
   external
   returns (bool) { 
@@ -42,10 +44,14 @@ contract MyBitHub {
     return true; 
   }
 
-  // This money creates an Asset contract to commence funding stage of it's lifecycle. The location is logged in an event. 
+  // This begins the funding period for an asset. If asset is success it will be added to the assets variable here in MyBitHub
+  // @Param: The storage hash created from IPFS. WIll act as the ID for this asset if funding is a success 
+  // @Param: The amount of WEI required for asset to achieve successfull funding 
+  // @Param: The ID of the installer of this asset 
+  // @Param: The type of asset being created. (ie. Sha3("ATM"))
   function createAsset(bytes32 _storageHash, uint256 _amountToBeRaised, bytes32 _installerID, bytes32 _assetType) 
   external 
-  whenNotPaused()
+  whenNotPaused
   noEmptyBytes(_storageHash)
   noEmptyBytes(_installerID)
   noEmptyBytes(_assetType)
@@ -57,10 +63,11 @@ contract MyBitHub {
     beingFunded[address(newAsset)] = true;
     LogAssetInfo(_storageHash, _installerID, _assetType); 
     LogAssetFundingStarted(msg.sender, address(newAsset), _assetType);      // Use indexed event to keep track of pending assets
-    return address(address(newAsset));
+    return address(newAsset);
   }
 
-  // Removes assets that are no longer functioning. 
+  // Removes assets from MyBitHub records. (Wont be able to trade shares for this asset)
+  // Invariants: Only owner[0] can call  | ID is not null bytes
   function removeAsset(bytes32 _id) 
   external
   onlyOwner
@@ -71,7 +78,8 @@ contract MyBitHub {
     return true; 
   }
 
-  // Change the default funding time for the asset 
+  // Change the default funding time for new assets
+  // Invariants: Only owner[0] can call  |  new funding time is not 0
   function changeFundingTime(uint256 _newTimeGivenForFunding) 
   external
   onlyOwner
@@ -105,7 +113,7 @@ contract MyBitHub {
     _;
   }
 
-  modifier whenNotPaused() { 
+  modifier whenNotPaused { 
     require(!approval.paused(this)); 
     _; 
   }

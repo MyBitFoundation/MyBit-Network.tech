@@ -49,6 +49,10 @@ def convertEtherToWei(chain, _amountEther):
 def convertWeiToEther(chain, _amountWei):
     return chain.web3.fromWei(_amountWei, 'ether')
 
+def getGasUsed(receipt):
+    return receipt['logs'][0]['cumulativeGasUsed']
+
+
 
 def spreadMyBitTokens(chain, myBitContract, accounts):
     amountToGive = 1000
@@ -64,6 +68,7 @@ def burnForAccess(tokenContract, burnContract, thisAddress, accesslevel):
     accessCost[3] = 100;
     accessCost[4] = 1000;
     userBalance = tokenContract.call().balanceOf(thisAddress)
+    assert userBalance > accessCost[accesslevel]
     tokenContract.transact({"from": thisAddress}).approve(burnContract.address, accessCost[accesslevel])
     assert tokenContract.call().allowance(thisAddress, burnContract.address) == accessCost[accesslevel]
     burnContract.transact({"from": thisAddress}).burnTokens(accesslevel)
@@ -79,35 +84,51 @@ def kycApprove(approvalContract, accounts):
 
 def test_successfulFunding(chain):
     accounts = chain.web3.eth.accounts
+    test, _ = chain.provider.get_or_deploy_contract("Test")
     myBitFoundation = accounts[4]
     assetEscrow = accounts[5]
     totalSupply = 281207344012426
-    # MyBitHub = chain.provider.get_contract_factory("MyBitHub")
-    # myBitHub, _ = MyBitHub.deploy({"gas":4000000}, args=[myBitFoundation, assetEscrow, approval.address, tokenStake.address])
     myBitToken, _ = chain.provider.get_or_deploy_contract('MyBitToken', deploy_args=[totalSupply, "MyBit Token", 8, "MyB"])
-    approval, _ = chain.provider.get_or_deploy_contract('Approval', deploy_args=[accounts[0], accounts[1]])
+    approval, _ = chain.provider.get_or_deploy_contract('Approval', deploy_args=[accounts[0], accounts[1], accounts[2]])
+    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[approval.address])
     tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, approval.address])
     tokenStake, _ = chain.provider.get_or_deploy_contract('TokenStake', deploy_args=[myBitToken.address, approval.address])
-    marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address])
-    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenStake.address, marketPlace.address])
+    marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address, myBitHub.address])
     Asset = chain.provider.get_contract_factory('Asset')
+    hashFunctions, _ = chain.provider.get_or_deploy_contract('HashFunctions')   # This is just used as a helper for built in hash functions
+
+    # Set contract references
+    approval.transact().setMyBitContract("MyBitToken", myBitToken.address)
+    assert approval.call().myBitContracts(hashFunctions.call().sha3("MyBitToken")).upper() == myBitToken.address.upper()
+    approval.transact().setMyBitContract("TokenBurn", tokenBurn.address)
+    assert approval.call().myBitContracts(hashFunctions.call().sha3("TokenBurn")).upper() == tokenBurn.address.upper()
+    approval.transact().setMyBitContract("TokenStake", tokenStake.address)
+    assert approval.call().myBitContracts(hashFunctions.call().sha3("TokenStake")).upper() == tokenStake.address.upper()
+    approval.transact().setMyBitContract("MarketPlace", marketPlace.address)
+    assert approval.call().myBitContracts(hashFunctions.call().sha3("MarketPlace")).upper() == marketPlace.address.upper()
+    approval.transact().setMyBitContract("MyBitHub", myBitHub.address)
+    assert approval.call().myBitContracts(hashFunctions.call().sha3("MyBitHub")).upper() == myBitHub.address.upper()
 
 
-    txHash = marketPlace.transact().setMyBitHub(myBitHub.address)
-    txHash = approval.transact().setBurnAddress(tokenBurn.address)
-    assert approval.call().tokenBurn().upper() == tokenBurn.address.upper()
-    # assert sha3(chain, owner) == sha3(chain, accounts[0])   # complains about different letters being capitalized
+    # Set Address references 
+    txHash = approval.transact().setMyBitContract("AssetEscrow", assetEscrow)
+    txHash = approval.transact().setMyBitContract("MyBitFoundation", myBitFoundation)
+    assert approval.call().myBitContracts(hashFunctions.call().sha3("AssetEscrow")).upper() == assetEscrow.upper()
+    assert approval.call().myBitContracts(hashFunctions.call().sha3("MyBitFoundation")).upper() == myBitFoundation.upper()
 
 
-    # Distribute MyBitTOkens 
-    assert myBitToken.call().totalSupply() == totalSupply
-    assert myBitToken.call().balanceOf(accounts[0]) == totalSupply
-    assert spreadMyBitTokens(chain, myBitToken, accounts)
+    owner = approval.call().owner(0)
+    assert owner.upper() == accounts[0].upper()     # Calls will be called by owner by default
+
+    assert approval.call().owner(1).upper() == accounts[1].upper()
+    assert approval.call().owner(2).upper() == accounts[2].upper()
 
 
-    # ---------------Test Ownership & Asset Type------------------------
-    owner = approval.call().owner()
-    assert  owner.upper() == accounts[0].upper()  # complains about different letters being capitalized
+
+    # --------------Spread MyBit Tokens----------------------
+    spreadMyBitTokens(chain, myBitToken, accounts)
+
+
     testFundingTime = 300
     solarAssetType = keccak_256("solar".encode('utf-8')).hexdigest()
     solarAssetType = bytes.fromhex(solarAssetType)
@@ -117,11 +138,12 @@ def test_successfulFunding(chain):
 
     #---------------Burn Tokens to Create Asset---------------
     firstAssetCreator = accounts[9]
+    assert approval.call().userAccess(firstAssetCreator) == 1
     assert burnForAccess(myBitToken, tokenBurn, firstAssetCreator, 2)
     assert approval.call().userAccess(firstAssetCreator) == 2
 
     # # ------------Create Asset------------------------
-    ipfsHash = bytes.fromhex(keccak_256("someStorageHash".encode('utf-8')).hexdigest())
+    ipfsHash = hashFunctions.call().sha3("afakestoragehash")
     firstProjectGoal = convertEtherToWei(chain, 20)
     assetInstaller = bytes.fromhex(keccak_256("SolarCity".encode('utf-8')).hexdigest())
 
@@ -162,8 +184,9 @@ def test_successfulFunding(chain):
 
 
     # ---------------Check Payout Mechanism-----------------------
+    testBalance = test.call().getBalance()
     txHash = solarAsset.transact().payout()
-    receipt = getReceiptMined(chain, txHash)
+    # assert testBalance < test.call().getBalance()
     assert solarAsset.call().stage() == 3
     firstROIPayment = convertEtherToWei(chain, 10)
 
@@ -209,12 +232,16 @@ def test_successfulFunding(chain):
     atmAssetInstaller = bytes.fromhex(keccak_256("arabco".encode('utf-8')).hexdigest())
     secondAsset = myBitHub.call({"from": secondAssetCreator}).createAsset(ipfsHashAtm, secondProjectGoal, atmAssetInstaller, atmAssetType)
     txHash = myBitHub.transact({"from": secondAssetCreator}).createAsset(ipfsHashAtm, secondProjectGoal, atmAssetInstaller, atmAssetType)
-    txHash = approval.transact().removeUser(secondAssetCreator, 0, True)
+    txHash = approval.transact().removeUser(secondAssetCreator)
     assert approval.call().userAccess(secondAssetCreator) == 0
-    assert approval.call().blackListed(secondAssetCreator) == True
     atmAsset = Asset(secondAsset)
     firstFunder = accounts[1]
+    assert atmAsset.call().stage() == 0
     txHash = atmAsset.transact({"from": firstFunder, "value":secondProjectGoal}).fund()
+    assert myBitHub.call().assets(ipfsHashAtm) == secondAsset
+    assert myBitHub.call().beingFunded(secondAsset) == False
+    assert atmAsset.call().stage() == 1
+
     # ------------Test removing assets------------------
     assert myBitHub.call().assets(ipfsHashAtm) == secondAsset
     assert myBitHub.call().assets(ipfsHash) == firstAsset
@@ -226,78 +253,47 @@ def test_successfulFunding(chain):
     # removed user cannot create more assets
     # secondAsset = myBitHub.call({"from": firstAssetCreator}).createAsset(ipfsHash, secondProjectGoal, atmAssetInstaller, atmAssetType)
 
+    # ------------Destroy Second Asset----------------------
+    # atmAsset.transact({"value":   }
+    testBalance = test.call().getBalance()
+    assert approval.call().owner(0).upper() == accounts[0].upper() and approval.call().owner(1).upper() == accounts[1].upper() and approval.call().owner(2).upper() == accounts[2].upper()
+    txHash = approval.transact().setFunctionAuthorized(secondAsset, "destroy", test.address)
+    authorizedHash = hashFunctions.call().getAuthorizeHash(secondAsset, accounts[0], "destroy", test.address)
+    assert approval.call().authorizedFunction(authorizedHash)
+    txHash = atmAsset.transact({"from": accounts[1]}).destroy(accounts[0], test.address)
+    # assert atmAsset.call().amountRaised() == 0     throws due to contract successfully being destroyed
+    assert testBalance ==  test.call().getBalance() - secondProjectGoal
 
-def test_pause(chain):
-    accounts = chain.web3.eth.accounts
-    myBitFoundation = accounts[4]
-    assetEscrow = accounts[5]
-    totalSupply = 281207344012426    # MyBitHub = chain.provider.get_contract_factory("MyBitHub")
-    myBitToken, _ = chain.provider.get_or_deploy_contract('MyBitToken', deploy_args=[totalSupply, "MyBit Token", 8, "MyB"])
-    approval, _ = chain.provider.get_or_deploy_contract('Approval', deploy_args=[accounts[0], accounts[1]])
-    marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address])
-    tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, approval.address])
-    tokenStake, _ = chain.provider.get_or_deploy_contract('TokenStake', deploy_args=[myBitToken.address, approval.address])
-    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenStake.address, marketPlace.address])
-    Asset = chain.provider.get_contract_factory('Asset')
-
-
-    txHash = approval.transact().setBurnAddress(tokenBurn.address)
-    assert approval.call().tokenBurn().upper() == tokenBurn.address.upper()
-
-    # -----------Check Owner------------
-    owner = approval.call().owner()
-    assert owner.upper() == accounts[0].upper()     # Calls will be called by owner by default
-
-
-    # Distribute MyBitTOkens 
-    assert myBitToken.call().totalSupply() == totalSupply
-    assert myBitToken.call().balanceOf(accounts[0]) == totalSupply
-    assert spreadMyBitTokens(chain, myBitToken, accounts)
-
-        # -------------Approve Users KYC-------------------
-    assert kycApprove(approval, accounts)
-
-    #---------------Burn Tokens to Create Asset---------------
-    approvedCreator = accounts[9]
-    assert burnForAccess(myBitToken, tokenBurn, approvedCreator, 2)
-    assert approval.call().userAccess(approvedCreator) == 2
-
-
-    someHash = bytes.fromhex(keccak_256("someStorageHash".encode('utf-8')).hexdigest())
-    fakeType = bytes.fromhex(keccak_256("fakeType".encode('utf-8')).hexdigest())
-    firstProjectGoal = convertEtherToWei(chain, 20)
-    assetInstaller = bytes.fromhex(keccak_256("InstallationCompany".encode('utf-8')).hexdigest())
-    txHash = myBitHub.transact({"from": approvedCreator}).createAsset(someHash, firstProjectGoal, assetInstaller, fakeType)
-    receipt = getReceiptMined(chain, txHash)
-    firstAssetCheck = receipt['logs'][0]['address']    # assert myBitHub.call().beingFunded()
-    assert myBitHub.call().beingFunded(firstAssetCheck) == True
-    txHash = approval.transact().pause(myBitHub.address, 1)
-    assert approval.call().paused(myBitHub.address, 1) == True
-    someHashTwo = bytes.fromhex(keccak_256("someStorageHashTwo".encode('utf-8')).hexdigest())
-    # txHash = myBitHub.transact({"from": approvedCreator}).createAsset(someHashTwo, firstProjectGoal, assetInstaller, fakeType)      #This fails as it should
-    txHash = approval.transact().unpause(myBitHub.address, 1)
-    someHash = bytes.fromhex(keccak_256("someStorageHash".encode('utf-8')).hexdigest())
-    txHash = myBitHub.transact({"from": approvedCreator}).createAsset(someHashTwo, firstProjectGoal, assetInstaller, fakeType)      #This fails
-    receipt = getReceiptMined(chain, txHash)
-    secondAssetCheck = receipt['logs'][0]['address']    # assert myBitHub.call().beingFunded()
-    assert myBitHub.call().beingFunded(secondAssetCheck) == True
 
 def test_refund(chain):
     accounts = chain.web3.eth.accounts
+    hashFunctions, _ = chain.provider.get_or_deploy_contract('HashFunctions')   # This is just used as a helper for built in hash functions
+    test, _ = chain.provider.get_or_deploy_contract("Test")
     myBitFoundation = accounts[4]
     assetEscrow = accounts[5]
     totalSupply = 281207344012426
     myBitToken, _ = chain.provider.get_or_deploy_contract('MyBitToken', deploy_args=[totalSupply, "MyBit Token", 8, "MyB"])
-    approval, _ = chain.provider.get_or_deploy_contract('Approval', deploy_args=[accounts[0], accounts[1]])
-    marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address])
+    approval, _ = chain.provider.get_or_deploy_contract('Approval', deploy_args=[accounts[0], accounts[1], accounts[2]])
+    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[approval.address])
     tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, approval.address])
     tokenStake, _ = chain.provider.get_or_deploy_contract('TokenStake', deploy_args=[myBitToken.address, approval.address])
-    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenStake.address, marketPlace.address])
+    marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address, myBitHub.address])
     Asset = chain.provider.get_contract_factory('Asset')
 
 
-    txHash = approval.transact().setBurnAddress(tokenBurn.address)
-    assert approval.call().tokenBurn().upper() == tokenBurn.address.upper()
+    # Set contract references
+    approval.transact().setMyBitContract("MyBitToken", myBitToken.address)
+    approval.transact().setMyBitContract("TokenBurn", tokenBurn.address)
+    approval.transact().setMyBitContract("TokenStake", tokenStake.address)
+    approval.transact().setMyBitContract("MarketPlace", marketPlace.address)
+    approval.transact().setMyBitContract("MyBitHub", myBitHub.address)
+
+
+    # Set Address references 
+    txHash = approval.transact().setMyBitContract("AssetEscrow", assetEscrow)
+    txHash = approval.transact().setMyBitContract("MyBitFoundation", myBitFoundation)
+    assert approval.call().myBitContracts(hashFunctions.call().sha3("AssetEscrow")).upper() == assetEscrow.upper()
+    assert approval.call().myBitContracts(hashFunctions.call().sha3("MyBitFoundation")).upper() == myBitFoundation.upper()
 
         # Distribute MyBitTOkens 
     assert myBitToken.call().totalSupply() == totalSupply
@@ -319,14 +315,17 @@ def test_refund(chain):
     assert burnForAccess(myBitToken, tokenBurn, ownerCreator, 2)
     assert approval.call().userAccess(ownerCreator) == 2
 
-    solarAssetType = bytes.fromhex(keccak_256("solar".encode('utf-8')).hexdigest())
-    storageHash = bytes.fromhex(keccak_256("thishashwillbeareferencetoadecentralizedstoragebox".encode('utf-8')).hexdigest())
+    solarAssetType = hashFunctions.call().sha3("SolarFarm")
+    storageHash = hashFunctions.call().sha3("decentralizedstoragewillcreatethishash")
     amountToRaise = convertEtherToWei(chain, 100)
-    assetInstaller = bytes.fromhex(keccak_256("InstallationCompany".encode('utf-8')).hexdigest())
+    assetInstaller = hashFunctions.call().sha3("SolarInstallationCompany")
     solarAssetAddress = myBitHub.call().createAsset(storageHash, amountToRaise, assetInstaller, solarAssetType)
     txHash = myBitHub.transact({"from": ownerCreator}).createAsset(storageHash, amountToRaise, assetInstaller, solarAssetType)
+    receipt = getReceiptMined(chain, txHash)
+    solarAssetCheck = receipt['logs'][0]['address']
+    assert solarAssetCheck.upper() == solarAssetAddress.upper()
     solarAsset = Asset(solarAssetAddress)
-    assert myBitHub.call().beingFunded(solarAssetAddress)
+    assert myBitHub.call().beingFunded(solarAssetCheck)
 
     txHash = solarAsset.transact({"from": funderOne, "value": fundAmountOne}).fund()
     assert solarAsset.call().shares(funderOne) == fundAmountOne
@@ -353,29 +352,13 @@ def test_refund(chain):
 
 
 
+    # ------------Destroy Asset----------------------
+    testBalance = test.call().getBalance()
+    assert approval.call().owner(0).upper() == accounts[0].upper() and approval.call().owner(1).upper() == accounts[1].upper() and approval.call().owner(2).upper() == accounts[2].upper()
+    txHash = approval.transact().setFunctionAuthorized(solarAssetAddress, "destroy", test.address)
+    authorizedHash = hashFunctions.call().getAuthorizeHash(solarAssetAddress, accounts[0], "destroy", test.address)
+    assert approval.call().authorizedFunction(authorizedHash)
+    txHash = solarAsset.transact({"from": accounts[1]}).destroy(accounts[0], test.address)
 
-#     # ------------------Create First Asset----------------------------------------
-#     txHash = solarAssetHub.transact({"from": solarHouseOwner}).createAsset(newAssetStorageHash, amountToRaise, solarInstaller)
-#     numberOfAssets = solarAssetHub.call().numAssets()
-#     assert numberOfAssets == 1
-#     solarAssetAddress = solarAssetHub.call().assets(0)
-#     solarAsset = Asset(solarAssetAddress)
-#     solarAssetHubAddressCheck = solarAsset.call().assetHub()
-#     assert solarAssetHubAddressCheck == solarAssetHubAddress
-#     projectCreatorCheck = solarAsset.call().projectCreator()
-#     assert projectCreatorCheck.upper() == solarHouseOwner.upper()
-#     assetInstallerCheck = solarAsset.call().assetInstaller()
-#     assert assetInstallerCheck.upper() == solarInstaller.upper()
-#     # myBitHub.transact().addAssetType(assetType, 30000000)
-#     # assert assetLimit == 10000
-#     firstFunder = accounts[3]
-#     fundingAmount = convertEtherToWei(chain, 50)
-#     txHash = solarAsset.transact({"from": firstFunder, "value":fundingAmount}).fund()
-#     assert solarAsset.call().amountRaised() == fundingAmount
-#     secondFunder = accounts[4]
-#     mine(chain, 20)
-#     txHash = solarAsset.transact({"from": firstFunder}).refund()
-#     virtualBank = accounts[5]
-#     assert solarAsset.call().amountRaised() == 0
-#     roiAmount = convertEtherToWei(chain, 10)
-#     txHash = solarAsset.transact({"from": virtualBank, "value": 10}).receiveIncome()
+
+

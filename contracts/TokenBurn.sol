@@ -4,7 +4,6 @@ import './MyBitToken.sol';
 import './Approval.sol'; 
 
 // This contract transfers MyBit tokens and holds them forever with no mechanism to transfer them out again. 
-// TODO: Stop people from transferring in token on their own. 
 // TODO: Get oraclize call
 contract TokenBurn { 
 

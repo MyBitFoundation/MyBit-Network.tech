@@ -50,8 +50,8 @@ def kycApprove(approvalContract, accounts):
     return True
 
 
-def getHashOf(someString):
-    return bytes.fromhex(keccak_256(someString.encode('utf-8')).hexdigest())
+def getHashOf(_hashFunctions, someString):
+    return _hashFunctions.call().sha3(someString)
 
 def test_MarketPlace(chain):
     # -------------------Deploy----------------------------
@@ -60,21 +60,32 @@ def test_MarketPlace(chain):
     assetEscrow = accounts[5]
     totalSupply = 281207344012426
     myBitToken, _ = chain.provider.get_or_deploy_contract('MyBitToken', deploy_args=[totalSupply, "MyBit Token", 8, "MyB"])
-    approval, _ = chain.provider.get_or_deploy_contract('Approval', deploy_args=[accounts[0], accounts[1]])
+    approval, _ = chain.provider.get_or_deploy_contract('Approval', deploy_args=[accounts[0], accounts[1], accounts[2]])
+    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[approval.address])
     tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, approval.address])
     tokenStake, _ = chain.provider.get_or_deploy_contract('TokenStake', deploy_args=[myBitToken.address, approval.address])
-    marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address])
-    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenStake.address, marketPlace.address])
+    marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address, myBitHub.address])
     Asset = chain.provider.get_contract_factory('Asset')
-    # Use this instead of web3.py hash functions for simplicity 
-    hashFunctions, _ = chain.provider.get_or_deploy_contract('HashFunctions')
+    hashFunctions, _ = chain.provider.get_or_deploy_contract('HashFunctions')   # This is just used as a helper for built in hash functions
+
+
+    # Set contract references
+    approval.transact().setMyBitContract("MyBitToken", myBitToken.address)
+    approval.transact().setMyBitContract("TokenBurn", tokenBurn.address)
+    approval.transact().setMyBitContract("TokenStake", tokenStake.address)
+    approval.transact().setMyBitContract("MarketPlace", marketPlace.address)
+    approval.transact().setMyBitContract("MyBitHub", myBitHub.address)
 
 
     # Set Address references 
-    txHash = marketPlace.transact().setMyBitHub(myBitHub.address)
-    assert marketPlace.call().myBitHub().upper() == myBitHub.address.upper() 
-    txHash = approval.transact().setBurnAddress(tokenBurn.address)
-    assert approval.call().tokenBurn().upper() == tokenBurn.address.upper()
+    txHash = approval.transact().setMyBitContract("AssetEscrow", assetEscrow)
+    txHash = approval.transact().setMyBitContract("MyBitFoundation", myBitFoundation)
+    assert approval.call().myBitContracts(hashFunctions.call().sha3("AssetEscrow")).upper() == assetEscrow.upper()
+    assert approval.call().myBitContracts(hashFunctions.call().sha3("MyBitFoundation")).upper() == myBitFoundation.upper()
+
+
+    owner = approval.call().owner(0)
+    assert owner.upper() == accounts[0].upper()     # Calls will be called by owner by default
 
 
     # Distribute tokens 
@@ -96,9 +107,9 @@ def test_MarketPlace(chain):
 
 
     # Create Asset Information 
-    storageHash = getHashOf("JoeBlakesATM")
-    installerID = getHashOf("TrustedATMInstallerName")
-    assetType = getHashOf("CryptoATM")
+    storageHash = getHashOf(hashFunctions, "JoeBlakesATM")
+    installerID = getHashOf(hashFunctions, "TrustedATMInstallerName")
+    assetType = getHashOf(hashFunctions, "CryptoATM")
     firstProjectGoal = convertEtherToWei(chain, 20)
     amountToRaise = convertEtherToWei(chain, 20)
 
@@ -134,7 +145,7 @@ def test_MarketPlace(chain):
 
     # Finish funding Period by initiating payout 
     txHash = AssetContract.transact().payout()
-    assert AssetContract.call().marketPlace().upper() == marketPlace.address.upper()
+    assert approval.call().myBitContracts(getHashOf(hashFunctions, "MarketPlace")).upper() == marketPlace.address.upper()
 
 
 
@@ -160,7 +171,7 @@ def test_MarketPlace(chain):
 
     # Check that buy order variables were set properly 
     assert marketPlace.call().weiDeposited(funderOne) == funderOneBuyValue
-    initiator, assetAddress, amount, price = marketPlace.call().getBuyOrder(buyOrderHashOne)
+    initiator, assetAddress, amount, price = marketPlace.call().buyOrders(buyOrderHashOne)
     assert initiator.upper() == funderOne.upper()
     assert assetAddress.upper() == atmAsset.upper()
     assert amount == funderOneSharesToBuy
@@ -196,7 +207,7 @@ def test_MarketPlace(chain):
 
     # Check that variables were set properly after sell order
     assert marketPlace.call().weiDeposited(funderOne) == 0
-    initiator, assetAddress, amount, price = marketPlace.call().getSellOrder(sellOrderHashOne)
+    initiator, assetAddress, amount, price = marketPlace.call().sellOrders(sellOrderHashOne)
     assert initiator.upper() == funderOne.upper()
     assert assetAddress.upper() == atmAsset.upper()
     assert amount == funderOneSharesToSell
@@ -303,7 +314,7 @@ def test_MarketPlace(chain):
 
     # check values 
     assert marketPlace.call().weiDeposited(funderThree) == funderThreeValueToBuy
-    initiator, assetAddress, amount, price = marketPlace.call().getBuyOrder(buyOrderHash)
+    initiator, assetAddress, amount, price = marketPlace.call().buyOrders(buyOrderHash)
     assert initiator.upper() == funderThree.upper()
     assert assetAddress.upper() == atmAsset.upper()
     assert amount == funderThreeSharesToBuy
@@ -312,7 +323,7 @@ def test_MarketPlace(chain):
     # delete order 
     txHash = marketPlace.transact({"from": funderThree}).deleteBuyOrder(buyOrderHash)
     assert marketPlace.call().weiDeposited(funderThree) == 0
-    initiator, assetAddress, amount, price = marketPlace.call().getBuyOrder(buyOrderHash)
+    initiator, assetAddress, amount, price = marketPlace.call().buyOrders(buyOrderHash)
     assert amount == 0
     assert price == 0
 
@@ -329,7 +340,7 @@ def test_MarketPlace(chain):
 
     # # check values 
     assert marketPlace.call().weiDeposited(funderFour) == 0
-    initiator, assetAddress, amount, price = marketPlace.call().getSellOrder(sellOrderHash)
+    initiator, assetAddress, amount, price = marketPlace.call().sellOrders(sellOrderHash)
     assert initiator.upper() == funderFour.upper()
     assert assetAddress.upper() == atmAsset.upper()
     assert amount == funderFourSharesToSell
@@ -338,7 +349,7 @@ def test_MarketPlace(chain):
     # delete order 
     txHash = marketPlace.transact({"from": funderFour}).deleteSellOrder(sellOrderHash)
     assert marketPlace.call().weiDeposited(funderFour) == 0
-    initiator, assetAddress, amount, price = marketPlace.call().getBuyOrder(sellOrderHash)
+    initiator, assetAddress, amount, price = marketPlace.call().buyOrders(sellOrderHash)
     assert amount == 0
     assert price == 0
 

@@ -87,19 +87,29 @@ def test_TokenStaking(chain):
     assetEscrow = accounts[5]
     totalSupply = 281207344012426
     myBitToken, _ = chain.provider.get_or_deploy_contract('MyBitToken', deploy_args=[totalSupply, "MyBit Token", 8, "MyB"])
-    approval, _ = chain.provider.get_or_deploy_contract('Approval', deploy_args=[accounts[0], accounts[1]])
+    approval, _ = chain.provider.get_or_deploy_contract('Approval', deploy_args=[accounts[0], accounts[1], accounts[2]])
+    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[approval.address])
     tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, approval.address])
     tokenStake, _ = chain.provider.get_or_deploy_contract('TokenStake', deploy_args=[myBitToken.address, approval.address])
-    marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address])
-    myBitHub, _ = chain.provider.get_or_deploy_contract('MyBitHub', deploy_args=[myBitFoundation, assetEscrow, approval.address, tokenStake.address, marketPlace.address])
+    marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[approval.address, myBitHub.address])
     Asset = chain.provider.get_contract_factory('Asset')
-    hashFunctions, _ = chain.provider.get_or_deploy_contract('HashFunctions')
+    hashFunctions, _ = chain.provider.get_or_deploy_contract('HashFunctions')   # This is just used as a helper for built in hash functions
+
+
+    # Set contract references
+    approval.transact().setMyBitContract("MyBitToken", myBitToken.address)
+    approval.transact().setMyBitContract("TokenBurn", tokenBurn.address)
+    approval.transact().setMyBitContract("TokenStake", tokenStake.address)
+    approval.transact().setMyBitContract("MarketPlace", marketPlace.address)
+    approval.transact().setMyBitContract("MyBitHub", myBitHub.address)
+
 
     # Set Address references 
-    txHash = marketPlace.transact().setMyBitHub(myBitHub.address)
-    assert marketPlace.call().myBitHub().upper() == myBitHub.address.upper() 
-    txHash = approval.transact().setBurnAddress(tokenBurn.address)
-    assert approval.call().tokenBurn().upper() == tokenBurn.address.upper()
+    txHash = approval.transact().setMyBitContract("AssetEscrow", assetEscrow)
+    txHash = approval.transact().setMyBitContract("MyBitFoundation", myBitFoundation)
+    assert approval.call().myBitContracts(hashFunctions.call().sha3("AssetEscrow")).upper() == assetEscrow.upper()
+    assert approval.call().myBitContracts(hashFunctions.call().sha3("MyBitFoundation")).upper() == myBitFoundation.upper()
+
 
 
     # Distribute tokens 
