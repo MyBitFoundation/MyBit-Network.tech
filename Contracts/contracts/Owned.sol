@@ -6,10 +6,10 @@ contract Owned {
 
   Database public database;
 
-
+  // Constructor: Initiate database
   function Owned(address _database) 
-  public 
-  noZeroAddress(_database){
+  noZeroAddress(_database)
+  public {
     database = Database(_database);
   }
 

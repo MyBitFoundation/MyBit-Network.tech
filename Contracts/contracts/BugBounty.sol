@@ -5,6 +5,8 @@ import './TokenStake.sol';
 import './BugEscrow.sol';
 import './Database.sol';
 
+contract BugBounty { 
+  
 Database public database; 
 
 struct Bug { 
@@ -13,9 +15,6 @@ struct Bug {
 }
 
 mapping (address => uint) public level; 
-
-contract BugBounty { 
-
 
 function BugBounty(address _database)
 public { 

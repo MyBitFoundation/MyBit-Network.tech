@@ -7,9 +7,10 @@ import './BugBounty.sol';
 
 // This contract holds Ether in escrow until the BugBounty or TokenStake contract calls for a payment
 contract BugEscrow { 
+using SafeMath for *;
 
   Database public database; 
-
+  uint public balance;
 
 
   function BugEscrow(address _database) 
@@ -23,11 +24,9 @@ contract BugEscrow {
   function receiveTransactionFee() 
   external 
   payable
-  requiresEther
-  periodUpToDate 
-  { 
-    feesReceivedAtNonce[periodNonce] = feesReceivedAtNonce[periodNonce].add(msg.value);
-    LogFeeReceived(msg.sender, periodNonce, msg.value); 
+  requiresEther { 
+    balance = balance.add(msg.value);
+    LogFeeReceived(msg.sender, msg.value, block.number); 
   }
 
 
@@ -42,7 +41,7 @@ contract BugEscrow {
     _;
   }
 
-  event LogFeeReceived(address indexed _sender, uint indexed _currentNonce, uint indexed _amount); 
+  event LogFeeReceived(address indexed _sender, uint indexed _amount, uint indexed _blockNumber); 
 
 
 }

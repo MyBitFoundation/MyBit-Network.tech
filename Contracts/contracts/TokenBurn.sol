@@ -27,7 +27,7 @@ public {
 function burnTokens(uint _accessLevelDesired)
 external 
 basicVerification(_accessLevelDesired)
-whenNotPaused()
+whenNotPaused
 returns (bool) {
   // uint256 accessCostMyB = Oraclize(accessCostUSD[_accessLevelDesired]);    // Get USD -> MYB price 
   uint256 accessCostMyB = accessCostUSD[_accessLevelDesired];   // TODO: using this instead of oracle for now

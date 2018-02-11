@@ -1,22 +1,23 @@
 import './Database.sol';
 import './SafeMath.sol';
 
+
+// NOTE:
 contract AssetCreation { 
   using SafeMath for *;
 
   Database public database;
-  bool private rentrancy_lock = true;    // Prevents re-entrancy attack
+  bool private rentrancy_lock = false;    // Prevents re-entrancy attack
 
   function AssetCreation(address _database)
   public  { 
       database = Database(_database);
   }
 
-  // This sets critical information. Call when ready
+  //  Must be called before TokenBurn is deployed to avoid someone creating an asset without fundingTime set
   function init()
   external
   anyOwner { 
-      rentrancy_lock = false;
       database.setUint(keccak256("myBitFoundationPercentage"), 1);
       database.setUint(keccak256("stakedTokenPercentage"), 2);
       database.setUint(keccak256("installerPercentage"), 97);
