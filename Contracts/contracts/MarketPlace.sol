@@ -88,7 +88,8 @@ contract MarketPlace {
   returns (bool) {
     require(msg.value == _amount.mul(_price)); 
     bytes32 id = keccak256(_assetID, msg.sender);
-    Buy storage thisOrder = buyOrders[id];   // This will get overwritten if user tries to create more than one buy order per asset
+    require(buyOrders[id].initiator == address(0));  // Make user delete previous buy order first in order to reclaim deposited Ether
+    Buy storage thisOrder = buyOrders[id];   
     thisOrder.initiator = msg.sender;
     thisOrder.assetContract = _assetID;
     thisOrder.amount = _amount; 

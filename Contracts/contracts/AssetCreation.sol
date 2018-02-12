@@ -2,7 +2,7 @@ import './Database.sol';
 import './SafeMath.sol';
 
 
-// NOTE:
+// This contract handles the logic of initiating the funding period for new assets + setting/modifying funding variables. 
 contract AssetCreation { 
   using SafeMath for *;
 
@@ -77,6 +77,25 @@ contract AssetCreation {
     database.setUint(keccak256("fundingTime"), _newTimeGivenForFunding); 
     LogFundingTimeChanged(msg.sender, _newTimeGivenForFunding, block.timestamp); 
     return true; 
+  }
+
+  // Changes the platform fees received from funded assets
+  // Requires multi-sig verification. With sha3() of the agreed percentages as the beneficiary parameter
+  function changeFundingPercentages(uint _myBitFoundationPercentage, uint _stakedTokenPercentage, uint _installerPercentage, address _functionSigner)
+  external
+  anyOwner
+  notZero(_myBitFoundationPercentage)
+  notZero(_stakedTokenPercentage)
+  notZero(_installerPercentage) 
+  returns (bool) {
+    bytes32 functionHash = keccak256(this, _functionSigner, "changeFundingPercentages", keccak256(_myBitFoundationPercentage, _stakedTokenPercentage, _installerPercentage));
+    require(database.boolStorage(functionHash));
+    require(_myBitFoundationPercentage.add(_stakedTokenPercentage).add(_installerPercentage) == 100);
+    database.setBool(functionHash, false);
+    database.setUint(keccak256("myBitFoundationPercentage"), _myBitFoundationPercentage);
+    database.setUint(keccak256("stakedTokenPercentage"), _stakedTokenPercentage);
+    database.setUint(keccak256("installerPercentage"), _installerPercentage);
+    return true;
   }
 
   modifier whenNotPaused { 

@@ -130,7 +130,7 @@ contract FundingHub {
   }
 
   modifier whenNotPaused { 
-    require(!database.boolStorage(keccak256("paused", this)));
+    require(!database.boolStorage(keccak256("pause", this)));
     _; 
   }
 
