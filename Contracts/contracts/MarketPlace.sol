@@ -167,24 +167,6 @@ contract MarketPlace {
     selfdestruct(_holdingAddress);
   }
 
-  function getSellOrderAmountPrice(bytes32 _sellOrderID)
-  external
-  sellOrderExists(_sellOrderID)
-  public
-  returns (uint, uint){
-    Sell storage thisOrder = sellOrders[_sellOrderID];
-    return (thisOrder.amount, thisOrder.price);
-  }
-
-  function getBuyOrderAmountprice(bytes32 _buyOrderID)
-  external
-  buyOrderExists(_buyOrderID)
-  public
-  returns (uint, uint){
-    Sell storage thisOrder = buyOrders[_buyOrderID];
-    return (thisOrder.amount, thisOrder.price);
-  }
-
   function()
   external {
     revert();
