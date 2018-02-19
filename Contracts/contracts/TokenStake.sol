@@ -7,44 +7,46 @@ import './Database.sol';
 
 // NOTE: If no stakers during period Wei is sent, then it will be unclaimed
 // TODO: prevent users from accidentally transferring in tokens 
-// TODO: add pause mechanism
+// TODO: store previous stakeID as well?? 
 contract TokenStake { 
 using SafeMath for *; 
 
   // --------MyBit Contracts-----------------
   MyBitToken public myBitToken; 
   Database public database; 
-
-  //-----User variables-----//
-  mapping (address => uint) public feesOwed; 
-  mapping (bytes32 => Stake) public stakes; 
-
-  //-----Payout Info------//
-  uint[] public multipliers;
-  uint[] public stakeTimes; 
-  uint[] public numberOfNonces; 
-  uint public totalStakedTokens; 
   
 
- //-----Period Info-------// 
-  uint public periodLength; 
-  uint public nextPeriod;
-  mapping (uint => uint) public multipliedTokensInPeriod;
-  mapping (uint => uint) public feesReceivedAtNonce; 
-  uint public periodNonce; 
+  // ----------Staking Information------------------
+  mapping (bytes32 => Stake) public stakes; 
+  mapping (address => uint) public rewardPaidToStaker;
+  mapping (address => uint) public owedToUser; 
+  uint public stakingRewardReceived;
 
+  // ---------------Minimum amounts & times-----------------
+  uint public minimumStakeAmount = 1000;           // Minimum number of tokens that must be staked
+  uint public minimumBlocksToStake = 50;          // TODO: testing number Minimum number of blocks to wait until withdraw can be requested
+  uint public minimumBlocksToWithdraw = 10;      // TODO: testing number. Minimum number of blocks need to wait after withdraw is requested.
+
+
+  // -----Token Information--------------
+  uint public totalMyBitStaked;
+
+
+  // -------Safety------------------
   bool private rentrancy_lock = false;    // Prevents re-entrancy attack
 
 
+  // -------LinkedList info-------------
+  bytes32 public head; 
+  uint public length; 
+
 
   struct Stake {
-    uint periodIndex;  //The length of the lock
-    uint amountStaked;
-    uint multipliedAmount; 
-    uint multipliedAmountFirstNonce; 
-    uint nonceAtStake;
-    uint nonceAtUnlock;
-    uint blockAtStake; 
+    address staker;
+    uint amountStaked;        // Amount of MyB tokens staked
+    uint blockWhenReleased;    // Block when user is allowed to request a withdraw. Once withdraw requested this variable will indicate when actual withdraw can be done
+    bool pendingWithdraw;     // User has requested a withdraw of tokens. If true, must wait until block.number >= blockWhenReleased
+    bytes32 next;        // This is the stake in front of 
   }
 
 
@@ -52,61 +54,107 @@ using SafeMath for *;
   public {
     myBitToken = MyBitToken(_myBitToken);
     database = Database(_database); 
-    multipliers = [625,1250, 2500, 5000]; 
-    // stakeTimes = [277714, 1388571, 2777142, 5554285];
-    stakeTimes = [45, 90, 180, 360];           // TODO: Testing numbers 
-    numberOfNonces = [1, 2, 4, 8];
-    periodLength = 45; 
-    nextPeriod = periodLength.add(block.number); 
-    periodNonce = 0; 
+
   }
 
 
   // Once users approve TokenStaking contract, they can stake tokens here
   // NOTE: If user locks same number of tokens on the same block, they will lose their tokens as their mapping will be overwritten
-  // @Param: The period index: 0:45, 1:90, 2:180, 3:360 
-  function lockTokens(uint _period, uint _amount)
+  function stakeTokens(uint _amount)
   external
-  periodUpToDate
   onlyApproved
   whenNotPaused
   returns (bool) { 
-    require (_amount > 0 && _period < 4);
+    require (_amount >= minimumStakeAmount);
     require (myBitToken.transferFrom(msg.sender, this, _amount));
-    Stake storage thisStake = stakes[keccak256(msg.sender, block.number, _amount)];
-    thisStake.nonceAtStake = periodNonce;
-    thisStake.periodIndex = _period;
+    uint blockAtWithdraw = minimumBlocksToStake.add(block.number);
+    bytes32 ID = keccak256(msg.sender, blockAtWithdraw, _amount);
+    Stake storage thisStake = stakes[ID];
+    thisStake.staker = msg.sender;
     thisStake.amountStaked = _amount;
-    thisStake.blockAtStake = block.number; 
-    thisStake.multipliedAmount = _amount.add(multipliers[_period].mul(_amount).div(10000));
-    thisStake.multipliedAmountFirstNonce = thisStake.multipliedAmount.mul((nextPeriod.sub(block.number))).div(periodLength);
-    thisStake.nonceAtUnlock = periodNonce.add(numberOfNonces[_period]); 
-    multipliedTokensInPeriod[periodNonce] = multipliedTokensInPeriod[periodNonce].add(thisStake.multipliedAmountFirstNonce); 
-    totalStakedTokens = totalStakedTokens.add(_amount);
-    fillMultipliedTokensForNonce(periodNonce.add(1), thisStake.nonceAtUnlock, thisStake.multipliedAmount);
-    LogTokensStaked(msg.sender, block.number, keccak256(msg.sender, block.number, _amount)); 
+    thisStake.blockWhenReleased = blockAtWithdraw; 
+    thisStake.next = head; 
+    head = ID; 
     return true;
 }
 
-  // Once required lock time has passed users can retrieve their funds here 
-  function unlockTokens(bytes32 _lockID) 
+
+  function requestWithdraw(bytes32 _stakeID)
   external
   nonReentrant
-  periodUpToDate
   onlyApproved
   whenNotPaused
-  ownerOfLock(_lockID)
-  stakingFinished(_lockID)
+  ownerOfLock(_stakeID, msg.sender)
+  stakingFinished(_stakeID)
+  returns (bool) { 
+    Stake memory thisStake = stakes[_stakeID];
+    require(thisStake.pendingWithdraw == false);
+
+  }
+
+  // Once the minimum staking time has been fulfilled user can withdraw tokens here
+  // TODO: don't let last person withdraw? 
+  function removeStake(bytes32 _stakeID, bytes32 _previousStakeID) 
+  external
+  nonReentrant
+  onlyApproved
+  whenNotPaused
+  ownerOfLock(_stakeID, msg.sender)
+  stakingFinished(_stakeID)
   returns (bool) {
-    Stake memory thisStake = stakes[_lockID]; 
+    require(stakes[_previousStakeID].next == _stakeID);
+    settleLedger(msg.sender, _stakeID);
+    Stake memory thisStake = stakes[_stakeID];
+    totalMyBitStaked = totalMyBitStaked.sub(thisStake.amountStaked);
     myBitToken.transfer(msg.sender, thisStake.amountStaked);   // If transfer() fails the call will bubble up
-    uint owedToUser = feesReceivedAtNonce[thisStake.nonceAtStake].calculateOwed(multipliedTokensInPeriod[thisStake.nonceAtStake], thisStake.multipliedAmountFirstNonce);
-    for (uint i = (thisStake.nonceAtStake + 1); i < thisStake.nonceAtUnlock; i++) {
-      owedToUser = owedToUser.add(feesReceivedAtNonce[i].calculateOwed(multipliedTokensInPeriod[i], thisStake.multipliedAmount)); 
+    if (_stakeID == head) { head = thisStake.next;  }         // If this staker is last in list, make next person the last
+    else { stakes[_previousStakeID].next = thisStake.next;  }   // Point previous stakeID ahead one place
+    delete stakes[_stakeID];
+    LogTokenWithdraw(msg.sender, block.number, _stakeID);    
+  }
+
+  function settleLedger(address _staker, bytes32 _stakeID)
+  internal { 
+    uint owed = calculateOwed(_staker, _stakeID);
+    if (owed > 0) {
+      owedToUser[msg.sender] = owedToUser[msg.sender].add(owed);
+      rewardPaidToStaker[msg.sender] = rewardPaidToStaker[msg.sender].add(owed);
     }
-    delete stakes[_lockID];
-    msg.sender.transfer(owedToUser); 
-    LogTokenWithdraw(msg.sender, block.number, _lockID); 
+  }
+
+  // TODO: only be called by bugbounty contract
+  function payBugBounty(uint _amount)
+  nonReentrant
+  external { 
+    uint paidAmount = 0;
+    while (paidAmount < _amount) { 
+      bytes32 thisID = head; 
+      Stake thisStake = stakers[head]; 
+      head = thisStake.next;
+      if (thisStake.amountStaked <= _amount) { 
+        settleLedger(thisStake.staker, thisID);
+        paidAmount = paidAmount.add(thisStake.amountStaked); 
+        delete stakers[thisID]; 
+      }
+      else {
+        settleLedger(thisStake.staker, thisID);
+        thisStake.amountStaked = thisStake.amountStaked.sub(_amount.sub(paidAmount));
+        paidAmount = _amount; 
+      }
+      myBitToken.transfer(address(bugbounty), _amount); 
+    }
+  }
+
+
+  function withdraw(bytes32 _stakeID)
+  external
+  nonReentrant
+  ownerOfLock(_stakeID, msg.sender)
+  returns (bool) { 
+    uint owed = owedToUser[msg.sender];
+    assert(owed != 0);
+    owedToUser[msg.sender] = 0;
+    msg.sender.transfer(owed);
     return true;
   }
 
@@ -114,19 +162,12 @@ using SafeMath for *;
   function receiveReward() 
   external 
   payable
-  requiresEther
-  periodUpToDate 
+  requiresEther 
   { 
-    feesReceivedAtNonce[periodNonce] = feesReceivedAtNonce[periodNonce].add(msg.value);
-    LogFeeReceived(msg.sender, periodNonce, msg.value); 
+    stakingRewardReceived = stakingRewardReceived.add(msg.value);
+    LogFeeReceived(msg.sender, msg.value, block.number); 
   }
 
-  function fillMultipliedTokensForNonce(uint256 _startingNonce, uint _endingNonce, uint256 _totalMultipliedAmount)
-  internal { 
-    for (_startingNonce; _startingNonce < _endingNonce; _startingNonce++) { 
-      multipliedTokensInPeriod[_startingNonce] = multipliedTokensInPeriod[_startingNonce].add(_totalMultipliedAmount); 
-    }
-  }
 
   // Must be authorized by 1 of the 3 owners and then can be called by any of the other 2
   // Invariants: Must be 1 of 3 owners. Cannot be called by same owner who authorized the function to be called.
@@ -141,13 +182,7 @@ using SafeMath for *;
   }
 
 
-// ------------------------------------Getters-------------------------------------------------
-  function getStakeInfo(bytes32 _stakeID)
-  view
-  external 
-  returns(uint, uint, uint, uint, uint, uint, uint) { 
-    return (stakes[_stakeID].periodIndex, stakes[_stakeID].amountStaked, stakes[_stakeID].multipliedAmountFirstNonce, stakes[_stakeID].multipliedAmount, stakes[_stakeID].nonceAtStake, stakes[_stakeID].nonceAtUnlock, stakes[_stakeID].blockAtStake); 
-  }  
+// ------------------------------------View only functions-------------------------------------------------
 
   function getBalance()
   view 
@@ -156,10 +191,24 @@ using SafeMath for *;
     return this.balance;
   }
 
+
+  function calculateOwed(address _staker, bytes32 _stakeID)
+  public 
+  view
+  returns (uint) { 
+    Stake memory thisStake = stakes[_stakeID];
+    return stakingRewardsReceived.mul(thisStake.amountStaked).div(totalMyBitStaked).sub(rewardPaidToStaker[_staker]);
+  }
+
+  // -------------------------------Fallback------------------------
+
   function() 
   public {
     revert();
   }
+
+
+  // -------------------------------Modifiers--------------------------------
 
   modifier onlyApproved { 
     require(database.uintStorage(keccak256("userAccess", msg.sender)) >= 3);
@@ -183,24 +232,17 @@ using SafeMath for *;
     rentrancy_lock = false;
   }
 
-  modifier ownerOfLock(bytes32 _ID) { 
+  modifier ownerOfLock(bytes32 _ID, address _owner) { 
     Stake memory thisStake = stakes[_ID];
-    require(_ID == keccak256(msg.sender, thisStake.blockAtStake, thisStake.amountStaked)); 
+    require(_ID == keccak256(_owner, thisStake.blockAtWithdraw, thisStake.amountStaked)); 
     _;
   }
 
   modifier stakingFinished(bytes32 _ID) {
-    require(stakes[_ID].nonceAtUnlock <= periodNonce);
+    require(stakes[_ID].blockAtWithdraw >= block.number);
     _;
   }
 
-  modifier periodUpToDate { 
-    while (block.number >= nextPeriod) { 
-      periodNonce++;
-      nextPeriod = nextPeriod.add(periodLength); 
-    }
-    _;
-  }
 
   modifier anyOwner { 
     require(database.boolStorage(keccak256("owner", msg.sender)));
@@ -208,7 +250,7 @@ using SafeMath for *;
   }
 
   event LogDestruction(address indexed _locationSent, uint256 indexed _amountSent, address indexed _caller); 
-  event LogFeeReceived(address indexed _sender, uint indexed _currentNonce, uint indexed _amount); 
+  event LogFeeReceived(address indexed _sender, uint indexed _amount, uint indexed _blockNumber); 
   event LogTokensStaked(address indexed _staker, uint indexed _blockNumber, bytes32 indexed _ID); 
   event LogTokenWithdraw(address indexed _staker, uint indexed _blockNumber, bytes32 indexed _ID);
 
