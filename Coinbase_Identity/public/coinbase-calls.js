@@ -27,7 +27,7 @@ $(document).ready(function() {
 
     /*TODO; Just remove this and update url field */
   const authParams = {
-    client_id: 'X&',
+    client_id: '64baf1880c51e3e1782c0035028930efe2cca4653f49374f504071ac82e7919b&',
     response_type: 'code&',
     redirect_uri: 'http%3A%2F%2F127.0.0.1%3A3000%2F&',
     scope:'wallet:user:read,wallet:user:email,wallet:payment-methods:read,wallet:transactions:read,wallet:withdrawals:read,wallet:transactions:send,wallet:accounts:read',//wallet:user:read wallet:user:email wallet:payment-methods:read wallet:transactions:read wallet:withdrawals:read wallet:transactions:send wallet:accounts:read
@@ -46,6 +46,7 @@ $(document).ready(function() {
 
   if(document.URL != 'http://127.0.0.1:3000/'){
     var tempCode = document.URL.split('?code=').pop();
+    alert(tempCode);
     $.ajax({
       type: "GET",
       url: "http://127.0.0.1:3000/coinbase/initiateVerification",
@@ -58,5 +59,22 @@ $(document).ready(function() {
         }
     });
   };
+
+
+  $("#coinbase-payment").on('click', function() {
+    var valueToPay = $('#coinbaseValue').val();
+    var addressToPay = $('#desiredAddress').val();
+    $.ajax({
+      type: "GET",
+      url: "http://127.0.0.1:3000/coinbase/payment",
+      data:{
+        valueToPay: valueToPay,
+        addressToPay: addressToPay
+      },
+      success: function(data) {
+          jsonViewer(data);
+        }
+      });
+    });
 
 });

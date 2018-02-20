@@ -25,13 +25,14 @@ const transactionHeader ={
   'CB-2FA-Token': ''//2FA AUTH
 }
 
-const metaMaskSend = {
+const transactionSend = {
   type : 'send',
   to : '',
   amount: '0.001',
   currency: 'ETH',
   description: ''
 }
+
 
 const urls  = {
   getCodeForAccess: 'https://api.coinbase.com/oauth/token',
@@ -48,12 +49,11 @@ module.exports = {
   initiateVerification: function (req, res){
     options.url = urls.getCodeForAccess;
     metamaskAddr = res.req.query.metamask;
-    var dataStringForAuthToken ='grant_type=authorization_code&code=' + res.req.query.tempCode + '&client_id=X&client_secret=X&redirect_uri=http://127.0.0.1:3000/'    //STRING
+    var dataStringForAuthToken ='grant_type=authorization_code&code=' + res.req.query.tempCode + '&client_id=XXXX&client_secret=XXXX&redirect_uri=http://127.0.0.1:3000/'    //STRING
     options.method = 'POST';
     options.body = dataStringForAuthToken;
       request(options, function(error, response, body){
           if (!error && response.statusCode == 200) {
-                res.send(body);
                 var resultJson = JSON.parse(body);
                 idAddrToken['_accessToken'] = resultJson.access_token;
                 console.log('initiateVerification' + resultJson.access_token);
@@ -62,7 +62,17 @@ module.exports = {
         }
       );
     },
+
+    payment: function (req, res){
+      var valueToPay = res.req.query.valueToPay;
+      var addressToPay = res.req.query.addressToPay;
+      //var accessToken = idAddrToken['accessToken'];
+      var ethWalletId = ''; // For testing (will be obtained when they intiially verify)
+      var accessToken = ''; //For testing
+      postTransaction(accessToken, ethWalletId, valueToPay, addressToPay, false);
+    },
 };
+
 
 function getValidBank(_accessToken){
   options.url = urls.valid_bank;
@@ -114,31 +124,36 @@ function getEthWalletID(_accessToken){
      for(index=0; index < responseDataLength; index++){
        if(responseData[index].name == 'ETH Wallet'){
          idAddrToken['ethWalletId'] = responseData[index].id;
-         console.log('ethwallet' + responseData[index].id);
-         postTransactionToMetamask(_accessToken, responseData[index].id);
+         console.log('ethwallet: ' + responseData[index].id);
+         postTransaction(_accessToken, responseData[index].id, '0.001', metamaskAddr, true);
        }
      };
    });
 };
 
 
-function postTransactionToMetamask(_accessToken, _ethWalletId){
+function postTransaction(_accessToken, _ethWalletId, _amountToSend, _addressToSend, _verification){
   transactionHeader.Authorization = 'Bearer ' + _accessToken;
   options.headers = transactionHeader;
   options.url = urls.accounts_for_Transaction + _ethWalletId + urls.transaction;
   options.method = 'POST';
-  metaMaskSend.description = 'Transaction from coinbase account to metamask addr: ' + metamaskAddr + ' for the amount of: ' + metaMaskSend.amount + 'USD.  Done by MyBit foundation to validate coinbase account';
-  metaMaskSend.to = metamaskAddr;
-  options.body = JSON.stringify(metaMaskSend);
+  transactionSend.to = _addressToSend;
+  transactionSend.amount = _amountToSend;
+  transactionSend.description = 'Transaction from coinbase account to metamask addr: ' + _addressToSend + ' for the amount of: ' + transactionSend.amount + 'USD.  Done by MyBit foundation to validate coinbase account';
+  options.body = JSON.stringify(transactionSend);
   request(options, function(error, response){
       var jsonResponse = JSON.parse(response.body)
       var responseData = jsonResponse.data;
-      idAddrToken['metamaskAddr'] = metamaskAddr;
+      console.log(error);
+      console.log(response);
       idAddrToken['verificationTxID'] = responseData.id;
-      console.log('transactionToMetamask'+ responseData.id);
-      getTransactionHashAfterPosted(_accessToken, _ethWalletId, responseData.id); //requires time delay of 10 seconds
+      console.log('transaction to: '+ responseData.id);
+      if(_verification){
+        //getTransactionHashAfterPosted(_accessToken, _ethWalletId, responseData.id); //requires time delay of 10 seconds
+        console.log('Verification continuing..')
+      }
     });
-  }
+  };
 
 
 function getTransactionHashAfterPosted(_accessToken, _ethWalletId, _verificationTxID){
