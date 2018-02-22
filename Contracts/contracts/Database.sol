@@ -12,7 +12,7 @@ contract Database {
     mapping(bytes32 => bytes) public bytesStorage;
     mapping(bytes32 => bytes32) public bytes32Storage; 
     mapping(bytes32 => bool) public boolStorage;
-    mapping(bytes32 => int256) public intStorage;
+    mapping(bytes32 => int) public intStorage;
 
 
   // This is the first contract to get deployed. Will store all data + references to other contracts

@@ -4,8 +4,6 @@ import './MyBitToken.sol';
 import './Database.sol'; 
 
 
-
-// NOTE: If no stakers during period Wei is sent, then it will be unclaimed
 // TODO: prevent users from accidentally transferring in tokens 
 // TODO: store previous stakeID as well?? 
 contract TokenStake { 
@@ -46,7 +44,7 @@ using SafeMath for *;
     uint amountStaked;        // Amount of MyB tokens staked
     uint blockWhenReleased;    // Block when user is allowed to request a withdraw. Once withdraw requested this variable will indicate when actual withdraw can be done
     bool pendingWithdraw;     // User has requested a withdraw of tokens. If true, must wait until block.number >= blockWhenReleased
-    bytes32 next;        // This is the stake in front of 
+    bytes32 next;             // This is the stake in front of 
   }
 
 
@@ -131,7 +129,7 @@ using SafeMath for *;
       bytes32 thisID = head; 
       Stake thisStake = stakers[head]; 
       head = thisStake.next;
-      if (thisStake.amountStaked <= _amount) { 
+      if (thisStake.amountStaked <= _amount.sub(paidAmount)) { 
         settleLedger(thisStake.staker, thisID);
         paidAmount = paidAmount.add(thisStake.amountStaked); 
         delete stakers[thisID]; 
@@ -140,9 +138,10 @@ using SafeMath for *;
         settleLedger(thisStake.staker, thisID);
         thisStake.amountStaked = thisStake.amountStaked.sub(_amount.sub(paidAmount));
         paidAmount = _amount; 
+        break;
       }
-      myBitToken.transfer(address(bugbounty), _amount); 
     }
+    myBitToken.transfer(address(bugbounty), _amount); 
   }
 
 
