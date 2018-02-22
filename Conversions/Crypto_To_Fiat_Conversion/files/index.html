@@ -1,0 +1,144 @@
+<html>
+  <head>
+    <title>Crypto > Fiat</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="json.css" />
+    <script src="json.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4" crossorigin="anonymous"></script>
+
+  </head>
+
+  <body>
+    <br/>
+
+
+      <div class="container">
+        <div class="row  align-items-center">
+          <div class="col-sm align-items-center ">
+            <button id="uphold" type="button " class="btn btn-dark">Uphold</button>
+          </div>
+        </div>
+        <hr />
+
+        <div class="row">
+          <div class="col-sm">
+            <button id="uphold-authenticate" type="button " class="btn btn-outline-success">Authenticate</button>
+          </div>
+        </div><br/>
+
+        <div class="row">
+          <div class="col-sm">
+            <button id="uphold-getUserDetails" type="button " class="btn btn-outline-success">User Details</button>
+          </div>
+        </div><br/>
+
+        <div class="row">
+          <div class="col-sm">
+            <button id="uphold-getUserVerified" type="button " class="btn btn-outline-success">User Verified</button>
+          </div>
+        </div><br/>
+
+        <div class="row">
+          <div class="col-sm">
+            <button id="uphold-getCurrencyTicker" type="button " class="btn btn-outline-success">Currency Exchange Rate</button>
+          </div>
+        </div><br/>
+
+        <div class="row">
+          <div class="col-sm">
+            <button id="uphold-getAccounts" type="button " class="btn btn-outline-success">Accounts</button>
+          </div>
+        </div><br/>
+
+        <div class="row">
+          <div class="col-sm">
+            <button id="uphold-getCards" type="button " class="btn btn-outline-success">Cards</button>
+          </div>
+        </div><br/>
+
+        <div class="row">
+          <div class="col-sm">
+            <button id="uphold-getSpecificCardEthAddress" type="button " class="btn btn-outline-success">Specific Card Eth Address</button>
+            <select id='uphold-cardLabel'>
+              <option value="CHF card">CHF</option>
+              <option value="EUR card">EUR</option>
+              <option value="USD card">USD</option>
+              <option value="GBP card">GBP</option>
+            </select>
+          </div>
+        </div><br/>
+
+
+        <div class="row">
+          <div class="col-sm">
+            <button id="uphold-getCardID" type="button " class="btn btn-outline-success">Specific Card ID</button>
+            <select id='uphold-cardID'>
+              <option value="CHF card">CHF</option>
+              <option value="EUR card">EUR</option>
+              <option value="USD card">USD</option>
+              <option value="GBP card">GBP</option>
+            </select>
+          </div>
+        </div><br/>
+
+
+        <div class="row">
+          <div class="col-sm">
+            <button id="uphold-getCardTransactions" type="button " class="btn btn-outline-success">Specific Card Transactions</button>
+            <select id='uphold-cardTransactions'>
+              <option value="CHF card">CHF</option>
+              <option value="EUR card">EUR</option>
+              <option value="USD card">USD</option>
+              <option value="GBP card">GBP</option>
+            </select>
+          </div>
+        </div><br/>
+      </div>
+
+
+      <br/><br/> <div class="container"><h1>Output</h1> </div><br/><br/>
+
+
+      <div class="container">
+        <pre id="json-renderer"></pre>
+      </div>
+
+
+
+      <script>
+
+      /* v v hacky way, obviously this wont be used on front end, just showing
+          how to handle the redirect
+      */
+      //<input type="text" id="coinbaseValue" value="0">
+      //<input type="text" id="desiredAddress" value="0x0....">
+
+      var jsonViewer = function jsonViewer(data) {
+        try {
+          var json = JSON.parse(data);
+          $('#json-renderer').jsonViewer(json);
+        }
+        catch(e) {
+          $('#json-renderer').jsonViewer(data);
+        }
+      }
+
+        $(document).ready(function () {
+
+          $("#get-vals").on('click', function () {
+              var from = $('#from').find(":selected").text();
+              var to = $('#to').find(":selected").text();
+              var amount = $("#amount").val();
+              alert(from + "  " + to + "  " + amount);
+          });
+
+        });
+      </script>
+
+      <script src="uphold-calls.js"></script>
+
+  </body>
+
+</html>
