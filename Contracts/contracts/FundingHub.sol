@@ -15,7 +15,6 @@ contract FundingHub {
 
   bool private rentrancy_lock;    // Prevents re-entrancy attack
 
-
   function FundingHub(address _database) 
   public {
       database = Database(_database); 
@@ -184,7 +183,6 @@ contract FundingHub {
   event LogAssetFundingFailed(bytes32 indexed _assetID, uint256 indexed _amountRaised, uint256 indexed _timestamp); 
   event LogAssetPayoutInstaller(address indexed _assetInstaller, uint256 indexed installerAmount, uint256 indexed _timestamp); 
   event LogRefund(address indexed _funder, uint256 indexed _amount, uint256 indexed _timestamp); 
-  event LogFundingTimeChanged(uint256 _newFundingTime, uint256 _timestamp);  
   event LogAssetEscrowChanged(address _newEscrowLocation, uint256 _timestamp); 
   event LogAssetPayoutMyBitFoundation(address indexed _myBitFoundation, uint256 indexed _myBitAmount, uint256 indexed _timestamp);
   event LogAssetPayoutLockedTokenHolders(address indexed _lockedTokenContract, uint256 indexed _lockedTokenAmount, uint256 indexed _timestamp); 

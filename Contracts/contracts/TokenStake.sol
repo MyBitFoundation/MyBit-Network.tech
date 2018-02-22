@@ -12,22 +12,7 @@ using SafeMath for *;
   // --------MyBit Contracts-----------------
   MyBitToken public myBitToken; 
   Database public database; 
-  
 
-  // ----------Staking Information------------------
-  mapping (bytes32 => Stake) public stakes; 
-  mapping (address => uint) public rewardPaidToStaker;
-  mapping (address => uint) public owedToUser; 
-  uint public stakingRewardReceived;
-
-  // ---------------Minimum amounts & times-----------------
-  uint public minimumStakeAmount = 1000;           // Minimum number of tokens that must be staked
-  uint public minimumBlocksToStake = 50;          // TODO: testing number Minimum number of blocks to wait until withdraw can be requested
-  uint public minimumBlocksToWithdraw = 10;      // TODO: testing number. Minimum number of blocks need to wait after withdraw is requested.
-
-
-  // -----Token Information--------------
-  uint public totalMyBitStaked;
 
 
   // -------Safety------------------
@@ -56,24 +41,26 @@ using SafeMath for *;
   }
 
 
-  // Once users approve TokenStaking contract, they can stake tokens here
-  // NOTE: If user locks same number of tokens on the same block, they will lose their tokens as their mapping will be overwritten
+  // Once users approve TokenStaking contract to transfer tokens, they can stake tokens here/ 
+  // User will be added to the end of a linkedlist
+  // TODO: Log staking 
   function stakeTokens(uint _amount)
   external
   onlyApproved
   whenNotPaused
   returns (bool) { 
-    require (_amount >= minimumStakeAmount);
+    require (_amount >= database.uintStorage(keccak256("minimumStakeAmount")));
     require (myBitToken.transferFrom(msg.sender, this, _amount));
-    uint blockAtWithdraw = minimumBlocksToStake.add(block.number);
-    bytes32 ID = keccak256(msg.sender, blockAtWithdraw, _amount);
-    Stake storage thisStake = stakes[ID];
-    thisStake.staker = msg.sender;
-    thisStake.amountStaked = _amount;
-    thisStake.blockWhenReleased = blockAtWithdraw; 
-    thisStake.next = head; 
-    head = ID; 
-    return true;
+    uint totalMyBitStaked = database.uintStorage(keccak256("totalMyBitStaked"));
+    database.setUint(keccak256("totalMyBitStaked"), totalMyBitStaked.add(_amount));
+    uint blockAtWithdraw = database.uintStorage(keccak256("minimumStakeTime")).add(block.number);
+    bytes32 ID = keccak256(msg.sender, block.timestamp, _amount);
+    database.setAddress(keccak256("staker", ID), msg.sender);
+    database.setUint(keccak256("amountStaked", ID), _amount);
+    database.setUint(keccak256("blockAtWithdraw", ID), blockAtWithdraw); 
+    database.setBytes32(keccak256("nextStaker"), database.bytes32Storage(keccak256("headStaker")));
+    database.setBytes32(keccak256("headStaker"), ID);
+    return true;  
 }
 
 
@@ -85,13 +72,16 @@ using SafeMath for *;
   ownerOfLock(_stakeID, msg.sender)
   stakingFinished(_stakeID)
   returns (bool) { 
-    Stake memory thisStake = stakes[_stakeID];
-    require(thisStake.pendingWithdraw == false);
+    require(database.boolStorage(keccak256("pendingWithdraw")) == false);
+    settleLedger(msg.sender, _stakeID);
+    uint totalMyBitStaked = database.uintStorage(keccak256("totalMyBitStaked"));
+    database.setUint(keccak256("totalMyBitStaked"), totalMyBitStaked.sub(thisStakeAmount));
+    database.setBool(keccak256("pendingWithdraw"), true);
+    return true;
 
   }
 
   // Once the minimum staking time has been fulfilled user can withdraw tokens here
-  // TODO: don't let last person withdraw? 
   function removeStake(bytes32 _stakeID, bytes32 _previousStakeID) 
   external
   nonReentrant
@@ -100,45 +90,33 @@ using SafeMath for *;
   ownerOfLock(_stakeID, msg.sender)
   stakingFinished(_stakeID)
   returns (bool) {
-    require(stakes[_previousStakeID].next == _stakeID);
-    settleLedger(msg.sender, _stakeID);
-    Stake memory thisStake = stakes[_stakeID];
-    totalMyBitStaked = totalMyBitStaked.sub(thisStake.amountStaked);
-    myBitToken.transfer(msg.sender, thisStake.amountStaked);   // If transfer() fails the call will bubble up
-    if (_stakeID == head) { head = thisStake.next;  }         // If this staker is last in list, make next person the last
-    else { stakes[_previousStakeID].next = thisStake.next;  }   // Point previous stakeID ahead one place
-    delete stakes[_stakeID];
+    require(database.bytes32Storage(keccak256("nextStaker", _previousStakeID)) == _stakeID || _previousStakeID == bytes32(0));    // Make sure the previous stakeID is pointing to this one
+    uint thisStakeAmount = database.uintStorage(keccak256("amountStaked", _stakeID));
+    bytes32 head = database.bytes32Storage(keccak256("headStaker"));
+    myBitToken.transfer(msg.sender, thisStakeAmount);   // If transfer() fails the call will bubble up
+    if (_stakeID == head) { head = database.bytes32Storage(keccak256("nextStaker", _stakeID)); }         // If this staker is last in list, make next person the last
+    else { database.setBytes32(keccak256("nextStaker", _previousStakeID), database.bytes32Storage(keccak256("nextStaker", _stakeID));  }   // Point previous stakeID ahead one place
     LogTokenWithdraw(msg.sender, block.number, _stakeID);    
-  }
-
-  function settleLedger(address _staker, bytes32 _stakeID)
-  internal { 
-    uint owed = calculateOwed(_staker, _stakeID);
-    if (owed > 0) {
-      owedToUser[msg.sender] = owedToUser[msg.sender].add(owed);
-      rewardPaidToStaker[msg.sender] = rewardPaidToStaker[msg.sender].add(owed);
-    }
   }
 
   // TODO: only be called by bugbounty contract
   function payBugBounty(uint _amount)
   nonReentrant
+  whenNotPaused
   external { 
     uint paidAmount = 0;
     while (paidAmount < _amount) { 
-      bytes32 thisID = head; 
-      Stake thisStake = stakers[head]; 
-      head = thisStake.next;
-      if (thisStake.amountStaked <= _amount.sub(paidAmount)) { 
-        settleLedger(thisStake.staker, thisID);
-        paidAmount = paidAmount.add(thisStake.amountStaked); 
-        delete stakers[thisID]; 
+      bytes32 thisID = database.bytes32Storage(keccak256("headStaker")); 
+      database.setBytes32(keccak256("headStaker"), database.bytes32Storage(keccak256("nextStaker"), thisID));
+      uint thisStakeAmount = database.uintStorage(keccak256("amountStaked", thisID));
+      settleLedger(thisStake.staker, thisID);
+      if (thisStakeAmount <= _amount.sub(paidAmount)) { 
+        paidAmount = paidAmount.add(thisStakeAmount); 
+        deleteStake(thisID); 
       }
       else {
-        settleLedger(thisStake.staker, thisID);
-        thisStake.amountStaked = thisStake.amountStaked.sub(_amount.sub(paidAmount));
+        database.setUint(keccak256("amountStaked", thisID), thisStakeAmount.sub(_amount.sub(paidAmount))); 
         paidAmount = _amount; 
-        break;
       }
     }
     myBitToken.transfer(address(bugbounty), _amount); 
@@ -148,11 +126,14 @@ using SafeMath for *;
   function withdraw(bytes32 _stakeID)
   external
   nonReentrant
+  whenNotPaused
   ownerOfLock(_stakeID, msg.sender)
   returns (bool) { 
     uint owed = owedToUser[msg.sender];
     assert(owed != 0);
     owedToUser[msg.sender] = 0;
+    uint rewardPaidToStaker = database.uintStorage(keccak256("rewardPaidToStaker", _stakeID));
+    database.setUint(keccak256("rewardPaidToStaker", _stakeID), rewardPaidToStaker.add(owed)); 
     msg.sender.transfer(owed);
     return true;
   }
@@ -163,7 +144,8 @@ using SafeMath for *;
   payable
   requiresEther 
   { 
-    stakingRewardReceived = stakingRewardReceived.add(msg.value);
+    stakingRewardReceived = database.uintStorage(keccak256("stakingRewardReceived"));
+    database.setUint(keccak256("stakingRewardReceived"), stakingRewardReceived.add(msg.value));
     LogFeeReceived(msg.sender, msg.value, block.number); 
   }
 
@@ -178,6 +160,24 @@ using SafeMath for *;
     require(database.boolStorage(keccak256(this, _functionInitiator, "destroy", keccak256(_holdingAddress))));
     LogDestruction(_holdingAddress, this.balance, msg.sender); 
     selfdestruct(_holdingAddress);
+  }
+
+// -------------------------------------Internal-----------------------------------
+  function deleteStake(bytes32 _stakeID)
+  internal { 
+    database.deleteUint(keccak256("amountStaked", _stakeID));
+    database.deleteUint(keccak256("blockAtWithdraw", _stakeID));
+    database.deleteAddress(keccak256("staker", _stakeID)); 
+    database.deleteBytes32(keccak256("nextStaker", _stakeID)); 
+  }
+
+  function settleLedger(address _staker, bytes32 _stakeID)
+  internal { 
+    uint owed = calculateOwed(_staker, _stakeID);
+    if (owed > 0) {
+      uint owedToUser = database.uintStorage(keccak256("stakingRevenueOwedToUser", _staker)); 
+      database.setUint(keccak256("stakingRevenueOwedToUser", _staker), owedToUser.add(owed));
+    }
   }
 
 
@@ -196,7 +196,10 @@ using SafeMath for *;
   view
   returns (uint) { 
     Stake memory thisStake = stakes[_stakeID];
-    return stakingRewardsReceived.mul(thisStake.amountStaked).div(totalMyBitStaked).sub(rewardPaidToStaker[_staker]);
+    uint amountStaked = database.uintStorage(keccak256("amountStaked", _stakeID));
+    uint totalMyBitStaked = database.uintStorage(keccak256("totalMyBitStaked", _stakeID));
+    uint rewardPaidToStaker = database.uintStorage(keccak256("rewardPaidToStaker", _staker));
+    return database.uintStorage(keccak256("stakingRewardReceived")).mul(amountStaked).div(totalMyBitStaked).sub(rewardPaidToStaker);
   }
 
   // -------------------------------Fallback------------------------
@@ -232,13 +235,12 @@ using SafeMath for *;
   }
 
   modifier ownerOfLock(bytes32 _ID, address _owner) { 
-    Stake memory thisStake = stakes[_ID];
-    require(_ID == keccak256(_owner, thisStake.blockAtWithdraw, thisStake.amountStaked)); 
+    require(database.addressStorage(keccak256("staker", _ID)) == _owner); 
     _;
   }
 
   modifier stakingFinished(bytes32 _ID) {
-    require(stakes[_ID].blockAtWithdraw >= block.number);
+    require(database.uintStorage(keccak256("blockAtWithdraw")) >= block.number);
     _;
   }
 
