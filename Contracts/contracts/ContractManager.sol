@@ -3,6 +3,7 @@ pragma solidity ^0.4.13;
 import "./Database.sol";
 
 // Contract Manager determines which contracts are allowed to make changes to the shares database contract. Changes in contracts require multi-sig from owners.
+// TODO: Add event logs
 contract ContractManager{
   Database public database;
 

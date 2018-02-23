@@ -66,6 +66,9 @@ contract FundingHub {
     TokenStake.receiveTransactionFee.value(stakedTokenAmount)();  
     myBitFoundation.transfer(myBitAmount);             // Must be normal account
     assetEscrow.transfer(installerAmount);             // Must be normal account
+    address manager = database.addressStorage(keccak256("assetManager", _assetID));
+    uint managerPercentage = database.uintStorage(keccak256("managerPercentage", _assetID));
+    database.setUint(keccak256("shares", _assetID, manager), amountRaised.mul(managerPercentage));   // Give manager his percentage of shares
     transitionToStage(_assetID, 4);
     LogAssetPayoutMyBitFoundation(myBitFoundation, myBitAmount, block.timestamp);
     LogAssetPayoutLockedTokenHolders(address(bugEscrow), stakedTokenAmount, block.timestamp); 

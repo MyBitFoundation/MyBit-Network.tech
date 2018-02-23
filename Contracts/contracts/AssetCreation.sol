@@ -21,7 +21,7 @@ contract AssetCreation {
   // @Param: The amount of WEI required for asset to achieve successfull funding 
   // @Param: The ID of the installer of this asset 
   // @Param: The type of asset being created. (ie. Sha3("BitcoinATM"))
-  function newAsset(bytes32 _storageHash, uint _amountToBeRaised, bytes32 _installerID, bytes32 _assetType) 
+  function newAsset(bytes32 _storageHash, uint _amountToBeRaised, uint _managerPercentage, bytes32 _installerID, bytes32 _assetType) 
   external 
   whenNotPaused
   nonReentrant
@@ -33,6 +33,8 @@ contract AssetCreation {
     require(database.uintStorage(keccak256("userAccess", msg.sender)) >= 2);
     require(database.uintStorage(keccak256("fundingStage", _storageHash)) == 0);    // This ensures the asset isn't currently live or being funded
     database.setUint(keccak256("amountToBeRaised", _storageHash), _amountToBeRaised); 
+    database.setUint(keccak256("managerPercentage", _storageHash), _managerPercentage); 
+    database.setAddress(keccak256("assetManager", _storageHash), msg.sender);
     database.setUint(keccak256("fundingDeadline", _storageHash), block.timestamp.add(fundingTime));
     database.setUint(keccak256("fundingStage", _storageHash), 1); 
     LogAssetInfo(_storageHash, _installerID, _assetType); 
