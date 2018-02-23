@@ -28,7 +28,7 @@ const headerRequest = {
 };
 
 const headerEstablished = {
-    'Authorization' : 'Bearer 6df35e2533a05b6c3221a15b03bb83931d026633'
+    'Authorization' : 'Bearer '
 };
 
 
