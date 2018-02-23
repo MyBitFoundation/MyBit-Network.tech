@@ -40,7 +40,7 @@ contract FundingHub {
     uint256 totalFunders = database.uintStorage(keccak256("totalFunders", _assetID));
     database.setUint(keccak256("amountRaised", _assetID), amountRaised.add(msg.value));
     database.setUint(keccak256("shares", _assetID, msg.sender), shares.add(msg.value));
-    dataabase.setUint(keccak256("totalFunders", _assetID), totalFunders.add(1));
+    database.setUint(keccak256("totalFunders", _assetID), totalFunders.add(1));
     LogAssetFunded(msg.sender, msg.value, block.timestamp);
     return true;
   }

@@ -12,6 +12,20 @@ window.addEventListener('load', function() {
 
 
 $(document).ready(function() {
+  const bluebird = require('bluebird')
+  const WithdrawlManagerInterfaceArray = require('./abis/WithdrawalManagerABI.json');
+  //import { promisifyAll } from 'bluebird';
+  //import WithdrawlManagerInterfaceArray  from './abis/WithdrawalManagerABI.json';
+  const WITHDRAWLMANAGER_CONTRACT_ADDRESS = '0x0'
+
+  const instancePromisifier = (instance) => promisifyAll(instance, { suffix: 'Async'})
+
+  const constantsFromInterface = WithdrawlManagerInterfaceArray.filter( WithdrawlManagerInterfaceArray => WithdrawlManagerInterfaceArray.constant )
+  const methodsFromInterface = WithdrawlManagerInterfaceArray.filter( WithdrawlManagerInterfaceArray => !WithdrawlManagerInterfaceArray.constant )
+
+  const asset_abi = web3.eth.contract(WithdrawlManagerInterfaceArray)
+  const withdrawlManager_instance = instancePromisifier(asset_abi.at(WITHDRAWLMANAGER_CONTRACT_ADDRESS))
+
   const options = {
     url: '',
     data: '',
@@ -145,6 +159,44 @@ $(document).ready(function() {
             jsonViewer(data);
           }
         });
+      });
+
+
+      $("#uphold-addWithdrawalAddress").on('click', function() {
+        var cardLabel = $('#uphold-addWithdrawalAddressSelect :selected').val();
+        $.ajax({
+          type: "GET",
+          url: "http://127.0.0.1:3000/uphold/getSpecificCardEthAddress",
+          data: {
+            cardLabel : cardLabel
+          },
+          success: function(ethAddress) {
+              //var response = await withdrawlManager_instance.addWithdrawalAddress(ethAddress, {value:0,gas:2000,from:web3.eth.coinbase});
+              //alert(response);
+            }
+          });
+        });
+
+
+      $("#uphold-updateWithdrawalAddress").on('click', function() {
+        var cardLabel = $('#uphold-updateWithdrawalSelect :selected').val();
+        $.ajax({
+          type: "GET",
+          url: "http://127.0.0.1:3000/uphold/getSpecificCardEthAddress",
+          data: {
+            cardLabel : cardLabel
+          },
+          success: function(ethAddress) {
+            //var response = await withdrawlManager_instance.updateWithdrawalAddress(ethAddress, {value:0,gas:2000,from:web3.eth.coinbase});
+            //alert(response);
+            }
+          });
+        });
+
+
+      $("#uphold-removeWithdrawalAddress").on('click', function() {
+        //var response = await withdrawlManager_instance.removeWithdrawalAddress({value:0,gas:2000,from:web3.eth.coinbase});
+        //alert(response);
       });
 
 });

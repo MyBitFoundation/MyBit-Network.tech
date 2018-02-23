@@ -44,7 +44,7 @@ contract AssetCreation {
     require(database.uintStorage(keccak256("fundingStage", _storageHash)) == 0);   // This ensures the asset isn't currently live or being funded
     database.setUint(keccak256("amountToBeRaised", _storageHash), _amountToBeRaised);
     database.setUint(keccak256("fundingDeadline", _storageHash), block.timestamp.add(database.uintStorage(keccak256("fundingTime"))));
-    database.setUint(keccak256("fundingStartDate", _storageHash), block.timestamp.add);
+    database.setUint(keccak256("fundingStartDate", _storageHash), block.timestamp);
     database.setUint(keccak256("fundingStage", _storageHash), 1);
     LogAssetInfo(_storageHash, _installerID, _assetType);
     LogAssetFundingStarted(msg.sender, _storageHash, _assetType);      // Use indexed event to keep track of pending assets

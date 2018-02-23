@@ -28,7 +28,7 @@ const headerRequest = {
 };
 
 const headerEstablished = {
-    'Authorization' : 'Bearer '
+    'Authorization' : 'Bearer 6df35e2533a05b6c3221a15b03bb83931d026633'
 };
 
 
@@ -128,6 +128,7 @@ module.exports = {
     options.method = 'GET';
     options.headers = headerEstablished;
     let cardLabel = res.req.query.cardLabel;
+    console.log(cardLabel);
     request(options, function(error, response, body){
       if(!error && response.statusCode == 200){
         var resultJson = JSON.parse(body);
