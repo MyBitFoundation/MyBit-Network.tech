@@ -2,6 +2,7 @@ pragma solidity ^0.4.18;
 
 import './SafeMath.sol';
 import './Database.sol';
+import './TokenStake.sol';
 
 
 
@@ -12,26 +13,16 @@ contract BugBounty {
 Database public database; 
 
 
-// -------------User variables---------------
-mapping (address => bool) public basicReviewer; 
-mapping (address => bool) public expertReviewer; 
-
-
-// ------------Voting & Payment----------------
-mapping (address => uint) public weiOwed;
-mapping (address => uint) public numberOfVotesUnpaid; 
-uint public totalNumberOfVotes; 
-
-
 // ----------Bug Struct-------------------
 mapping (bytes32 => Bug) public bugs; 
 
 // ------------Safety-------------------
-  bool private rentrancy_lock = true;    // Prevents re-entrancy attack
+bool private rentrancy_lock = true;    // Prevents re-entrancy attack
 
 struct Bug { 
   address submitter;
   uint stage;    // 0 = uninitialized, 1 = first stage, 2 = expert review
+  uint severity;  // 1 = lowest,  2 = mid,  3 = highest
   mapping (address => bool) voted; 
   int voteSum;
   uint deadline; 
@@ -41,71 +32,84 @@ struct Bug {
 function BugBounty(address _database)
 public { 
   database = Database(_database);
-
 }
 
 // NOTE: Limit of 1 bug per block
-function submitBug()
+// TODO: Send bug funds somewhere
+function submitBug(uint _severity)
 external 
-payable { 
-  require (msg.value == bugSubmissionCost); 
+payable 
+whenNotPaused { 
+  require (msg.value == database.uintStorage(keccak256("bugSubmissionCost"))); 
+  require (_severity < 4 && _severity > 0);
   bytes32 bugID = keccak256(msg.sender, block.number);
   Bug thisBug = bugs[bugID];
   thisBug.submitter = msg.sender;
   thisBug.deadline = block.number.add(database.uintStorage(keccak256("blocksForBugReview"))); 
   thisBug.stage = 1; 
+  thisBug.severity = _severity; 
 }
 
+// TODO: check that total number of votes can't be decremented at the same time it is incremented
 function voteForBug(bytes32 _bugID, bool _upvote)
 external 
+whenNotPaused
 bugExists(_bugID)
 beforeDeadline(_bugID) 
 noDoubleVote(_bugID) 
-certified {
+onlyCertified {
   Bug thisBug = bugs[_bugID];
-  vote(thisBug, msg.sender, _upvote);
+  if (_upvote) { thisBug.voteSum++; }
+  else { thisBug.voteSum--; }
+  numberOfVotesUnpaid = database.uintStorage(keccak256("numberOfVotesUnpaid", msg.sender));
+  database.setUint(keccak256("numberOfVotesUnpaid", msg.sender), numberOfVotesUnpaid.add(1));
 }
 
-function resolveVote(bytes32 _bugID)
+// TODO: 
+function resolveStageTwo(bytes32 _bugID)
+external
+bugExists(_bugID)
+passedDeadline(_bugID) 
+whenNotPaused { 
+  Bug thisBug = bugs[_bugID];
+  if (bugs[_bugID]) { 
+    TokenStake tokenStake = TokenStake(database.addressStorage(keccak256("contract", "TokenStake"))); 
+    uint amountOwed = database.uintStorage(keccak256("severityCost", thisBug.severity));
+    require(tokenStake.payBugBounty(amountOwed, thisBug.submitter)); 
+  }
+  delete thisBug;
+}
+
+function resolveStageOne(bytes32 _bugID)
 external 
 bugExists(_bugID)
 passedDeadline(_bugID) { 
   Bug thisBug = bugs[_bugID];
   if (thisBug.voteSum < 0) { 
     delete bugs[_bugID];
-    return;
   }
+  else { 
   thisBug.voteSum = 0;   // reuse voting count for expert votes
   thisBug.stage = 2; 
+  }
 }
 
-
-function vote(Bug thisBug, address _voter, bool _upvote)
-internal { 
-  if (_upvote) { thisBug.voteSum++; }
-  else { thisBug.voteSum--; }
-  numberOfVotesUnpaid[_voter] = numberOfVotesUnpaid.add(1);
-  totalNumberOfVotes++; 
-}
-
-
-modifier requiresEther { 
-  require(msg.value > 0);
-  _;
-}
 
 modifier bugExists(bytes32 _bugID){
   require(bugs[_bugID].stage != 0);
   _;
 }
 
-modifier certified(bytes32 _bugID) {
-  require (database.boolStorage(keccak256("userAccess", msg.sender)) >= 1); 
+modifier onlyCertified {
   if (thisBug.stage == 1) { 
-    require(certifiedReviewer[msg.sender]);
+    require(database.boolStorage(keccak256("certifiedBugReviewer", msg.sender)));
+    totalNumberOfVotes = database.uintStorage(keccak256("totalNumberOfBugVotes"));
+    database.setUint(keccak256("totalNumberOfBugVotes"), totalNumberOfVotes.add(1));
   }
   else { 
-    require(expertReviewer[msg.sender]); 
+    require(database.boolStorage(keccak256("expertBugReviewer", msg.sender)));
+    totalNumberOfVotes = database.uintStorage(keccak256("totalNumberOfBugVotes", "expert"));
+    database.setUint(keccak256("totalNumberOfBugVotes", "expert"), totalNumberOfVotes.add(1));
   }
 }
 
@@ -133,6 +137,7 @@ modifier beforeDeadline(bytes32 _bugID) {
 
 modifier noDoubleVote(bytes32 _bugID) { 
   require(!bugs[_bugID].voted[msg.sender]);
+  bugs[_bugID].voted[msg.sender] = true; 
   _;
 }
 
@@ -141,6 +146,11 @@ modifier nonReentrant() {
   rentrancy_lock = true;
   _;
   rentrancy_lock = false;
+}
+
+modifier whenNotPaused { 
+  require(!database.boolStorage(keccak256("pause", this)));
+  _; 
 }
 
 event LogBountyReceived(address indexed _sender, uint indexed _value, uint indexed _blockNumber);

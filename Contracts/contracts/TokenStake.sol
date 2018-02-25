@@ -73,7 +73,8 @@ using SafeMath for *;
   function payBugBounty(uint _amount, address _bugFinder)
   nonReentrant
   whenNotPaused
-  external { 
+  external 
+  returns (bool) { 
     require(msg.sender == database.addressStorage(keccak256("contract", "BugBank"))); 
     uint paidAmount = 0;
     while (paidAmount < _amount) { 
@@ -91,6 +92,7 @@ using SafeMath for *;
       }
     }
     myBitToken.transfer(_bugFinder, _amount); 
+    return true;
   }
 
   function deleteStake(bytes32 _stakeID)

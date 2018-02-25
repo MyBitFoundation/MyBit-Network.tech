@@ -61,6 +61,14 @@ using SafeMath for *;
     return true;
   }
 
+  function bugWithdraw(uint _amount, address _userAddress)
+  external 
+  returns (bool) { 
+    require(msg.sender == database.addressStorage(keccak256("contract", "BugBank")));
+    _userAddress.transfer(_amount); 
+    return true; 
+  }
+
   // Asset contracts send fee here 
   // TODO: log assetID? 
   function receiveReward() 
@@ -70,7 +78,8 @@ using SafeMath for *;
   { 
     stakingRewardReceived = database.uintStorage(keccak256("stakingRewardReceived"));
     bugBountyAmount = msg.value.mul(10).div(100);
-    database.setUint(keccak256("bugBountyRewardReceived"), bugBountyAmount); 
+    uint totalBountyReceived = database.uintStorage(keccak256("bugBountyRewardReceived"));
+    database.setUint(keccak256("bugBountyRewardReceived"), totalBountyReceived.add(bugBountyAmount)); 
     database.setUint(keccak256("stakingRewardReceived"), stakingRewardReceived.add(msg.value.sub(bugBountyAmount)));
     LogFeeReceived(msg.sender, msg.value, block.number); 
   }

@@ -27,32 +27,79 @@ contract BugBank {
   }
 
 
-  function calculateOwed()
+  function calculateOwed(bool _expert)
   public { 
+    if (_expert) {
+      require(database.boolStorage(keccak256("expertBugReviewer", _user)));
+      uint totalVotes = getNumberOfVotes(_expert);
+    }
+    else { 
+      require (database.boolStorage(keccak256("certifiedBugReviewer", _user)));
+      uint totalVotes = getNumberOfVotes(_expert);
+    }
+    uint totalBugFeeReceived = database.uintStorage(keccak256("bugBountyRewardReceived"));
+    
+
 
   }
 
   function addReviewer(address _user, bool _expert)
   external
-  onlyOwner { 
+  anyOwner { 
     if (_expert) { 
-      require (!certifiedReviewer[msg.sender]);
-      expertReviewer[msg.sender] = true; 
+      require(!database.boolStorage(keccak256("expertBugReviewer", _user)));
+      database.setBool(keccak256("expertBugReviewer", _user)); 
     }
     else { 
-      require (!expertReviewer[msg.sender]); 
-      certifiedReviewer[msg.sender] = true; 
+      require(!database.boolStorage(keccak256("certifiedBugReviewer", _user)));
+      database.setBool(keccak256("certifiedBugReviewer", _user)); 
     }
   }
 
   function removeReviewer(address _user, bool _expert)
   external
-  onlyOwner { 
-
+  anyOwner { 
+      if (_expert) { 
+      require(database.boolStorage(keccak256("expertBugReviewer", _user)));
+      database.deleteBool(keccak256("expertBugReviewer", _user)); 
+    }
+    else { 
+      require(database.boolStorage(keccak256("certifiedBugReviewer", _user)));
+      database.deleteBool(keccak256("certifiedBugReviewer", _user)); 
+    }
   }
 
-function() { 
-  revert(); 
-}
+    function() { 
+      revert(); 
+    }
+
+    // ---------------------------View Only-------------------------------
+    function getNumberOfVotes(address _user)
+    public 
+    view { 
+      if (database.boolStorage(keccak256("expertBugReviewer", _user))) { 
+        return database.uintStorage(keccak256("totalNumberOfBugVotes", "expert"));
+      }
+      else { 
+        return database.uintStorage(keccak256("totalNumberOfBugVotes"));
+      }
+    }
+
+    modifier nonReentrant() {
+      require(!rentrancy_lock);
+      rentrancy_lock = true;
+      _;
+      rentrancy_lock = false;
+    }
+
+    modifier whenNotPaused { 
+      require(!database.boolStorage(keccak256("pause", this)));
+      _; 
+    }
+
+    modifier anyOwner { 
+      require(database.boolStorage(keccak256("owner", msg.sender)));
+      _;
+    }
 
 }
