@@ -3,7 +3,6 @@ import './SafeMath.sol';
 import './Database.sol';
 import './TokenStake.sol';
 
-
 // This contract is in charge of creating individual asset contracts. It acts as a reference for locations of Assets and other funding parameters
 // Funding stages: { 0: funding hasn't started, 1: currently being funded, 2: funding failed,  3: funding success, 4: asset is live
 // TODO: make funding measured in blocks...not timestamp
@@ -46,6 +45,7 @@ contract FundingHub {
   // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
   // Invariants: Must be in stage FundingSuccess | MyBitFoundation + AssetEscrow  + BugEscrow addresses are set | Contract is not paused
   // Note: MyBitFoundation + AssetEscrow cannot be contracts.
+  // TODO: test gas on this
   function payout(bytes32 _assetID) 
   external  
   nonReentrant 
@@ -61,9 +61,8 @@ contract FundingHub {
     assert (myBitAmount.add(stakedTokenAmount).add(installerAmount) == amountRaised);       // TODO: for testing 
     assert (myBitAmount != 0);        // TODO: testing 
     assert (stakedTokenAmount != 0);      // TODO: testing
-    TokenStake TokenStake = TokenStake(database.addressStorage(keccak256("contract", "TokenStake")));   
-    uint currentBalance = this.balance;      // TODO: testing
-    TokenStake.receiveTransactionFee.value(stakedTokenAmount)();  
+    TokenStake tokenStake = TokenStake(database.addressStorage(keccak256("contract", "TokenStake")));   
+    tokenStake.receiveTransactionFee.value(stakedTokenAmount)();  
     myBitFoundation.transfer(myBitAmount);             // Must be normal account
     assetEscrow.transfer(installerAmount);             // Must be normal account
     address manager = database.addressStorage(keccak256("assetManager", _assetID));
