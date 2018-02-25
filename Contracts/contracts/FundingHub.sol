@@ -1,7 +1,7 @@
 pragma solidity ^0.4.18;
 import './SafeMath.sol';
 import './Database.sol';
-import './TokenStake.sol';
+import './StakingBank.sol';
 
 // This contract is in charge of creating individual asset contracts. It acts as a reference for locations of Assets and other funding parameters
 // Funding stages: { 0: funding hasn't started, 1: currently being funded, 2: funding failed,  3: funding success, 4: asset is live
@@ -61,8 +61,8 @@ contract FundingHub {
     assert (myBitAmount.add(stakedTokenAmount).add(installerAmount) == amountRaised);       // TODO: for testing 
     assert (myBitAmount != 0);        // TODO: testing 
     assert (stakedTokenAmount != 0);      // TODO: testing
-    TokenStake tokenStake = TokenStake(database.addressStorage(keccak256("contract", "TokenStake")));   
-    tokenStake.receiveTransactionFee.value(stakedTokenAmount)();  
+    StakingBank stakingBank = StakingBank(database.addressStorage(keccak256("contract", "StakingBank")));   
+    stakingBank.receiveTransactionFee.value(stakedTokenAmount)();  
     myBitFoundation.transfer(myBitAmount);             // Must be normal account
     assetEscrow.transfer(installerAmount);             // Must be normal account
     address manager = database.addressStorage(keccak256("assetManager", _assetID));

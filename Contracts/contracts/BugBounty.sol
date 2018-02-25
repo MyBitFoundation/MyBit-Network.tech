@@ -2,7 +2,7 @@ pragma solidity ^0.4.18;
 
 import './SafeMath.sol';
 import './Database.sol';
-import './TokenStake.sol';
+
 
 
 // TODO: what to do with escrow for submitting bug 
@@ -88,36 +88,6 @@ internal {
   totalNumberOfVotes++; 
 }
 
-// Asset contracts send fee here 
-// TODO: LOg AssetID?
-function receiveReward() 
-external 
-payable
-requiresEther { 
-  bugBountyReceived = database.uintStorage(keccak256("bugBountyReceived"));
-  database.setUint(keccak256("bugBountyReceived"), bugBountyReceived.add(msg.value));
-  LogBountyReceived(msg.sender, msg.value, block.number); 
-}
-
-
-function addReviewer(address _user, bool _expert)
-external
-onlyOwner { 
-  if (_expert) { 
-    require (!certifiedReviewer[msg.sender]);
-    expertReviewer[msg.sender] = true; 
-  }
-  else { 
-    require (!expertReviewer[msg.sender]); 
-    certifiedReviewer[msg.sender] = true; 
-  }
-}
-
-function removeReviewer(address _user, bool _expert)
-external
-onlyOwner { 
-
-}
 
 modifier requiresEther { 
   require(msg.value > 0);
