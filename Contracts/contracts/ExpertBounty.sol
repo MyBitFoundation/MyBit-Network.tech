@@ -7,7 +7,6 @@ contract ExpertBounty {
   using SafeMath for *; 
 
 mapping (address => bool) public expertReviewer;
-uint public blocksforExpertReview;
 
 
 function expertVote(bytes32 _bugID, bool _upvote)

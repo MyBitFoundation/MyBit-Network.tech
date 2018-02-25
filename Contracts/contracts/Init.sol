@@ -2,7 +2,7 @@ pragma solidity ^0.4.18;
 
 import './Database.sol';
 
-// This contract is involved in setting default variables 
+// This contract is involved in setting default variables. These will be set before the contracts are deployed, since contracts cannot write to database before the database approves their address
 contract InitialVariables { 
 
 Database public database; 
@@ -27,6 +27,7 @@ external  {
 
   // -----------Bug Bounty Variables--------------------
   database.setUint(keccak256("blocksForBugReview"), 25);      // TODO: testing number 
+  database.setUint(keccak256("blocksForExpertReview"), 25);      // TODO: testing number 
   database.setUint(keccak256("bugSubmissionCost"), 1000000000000000000); 
   database.setUint(keccak256("bugSeverityCost", 1), 100); 
   database.setUint(keccak256("bugSeverityCost", 2), 1000); 

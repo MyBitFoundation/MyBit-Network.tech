@@ -5,7 +5,7 @@ import './oraclizeAPI_05.sol';
 
 // This contract transfers MyBit tokens and holds them forever with no mechanism to transfer them out again.
 // TODO: upgradeable myBitToken
-contract TokenBurn is usingOraclize {
+contract TokenBurn {
 
 MyBitToken public myBitToken;
 Database public database;
@@ -24,7 +24,7 @@ public {
 
 
 function burnQuery(uint _accessLevelDesired)
-public
+internal
 basicVerification(_accessLevelDesired)
 whenNotPaused
 payable
@@ -39,13 +39,13 @@ function __callback(bytes32 myid, uint256 result)
 public
 isOrcalize
 whenNotPaused{
-  uint256 _usdPrice = result * 8; // Curent mybit token is 8 decimal places, handle it in wei?
+  uint256 _usdPrice = result.mul(8); // Curent mybit token is 8 decimal places, handle it in wei?
   address _sender = database.addressStorage(myid);
   uint256 _accessLevelDesired = database.uintStorage(myid);
   uint256 _myBitTokensNeeded = accessCostUSD[_accessLevelDesired] / _usdPrice;
   database.setUint(keccak256(_sender, _accessLevelDesired), _myBitTokensNeeded);
-  database.deleteAddress(myid);
-  database.deleteUint(myid);
+  database.deleteAddress(queryID);
+  database.deleteUint(queryID);
   LogCallBackRecieved(_sender, _usdPrice, _accessLevelDesired, _myBitTokensNeeded);
 }
 

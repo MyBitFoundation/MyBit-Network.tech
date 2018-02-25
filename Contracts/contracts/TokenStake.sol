@@ -2,6 +2,7 @@ pragma solidity ^0.4.18;
 import './SafeMath.sol';
 import './MyBitToken.sol'; 
 import './Database.sol'; 
+import './BugBounty.sol';
 
 
 // TODO: prevent users from accidentally transferring in tokens 
@@ -14,23 +15,8 @@ using SafeMath for *;
   Database public database; 
 
 
-
   // -------Safety------------------
   bool private rentrancy_lock = false;    // Prevents re-entrancy attack
-
-
-  // -------LinkedList info-------------
-  bytes32 public head; 
-  uint public length; 
-
-
-  struct Stake {
-    address staker;
-    uint amountStaked;        // Amount of MyB tokens staked
-    uint blockWhenReleased;    // Block when user is allowed to request a withdraw. Once withdraw requested this variable will indicate when actual withdraw can be done
-    bool pendingWithdraw;     // User has requested a withdraw of tokens. If true, must wait until block.number >= blockWhenReleased
-    bytes32 next;             // This is the stake in front of 
-  }
 
 
   function TokenStake(address _myBitToken, address _database) 
@@ -39,7 +25,6 @@ using SafeMath for *;
     database = Database(_database); 
 
   }
-
 
   // Once users approve TokenStaking contract to transfer tokens, they can stake tokens here/ 
   // User will be added to the end of a linkedlist
@@ -96,6 +81,7 @@ using SafeMath for *;
     myBitToken.transfer(msg.sender, thisStakeAmount);   // If transfer() fails the call will bubble up
     if (_stakeID == head) { head = database.bytes32Storage(keccak256("nextStaker", _stakeID)); }         // If this staker is last in list, make next person the last
     else { database.setBytes32(keccak256("nextStaker", _previousStakeID), database.bytes32Storage(keccak256("nextStaker", _stakeID));  }   // Point previous stakeID ahead one place
+    deleteStake(_stakeID);
     LogTokenWithdraw(msg.sender, block.number, _stakeID);    
   }
 
@@ -139,13 +125,16 @@ using SafeMath for *;
   }
 
   // Asset contracts send fee here 
+  // TODO: log assetID? 
   function receiveReward() 
   external 
   payable
   requiresEther 
   { 
     stakingRewardReceived = database.uintStorage(keccak256("stakingRewardReceived"));
-    database.setUint(keccak256("stakingRewardReceived"), stakingRewardReceived.add(msg.value));
+    bugBountyAmount = msg.value.mul(10).div(100);
+    BugBounty(database.addressStorage(keccak256("contract", "BugBounty"))).receiveReward(); 
+    database.setUint(keccak256("stakingRewardReceived"), stakingRewardReceived.add(msg.value.sub(bugBountyAmount)));
     LogFeeReceived(msg.sender, msg.value, block.number); 
   }
 
