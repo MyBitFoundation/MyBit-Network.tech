@@ -12,7 +12,6 @@ contract BugBounty {
   
 Database public database; 
 
-
 // ----------Bug Struct-------------------
 mapping (bytes32 => Bug) public bugs; 
 
@@ -35,7 +34,6 @@ public {
 }
 
 // NOTE: Limit of 1 bug per block
-// TODO: Send bug funds somewhere
 function submitBug(uint _severity)
 external 
 payable 
@@ -61,18 +59,21 @@ onlyCertified {
   Bug thisBug = bugs[_bugID];
   if (_upvote) { thisBug.voteSum++; }
   else { thisBug.voteSum--; }
-  numberOfVotesUnpaid = database.uintStorage(keccak256("numberOfVotesUnpaid", msg.sender));
-  database.setUint(keccak256("numberOfVotesUnpaid", msg.sender), numberOfVotesUnpaid.add(1));
+  if (database.boolStorage(keccak256("regularBugReviewer", msg.sender))) { vote(database.uintStorage(keccak256("expertVotePower")));  }
+  else { vote(database.uintStorage(keccak256("regularVotePower"))); }
+
+
 }
 
-// TODO: 
+// Checks if experts have confirmed or denied the bug. If confirmed, MyB tokens are taken from stakers, if denied the bug struct is deleted. 
+// TODO: send bug funds somewhere.
 function resolveStageTwo(bytes32 _bugID)
 external
 bugExists(_bugID)
 passedDeadline(_bugID) 
 whenNotPaused { 
   Bug thisBug = bugs[_bugID];
-  if (bugs[_bugID]) { 
+  if (bugs[_bugID].voteSum > 0) { 
     TokenStake tokenStake = TokenStake(database.addressStorage(keccak256("contract", "TokenStake"))); 
     uint amountOwed = database.uintStorage(keccak256("severityCost", thisBug.severity));
     require(tokenStake.payBugBounty(amountOwed, thisBug.submitter)); 
@@ -94,6 +95,14 @@ passedDeadline(_bugID) {
   }
 }
 
+function vote(uint _votePower)
+internal { 
+    totalNumberOfVotes = database.uintStorage(keccak256("totalNumberOfBugVotes"));
+    database.setUint(keccak256("totalNumberOfBugVotes"), totalNumberOfVotes.add(_votePower));
+    totalUserVotes = database.uintStorage(keccak256("totalUserVotes", msg.sender));
+    database.setUint(keccak256("totalUserVotes", msg.sender), totalUserVotes.add(_votePower));
+}
+
 
 modifier bugExists(bytes32 _bugID){
   require(bugs[_bugID].stage != 0);
@@ -102,14 +111,10 @@ modifier bugExists(bytes32 _bugID){
 
 modifier onlyCertified {
   if (thisBug.stage == 1) { 
-    require(database.boolStorage(keccak256("certifiedBugReviewer", msg.sender)));
-    totalNumberOfVotes = database.uintStorage(keccak256("totalNumberOfBugVotes"));
-    database.setUint(keccak256("totalNumberOfBugVotes"), totalNumberOfVotes.add(1));
+    require(database.boolStorage(keccak256("regularBugReviewer", msg.sender)));
   }
   else { 
     require(database.boolStorage(keccak256("expertBugReviewer", msg.sender)));
-    totalNumberOfVotes = database.uintStorage(keccak256("totalNumberOfBugVotes", "expert"));
-    database.setUint(keccak256("totalNumberOfBugVotes", "expert"), totalNumberOfVotes.add(1));
   }
 }
 

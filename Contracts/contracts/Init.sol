@@ -32,5 +32,6 @@ external  {
   database.setUint(keccak256("bugSeverityCost", 1), 100); 
   database.setUint(keccak256("bugSeverityCost", 2), 1000); 
   database.setUint(keccak256("bugSeverityCost", 3), 10000); 
-
+  database.setUint(keccak256("expertVotePower"), 5); 
+  database.setUint(keccak256("regularVotePower"), 1); 
 }

@@ -22,25 +22,24 @@ contract BugBank {
 
 
   function withdraw()
+  nonReentrant
   external { 
-
+    uint payment = calculateOwed(msg.sender);
+    assert (payment > 0); 
+    totalPaidToBugReviewer = database.uintStorage(keccak256("totalPaidToBugReviewer", msg.sender));
+    database.setUint(keccak256("totalPaidToBugReviewer", msg.sender), totalPaidToBugReviewer.add(payment));
+    msg.sender.transfer(payment); 
   }
 
 
-  function calculateOwed(bool _expert)
+  function calculateOwed(address _user)
   public { 
-    if (_expert) {
-      require(database.boolStorage(keccak256("expertBugReviewer", _user)));
-      uint totalVotes = getNumberOfVotes(_expert);
-    }
-    else { 
-      require (database.boolStorage(keccak256("certifiedBugReviewer", _user)));
-      uint totalVotes = getNumberOfVotes(_expert);
-    }
+    require(database.boolStorage(keccak256("expertBugReviewer", _user)) || database.boolStorage(keccak256("regularBugReviewer", _user)));
+    uint totalVotes = database.uintStorage(keccak256("totalNumberOfBugVotes")); 
     uint totalBugFeeReceived = database.uintStorage(keccak256("bugBountyRewardReceived"));
-    
-
-
+    uint totalBugVotesUser = database.uintStorage(keccak256("totalBugVotesUser", _user));
+    uint totalPaidToBugReviewer = database.uintStorage(keccak256("totalPaidToBugReviewer", _user));
+    return totalBugFeeReceived.mul(totalBugVotesUser).div(totalVotes).sub(totalPaidToBugReviewer);
   }
 
   function addReviewer(address _user, bool _expert)
@@ -51,8 +50,8 @@ contract BugBank {
       database.setBool(keccak256("expertBugReviewer", _user)); 
     }
     else { 
-      require(!database.boolStorage(keccak256("certifiedBugReviewer", _user)));
-      database.setBool(keccak256("certifiedBugReviewer", _user)); 
+      require(!database.boolStorage(keccak256("regularBugReviewer", _user)));
+      database.setBool(keccak256("regularBugReviewer", _user)); 
     }
   }
 
@@ -64,8 +63,8 @@ contract BugBank {
       database.deleteBool(keccak256("expertBugReviewer", _user)); 
     }
     else { 
-      require(database.boolStorage(keccak256("certifiedBugReviewer", _user)));
-      database.deleteBool(keccak256("certifiedBugReviewer", _user)); 
+      require(database.boolStorage(keccak256("regularBugReviewer", _user)));
+      database.deleteBool(keccak256("regularBugReviewer", _user)); 
     }
   }
 
@@ -73,17 +72,7 @@ contract BugBank {
       revert(); 
     }
 
-    // ---------------------------View Only-------------------------------
-    function getNumberOfVotes(address _user)
-    public 
-    view { 
-      if (database.boolStorage(keccak256("expertBugReviewer", _user))) { 
-        return database.uintStorage(keccak256("totalNumberOfBugVotes", "expert"));
-      }
-      else { 
-        return database.uintStorage(keccak256("totalNumberOfBugVotes"));
-      }
-    }
+  
 
     modifier nonReentrant() {
       require(!rentrancy_lock);
