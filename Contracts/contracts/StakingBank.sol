@@ -17,7 +17,7 @@ using SafeMath for *;
   bool private rentrancy_lock = false;    // Prevents re-entrancy attack
 
 
-  function StakingBank(address _myBitToken, address _database) 
+  function StakingBank(address _database) 
   public {
     database = Database(_database); 
   }
