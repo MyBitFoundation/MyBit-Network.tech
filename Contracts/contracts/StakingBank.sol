@@ -10,7 +10,6 @@ contract StakingBank {
 using SafeMath for *; 
 
   // --------MyBit Contracts-----------------
-  MyBitToken public myBitToken; 
   Database public database; 
 
 
@@ -20,12 +19,8 @@ using SafeMath for *;
 
   function StakingBank(address _myBitToken, address _database) 
   public {
-    myBitToken = MyBitToken(_myBitToken);
     database = Database(_database); 
-
   }
-
-
 
   function requestWithdraw(bytes32 _stakeID)
   external
@@ -38,12 +33,10 @@ using SafeMath for *;
     require(database.boolStorage(keccak256("pendingWithdraw")) == false);
     settleLedger(msg.sender, _stakeID);
     uint totalMyBitStaked = database.uintStorage(keccak256("totalMyBitStaked"));
-    database.setUint(keccak256("totalMyBitStaked"), totalMyBitStaked.sub(thisStakeAmount));
+    database.setUint(keccak256("totalMyBitStaked"), totalMyBitStaked.sub(database.uintStorage(keccak256("stakeAmount", _stakeID))));
     database.setBool(keccak256("pendingWithdraw"), true);
     return true;
-
   }
-
 
 
   function withdraw(bytes32 _stakeID)
@@ -51,10 +44,10 @@ using SafeMath for *;
   nonReentrant
   whenNotPaused
   ownerOfLock(_stakeID, msg.sender)
-  returns (bool) { 
-    uint owed = owedToUser[msg.sender];
+  returns (bool) {
+    uint owed = database.uintStorage(keccak256("stakingRevenueOwedToUser", msg.sender)); 
     assert(owed != 0);
-    owedToUser[msg.sender] = 0;
+    database.deleteUint(keccak256("stakingRevenueOwedToUser", msg.sender));
     uint rewardPaidToStaker = database.uintStorage(keccak256("rewardPaidToStaker", _stakeID));
     database.setUint(keccak256("rewardPaidToStaker", _stakeID), rewardPaidToStaker.add(owed)); 
     msg.sender.transfer(owed);
@@ -71,13 +64,13 @@ using SafeMath for *;
 
   // Asset contracts send fee here 
   // TODO: log assetID? 
-  function receiveReward() 
+  function receiveTransactionFee() 
   external 
   payable
   requiresEther 
   { 
-    stakingRewardReceived = database.uintStorage(keccak256("stakingRewardReceived"));
-    bugBountyAmount = msg.value.mul(10).div(100);
+    uint stakingRewardReceived = database.uintStorage(keccak256("stakingRewardReceived"));
+    uint bugBountyAmount = msg.value.mul(10).div(100);
     uint totalBountyReceived = database.uintStorage(keccak256("bugBountyRewardReceived"));
     database.setUint(keccak256("bugBountyRewardReceived"), totalBountyReceived.add(bugBountyAmount)); 
     database.setUint(keccak256("stakingRewardReceived"), stakingRewardReceived.add(msg.value.sub(bugBountyAmount)));
@@ -123,7 +116,6 @@ using SafeMath for *;
   public 
   view
   returns (uint) { 
-    Stake memory thisStake = stakes[_stakeID];
     uint amountStaked = database.uintStorage(keccak256("amountStaked", _stakeID));
     uint totalMyBitStaked = database.uintStorage(keccak256("totalMyBitStaked", _stakeID));
     uint rewardPaidToStaker = database.uintStorage(keccak256("rewardPaidToStaker", _staker));

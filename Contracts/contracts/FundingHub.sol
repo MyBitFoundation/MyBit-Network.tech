@@ -70,7 +70,7 @@ contract FundingHub {
     database.setUint(keccak256("shares", _assetID, manager), amountRaised.mul(managerPercentage));   // Give manager his percentage of shares
     transitionToStage(_assetID, 4);
     LogAssetPayoutMyBitFoundation(myBitFoundation, myBitAmount, block.timestamp);
-    LogAssetPayoutLockedTokenHolders(address(bugEscrow), stakedTokenAmount, block.timestamp); 
+    LogAssetPayoutLockedTokenHolders(address(stakingBank), stakedTokenAmount, block.timestamp); 
     LogAssetPayoutInstaller(assetEscrow, installerAmount, block.timestamp); 
     return true;
   }

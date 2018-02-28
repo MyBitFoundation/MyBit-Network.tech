@@ -1,6 +1,5 @@
 pragma solidity ^0.4.18;
 import './SafeMath.sol';
-import './TokenStake.sol';
 import './Database.sol';
 
 

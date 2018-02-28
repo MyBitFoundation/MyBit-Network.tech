@@ -8,6 +8,7 @@ import './Database.sol';
 
 // TODO: prevent users from accidentally transferring in tokens 
 // TODO: store previous stakeID as well?? 
+// This contract holds all the MyBitTokens which are currently being staked by users
 contract TokenStaking { 
 using SafeMath for *; 
 
@@ -62,7 +63,7 @@ using SafeMath for *;
     bytes32 head = database.bytes32Storage(keccak256("headStaker"));
     myBitToken.transfer(msg.sender, thisStakeAmount);   // If transfer() fails the call will bubble up
     if (_stakeID == head) { head = database.bytes32Storage(keccak256("nextStaker", _stakeID)); }         // If this staker is last in list, make next person the last
-    else { database.setBytes32(keccak256("nextStaker", _previousStakeID), database.bytes32Storage(keccak256("nextStaker", _stakeID));  }   // Point previous stakeID ahead one place
+    else { database.setBytes32(keccak256("nextStaker", _previousStakeID), database.bytes32Storage(keccak256("nextStaker", _stakeID)));  }   // Point previous stakeID ahead one place
     deleteStake(_stakeID);
     LogTokenWithdraw(msg.sender, block.number, _stakeID);    
   }
@@ -79,9 +80,9 @@ using SafeMath for *;
     uint paidAmount = 0;
     while (paidAmount < _amount) { 
       bytes32 thisID = database.bytes32Storage(keccak256("headStaker")); 
-      database.setBytes32(keccak256("headStaker"), database.bytes32Storage(keccak256("nextStaker"), thisID));
+      database.setBytes32(keccak256("headStaker", database.bytes32Storage(keccak256("nextStaker"))), thisID);
       uint thisStakeAmount = database.uintStorage(keccak256("amountStaked", thisID));
-      settleLedger(thisStake.staker, thisID);
+      StakingBank(database.addressStorage(keccak256("contract", "StakingBank"))).settleLedger(database.addressStorage(keccak256("staker", thisID)), thisID);
       if (thisStakeAmount <= _amount.sub(paidAmount)) { 
         paidAmount = paidAmount.add(thisStakeAmount); 
         deleteStake(thisID); 
@@ -136,5 +137,8 @@ using SafeMath for *;
     require(!database.boolStorage(keccak256("pause", this)));
     _; 
   }
+
+  event LogTokenWithdraw(address _user, uint _blockNumber, bytes32 _stakeID);
+
 
 }

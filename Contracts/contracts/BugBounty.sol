@@ -2,7 +2,7 @@ pragma solidity ^0.4.18;
 
 import './SafeMath.sol';
 import './Database.sol';
-import './TokenStake.sol';
+import './TokenStaking.sol';
 
 
 
@@ -20,10 +20,10 @@ bool private rentrancy_lock = true;    // Prevents re-entrancy attack
 
 struct Bug { 
   address submitter;
-  uint stage;    // 0 = uninitialized, 1 = first stage, 2 = expert review
-  uint severity;  // 1 = lowest,  2 = mid,  3 = highest
   mapping (address => bool) voted; 
   int voteSum;
+  uint stage;    // 0 = uninitialized, 1 = first stage, 2 = expert review
+  uint severity;  // 1 = lowest,  2 = mid,  3 = highest
   uint deadline; 
 }
 
@@ -46,23 +46,23 @@ whenNotPaused {
   thisBug.deadline = block.number.add(database.uintStorage(keccak256("blocksForBugReview"))); 
   thisBug.stage = 1; 
   thisBug.severity = _severity; 
+  LogNewBugSubmitted(msg.sender, bugID, _severity);
 }
 
-// TODO: check that total number of votes can't be decremented at the same time it is incremented
+// User can vote for a proposed bug here if they have not already voted on it
 function voteForBug(bytes32 _bugID, bool _upvote)
 external 
 whenNotPaused
 bugExists(_bugID)
 beforeDeadline(_bugID) 
 noDoubleVote(_bugID) 
-onlyCertified {
+onlyCertified(_bugID) {
   Bug thisBug = bugs[_bugID];
   if (_upvote) { thisBug.voteSum++; }
   else { thisBug.voteSum--; }
   if (database.boolStorage(keccak256("regularBugReviewer", msg.sender))) { vote(database.uintStorage(keccak256("expertVotePower")));  }
   else { vote(database.uintStorage(keccak256("regularVotePower"))); }
-
-
+  LogBugVotedFor(msg.sender, _bugID, _upvote); 
 }
 
 // Checks if experts have confirmed or denied the bug. If confirmed, MyB tokens are taken from stakers, if denied the bug struct is deleted. 
@@ -74,11 +74,11 @@ passedDeadline(_bugID)
 whenNotPaused { 
   Bug thisBug = bugs[_bugID];
   if (bugs[_bugID].voteSum > 0) { 
-    TokenStake tokenStake = TokenStake(database.addressStorage(keccak256("contract", "TokenStake"))); 
     uint amountOwed = database.uintStorage(keccak256("severityCost", thisBug.severity));
-    require(tokenStake.payBugBounty(amountOwed, thisBug.submitter)); 
+    require(TokenStaking(database.addressStorage(keccak256("contract", "TokenStaking"))).payBugBounty(amountOwed, thisBug.submitter)); 
   }
-  delete thisBug;
+  delete bugs[_bugID];
+  LogBugFinishedStageTwo(_bugID, amountOwed > 0, block.number);  // Test that amountOwed == 0 when fails
 }
 
 function resolveStageOne(bytes32 _bugID)
@@ -86,20 +86,21 @@ external
 bugExists(_bugID)
 passedDeadline(_bugID) { 
   Bug thisBug = bugs[_bugID];
-  if (thisBug.voteSum < 0) { 
+  if (thisBug.voteSum <= 0) { 
     delete bugs[_bugID];
   }
   else { 
   thisBug.voteSum = 0;   // reuse voting count for expert votes
   thisBug.stage = 2; 
   }
+  LogBugFinishedStageOne(_bugID, thisBug.stage == 2, block.number);
 }
 
 function vote(uint _votePower)
 internal { 
-    totalNumberOfVotes = database.uintStorage(keccak256("totalNumberOfBugVotes"));
+    uint totalNumberOfVotes = database.uintStorage(keccak256("totalNumberOfBugVotes"));
     database.setUint(keccak256("totalNumberOfBugVotes"), totalNumberOfVotes.add(_votePower));
-    totalUserVotes = database.uintStorage(keccak256("totalUserVotes", msg.sender));
+    uint totalUserVotes = database.uintStorage(keccak256("totalUserVotes", msg.sender));
     database.setUint(keccak256("totalUserVotes", msg.sender), totalUserVotes.add(_votePower));
 }
 
@@ -109,13 +110,14 @@ modifier bugExists(bytes32 _bugID){
   _;
 }
 
-modifier onlyCertified {
-  if (thisBug.stage == 1) { 
+modifier onlyCertified(bytes32 _bugID) {
+  if (bugs[_bugID].stage == 1) { 
     require(database.boolStorage(keccak256("regularBugReviewer", msg.sender)));
   }
   else { 
     require(database.boolStorage(keccak256("expertBugReviewer", msg.sender)));
   }
+  _;
 }
 
 modifier passedDeadline(bytes32 _bugID) { 
@@ -158,7 +160,10 @@ modifier whenNotPaused {
   _; 
 }
 
+event LogBugFinishedStageOne(bytes32 _bugID, bool _passedStageOne, uint _blockNumber);
 event LogBountyReceived(address indexed _sender, uint indexed _value, uint indexed _blockNumber);
-
+event LogBugVotedFor(address _voter, bytes32 _bugID, bool _upvote);
+event LogNewBugSubmitted(address indexed _bugSubmitter, bytes32 indexed bugID, uint indexed _severity);
+event LogBugFinishedStageTwo(bytes32 _bugID, bool passedVote, uint _blockNumber); 
 
 }

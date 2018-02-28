@@ -7,7 +7,7 @@ contract InitialVariables {
 
 Database public database; 
 
-function Init(address _database)
+function InitialVariables(address _database)
 public { 
   database = Database(_database);
 }
@@ -34,4 +34,6 @@ external  {
   database.setUint(keccak256("bugSeverityCost", 3), 10000); 
   database.setUint(keccak256("expertVotePower"), 5); 
   database.setUint(keccak256("regularVotePower"), 1); 
+}
+
 }
