@@ -28,6 +28,7 @@ def deployContracts(chain, accounts):
     # Deploy InitialVariables 
     initialVariables, _ = chain.provider.get_or_deploy_contract('InitialVariables', deploy_args=[database.address])
     txHash = contractManager.transact().addContract("InitialVariables", initialVariables.address, ownerTwo)
+    initialVariables.transact().startDapp()
     assert database.call().addressStorage(hashFunctions.call().contractHash("InitialVariables")).upper() == initialVariables.address.upper()
     assert database.call().boolStorage(hashFunctions.call().stringAddress("contract", initialVariables.address))
 

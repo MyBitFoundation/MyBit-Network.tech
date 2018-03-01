@@ -134,10 +134,11 @@ def test_successfulFunding(chain):
     firstProjectGoal = convertEtherToWei(chain, 20)
     assetInstaller = hashFunctions.call().sha3("SolarCity")
     solarAssetType = hashFunctions.call().sha3("SolarFarm")
+    managerPercentage = 99
 
     # ---------------Create First Asset---------------------------
-    assert assetCreation.call({"from": firstAssetCreator}).newAsset(firstAssetID, firstProjectGoal, assetInstaller, solarAssetType)
-    txHash = assetCreation.transact({"from": firstAssetCreator}).newAsset(firstAssetID, firstProjectGoal, assetInstaller, solarAssetType)
+    assert assetCreation.call({"from": firstAssetCreator}).newAsset(firstAssetID, firstProjectGoal, managerPercentage, assetInstaller, solarAssetType)
+    txHash = assetCreation.transact({"from": firstAssetCreator}).newAsset(firstAssetID, firstProjectGoal, managerPercentage, assetInstaller, solarAssetType)
     receipt = getReceiptMined(chain, txHash)
     assert database.call().uintStorage(hashFunctions.call().stringBytes("fundingStage", firstAssetID)) == 1
     assert database.call().uintStorage(hashFunctions.call().stringBytes("amountToBeRaised", firstAssetID)) == firstProjectGoal
@@ -172,21 +173,26 @@ def test_successfulFunding(chain):
     # Should have succeeded funding stage
     assert database.call().uintStorage(hashFunctions.call().stringBytes("fundingStage", firstAssetID)) == 3
     amountRaised = database.call().uintStorage(hashFunctions.call().stringBytes("amountRaised", firstAssetID))
-    assert  amountRaised == convertEtherToWei(chain, 20)
+    assert  amountRaised == (fundingAmount * 2) + secondFundingAmount + thirdFundAmount
+    assert amountRaised == firstProjectGoal
 
     # Check share amounts were set properly
     assert fundingAmount * 2 == database.call().uintStorage(hashFunctions.call().stringBytesAddress("shares", firstAssetID, firstFunder))
     assert secondFundingAmount == database.call().uintStorage(hashFunctions.call().stringBytesAddress("shares", firstAssetID, secondFunder))
     assert thirdFundAmount == database.call().uintStorage(hashFunctions.call().stringBytesAddress("shares", firstAssetID, thirdFunder))
 
-
-
     # ---------------Check Payout Mechanism-----------------------
     txHash = fundingHub.transact().payout(firstAssetID)
 
+    # Check stages and amountraise were set properly 
+    fundedAmount = (fundingAmount * 2) + secondFundingAmount + thirdFundAmount
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("fundingStage", firstAssetID)) == 4
+    amountRaised = database.call().uintStorage(hashFunctions.call().stringBytes("amountRaised", firstAssetID))
+    assert amountRaised == fundedAmount + ((fundedAmount * managerPercentage) / 100)
+    assert database.call().uintStorage(hashFunctions.call().stringBytesAddress("shares", firstAssetID, firstAssetCreator)) == amountRaised - fundedAmount
 
-    # ----------------------Asset start receiving payments--------------------------------
 
+    # -----------------------------Asset start receiving payments-----------------------------------
     firstROIPayment = convertEtherToWei(chain, 10)
 
     # ---------------------------Check Receiving ROI---------------------------------------
@@ -195,16 +201,16 @@ def test_successfulFunding(chain):
     assert database.call().uintStorage(hashFunctions.call().stringBytes("totalReceived", firstAssetID)) == firstROIPayment
 
     # ----------------Check First Funder Withdraw-----------
-    asset.transact({"from": firstFunder}).withdraw(firstAssetID)
+    asset.transact({"from": firstFunder}).withdraw(firstAssetID, False)
     firstFunderROI = database.call().uintStorage(hashFunctions.call().stringBytesAddress("totalPaidToFunder", firstAssetID, firstFunder))
     assert database.call().uintStorage(hashFunctions.call().stringBytes("totalPaidToFunders", firstAssetID)) == firstFunderROI
     # Get percentage of shares first funder 
     firstFunderPercentageOfShares = getShares(database, hashFunctions, firstAssetID, firstFunder) / amountRaised
-    assert firstFunderROI == (firstROIPayment * firstFunderPercentageOfShares)
+    assert firstFunderROI - (firstROIPayment * firstFunderPercentageOfShares) == 0
 
 
     # ----------Check Second Funder Withdraw---------------
-    asset.transact({"from": secondFunder}).withdraw(firstAssetID)
+    asset.transact({"from": secondFunder}).withdraw(firstAssetID, False)
     secondFunderROI = database.call().uintStorage(hashFunctions.call().stringBytesAddress("totalPaidToFunder", firstAssetID, secondFunder))
     # Get percentage of shares second funder 
     secondFunderPercentageOfShares = getShares(database, hashFunctions, firstAssetID, secondFunder) / amountRaised
@@ -212,7 +218,7 @@ def test_successfulFunding(chain):
     assert database.call().uintStorage(hashFunctions.call().stringBytes("totalPaidToFunders", firstAssetID)) == (firstFunderROI + secondFunderROI)
 
     # -----------Check Third Funder Withdraw--------
-    asset.transact({"from": thirdFunder}).withdraw(firstAssetID)
+    asset.transact({"from": thirdFunder}).withdraw(firstAssetID, False)
     thirdFunderROI = database.call().uintStorage(hashFunctions.call().stringBytesAddress("totalPaidToFunder", firstAssetID, thirdFunder))
     # Get percentage of shares third funder
     thirdFunderPercentageOfShares = getShares(database, hashFunctions, firstAssetID, thirdFunder) / amountRaised
@@ -299,13 +305,14 @@ def test_refund(chain):
     firstProjectGoal = convertEtherToWei(chain, 20)
     assetInstaller = hashFunctions.call().sha3("SolarCity")
     solarAssetType = hashFunctions.call().sha3("SolarFarm")
+    managerPercentage = 5
 
     # ---------------Create First Asset---------------------------
-    assert assetCreation.call({"from": firstAssetCreator}).newAsset(firstAssetID, firstProjectGoal, assetInstaller, solarAssetType)
-    txHash = assetCreation.transact({"from": firstAssetCreator}).newAsset(firstAssetID, firstProjectGoal, assetInstaller, solarAssetType)
+    assert assetCreation.call({"from": firstAssetCreator}).newAsset(firstAssetID, firstProjectGoal, managerPercentage, assetInstaller, solarAssetType)
+    txHash = assetCreation.transact({"from": firstAssetCreator}).newAsset(firstAssetID, firstProjectGoal, managerPercentage, assetInstaller, solarAssetType)
     receipt = getReceiptMined(chain, txHash)
     assert database.call().uintStorage(hashFunctions.call().stringBytes("fundingStage", firstAssetID)) == 1
-    assert database.call().uintStorage(hashFunctions.call().stringBytes("amountToBeRaised", firstAssetID)) == firstProjectGoal
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("amountToBeRaised", firstAssetID)) == firstProjectGoal 
 
 
     # ---------------Testing Asset funding-----------------------
@@ -332,103 +339,38 @@ def test_refund(chain):
     thirdFundAmount = secondFundingAmount
     txHash = fundingHub.transact({"from": thirdFunder, "value":fundingAmount}).fund(firstAssetID)
 
-    mine(chain, 10)
+    # Exhaust the funding period
+    while (getTimestamp(chain, getBlockNumber(chain)) < database.call().uintStorage(hashFunctions.call().stringBytes("fundingDeadline", firstAssetID))):
+        mine(chain, 10)
 
 
     # Shouldn't have succeeded funding stage
     assert database.call().uintStorage(hashFunctions.call().stringBytes("fundingStage", firstAssetID)) == 1
     amountRaised = database.call().uintStorage(hashFunctions.call().stringBytes("amountRaised", firstAssetID))
-    assert  amountRaised == convertEtherToWei(chain, 20)
-
-    # Initiate Refund 
+    assert  amountRaised == (fundingAmount + secondFundingAmount + thirdFundAmount)
 
     # Check share amounts were set properly
-    assert fundingAmount * 2 == database.call().uintStorage(hashFunctions.call().stringBytesAddress("shares", firstAssetID, firstFunder))
+    assert fundingAmount == database.call().uintStorage(hashFunctions.call().stringBytesAddress("shares", firstAssetID, firstFunder))
     assert secondFundingAmount == database.call().uintStorage(hashFunctions.call().stringBytesAddress("shares", firstAssetID, secondFunder))
     assert thirdFundAmount == database.call().uintStorage(hashFunctions.call().stringBytesAddress("shares", firstAssetID, thirdFunder))
 
+    # Initiate Refund 
+    txHash = fundingHub.transact().initiateRefund(firstAssetID)
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("fundingStage", firstAssetID)) == 2
 
+    # Refund funderOne
+    txHash = fundingHub.transact({"from": firstFunder}).refund(firstAssetID)
+    assert getShares(database, hashFunctions, firstAssetID, firstFunder) == 0
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("amountRaised", firstAssetID)) == secondFundingAmount + thirdFundAmount
 
-    # ---------------Check Payout Mechanism-----------------------
-    txHash = fundingHub.transact().payout(firstAssetID)
-    
-    # TODO: sort this out 
-    # assert tokenStake.call().getBalance() > 0   
+    # Refund funderTwo 
+    txHash = fundingHub.transact({"from": secondFunder}).refund(firstAssetID)
+    assert getShares(database, hashFunctions, firstAssetID, secondFunder) == 0
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("amountRaised", firstAssetID)) == thirdFundAmount
 
-
-    # ----------------------Asset start receiving payments--------------------------------
-
-    firstROIPayment = convertEtherToWei(chain, 10)
-
-    # ---------------------------Check Receiving ROI---------------------------------------
-    assert database.call().uintStorage(hashFunctions.call().stringBytes("fundingStage", firstAssetID)) == 4
-    asset.transact({"value": firstROIPayment}).receiveIncome(firstAssetID, "First ROI payment")
-    assert database.call().uintStorage(hashFunctions.call().stringBytes("totalReceived", firstAssetID)) == firstROIPayment
-
-    # ----------------Check First Funder Withdraw-----------
-    asset.transact({"from": firstFunder}).withdraw(firstAssetID)
-    firstFunderROI = database.call().uintStorage(hashFunctions.call().stringBytesAddress("totalPaidToFunder", firstAssetID, firstFunder))
-    assert database.call().uintStorage(hashFunctions.call().stringBytes("totalPaidToFunders", firstAssetID)) == firstFunderROI
-    # Get percentage of shares first funder 
-    firstFunderPercentageOfShares = getShares(database, hashFunctions, firstAssetID, firstFunder) / amountRaised
-    assert firstFunderROI == (firstROIPayment * firstFunderPercentageOfShares)
-
-
-    # ----------Check Second Funder Withdraw---------------
-    asset.transact({"from": secondFunder}).withdraw(firstAssetID)
-    secondFunderROI = database.call().uintStorage(hashFunctions.call().stringBytesAddress("totalPaidToFunder", firstAssetID, secondFunder))
-    # Get percentage of shares second funder 
-    secondFunderPercentageOfShares = getShares(database, hashFunctions, firstAssetID, secondFunder) / amountRaised
-    assert secondFunderROI == (firstROIPayment * secondFunderPercentageOfShares)
-    assert database.call().uintStorage(hashFunctions.call().stringBytes("totalPaidToFunders", firstAssetID)) == (firstFunderROI + secondFunderROI)
-
-    # -----------Check Third Funder Withdraw--------
-    asset.transact({"from": thirdFunder}).withdraw(firstAssetID)
-    thirdFunderROI = database.call().uintStorage(hashFunctions.call().stringBytesAddress("totalPaidToFunder", firstAssetID, thirdFunder))
-    # Get percentage of shares third funder
-    thirdFunderPercentageOfShares = getShares(database, hashFunctions, firstAssetID, thirdFunder) / amountRaised
-    assert thirdFunderROI == (firstROIPayment * thirdFunderPercentageOfShares)
-    totalPaidToFunders = database.call().uintStorage(hashFunctions.call().stringBytes("totalPaidToFunders", firstAssetID))
-    assert totalPaidToFunders == firstFunderROI + secondFunderROI + thirdFunderROI
-    assert totalPaidToFunders == firstROIPayment
-
-# -------------------------------_Create Second Asset-----------------------------------
-    #----------Burn Tokens to Create Asset---------------
-    secondAssetCreator = accounts[8]
-    assert burnForAccess(myBitToken, tokenBurn, secondAssetCreator, 2)
-    assert getAccessLevel(database, hashFunctions, secondAssetCreator) == 2
-
-    # -------------------Test second newAsset()--------------------------
-    secondAssetID = hashFunctions.call().sha3("atm storage on ipfs")
-    atmAssetType = hashFunctions.call().sha3("BTCATM")
-    secondProjectGoal = convertEtherToWei(chain, 200)
-    atmAssetInstaller = hashFunctions.call().sha3("ATMInstaller")
-    assert assetCreation.call({"from": secondAssetCreator}).newAsset(secondAssetID, secondProjectGoal, atmAssetInstaller, atmAssetType)
-    txHash = assetCreation.transact({"from": secondAssetCreator}).newAsset(secondAssetID, secondProjectGoal, atmAssetInstaller, atmAssetType)
-    # Remove user. Asset will continue to be funded
-    txHash = userAccess.transact().removeUser(secondAssetCreator)
-    assert getAccessLevel(database, hashFunctions, secondAssetCreator) == 0
-    # Create First funder 
-    firstFunder = accounts[1]
-    assert getAccessLevel(database, hashFunctions, firstFunder) == 2
-    # Check stage 
-    assert getFundingStage(database, hashFunctions, secondAssetID) == 1
-    txHash = fundingHub.transact({"from": firstFunder, "value":secondProjectGoal}).fund(secondAssetID)
-    assert getFundingStage(database, hashFunctions, secondAssetID) == 3
-    txHash = fundingHub.transact().payout(secondAssetID)
-
-
-    # ------------Destroy AssetContract----------------------
-    testBalance = test.call().getBalance()
-    assetIncome = 1000000000
-    txHash = asset.transact({"value": assetIncome}).receiveIncome(secondAssetID, "something")  
-    beneficiaryHash = hashFunctions.call().addressHash(test.address)
-    txHash = owned.transact().setFunctionAuthorized(asset.address, "destroy", beneficiaryHash)
-    authorizedHash = hashFunctions.call().getAuthorizeHash(asset.address, accounts[0], "destroy", beneficiaryHash)
-    assert database.call().boolStorage(authorizedHash)
-    txHash = asset.transact({"from": accounts[1]}).destroy(accounts[0], test.address)
-    # assert asset.call().database() == database.address      # throws do to contract being destroyed
-    assert test.call().getBalance() == testBalance + assetIncome
-
+    # Refund funderThree
+    txHash = fundingHub.transact({"from": thirdFunder}).refund(firstAssetID)
+    assert getShares(database, hashFunctions, firstAssetID, thirdFunder) == 0
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("amountRaised", firstAssetID)) == 0
 
 
