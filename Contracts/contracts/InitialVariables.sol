@@ -3,6 +3,7 @@ pragma solidity ^0.4.18;
 import './Database.sol';
 
 // This contract is involved in setting default variables. These will be set before the contracts are deployed, since contracts cannot write to database before the database approves their address
+// tODO: add controls for these variables
 contract InitialVariables { 
 
 Database public database; 

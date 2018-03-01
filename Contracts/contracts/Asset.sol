@@ -5,6 +5,7 @@ import './Database.sol';
 
 // Asset contract manages all payments to the live asset, all withdraws of income from shareholders and all trading of shares.
 // All information about assets are stored in Database.sol. Write privilege is given to the current live Asset contract.
+// TODO: Allow owner to change assetManager 
 contract Asset {
 using SafeMath for *;
 
@@ -89,6 +90,7 @@ using SafeMath for *;
   whenNotPaused
   returns (bool) {
     require(msg.sender == database.addressStorage(keccak256("contract", "MarketPlace")));
+    require(_from != database.addressStorage(keccak256("assetManager", _assetID)));  // Don't let assetManager trade his shares away
     uint sharesFrom = database.uintStorage(keccak256("shares", _assetID, _from));
     require(sharesFrom >= _amount);
     uint sharesTo = database.uintStorage(keccak256("shares", _assetID, _to));

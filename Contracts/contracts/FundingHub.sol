@@ -31,11 +31,11 @@ contract FundingHub {
   onlyApproved(2)
   atStage(_assetID, 1)
   returns (bool) {
-    uint256 shares = database.uintStorage(keccak256("shares", _assetID, msg.sender));
+    uint shares = database.uintStorage(keccak256("shares", _assetID, msg.sender));
     if (shares == 0) {
       LogNewFunder(msg.sender, block.timestamp);    // Create event to reference list of funders
     }
-    uint256 amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
+    uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     database.setUint(keccak256("amountRaised", _assetID), amountRaised.add(msg.value));
     database.setUint(keccak256("shares", _assetID, msg.sender), shares.add(msg.value));
     LogAssetFunded(msg.sender, msg.value, block.timestamp);
@@ -44,34 +44,31 @@ contract FundingHub {
 
   // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
   // Invariants: Must be in stage FundingSuccess | MyBitFoundation + AssetEscrow  + BugEscrow addresses are set | Contract is not paused
-  // Note: MyBitFoundation + AssetEscrow cannot be contracts.
-  // TODO: test gas on this
+  // Note: Will fail if addresses + percentages are not set. AmountRaised = WeiRaised + assetManager shares
   function payout(bytes32 _assetID) 
   external  
   nonReentrant 
   whenNotPaused
   atStage(_assetID, 3)       // Can only get to stage 3 by receiving enough funding within time limit
   returns (bool) {
-    uint256 amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
-    uint256 myBitAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("myBitFoundationPercentage")));
-    uint256 stakedTokenAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("stakedTokenPercentage")));
-    uint256 installerAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("installerPercentage")));
-    address myBitFoundation = database.addressStorage(keccak256("contract", "MyBitFoundation")); 
-    address assetEscrow =  database.addressStorage(keccak256("contract", "AssetEscrow"));
+    uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
+    uint myBitAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("myBitFoundationPercentage")));
+    uint stakedTokenAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("stakedTokenPercentage")));
+    uint installerAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("installerPercentage")));
     assert (myBitAmount.add(stakedTokenAmount).add(installerAmount) == amountRaised);       // TODO: for testing 
     assert (myBitAmount != 0);        // TODO: testing 
     assert (stakedTokenAmount != 0);      // TODO: testing
     StakingBank stakingBank = StakingBank(database.addressStorage(keccak256("contract", "StakingBank")));   
     stakingBank.receiveTransactionFee.value(stakedTokenAmount)();  
-    myBitFoundation.transfer(myBitAmount);             // Must be normal account
-    assetEscrow.transfer(installerAmount);             // Must be normal account
+    database.addressStorage(keccak256("contract", "MyBitFoundation")).transfer(myBitAmount);             // Must be normal account
+    database.addressStorage(keccak256("contract", "AssetEscrow")).transfer(installerAmount);             // Must be normal account
     address manager = database.addressStorage(keccak256("assetManager", _assetID));
     uint managerPercentage = database.uintStorage(keccak256("managerPercentage", _assetID));
-    database.setUint(keccak256("shares", _assetID, manager), amountRaised.mul(managerPercentage));   // Give manager his percentage of shares
+    uint managerShares = amountRaised.mul(managerPercentage).div(100);
+    database.setUint(keccak256("shares", _assetID, manager), managerShares);   // Give manager his percentage of shares
+    database.setUint(keccak256("amountRaised", _assetID), amountRaised.add(managerShares));  // Add manager shares to amountRaised
     transitionToStage(_assetID, 4);
-    LogAssetPayoutMyBitFoundation(myBitFoundation, myBitAmount, block.timestamp);
-    LogAssetPayoutLockedTokenHolders(address(stakingBank), stakedTokenAmount, block.timestamp); 
-    LogAssetPayoutInstaller(assetEscrow, installerAmount, block.timestamp); 
+    LogAssetPayout(_assetID, amountRaised, block.number);
     return true;
   }
   
@@ -180,13 +177,11 @@ contract FundingHub {
     revert();
   }
 
-  event LogNewFunder(address indexed _funder, uint256 indexed _timestamp); 
+  event LogNewFunder(address indexed _funder, uint indexed _timestamp); 
   event LogAssetFunded(address indexed _sender, uint indexed _amount, uint indexed _timestamp);
-  event LogAssetFundingFailed(bytes32 indexed _assetID, uint256 indexed _amountRaised, uint256 indexed _timestamp); 
-  event LogAssetPayoutInstaller(address indexed _assetInstaller, uint256 indexed installerAmount, uint256 indexed _timestamp); 
-  event LogRefund(address indexed _funder, uint256 indexed _amount, uint256 indexed _timestamp); 
-  event LogAssetEscrowChanged(address _newEscrowLocation, uint256 _timestamp); 
-  event LogAssetPayoutMyBitFoundation(address indexed _myBitFoundation, uint256 indexed _myBitAmount, uint256 indexed _timestamp);
-  event LogAssetPayoutLockedTokenHolders(address indexed _lockedTokenContract, uint256 indexed _lockedTokenAmount, uint256 indexed _timestamp); 
-  event LogDestruction(address indexed _locationSent, uint256 indexed _amountSent, address indexed _caller); 
+  event LogAssetFundingFailed(bytes32 indexed _assetID, uint indexed _amountRaised, uint indexed _timestamp); 
+  event LogRefund(address indexed _funder, uint indexed _amount, uint indexed _timestamp); 
+  event LogAssetPayout(bytes32 indexed _assetID, uint indexed _amount, uint indexed _blockNumber); 
+  event LogAssetEscrowChanged(address _newEscrowLocation, uint _timestamp); 
+  event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller); 
 }

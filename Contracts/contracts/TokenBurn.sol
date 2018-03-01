@@ -1,7 +1,7 @@
 pragma solidity ^0.4.18;
 import './MyBitToken.sol';
 import './Database.sol';
-import './OraclizeAPI.sol';
+import './oraclizeAPI_05.sol';
 
 // This contract transfers MyBit tokens and holds them forever with no mechanism to transfer them out again.
 // TODO: upgradeable myBitToken
