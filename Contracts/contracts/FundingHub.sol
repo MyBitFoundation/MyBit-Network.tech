@@ -64,9 +64,10 @@ contract FundingHub {
     database.addressStorage(keccak256("contract", "AssetEscrow")).transfer(installerAmount);             // Must be normal account
     address manager = database.addressStorage(keccak256("assetManager", _assetID));
     uint managerPercentage = database.uintStorage(keccak256("managerPercentage", _assetID));
-    uint managerShares = amountRaised.mul(managerPercentage).div(100);
-    database.setUint(keccak256("shares", _assetID, manager), managerShares);   // Give manager his percentage of shares
-    database.setUint(keccak256("amountRaised", _assetID), amountRaised.add(managerShares));  // Add manager shares to amountRaised
+    uint investorPercentage = 100 - managerPercentage; 
+    uint finalShares = amountRaised.div(investorPercentage).mul(100);
+    database.setUint(keccak256("shares", _assetID, manager), finalShares.sub(amountRaised));   // Give manager his percentage of shares
+    database.setUint(keccak256("amountRaised", _assetID), finalShares);  // Add manager shares to amountRaised
     transitionToStage(_assetID, 4);
     LogAssetPayout(_assetID, amountRaised, block.number);
     return true;
