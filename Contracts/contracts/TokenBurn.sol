@@ -13,7 +13,6 @@ contract TokenBurn is usingOraclize {
 MyBitToken public myBitToken;
 Database public database;
 
-uint public numTokensBurnt;
 mapping (uint => uint) public accessCostUSD;
 
 function TokenBurn(address _myBitToken, address _database)
@@ -40,26 +39,28 @@ returns(bool){
 
 function __callback(bytes32 myid, uint256 result)
 public
-isOrcalize
+isOraclize
 whenNotPaused
 returns(bool){
-  uint256 _usdPrice = result * 10; // Curent mybit token is 8 decimal places, handle it in wei?
-  address _sender = database.addressStorage(myid);
-  uint256 _accessLevelDesired = database.uintStorage(myid);
-  uint256 _myBitTokensNeeded = accessCostUSD[_accessLevelDesired] / _usdPrice;
-  database.setUint(keccak256(_sender, _accessLevelDesired), _myBitTokensNeeded);
+  uint256 accessLevelDesired = database.uintStorage(myid);
+  address sender = database.addressStorage(myid);
+  uint256 myBitTokensNeeded = accessCostUSD[accessLevelDesired] / result;
+  database.setUint(keccak256("accessTokenFee", sender, accessLevelDesired), myBitTokensNeeded);
   database.deleteAddress(myid);
   database.deleteUint(myid);
-  LogCallBackRecieved(_sender, _usdPrice, _accessLevelDesired, _myBitTokensNeeded);
+  LogCallBackRecieved(sender, result, accessLevelDesired, myBitTokensNeeded);
   return true;
 }
 
+// TODO: must guard for re-entrancy
+// TODO: hardcode value until deployed on ropsten
 function burnTokens(uint _accessLevelDesired)
 external
 basicVerification(_accessLevelDesired)
 whenNotPaused
 returns (bool) {
-  uint256 accessCostMyB = database.uintStorage(keccak256(msg.sender, _accessLevelDesired));
+  uint256 accessCostMyB = accessCostUSD[_accessLevelDesired];
+  assert (accessCostMyB > 0); 
   require(myBitToken.transferFrom(msg.sender, this, accessCostMyB));
   database.setUint(keccak256("userAccess", msg.sender), _accessLevelDesired);
   uint numTokensBurnt = database.uintStorage(keccak256("numberOfTokensBurnt")); 
@@ -81,7 +82,7 @@ modifier whenNotPaused {
   _;
 }
 
-modifier isOrcalize() {
+modifier isOraclize() {
   require(msg.sender == oraclize_cbAddress());
   _;
 }
