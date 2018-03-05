@@ -62,7 +62,8 @@ returns (bool) {
   uint256 accessCostMyB = database.uintStorage(keccak256(msg.sender, _accessLevelDesired));
   require(myBitToken.transferFrom(msg.sender, this, accessCostMyB));
   database.setUint(keccak256("userAccess", msg.sender), _accessLevelDesired);
-  numTokensBurnt.add(accessCostMyB);
+  uint numTokensBurnt = database.uintStorage(keccak256("numberOfTokensBurnt")); 
+  database.setUint(keccak256("numberOfTokensBurnt"), numTokensBurnt.add(accessCostMyB));
   LogMyBitBurnt(msg.sender, accessCostMyB, block.timestamp);
   return true;
 }
