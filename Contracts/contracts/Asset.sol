@@ -1,11 +1,11 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.19;
 import './SafeMath.sol';
 import './Database.sol';
 
 
 // Asset contract manages all payments to the live asset, all withdraws of income from shareholders and all trading of shares.
 // All information about assets are stored in Database.sol. Write privilege is given to the current live Asset contract.
-// TODO: Allow owner to change assetManager 
+// TODO: Allow owner to change assetManager
 contract Asset {
 using SafeMath for *;
 
