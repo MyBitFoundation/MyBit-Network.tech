@@ -15,7 +15,7 @@ Database public database;
 
 mapping (uint => uint) public accessCostUSD;
 
-function TokenBurn(address _myBitToken, address _database)
+function TokenBurn(address _database, address _myBitToken)
 public {
   myBitToken = MyBitToken(_myBitToken);
   database = Database(_database);

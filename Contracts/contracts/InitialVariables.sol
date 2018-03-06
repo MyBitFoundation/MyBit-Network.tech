@@ -20,10 +20,10 @@ external  {
   database.setUint(keccak256("stakedTokenPercentage"), 2);
   database.setUint(keccak256("installerPercentage"), 97);
 
-// ---------------------Staking Variables--------------------------
-  database.setUint(keccak256("minimumStakeAmount"), 1000); 
-  database.setUint(keccak256("minimumStakeTime"), 50);    // TODO: testing number Minimum number of blocks to wait until withdraw can be requested
-  database.setUint(keccak256("minimumWithdrawlTime"), 50);     // TODO: testing number. Minimum number of blocks need to wait after withdraw is requested.
+  // ---------------------Staking Variables--------------------------
+  database.setUint(keccak256("minimumStakeAmount"), 100); 
+  database.setUint(keccak256("minimumStakeTime"), 10);    // TODO: testing number Minimum number of blocks to wait until withdraw can be requested
+  database.setUint(keccak256("minimumWithdrawTime"), 5);     // TODO: testing number. Minimum number of blocks need to wait after withdraw is requested.
 
 
   // -----------Bug Bounty Variables--------------------

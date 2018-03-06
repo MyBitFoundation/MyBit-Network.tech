@@ -71,6 +71,13 @@ contract HashFunctions {
   returns (bytes32) { 
     return keccak256(_param, _paramTwo, _paramThree);
   }
+
+  function addressUintUint(address _param, uint _paramTwo, uint _paramThree)
+  external
+  view 
+  returns (bytes32) { 
+    return keccak256(_param, _paramTwo, _paramThree); 
+  }
   
 
   function getAuthorizeHash(address _contractAddress, address _owner, string _fnName, bytes32 _recipient)
@@ -78,6 +85,13 @@ contract HashFunctions {
   view 
   returns (bytes32) { 
     return keccak256(_contractAddress, _owner, _fnName, _recipient); 
+  }
+
+  function nullBytes()
+  external
+  view
+  returns (bytes32) { 
+    return bytes32(0); 
   }
 
 function ()

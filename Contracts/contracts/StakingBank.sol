@@ -22,6 +22,8 @@ using SafeMath for *;
     database = Database(_database); 
   }
 
+  // This function settles the ledger for this user and initiates his waiting period to withdraw tokens. These tokens can still be claimed by the bug bounty if necessary
+  // Note: User will not be eligable for further rewards
   function requestWithdraw(bytes32 _stakeID)
   external
   nonReentrant
@@ -30,15 +32,17 @@ using SafeMath for *;
   ownerOfLock(_stakeID, msg.sender)
   stakingFinished(_stakeID)
   returns (bool) { 
-    require(database.boolStorage(keccak256("pendingWithdraw")) == false);
+    require(database.boolStorage(keccak256("pendingWithdraw", _stakeID)) == false);
     settleLedger(msg.sender, _stakeID);
     uint totalMyBitStaked = database.uintStorage(keccak256("totalMyBitStaked"));
-    database.setUint(keccak256("totalMyBitStaked"), totalMyBitStaked.sub(database.uintStorage(keccak256("stakeAmount", _stakeID))));
-    database.setBool(keccak256("pendingWithdraw"), true);
+    database.setUint(keccak256("totalMyBitStaked"), totalMyBitStaked.sub(database.uintStorage(keccak256("amountStaked", _stakeID))));
+    database.setBool(keccak256("pendingWithdraw", _stakeID), true);
+    LogTokenWithdraw(msg.sender, _stakeID, block.number);
     return true;
   }
 
-
+  // This function sends Ether to staker based on what he is owed
+  // Note: Should call SettleLedger before calling this function to get the lastest amount owed 
   function withdraw(bytes32 _stakeID)
   external
   nonReentrant
@@ -117,7 +121,7 @@ using SafeMath for *;
   view
   returns (uint) { 
     uint amountStaked = database.uintStorage(keccak256("amountStaked", _stakeID));
-    uint totalMyBitStaked = database.uintStorage(keccak256("totalMyBitStaked", _stakeID));
+    uint totalMyBitStaked = database.uintStorage(keccak256("totalMyBitStaked"));
     uint rewardPaidToStaker = database.uintStorage(keccak256("rewardPaidToStaker", _staker));
     return database.uintStorage(keccak256("stakingRewardReceived")).mul(amountStaked).div(totalMyBitStaked).sub(rewardPaidToStaker);
   }
@@ -160,7 +164,7 @@ using SafeMath for *;
   }
 
   modifier stakingFinished(bytes32 _ID) {
-    require(database.uintStorage(keccak256("blockAtWithdraw")) >= block.number);
+    require(database.uintStorage(keccak256("blockAtWithdraw")) <= block.number);
     _;
   }
 
@@ -173,7 +177,7 @@ using SafeMath for *;
   event LogDestruction(address indexed _locationSent, uint256 indexed _amountSent, address indexed _caller); 
   event LogFeeReceived(address indexed _sender, uint indexed _amount, uint indexed _blockNumber); 
   event LogTokensStaked(address indexed _staker, uint indexed _blockNumber, bytes32 indexed _ID); 
-  event LogTokenWithdraw(address indexed _staker, uint indexed _blockNumber, bytes32 indexed _ID);
+  event LogTokenWithdraw(address indexed _staker, bytes32 indexed _ID, uint indexed _blockNumber);
 
 
 }

@@ -28,22 +28,26 @@ using SafeMath for *;
   // Once users approve TokenStaking contract to transfer tokens, they can stake tokens here/
   // User will be added to the end of a linkedlist
   // TODO: Log staking
+  // Note: sending two stakes with equal amounts in same block will overwrite the previous & make tokens inaccesible
   function stakeTokens(uint _amount)
   external
   onlyApproved
   whenNotPaused
+  nonReentrant
   returns (bool) {
     require (_amount >= database.uintStorage(keccak256("minimumStakeAmount")));
     require (myBitToken.transferFrom(msg.sender, this, _amount));
     uint totalMyBitStaked = database.uintStorage(keccak256("totalMyBitStaked"));
     database.setUint(keccak256("totalMyBitStaked"), totalMyBitStaked.add(_amount));
-    uint blockAtWithdraw = database.uintStorage(keccak256("minimumStakeTime")).add(block.number);
-    bytes32 ID = keccak256(msg.sender, block.timestamp, _amount);
+    uint minimumStakeTime = database.uintStorage(keccak256("minimumStakeTime")); 
+    uint blockAtWithdraw = minimumStakeTime.add(block.number);
+    bytes32 ID = keccak256(msg.sender, block.number, _amount);
     database.setAddress(keccak256("staker", ID), msg.sender);
     database.setUint(keccak256("amountStaked", ID), _amount);
     database.setUint(keccak256("blockAtWithdraw", ID), blockAtWithdraw);
-    database.setBytes32(keccak256("nextStaker"), database.bytes32Storage(keccak256("headStaker")));
+    database.setBytes32(keccak256("nextStaker", ID), database.bytes32Storage(keccak256("headStaker")));
     database.setBytes32(keccak256("headStaker"), ID);
+    LogTokensStaked(msg.sender, ID, block.number);
     return true;
 }
 
@@ -58,7 +62,7 @@ using SafeMath for *;
   ownerOfLock(_stakeID, msg.sender)
   stakingFinished(_stakeID)
   returns (bool) {
-    require(database.bytes32Storage(keccak256("nextStaker", _previousStakeID)) == _stakeID || _previousStakeID == bytes32(0));    // Make sure the previous stakeID is pointing to this one
+    // require(database.bytes32Storage(keccak256("nextStaker", _previousStakeID)) == _stakeID || _previousStakeID == bytes32(0));    // Make sure the previous stakeID is pointing to this one
     uint thisStakeAmount = database.uintStorage(keccak256("amountStaked", _stakeID));
     bytes32 head = database.bytes32Storage(keccak256("headStaker"));
     myBitToken.transfer(msg.sender, thisStakeAmount);   // If transfer() fails the call will bubble up
@@ -104,7 +108,6 @@ using SafeMath for *;
     database.deleteBytes32(keccak256("nextStaker", _stakeID));
   }
 
-
   modifier nonReentrant() {
     require(!rentrancy_lock);
     rentrancy_lock = true;
@@ -118,10 +121,10 @@ using SafeMath for *;
   }
 
   modifier stakingFinished(bytes32 _ID) {
-    require(database.uintStorage(keccak256("blockAtWithdraw")) >= block.number);
+    require(database.uintStorage(keccak256("blockAtWithdraw")).add(database.uintStorage(keccak256("minimumWithdrawTime"))) <= block.number);
+    require(database.boolStorage(keccak256("pendingWithdraw", _ID)));
     _;
   }
-
 
   modifier anyOwner {
     require(database.boolStorage(keccak256("owner", msg.sender)));
@@ -139,6 +142,7 @@ using SafeMath for *;
   }
 
   event LogTokenWithdraw(address _user, uint _blockNumber, bytes32 _stakeID);
+  event LogTokensStaked(address _staker, bytes32 _ID, uint _blockNumber);
 
 
 }
