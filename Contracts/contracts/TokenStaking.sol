@@ -7,7 +7,7 @@ import './Database.sol';
 
 
 // TODO: prevent users from accidentally transferring in tokens
-// TODO: store previous stakeID as well??
+// TODO: see if it is too troublesome not storing previousStaker??
 // This contract holds all the MyBitTokens which are currently being staked by users
 contract TokenStaking {
 using SafeMath for *;
@@ -54,6 +54,7 @@ using SafeMath for *;
 
 
   // Once the minimum staking time has been fulfilled user can withdraw tokens here
+  // TODO: Must update back-end to adjust _previousStakeID
   function removeStake(bytes32 _stakeID, bytes32 _previousStakeID)
   external
   nonReentrant
@@ -62,14 +63,14 @@ using SafeMath for *;
   ownerOfLock(_stakeID, msg.sender)
   stakingFinished(_stakeID)
   returns (bool) {
-    // require(database.bytes32Storage(keccak256("nextStaker", _previousStakeID)) == _stakeID || _previousStakeID == bytes32(0));    // Make sure the previous stakeID is pointing to this one
-    uint thisStakeAmount = database.uintStorage(keccak256("amountStaked", _stakeID));
     bytes32 head = database.bytes32Storage(keccak256("headStaker"));
+    require(database.bytes32Storage(keccak256("nextStaker", _previousStakeID)) == _stakeID || (_previousStakeID == bytes32(0) && _stakeID == head));    // Make sure the previous stakeID is pointing to this one
+    uint thisStakeAmount = database.uintStorage(keccak256("amountStaked", _stakeID));
     myBitToken.transfer(msg.sender, thisStakeAmount);   // If transfer() fails the call will bubble up
-    if (_stakeID == head) { head = database.bytes32Storage(keccak256("nextStaker", _stakeID)); }         // If this staker is last in list, make next person the last
-    else { database.setBytes32(keccak256("nextStaker", _previousStakeID), database.bytes32Storage(keccak256("nextStaker", _stakeID)));  }   // Point previous stakeID ahead one place
+    if (_stakeID == head) { database.setBytes32(keccak256("headStaker"), database.bytes32Storage(keccak256("nextStaker", _stakeID))); } // If this staker is last in list, make next person the last         
+    else { database.setBytes32(keccak256("nextStaker", _previousStakeID), database.bytes32Storage(keccak256("nextStaker", _stakeID))); }   // Point previous stakeID ahead one place
     deleteStake(_stakeID);
-    LogTokenWithdraw(msg.sender, block.number, _stakeID);
+    LogStakeWithdraw(msg.sender, block.number, _stakeID);
   }
 
 
@@ -102,6 +103,7 @@ using SafeMath for *;
 
   function deleteStake(bytes32 _stakeID)
   internal {
+    database.deleteBool(keccak256("pendingWithdraw", _stakeID));
     database.deleteUint(keccak256("amountStaked", _stakeID));
     database.deleteUint(keccak256("blockAtWithdraw", _stakeID));
     database.deleteAddress(keccak256("staker", _stakeID));
@@ -141,7 +143,7 @@ using SafeMath for *;
     _;
   }
 
-  event LogTokenWithdraw(address _user, uint _blockNumber, bytes32 _stakeID);
+  event LogStakeWithdraw(address _user, uint _blockNumber, bytes32 _stakeID);
   event LogTokensStaked(address _staker, bytes32 _ID, uint _blockNumber);
 
 

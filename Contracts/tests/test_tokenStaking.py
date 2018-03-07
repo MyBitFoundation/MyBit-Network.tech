@@ -146,6 +146,7 @@ def test_TokenStaking(chain):
       stakeID = hashFunctions.call().addressUintUint(accounts[i], blockNumber, amountToStake)
       thisStaker['address'] = accounts[i]
       thisStaker['id'] = stakeID
+      assert database.call().uintStorage(hashFunctions.call().stringBytes("amountStaked", stakeID)) == amountToStake
       thisStaker['amountStaked'] = amountToStake
       thisStaker['blockAtWithdraw'] = database.call().uintStorage(hashFunctions.call().stringBytes("blockAtWithdraw", stakeID))
       thisStaker['nextStaker'] = database.call().bytes32Storage(hashFunctions.call().stringBytes("nextStaker", stakeID))
@@ -180,11 +181,73 @@ def test_TokenStaking(chain):
     assert stakers[last]['blockAtWithdraw'] + minimumWithdrawTime < getBlockNumber(chain)
 
     # --------------------------------Unlock stakers---------------------------------
-    # Unlock last staker 
-    stakeID = stakers[last]['id']
-    previousStaker = hashFunctions.call().nullBytes()
-    assert stakers[first]['nextStaker'] == previousStaker
-    txHash = tokenStaking.transact({"from": accounts[last]}).removeStake(stakeID, previousStaker)
-    assert getHeadStaker(database, hashFunctions) == stakers[last - 1]['id']
 
+    # -----------Remove head staker------------
+    stakeID = stakers[last]['id']
+    currentHead = getHeadStaker(database, hashFunctions)
+    assert currentHead == stakeID
+    previousStaker = hashFunctions.call().nullBytes()
+    nextStaker = stakers[last]['nextStaker']
+    assert stakers[first]['nextStaker'] == previousStaker   # previous stakers should be bytes32(0)
+    txHash = tokenStaking.transact({"from": accounts[last]}).removeStake(stakeID, previousStaker)
+    # Check that stakers was deleted + new head staker was created
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("amountStaked", stakeID)) == 0 
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("blockAtWithdraw", stakeID)) == 0
+    assert database.call().addressStorage(hashFunctions.call().stringBytes("staker", stakeID)) == hashFunctions.call().nullAddress()
+    assert database.call().boolStorage(hashFunctions.call().stringBytes("pendingWithdraw", stakeID)) == False
+    assert getHeadStaker(database, hashFunctions) == nextStaker
+
+    # ----------Remove middle staker (4 left) -------------------
+    stakeID = stakers[first + 1]['id']
+    currentHead = getHeadStaker(database, hashFunctions)
+    previousStaker = stakers[first + 2]['id']
+    txHash = tokenStaking.transact({"from": stakers[first + 1]['address']}).removeStake(stakeID, previousStaker)
+    # Check variables 
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("amountStaked", stakeID)) == 0 
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("blockAtWithdraw", stakeID)) == 0
+    assert database.call().addressStorage(hashFunctions.call().stringBytes("staker", stakeID)) == hashFunctions.call().nullAddress()
+    assert database.call().boolStorage(hashFunctions.call().stringBytes("pendingWithdraw", stakeID)) == False
+    assert getHeadStaker(database, hashFunctions) == currentHead
+    # Check that the previousStaker is now pointing to the next staker in front of the deleted staker
+    assert database.call().bytes32Storage(hashFunctions.call().stringBytes("nextStaker", previousStaker)) == stakers[first + 1]['nextStaker']
+
+
+    # ----------Remove first staker (3 left) -------------
+    stakeID = stakers[first]['id']
+    currentHead = getHeadStaker(database, hashFunctions)
+    previousStaker = stakers[first + 2]['id']
+    assert database.call().bytes32Storage(hashFunctions.call().stringBytes("nextStaker", stakeID)) == hashFunctions.call().nullBytes()
+    txHash = tokenStaking.transact({"from": stakers[first]['address']}).removeStake(stakeID, previousStaker) 
+    # Check Variables 
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("amountStaked", stakeID)) == 0 
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("blockAtWithdraw", stakeID)) == 0
+    assert database.call().addressStorage(hashFunctions.call().stringBytes("staker", stakeID)) == hashFunctions.call().nullAddress()
+    assert database.call().boolStorage(hashFunctions.call().stringBytes("pendingWithdraw", stakeID)) == False
+    assert getHeadStaker(database, hashFunctions) == currentHead
+    # Check that the previousStaker is now pointing to the next staker in front of the deleted staker
+    assert database.call().bytes32Storage(hashFunctions.call().stringBytes("nextStaker", previousStaker)) == hashFunctions.call().nullBytes()
+
+    # ---------------Remove first staker (2)----------------
+    stakerID = stakers[first + 2]['id']
+    assert database.call().bytes32Storage(hashFunctions.call().stringBytes("nextStaker", stakerID)) == hashFunctions.call().nullBytes()
+    txHash = tokenStaking.transact({"from": stakers[first + 2]['address']}).removeStake(stakerID, stakers[first + 3]['id'])
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("amountStaked", stakeID)) == 0 
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("blockAtWithdraw", stakeID)) == 0
+    assert database.call().addressStorage(hashFunctions.call().stringBytes("staker", stakeID)) == hashFunctions.call().nullAddress()
+    assert database.call().boolStorage(hashFunctions.call().stringBytes("pendingWithdraw", stakeID)) == False
+
+
+    # ------------Remove final staker-----------------------
+    finalStaker = stakers[last -1]['id']
+    assert getHeadStaker(database, hashFunctions) == finalStaker
+    assert database.call().bytes32Storage(hashFunctions.call().stringBytes("nextStaker", finalStaker)) == hashFunctions.call().nullBytes()
+    txHash = tokenStaking.transact({"from": stakers[last -1]['address']}).removeStake(finalStaker, hashFunctions.call().nullBytes())
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("amountStaked", finalStaker)) == 0 
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("blockAtWithdraw", finalStaker)) == 0
+    assert database.call().addressStorage(hashFunctions.call().stringBytes("staker", finalStaker)) == hashFunctions.call().nullAddress() 
+    assert database.call().boolStorage(hashFunctions.call().stringBytes("pendingWithdraw", finalStaker)) == False
+
+    # Check nobody is staking 
+    assert database.call().uintStorage(hashFunctions.call().sha3("totalMyBitStaked")) == 0
+    assert getHeadStaker(database, hashFunctions) == hashFunctions.call().nullBytes()
 

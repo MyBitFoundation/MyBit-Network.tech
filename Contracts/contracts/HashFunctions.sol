@@ -94,6 +94,13 @@ contract HashFunctions {
     return bytes32(0); 
   }
 
+  function nullAddress()
+  external
+  view 
+  returns (address) { 
+    return address(0);
+  }
+
 function ()
 public {
   revert();

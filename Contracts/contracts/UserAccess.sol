@@ -27,6 +27,7 @@ contract UserAccess{
   }
   
   // TODO: test
+  // TODO: delete access to oldAddress 
   function switchToBackup(address _oldAddress, address _newBackup)
   external
   mustHaveKYC
