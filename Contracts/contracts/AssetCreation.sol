@@ -32,7 +32,7 @@ contract AssetCreation {
   noEmptyBytes(_assetType)
   notZero(_amountToBeRaised)
   returns (bool){
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= 2);
+    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= 2);     
     require(database.uintStorage(keccak256("fundingStage", _storageHash)) == 0);    // This ensures the asset isn't currently live or being funded
     require(_managerPercentage < 100);
     database.setUint(keccak256("amountToBeRaised", _storageHash), _amountToBeRaised);

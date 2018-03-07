@@ -67,8 +67,7 @@ using SafeMath for *;
   }
 
   // Asset contracts send fee here 
-  // TODO: log assetID? 
-  function receiveTransactionFee() 
+  function receiveTransactionFee(bytes32 _assetID) 
   external 
   payable
   requiresEther 
@@ -78,7 +77,7 @@ using SafeMath for *;
     uint totalBountyReceived = database.uintStorage(keccak256("bugBountyRewardReceived"));
     database.setUint(keccak256("bugBountyRewardReceived"), totalBountyReceived.add(bugBountyAmount)); 
     database.setUint(keccak256("stakingRewardReceived"), stakingRewardReceived.add(msg.value.sub(bugBountyAmount)));
-    LogFeeReceived(msg.sender, msg.value, block.number); 
+    LogFeeReceived(_assetID, msg.value, block.number); 
   }
 
 
@@ -175,7 +174,7 @@ using SafeMath for *;
   }
 
   event LogDestruction(address indexed _locationSent, uint256 indexed _amountSent, address indexed _caller); 
-  event LogFeeReceived(address indexed _sender, uint indexed _amount, uint indexed _blockNumber); 
+  event LogFeeReceived(bytes32 indexed _assetID, uint indexed _amount, uint indexed _blockNumber); 
   event LogTokensStaked(address indexed _staker, uint indexed _blockNumber, bytes32 indexed _ID); 
   event LogTokenWithdraw(address indexed _staker, bytes32 indexed _ID, uint indexed _blockNumber);
 

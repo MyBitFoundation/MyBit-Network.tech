@@ -59,7 +59,7 @@ contract FundingHub {
     assert (myBitAmount != 0);        // TODO: testing
     assert (stakedTokenAmount != 0);      // TODO: testing
     StakingBank stakingBank = StakingBank(database.addressStorage(keccak256("contract", "StakingBank")));
-    stakingBank.receiveTransactionFee.value(stakedTokenAmount)();
+    stakingBank.receiveTransactionFee.value(stakedTokenAmount)(_assetID);
     database.addressStorage(keccak256("contract", "MyBitFoundation")).transfer(myBitAmount);             // Must be normal account
     database.addressStorage(keccak256("contract", "AssetEscrow")).transfer(installerAmount);             // Must be normal account
     address manager = database.addressStorage(keccak256("assetManager", _assetID));
