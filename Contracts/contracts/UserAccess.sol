@@ -16,7 +16,7 @@ contract UserAccess{
   }
 
 
-  // TODO: test
+  // TODO: test 
   function setBackupAddress(address _backupAddress)
   external
   mustHaveKYC
@@ -28,6 +28,7 @@ contract UserAccess{
   
   // TODO: test
   // TODO: delete access to oldAddress 
+  // TODO: change asset shares as well?? 
   function switchToBackup(address _oldAddress, address _newBackup)
   external
   mustHaveKYC

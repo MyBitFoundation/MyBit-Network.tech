@@ -38,6 +38,8 @@ using SafeMath for *;
     require (_amount >= database.uintStorage(keccak256("minimumStakeAmount")));
     require (myBitToken.transferFrom(msg.sender, this, _amount));
     uint totalMyBitStaked = database.uintStorage(keccak256("totalMyBitStaked"));
+    uint stakingRewardReceived = database.uintStorage(keccak256("stakingRewardReceived"));
+    database.setUint(keccak256("stakingRewardReceived"), stakingRewardReceived.sub(database.uintStorage(keccak256("rewardPaidToStakers"))));
     database.setUint(keccak256("totalMyBitStaked"), totalMyBitStaked.add(_amount));
     uint minimumStakeTime = database.uintStorage(keccak256("minimumStakeTime")); 
     uint blockAtWithdraw = minimumStakeTime.add(block.number);

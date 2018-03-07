@@ -42,7 +42,8 @@ using SafeMath for *;
   }
 
   // This function sends Ether to staker based on what he is owed
-  // Note: Should call SettleLedger before calling this function to get the lastest amount owed 
+  // Note: Must call SettleLedger before calling this function to get the lastest amount owed 
+  // TODO: settleLedger within this transaction....check gas difference
   function withdraw(bytes32 _stakeID)
   external
   nonReentrant
@@ -53,11 +54,14 @@ using SafeMath for *;
     assert(owed != 0);
     database.deleteUint(keccak256("stakingRevenueOwedToUser", msg.sender));
     uint rewardPaidToStaker = database.uintStorage(keccak256("rewardPaidToStaker", _stakeID));
-    database.setUint(keccak256("rewardPaidToStaker", _stakeID), rewardPaidToStaker.add(owed)); 
+    uint rewardPaidToStakers = database.uintStorage(keccak256("rewardPaidToStakers"));
+    database.setUint(keccak256("rewardPaidToStaker", _stakeID), rewardPaidToStaker.add(owed));
+    database.setUint(keccak256("rewardPaidToStakers"), rewardPaidToStakers.add(owed));
     msg.sender.transfer(owed);
     return true;
   }
 
+  // Called by BugBounty contract when necessary
   function bugWithdraw(uint _amount, address _userAddress)
   external 
   returns (bool) { 
@@ -83,7 +87,6 @@ using SafeMath for *;
 
   // Must be authorized by 1 of the 3 owners and then can be called by any of the other 2
   // Invariants: Must be 1 of 3 owners. Cannot be called by same owner who authorized the function to be called.
-  // TODO: need to transfer all MYB tokens out before calling this 
   function destroy(address _functionInitiator, address _holdingAddress) 
   anyOwner 
   public {
@@ -94,7 +97,7 @@ using SafeMath for *;
   }
 
 // -------------------------------------Internal-----------------------------------
-
+  // TODO: maybe batch multiple stakeID's 
   function settleLedger(address _staker, bytes32 _stakeID)
   public { 
     uint owed = calculateOwed(_staker, _stakeID);
