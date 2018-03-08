@@ -9,7 +9,7 @@ contract AssetCreation {
 
   Database public database;
   bool private rentrancy_lock = false;    // Prevents re-entrancy attack
-  uint public fundingTime = 3000;
+  uint public fundingTime = 3000;        // TODO: Number for testing
 
   function AssetCreation(address _database)
   public  {
@@ -40,7 +40,7 @@ contract AssetCreation {
     database.setAddress(keccak256("assetManager", _storageHash), msg.sender);
     database.setUint(keccak256("fundingDeadline", _storageHash), block.timestamp.add(fundingTime));
     database.setUint(keccak256("fundingStage", _storageHash), 1);
-    LogAssetInfo(_storageHash, _installerID, _assetType);
+    LogAssetInfo(_storageHash, _installerID);
     LogAssetFundingStarted(msg.sender, _storageHash, _assetType);      // Use indexed event to keep track of pending assets
     return true;
   }
@@ -128,7 +128,7 @@ contract AssetCreation {
   }
 
   event LogAssetFundingStarted(address indexed _creator, bytes32 indexed _assetLocation, bytes32 indexed _assetType);
-  event LogAssetInfo(bytes32 indexed _storageHash, bytes32 indexed _installerID, bytes32 indexed _assetType);
+  event LogAssetInfo(bytes32 indexed _storageHash, bytes32 indexed _installerID);
   event LogAssetRemoved(address indexed _remover, bytes32 indexed _id, uint indexed _timestamp);
   event LogFundingTimeChanged(address _sender, uint _newTimeForFunding, uint _blockTimestamp);
 }

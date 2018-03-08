@@ -1,6 +1,6 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.19;
 
-// TODO: Write changeContractManager() function
+
 contract Database { 
 
  
@@ -23,12 +23,28 @@ contract Database {
     boolStorage[keccak256("owner", _ownerThree)] = true;
   }
 
+  // Must initiate the contract manager during deploy to give platform contracts write-access
+  // Invariants: ContractManager address must not be null,   ContractManager must not be set, Only owner can call this function.
   function setContractManager(address _contractManager)
   external { 
     require(_contractManager != address(0));
     require(boolStorage[keccak256("owner", msg.sender)]);
+    require(addressStorage[keccak256("contract", "ContractManager")] == address(0)); 
     addressStorage[keccak256("contract", "ContractManager")] = _contractManager;
     boolStorage[keccak256("contract", _contractManager)] = true; 
+  }
+
+  // An owner can change the contract manager here
+  function changeContractManager(address _functionSigner, address _oldContractManager, address _newContractManager)
+  external { 
+    require(_newContractManager != address(0));
+    require(boolStorage[keccak256("owner", msg.sender)]);
+    require(addressStorage[keccak256("contract", "ContractManager")] == _oldContractManager);
+    bytes32 functionHash = keccak256(this, _functionSigner, "changeContractManager", keccak256(_newContractManager)); 
+    require(boolStorage[functionHash]);
+    boolStorage[functionHash] = false; 
+    delete boolStorage[keccak256("contract", _oldContractManager)];
+    addressStorage[keccak256("contract", "ContractManager")] = _newContractManager;
   }
 
     // --------------------Set Functions------------------------

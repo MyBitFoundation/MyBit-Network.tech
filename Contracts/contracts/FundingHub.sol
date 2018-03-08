@@ -1,11 +1,10 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.19;
 import './SafeMath.sol';
 import './Database.sol';
 import './StakingBank.sol';
 
 // This contract is in charge of creating individual asset contracts. It acts as a reference for locations of Assets and other funding parameters
 // Funding stages: { 0: funding hasn't started, 1: currently being funded, 2: funding failed,  3: funding success, 4: asset is live
-// TODO: make funding measured in blocks...not timestamp
 contract FundingHub {
   using SafeMath for *;
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.19;
 import './Database.sol';
 
 // This contract handles owner authorization, freezing and access to critical functions

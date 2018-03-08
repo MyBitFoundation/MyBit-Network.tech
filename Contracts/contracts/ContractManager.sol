@@ -1,4 +1,4 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.19;
 
 import "./Database.sol";
 
@@ -32,6 +32,7 @@ contract ContractManager{
     database.setBool(keccak256(this, _functionSigner, "addContract", keccak256(_contractAddress)), false);
     database.setAddress(keccak256("contract", _name), _contractAddress);
     database.setBool(keccak256("contract", _contractAddress), true);
+    LogContractAdded(_contractAddress, _name, block.number);
   }
 
   function removeContract(string _name, address _functionSigner)
@@ -43,6 +44,7 @@ contract ContractManager{
     database.setBool(keccak256(this, _functionSigner, "removeContract", keccak256(_name)), false);
     database.deleteBool(keccak256("contract", _name));
     database.deleteAddress(keccak256("contract", contractToDelete));
+    LogContractRemoved(contractToDelete, _name, block.number);
   }
 
   function updateContract(string _name, address _contractAddress, address _functionSigner)
@@ -50,13 +52,14 @@ contract ContractManager{
   noEmptyAddress(_contractAddress)
   anyOwner {
     require(database.boolStorage(keccak256(this, _functionSigner, "updateContract", keccak256(_contractAddress))));
-    //bytes32 contractKey = keccak256(_name); -- Unused?
     address oldAddress = database.addressStorage(keccak256("contract", _name));
     require (oldAddress != 0);
     database.setBool(keccak256(this, _functionSigner, "updateContract", keccak256(_contractAddress)), false);
     database.deleteBool(keccak256("contract", oldAddress));
     database.setAddress(keccak256("contract", _name), _contractAddress);
     database.setBool(keccak256("contract", _contractAddress), true);
+    LogContractUpdated(oldAddress, _name, block.number);
+    LogNewContractLocation(_contractAddress, _name, block.number);
   }
 
   modifier anyOwner {
@@ -74,4 +77,8 @@ contract ContractManager{
     _;
   }
 
+  event LogContractAdded(address _contractAddress, string _name, uint _blockNumber);
+  event LogContractRemoved(address contractToDelete, string _name, uint _blockNumber);
+  event LogContractUpdated(address oldAddress, string _name, uint _blockNumber);
+  event LogNewContractLocation(address _contractAddress, string _name, uint _blockNumber);
 }
