@@ -2,6 +2,7 @@
 > Set 3 owners when deploying Database. Any one of these owners will be authorized to deploy the rest of the contracts. All contracts that are deployed must be added to the database through ContractManager.
 
 > Test.sol is used to verify that WEI has been sent to the proper address 
+
 > HashFunctions.sol is used as a helper for hash functions
 ## Order of deployment:
 
@@ -11,7 +12,9 @@
 
 * ContractManager: args=(database.address)
 
-* InitialVariables: args=(database.address)
+* InitialVariables: args=(database.address) 
+
+* Call StartDapp() to initialize crucial variables for later contracts
 
 * Owned: args=(database.address)
 
