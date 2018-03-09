@@ -23,25 +23,25 @@ contract AssetCreation {
   // @Param: The ID of the installer of this asset
   // @Param: The type of asset being created. (ie. Sha3("BitcoinATM"))
   // TODO: Allow manager percentage to be 0 ??
-  function newAsset(bytes32 _storageHash, uint _amountToBeRaised, uint _managerPercentage, bytes32 _installerID, bytes32 _assetType)
+  function newAsset(bytes32 _assetID, uint _amountToBeRaised, uint _managerPercentage, bytes32 _installerID, bytes32 _assetType)
   external
   whenNotPaused
   nonReentrant
-  noEmptyBytes(_storageHash)
+  noEmptyBytes(_assetID)
   noEmptyBytes(_installerID)
   noEmptyBytes(_assetType)
   notZero(_amountToBeRaised)
   returns (bool){
     require(database.uintStorage(keccak256("userAccess", msg.sender)) >= 2);     
-    require(database.uintStorage(keccak256("fundingStage", _storageHash)) == 0);    // This ensures the asset isn't currently live or being funded
+    require(database.uintStorage(keccak256("fundingStage", _assetID)) == 0);    // This ensures the asset isn't currently live or being funded
     require(_managerPercentage < 100);
-    database.setUint(keccak256("amountToBeRaised", _storageHash), _amountToBeRaised);
-    database.setUint(keccak256("managerPercentage", _storageHash), _managerPercentage);
-    database.setAddress(keccak256("assetManager", _storageHash), msg.sender);
-    database.setUint(keccak256("fundingDeadline", _storageHash), block.timestamp.add(fundingTime));
-    database.setUint(keccak256("fundingStage", _storageHash), 1);
-    LogAssetInfo(_storageHash, _installerID);
-    LogAssetFundingStarted(msg.sender, _storageHash, _assetType);      // Use indexed event to keep track of pending assets
+    database.setUint(keccak256("amountToBeRaised", _assetID), _amountToBeRaised);
+    database.setUint(keccak256("managerPercentage", _assetID), _managerPercentage);
+    database.setAddress(keccak256("assetManager", _assetID), msg.sender);
+    database.setUint(keccak256("fundingDeadline", _assetID), block.timestamp.add(fundingTime));
+    database.setUint(keccak256("fundingStage", _assetID), 1);
+    LogAssetInfo(_assetID, _installerID);
+    LogAssetFundingStarted(msg.sender, _assetID, _assetType);      // Use indexed event to keep track of pending assets
     return true;
   }
 
@@ -92,6 +92,7 @@ contract AssetCreation {
     database.setUint(keccak256("myBitFoundationPercentage"), _myBitFoundationPercentage);
     database.setUint(keccak256("stakedTokenPercentage"), _stakedTokenPercentage);
     database.setUint(keccak256("installerPercentage"), _installerPercentage);
+    LogFundingPercentageChanged(_myBitFoundationPercentage, _stakedTokenPercentage, _installerPercentage);  
     return true;
   }
 
@@ -127,8 +128,9 @@ contract AssetCreation {
     rentrancy_lock = false;
   }
 
-  event LogAssetFundingStarted(address indexed _creator, bytes32 indexed _assetLocation, bytes32 indexed _assetType);
-  event LogAssetInfo(bytes32 indexed _storageHash, bytes32 indexed _installerID);
+  event LogAssetFundingStarted(address indexed _creator, bytes32 indexed _assetID, bytes32 indexed _assetType);
+  event LogAssetInfo(bytes32 indexed _assetID, bytes32 indexed _installerID);
   event LogAssetRemoved(address indexed _remover, bytes32 indexed _id, uint indexed _timestamp);
   event LogFundingTimeChanged(address _sender, uint _newTimeForFunding, uint _blockTimestamp);
+  event LogFundingPercentageChanged(uint _myBitFoundationPercentage, uint _stakedTokenPercentage, uint _installerPercentage); 
 }

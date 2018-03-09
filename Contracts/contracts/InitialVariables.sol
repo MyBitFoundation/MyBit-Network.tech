@@ -35,6 +35,9 @@ external  {
   database.setUint(keccak256("bugSeverityCost", 3), 10000); 
   database.setUint(keccak256("expertVotePower"), 5); 
   database.setUint(keccak256("regularVotePower"), 1); 
+  LogInitialized(msg.sender, address(database), block.number);
 }
+
+event LogInitialized(address _sender, address _database, uint _blockNumber); 
 
 }

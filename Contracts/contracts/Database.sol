@@ -1,9 +1,8 @@
 pragma solidity ^0.4.19;
 
-
+// This contract is where all long-term data is stored within the MyBit smart-contract system. 
 contract Database { 
 
- 
 // ---------------Storage Variables----------------
 
     mapping(bytes32 => uint) public uintStorage;
@@ -21,6 +20,7 @@ contract Database {
     boolStorage[keccak256("owner", _ownerOne)] = true;
     boolStorage[keccak256("owner", _ownerTwo)] = true;
     boolStorage[keccak256("owner", _ownerThree)] = true;
+    LogInitialized(_ownerOne, _ownerTwo, _ownerThree); 
   }
 
   // Must initiate the contract manager during deploy to give platform contracts write-access
@@ -143,5 +143,7 @@ contract Database {
         _;
 
     }
+
+    event LogInitialized(address indexed _ownerOne, address indexed _ownerTwo, address indexed _ownerThree); 
 
 }

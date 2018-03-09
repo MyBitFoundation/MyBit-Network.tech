@@ -28,7 +28,7 @@ def deployContracts(chain, accounts):
     # Deploy InitialVariables 
     initialVariables, _ = chain.provider.get_or_deploy_contract('InitialVariables', deploy_args=[database.address])
     txHash = contractManager.transact().addContract("InitialVariables", initialVariables.address, ownerTwo)
-    initialVariables.transact().startDapp()
+    txHash = initialVariables.transact().startDapp()
     assert database.call().addressStorage(hashFunctions.call().contractHash("InitialVariables")).upper() == initialVariables.address.upper()
     assert database.call().boolStorage(hashFunctions.call().stringAddress("contract", initialVariables.address))
 
@@ -36,67 +36,80 @@ def deployContracts(chain, accounts):
     owned, _ = chain.provider.get_or_deploy_contract('Owned', deploy_args=[database.address])
     txHash = contractManager.transact().addContract("Owned", owned.address, ownerTwo)
     assert database.call().addressStorage(hashFunctions.call().contractHash("Owned")).upper() == owned.address.upper()
+    assert database.call().boolStorage(hashFunctions.call().stringAddress("contract", owned.address))
 
     # Deploy UserAccess
     userAccess, _ = chain.provider.get_or_deploy_contract('UserAccess', deploy_args=[database.address])
     txHash = contractManager.transact().addContract("UserAccess", userAccess.address, ownerTwo)
     assert database.call().addressStorage(hashFunctions.call().contractHash("UserAccess")).upper() == userAccess.address.upper()
+    assert database.call().boolStorage(hashFunctions.call().stringAddress("contract", userAccess.address))
 
     # Set MyBitToken
     myBitToken, _ = chain.provider.get_or_deploy_contract('MyBitToken', deploy_args=[totalSupply, "MyBit Token", 8, "MyB"])
     contractManager.transact().addContract("MyBitToken", myBitToken.address, ownerTwo)
     assert database.call().addressStorage(hashFunctions.call().contractHash("MyBitToken")).upper() == myBitToken.address.upper()
+    assert database.call().boolStorage(hashFunctions.call().stringAddress("contract", myBitToken.address))
 
     # Deploy assetCreation 
     assetCreation, _ = chain.provider.get_or_deploy_contract('AssetCreation', deploy_args=[database.address])
     contractManager.transact().addContract("AssetCreation", assetCreation.address, ownerTwo)
     assert database.call().addressStorage(hashFunctions.call().contractHash("AssetCreation")).upper() == assetCreation.address.upper()
+    assert database.call().boolStorage(hashFunctions.call().stringAddress("contract", assetCreation.address))
 
     # Deploy FundingHub
     fundingHub, _ = chain.provider.get_or_deploy_contract('FundingHub', deploy_args=[database.address])
     contractManager.transact().addContract("FundingHub", fundingHub.address, ownerTwo)
     assert database.call().addressStorage(hashFunctions.call().contractHash("FundingHub")).upper() == fundingHub.address.upper()
+    assert database.call().boolStorage(hashFunctions.call().stringAddress("contract", fundingHub.address))
 
     # Deploy Asset
     asset, _ = chain.provider.get_or_deploy_contract('Asset', deploy_args=[database.address])
     contractManager.transact().addContract("Asset", asset.address, ownerTwo)
     assert database.call().addressStorage(hashFunctions.call().contractHash("Asset")).upper() == asset.address.upper()
+    assert database.call().boolStorage(hashFunctions.call().stringAddress("contract", asset.address))
 
     # Deploy StakingBank
     stakingBank, _ = chain.provider.get_or_deploy_contract('StakingBank', deploy_args=[database.address])
     contractManager.transact().addContract("StakingBank", stakingBank.address, ownerTwo)
     assert database.call().addressStorage(hashFunctions.call().contractHash("StakingBank")).upper() == stakingBank.address.upper()
+    assert database.call().boolStorage(hashFunctions.call().stringAddress("contract", stakingBank.address))
 
     # Deploy BugBank 
     bugBank, _ = chain.provider.get_or_deploy_contract('BugBank', deploy_args=[database.address])
     contractManager.transact().addContract("BugBank", bugBank.address, ownerTwo)
     assert database.call().addressStorage(hashFunctions.call().contractHash("BugBank")).upper() == bugBank.address.upper()
+    assert database.call().boolStorage(hashFunctions.call().stringAddress("contract", bugBank.address))
 
     # Deploy BugBounty 
     bugBounty, _ = chain.provider.get_or_deploy_contract('BugBounty', deploy_args=[database.address])
     contractManager.transact().addContract("BugBounty", bugBounty.address, ownerTwo)
     assert database.call().addressStorage(hashFunctions.call().contractHash("BugBounty")).upper() == bugBounty.address.upper()
+    assert database.call().boolStorage(hashFunctions.call().stringAddress("contract", bugBounty.address))
 
     # Deploy TokenStake
-    tokenStaking, _ = chain.provider.get_or_deploy_contract('TokenStaking', deploy_args=[myBitToken.address, database.address])
+    tokenStaking, _ = chain.provider.get_or_deploy_contract('TokenStaking', deploy_args=[database.address, myBitToken.address])
     contractManager.transact().addContract("TokenStaking", tokenStaking.address, ownerTwo)
     assert database.call().addressStorage(hashFunctions.call().contractHash("TokenStaking")).upper() == tokenStaking.address.upper()
+    assert database.call().boolStorage(hashFunctions.call().stringAddress("contract", tokenStaking.address))
 
     # Deploy Marketplace
     marketPlace, _ = chain.provider.get_or_deploy_contract('MarketPlace', deploy_args=[database.address])
     contractManager.transact().addContract("MarketPlace", marketPlace.address, ownerTwo)
     assert database.call().addressStorage(hashFunctions.call().contractHash("MarketPlace")).upper() == marketPlace.address.upper()
+    assert database.call().boolStorage(hashFunctions.call().stringAddress("contract", marketPlace.address))
 
     # Set AssetEscrow reference
     txHash = contractManager.transact().addContract("AssetEscrow", test.address, ownerTwo)
     assert database.call().addressStorage(hashFunctions.call().contractHash("AssetEscrow")).upper() == test.address.upper()
+    assert database.call().boolStorage(hashFunctions.call().stringAddress("contract", test.address))
 
     # Set MyBitFoundation reference 
     txHash = contractManager.transact().addContract("MyBitFoundation", myBitFoundation, ownerTwo)
     assert database.call().addressStorage(hashFunctions.call().contractHash("MyBitFoundation")).upper() == myBitFoundation.upper()
+    assert database.call().boolStorage(hashFunctions.call().stringAddress("contract", myBitFoundation))
 
     # Deploy TokenBurn    
-    tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[myBitToken.address, database.address])
+    tokenBurn, _ = chain.provider.get_or_deploy_contract('TokenBurn', deploy_args=[database.address, myBitToken.address])
     contractManager.transact().addContract("TokenBurn", tokenBurn.address, ownerTwo)
     assert database.call().addressStorage(hashFunctions.call().contractHash("TokenBurn")).upper() == tokenBurn.address.upper()
 

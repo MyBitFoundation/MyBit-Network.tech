@@ -1,4 +1,5 @@
 pragma solidity ^0.4.19;
+
 import './SafeMath.sol';
 import './Database.sol';
 import './StakingBank.sol';
@@ -157,6 +158,7 @@ contract FundingHub {
     _;
     if (database.uintStorage(keccak256("amountRaised", _assetID)) >= database.uintStorage(keccak256("amountToBeRaised", _assetID))) {
        database.deleteUint(keccak256("amountToBeRaised", _assetID));      // No longer need this variable
+       LogAssetFundingSuccess(_assetID, block.timestamp);
        transitionToStage(_assetID, 3);
       }
   }
@@ -180,6 +182,7 @@ contract FundingHub {
   event LogNewFunder(address indexed _funder, uint indexed _timestamp);
   event LogAssetFunded(address indexed _sender, uint indexed _amount, uint indexed _timestamp);
   event LogAssetFundingFailed(bytes32 indexed _assetID, uint indexed _amountRaised, uint indexed _timestamp);
+  event LogAssetFundingSuccess(bytes32 indexed _assetID, uint indexed _timestamp);
   event LogRefund(address indexed _funder, uint indexed _amount, uint indexed _timestamp);
   event LogAssetPayout(bytes32 indexed _assetID, uint indexed _amount, uint indexed _blockNumber);
   event LogAssetEscrowChanged(address _newEscrowLocation, uint _timestamp);

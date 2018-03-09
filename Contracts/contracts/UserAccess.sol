@@ -16,31 +16,38 @@ contract UserAccess{
   }
 
 
-  // TODO: test 
+  // User can set a recovery address here. If initial address is lost they can still access the platform with the backup. 
+  // Note: BackupAddress must also go through KYC approval
+  // @Param: The address of the desired backup account
   function setBackupAddress(address _backupAddress)
   external
   mustHaveKYC
   noEmptyAddress(_backupAddress)
   returns (bool) { 
     database.setAddress(keccak256("backupAddress", msg.sender), _backupAddress);
+    LogBackupAddressSet(msg.sender, _backupAddress, block.number); 
     return true;
   }
   
-  // TODO: test
-  // TODO: delete access to oldAddress 
-  // TODO: change asset shares as well?? 
+  // User can activate their backup account here. 
+  // @Param: The old account
+  // @Param: The new desired backup account
+  // Invariants: Must be calling from pre-set backup address. Parameters must not be null. AccessLevel must be above 1
   function switchToBackup(address _oldAddress, address _newBackup)
   external
   mustHaveKYC
   noEmptyAddress(_oldAddress)
   noEmptyAddress(_newBackup)
   returns (bool) { 
-    require(msg.sender == database.addressStorage(keccak256("backupAddress", _oldAddress))); 
+    require(msg.sender == database.addressStorage(keccak256("backupAddress", _oldAddress)));
+    require(_oldAddress != _newBackup);  
     uint currentAccessLevel = database.uintStorage(keccak256("userAccess", _oldAddress));
+    assert (currentAccessLevel > 1);      // Must have accessed platform
     database.deleteUint(keccak256("userAccess", _oldAddress));
     database.deleteAddress(keccak256("backupAddress", _oldAddress));
     database.setAddress(keccak256("backupAddress", msg.sender), _newBackup);
     database.setUint(keccak256("userAccess", msg.sender), currentAccessLevel);
+    LogAddressChanged(_oldAddress, _newBackup, block.number);
     return true;
   }
 
@@ -49,7 +56,7 @@ contract UserAccess{
   // @Param: Address of new user. 
   // @Param: The level of access granted by owner/burningcontract
   function approveUser(address _newUser, uint8 _accessLevel)
-  anyOwner
+  // anyOwner
   noEmptyAddress(_newUser)
   external
   returns (bool) { 
@@ -84,13 +91,15 @@ contract UserAccess{
     _;
   }
 
+  // Only owners can call these functions
   modifier anyOwner { 
     require(database.boolStorage(keccak256("owner", msg.sender)));
     _;
   }
 
-  event LogBackupAddressUsed(address _oldAddress, address _newAddress, uint256 _timestamp); 
-  event LogUserApproved(address _user, uint8 _approvalLevel, uint256 _timestamp); 
-  event LogUserRemoved(address _user, uint256 _timestamp); 
+  event LogBackupAddressSet(address _user, address _backupAddress, uint _blockNumber); 
+  event LogAddressChanged(address _oldAddress, address _newAddress, uint256 _timestamp); 
+  event LogUserApproved(address indexed _user, uint8 indexed _approvalLevel, uint256 indexed _timestamp); 
+  event LogUserRemoved(address indexed _user, uint256 indexed _timestamp); 
 
 }
