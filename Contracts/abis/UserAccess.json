@@ -113,6 +113,28 @@
     "inputs": [
       {
         "indexed": false,
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_backupAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_blockNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogBackupAddressSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "name": "_oldAddress",
         "type": "address"
       },
@@ -127,24 +149,24 @@
         "type": "uint256"
       }
     ],
-    "name": "LogBackupAddressUsed",
+    "name": "LogAddressChanged",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": true,
         "name": "_user",
         "type": "address"
       },
       {
-        "indexed": false,
+        "indexed": true,
         "name": "_approvalLevel",
         "type": "uint8"
       },
       {
-        "indexed": false,
+        "indexed": true,
         "name": "_timestamp",
         "type": "uint256"
       }
@@ -156,12 +178,12 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": true,
         "name": "_user",
         "type": "address"
       },
       {
-        "indexed": false,
+        "indexed": true,
         "name": "_timestamp",
         "type": "uint256"
       }
