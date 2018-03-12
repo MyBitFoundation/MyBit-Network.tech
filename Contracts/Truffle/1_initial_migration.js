@@ -13,7 +13,8 @@ var StakingBank = artifacts.require("./StakingBank.sol");
 var BugBank = artifacts.require("./BugBank.sol");
 var BugBounty = artifacts.require('./BugBounty.sol');
 var MarketPlace = artifacts.require("./MarketPlace.sol");
-
+var TokenStaking = artifacts.require("./TokenStaking.sol");
+var TokenBurn = artifacts.require("./TokenBurn.sol");
 
 /*
 var Asset = artifacts.require("./Asset.sol");
@@ -44,6 +45,8 @@ module.exports = function(deployer) {
       deployer.deploy(BugBank, Database.address);
       deployer.deploy(BugBounty, Database.address);
       deployer.deploy(MarketPlace, Database.address);
+      deployer.deploy(TokenStaking, Database.address, MyBitToken.address);
+      deployer.deploy(TokenBurn, Database.address, MyBitToken.address);
     })
   };
 

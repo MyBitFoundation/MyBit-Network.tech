@@ -11,7 +11,9 @@ const StakingBank = artifacts.require("./StakingBank.sol");
 const BugBank = artifacts.require("./BugBank.sol");
 const BugBounty = artifacts.require('./BugBounty.sol');
 const MarketPlace = artifacts.require('./MarketPlace.sol');
-
+const MyBitToken = artifacts.require('./MyBitToken.sol');
+const TokenStaking = artifacts.require('./TokenStaking.sol');
+const TokenBurn = artifacts.require('./TokenBurn.sol');
 
 contract('Deploying and storing all contracts + validation', async (accounts) => {
   const ownerAddr1 = web3.eth.accounts[0];
@@ -29,6 +31,10 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let bugBankInstance;
   let bugBountyInstance;
   let marketPlaceInstance;
+  let myBitTokenInstance;
+  let tokenStakingInstance;
+  let tokenBurnInstance;
+
 
   it("Owners should be assigned", async () => {
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);
@@ -90,6 +96,19 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
     // assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('bugSeverityCost', 1)), 100, 'bugSeverityCost 1 == 100');
     // assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('bugSeverityCost', 2)), 1000, 'bugSeverityCost 2 == 1000');
     // assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('bugSeverityCost', 3)), 10000, 'bugSeverityCost 3 == 10000');
+
+   });
+
+   it('MyBitToken contract deployment ', async () => {
+     let initialSupply = 281207344012426;
+     myBitTokenInstance = await MyBitToken.new(initialSupply, 'MyBit Token', 8, 'MyB');
+
+     assert.equal(await myBitTokenInstance.owner(), web3.eth.accounts[0], 'MyBitToken -  owner assigned');
+     assert.equal(await myBitTokenInstance.balanceOf(web3.eth.accounts[0]), initialSupply, 'MyBitToken - Correct initial balance to owner');
+     assert.equal(await myBitTokenInstance.totalSupply(), initialSupply, 'MyBitToken - Correct total supply');
+     assert.equal(await myBitTokenInstance.name(), 'MyBit Token', 'MyBitToken - Correct token name');
+     assert.equal(await myBitTokenInstance.symbol(), 'MyB', 'MyBitToken - Correct Token symbol');
+     assert.equal(await myBitTokenInstance.decimals(), 8, 'MyBitToken - Correct decimals');
 
    });
 
@@ -208,7 +227,33 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', marketPlaceInstance.address)), true, 'MarketPlace address == true');
    });
 
+   it('TokenStaking contract deployment ', async () => {
+     tokenStakingInstance = await TokenStaking.new(dbInstance.address, myBitTokenInstance.address);
 
+     //Ensure all variables are set in constructor and passed
+     assert.equal(await tokenStakingInstance.database(), await dbInstance.address, 'TokenStaking database Address assigned properly');
+     assert.equal(await tokenStakingInstance.myBitToken(), await myBitTokenInstance.address, 'TokenStaking myBitToken Address assigned properly');
 
+     await contractManagerInstance.addContract('TokenStaking', tokenStakingInstance.address, ownerAddr2);
+     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(tokenStakingInstance.address))), false, 'Contract manager(TokenStaking) to database === false');
+     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'TokenStaking')), tokenStakingInstance.address, 'TokenStaking address correctly stored');
+     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', tokenStakingInstance.address)), true, 'TokenStaking address == true');
+   });
 
+   it('TokenBurn contract deployment ', async () => {
+     tokenBurnInstance = await TokenBurn.new(dbInstance.address, myBitTokenInstance.address);
+
+     //Ensure all variables are set in constructor and passed
+     assert.equal(await tokenBurnInstance.database(), await dbInstance.address, 'TokenBurn database Address assigned properly');
+     assert.equal(await tokenBurnInstance.myBitToken(), await myBitTokenInstance.address, 'TokenBurn myBitToken Address assigned properly');
+
+     assert.equal(await tokenBurnInstance.accessCostUSD(2), 10, 'TokenBurn access 2 == 10');
+     assert.equal(await tokenBurnInstance.accessCostUSD(3), 100, 'TokenBurn access 3 == 100');
+     assert.equal(await tokenBurnInstance.accessCostUSD(4), 1000, 'TokenBurn access 4 == 1000');
+
+     await contractManagerInstance.addContract('TokenBurn', tokenBurnInstance.address, ownerAddr2);
+     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(tokenBurnInstance.address))), false, 'Contract manager(TokenBurn) to database === false');
+     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'TokenBurn')), tokenBurnInstance.address, 'TokenBurn address correctly stored');
+     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', tokenBurnInstance.address)), true, 'TokenBurn address == true');
+   });
 });
