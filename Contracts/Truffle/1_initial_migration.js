@@ -6,20 +6,22 @@ var InitialVariables = artifacts.require("./InitialVariables.sol");
 var ContractManager = artifacts.require('./ContractManager.sol');
 var AssetCreation = artifacts.require('./AssetCreation.sol');
 var Asset = artifacts.require("./Asset.sol");
+var Owned = artifacts.require('./Owned.sol');
+var UserAccess = artifacts.require("./UserAccess.sol");
+var FundingHub = artifacts.require("./FundingHub.sol");
+var StakingBank = artifacts.require("./StakingBank.sol");
+var BugBank = artifacts.require("./BugBank.sol");
+var BugBounty = artifacts.require('./BugBounty.sol');
+var MarketPlace = artifacts.require("./MarketPlace.sol");
+
 
 /*
 var Asset = artifacts.require("./Asset.sol");
-var BugBank = artifacts.require("./BugBank.sol");
 var BugBounty = artifacts.require("./BugBounty.sol");
-var FundingHub = artifacts.require("./FundingHub.sol");
-var MarketPlace = artifacts.require("./MarketPlace.sol");
-var Owned = artifacts.require("./Owned.sol");
 var SafeMath = artifacts.require("./SafeMath.sol");
-var StakingBank = artifacts.require("./StakingBank.sol");
 var TokenBurn = artifacts.require("./TokenBurn.sol");
 var TokenFaucet = artifacts.require("./TokenFaucet.sol");
 var TokenStaking = artifacts.require("./TokenStaking.sol");
-var UserAccess = artifacts.require("./UserAccess.sol");
 var WithdrawalManager = artifacts.require("./WithdrawalManager.sol");*/
 
 
@@ -33,8 +35,15 @@ module.exports = function(deployer) {
     web3.eth.accounts[2]).then(function(){
       deployer.deploy(InitialVariables, Database.address);
       deployer.deploy(ContractManager, Database.address);
+      deployer.deploy(Owned, Database.address);
+      deployer.deploy(UserAccess, Database.address);
       deployer.deploy(AssetCreation, Database.address);
+      deployer.deploy(FundingHub, Database.address);
       deployer.deploy(Asset, Database.address);
+      deployer.deploy(StakingBank, Database.address);
+      deployer.deploy(BugBank, Database.address);
+      deployer.deploy(BugBounty, Database.address);
+      deployer.deploy(MarketPlace, Database.address);
     })
   };
 
