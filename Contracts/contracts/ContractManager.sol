@@ -25,7 +25,6 @@ contract ContractManager{
   // @Param: The name of the contract 
   // @Param: The address of the new contract 
   // @Param: The owner who authorized this function to be called
-  // TODO: Remove deploy bypass signature?? 
   function addContract(string _name, address _contractAddress, address _functionSigner)
   external
   noEmptyAddress(_contractAddress)
@@ -33,7 +32,7 @@ contract ContractManager{
   anyOwner {
     require(msg.sender != _functionSigner);
     require(database.boolStorage(keccak256(this, _functionSigner, "addContract", keccak256(_contractAddress))) || database.boolStorage(keccak256("deployFinished")) == false);
-    require(!database.boolStorage(keccak256("contract", _contractAddress)));
+    require(!contractExists(_contractAddress));
     require(database.addressStorage(keccak256("contract", _name)) == address(0));
     database.setBool(keccak256(this, _functionSigner, "addContract", keccak256(_contractAddress)), false);
     database.setAddress(keccak256("contract", _name), _contractAddress);
@@ -49,10 +48,12 @@ contract ContractManager{
   noEmptyString(_name)
   multiSigRequired(_functionSigner, "removeContract", keccak256(_name))
   anyOwner {
-    address contractToDelete = database.addressStorage(keccak256(_name));
+    require(database.boolStorage(keccak256(this, _functionSigner, "removeContract", keccak256(_name))));
+    address contractToDelete = database.addressStorage(keccak256("contract", _name));
+    require(contractExists(contractToDelete));
     database.setBool(keccak256(this, _functionSigner, "removeContract", keccak256(_name)), false);
-    database.deleteBool(keccak256("contract", _name));
-    database.deleteAddress(keccak256("contract", contractToDelete));
+    database.deleteBool(keccak256("contract", contractToDelete));
+    database.deleteAddress(keccak256("contract", _name));
     LogContractRemoved(contractToDelete, _name, block.number);
   }
 
@@ -67,13 +68,20 @@ contract ContractManager{
   multiSigRequired(_functionSigner, "updateContract", keccak256(_newContractAddress))
   anyOwner {
     address oldAddress = database.addressStorage(keccak256("contract", _name));
-    require (database.boolStorage(keccak256("contract", _name)));
+    require (contractExists(oldAddress));
     database.setBool(keccak256(this, _functionSigner, "updateContract", keccak256(_newContractAddress)), false);
-    database.deleteBool(keccak256("contract", oldAddress));
     database.setAddress(keccak256("contract", _name), _newContractAddress);
     database.setBool(keccak256("contract", _newContractAddress), true);
+    database.deleteBool(keccak256("contract", oldAddress));
     LogContractUpdated(oldAddress, _name, block.number);
     LogNewContractLocation(_newContractAddress, _name, block.number);
+  }
+
+  function contractExists(address _contract)
+  public 
+  view 
+  returns (bool){ 
+    return database.boolStorage(keccak256("contract", _contract));
   }
 
   modifier anyOwner {
