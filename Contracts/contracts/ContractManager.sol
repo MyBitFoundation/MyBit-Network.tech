@@ -14,18 +14,24 @@ contract ContractManager{
     database = Database(_database);
   }
 
-  // Call this once finished deploying initial contracts.
+  // This function removes the ability for an owner to add a contract without another owner authorizing it. Call this once finished deploying initial contracts. 
   function setDeployFinished()
   external
   anyOwner {
     database.setBool(keccak256("deployFinished"), true);
   }
 
+  // This function adds new contracts to the platform. Giving them write access to Database.sol
+  // @Param: The name of the contract 
+  // @Param: The address of the new contract 
+  // @Param: The owner who authorized this function to be called
+  // TODO: Remove deploy bypass signature?? 
   function addContract(string _name, address _contractAddress, address _functionSigner)
   external
   noEmptyAddress(_contractAddress)
   noEmptyString(_name)
   anyOwner {
+    require(msg.sender != _functionSigner);
     require(database.boolStorage(keccak256(this, _functionSigner, "addContract", keccak256(_contractAddress))) || database.boolStorage(keccak256("deployFinished")) == false);
     require(!database.boolStorage(keccak256("contract", _contractAddress)));
     require(database.addressStorage(keccak256("contract", _name)) == address(0));
@@ -36,11 +42,13 @@ contract ContractManager{
   }
 
   // Owner can remove an existing contract on the platform.
+  // @Param: The name of the contract 
+  // @Param: The owner who authorized this function to be called 
   function removeContract(string _name, address _functionSigner)
   external
   noEmptyString(_name)
+  multiSigRequired(_functionSigner, "removeContract", keccak256(_name))
   anyOwner {
-    require(database.boolStorage(keccak256(this, _functionSigner, "removeContract", keccak256(_name))));
     address contractToDelete = database.addressStorage(keccak256(_name));
     database.setBool(keccak256(this, _functionSigner, "removeContract", keccak256(_name)), false);
     database.deleteBool(keccak256("contract", _name));
@@ -49,14 +57,15 @@ contract ContractManager{
   }
 
   // Owner can update an existing contract on the platform, giving it write access to Database
+  // Invariants: New contract must not have null address. Function must be authorized by other owner. 
   // @Param: The name of the contract (First Letter Capitalized)
   // @Param: The address of the new contract
   // @Param: The address of the owner who authorized this function to be called
   function updateContract(string _name, address _newContractAddress, address _functionSigner)
   external
   noEmptyAddress(_newContractAddress)
+  multiSigRequired(_functionSigner, "updateContract", keccak256(_newContractAddress))
   anyOwner {
-    require(database.boolStorage(keccak256(this, _functionSigner, "updateContract", keccak256(_newContractAddress))));
     address oldAddress = database.addressStorage(keccak256("contract", _name));
     require (database.boolStorage(keccak256("contract", _name)));
     database.setBool(keccak256(this, _functionSigner, "updateContract", keccak256(_newContractAddress)), false);
@@ -79,6 +88,12 @@ contract ContractManager{
 
   modifier noEmptyString(string _name) {
     require(bytes(_name).length != 0);
+    _;
+  }
+
+  modifier multiSigRequired(address _signer, string _functionName, bytes32 _keyParam) { 
+    require(msg.sender != _signer);
+    require(database.boolStorage(keccak256(this, _signer, _functionName, _keyParam)));
     _;
   }
 
