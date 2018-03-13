@@ -7,7 +7,6 @@ import './Database.sol';
 
 
 // TODO: prevent users from accidentally transferring in tokens
-// TODO: see if it is too troublesome not storing previousStaker??
 // This contract holds all the MyBitTokens which are currently being staked by users
 contract TokenStaking {
 using SafeMath for *;
@@ -22,12 +21,10 @@ using SafeMath for *;
   public {
     database = Database(_database);
     myBitToken = MyBitToken(_myBitToken);
-
   }
 
   // Once users approve TokenStaking contract to transfer tokens, they can stake tokens here/
   // User will be added to the end of a linkedlist
-  // TODO: Log staking
   // Note: sending two stakes with equal amounts in same block will overwrite the previous & make tokens inaccesible
   function stakeTokens(uint _amount)
   external
@@ -62,7 +59,7 @@ using SafeMath for *;
   nonReentrant
   onlyApproved
   whenNotPaused
-  ownerOfLock(_stakeID, msg.sender)
+  ownerOfStake(_stakeID, msg.sender)
   stakingFinished(_stakeID)
   returns (bool) {
     bytes32 head = database.bytes32Storage(keccak256("headStaker"));
@@ -119,7 +116,7 @@ using SafeMath for *;
     rentrancy_lock = false;
   }
 
-  modifier ownerOfLock(bytes32 _ID, address _owner) {
+  modifier ownerOfStake(bytes32 _ID, address _owner) {
     require(database.addressStorage(keccak256("staker", _ID)) == _owner);
     _;
   }

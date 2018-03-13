@@ -4,9 +4,6 @@ import './SafeMath.sol';
 import './Asset.sol';
 
 
-
-// TODO: add pause mechanisms
-// TODO: maybe hardcode Asset contract
 // Note: Users can only have 1 sell order and 1 buy order for each individual asset, as the orders are stored as as sha3 hash of assetAddress + sender address 
 // InVariants: Users must withdraw available funds from asset before trading
 contract MarketPlace { 
@@ -14,26 +11,12 @@ contract MarketPlace {
 
   Database public database; 
 
-  mapping (bytes32 => Buy) public buyOrders;
-  mapping (bytes32 => Sell) public sellOrders; 
+  mapping (address => mapping (bytes32 => bool)) public orders;  // Hash of (assetID, sellerAddress, amountToBuy, price, boolean(BuyOrder = true))
 
   mapping (address => uint) public weiDeposited; 
   mapping (address => uint) public weiOwed; 
   bool public reentrancyLock = false; 
 
-  struct Buy { 
-    address initiator;
-    bytes32 assetContract; 
-    uint amount;
-    uint price;
-  }
-
-  struct Sell {
-    address initiator;
-    bytes32 assetContract; 
-    uint amount;
-    uint price; 
-  }
 
   function MarketPlace(address _database)
   public {
@@ -43,41 +26,44 @@ contract MarketPlace {
   // Gives Ether sent to initatior of this sellOrder and transfers shares of asset to purchaser
   // Note: Check if creator of sell order has enough shares left 
   // @Param: ID of the sell order to be bought
-  function buyAsset(bytes32 _sellOrderID)
+  // TODO: log amounts? 
+  function buyAsset(bytes32 _assetID, address _seller, uint _amount, uint _price)
   external 
   payable 
   nonReentrant
+  whenNotPaused
   onlyApproved
-  sellOrderExists(_sellOrderID)
-  needsToWithdraw(sellOrders[_sellOrderID].assetContract, sellOrders[_sellOrderID].initiator)
+  noPaymentPending(_assetID, _seller)
   returns (bool){ 
-    Sell memory thisOrder = sellOrders[_sellOrderID];
-    require(msg.value >= (thisOrder.amount.mul(thisOrder.price))); 
-    require(Asset(database.addressStorage(keccak256("contract", "Asset"))).tradeShares(thisOrder.assetContract, thisOrder.initiator, msg.sender, thisOrder.amount)); 
-    weiOwed[thisOrder.initiator] = weiOwed[thisOrder.initiator].add(msg.value);
-    delete sellOrders[_sellOrderID]; 
-    LogSellOrderCompleted(_sellOrderID, thisOrder.assetContract, msg.sender); 
+    bytes32 thisOrder = keccak256(_assetID, _seller, _amount, _price, false);
+    require(orders[_seller][thisOrder]);
+    require(msg.value == (_amount.mul(_price))); 
+    require(Asset(database.addressStorage(keccak256("contract", "Asset"))).tradeShares(_assetID, _seller, msg.sender, _amount)); 
+    weiOwed[_seller] = weiOwed[_seller].add(msg.value);
+    delete orders[_seller][thisOrder]; 
+    LogSellOrderCompleted(thisOrder, _assetID, msg.sender); 
     return true;
   }
 
  
-  function sellAsset(bytes32 _buyOrderID) 
+  function sellAsset(bytes32 _assetID, address _buyer, uint _amount, uint _price) 
   public 
   nonReentrant 
   onlyApproved
-  buyOrderExists(_buyOrderID)
-  needsToWithdraw(buyOrders[_buyOrderID].assetContract, msg.sender)
+  whenNotPaused
+  noPaymentPending(_assetID, msg.sender)
   returns (bool){ 
-    Buy memory thisOrder = buyOrders[_buyOrderID]; 
-    require(Asset(database.addressStorage(keccak256("contract", "Asset"))).tradeShares(thisOrder.assetContract, msg.sender, thisOrder.initiator, thisOrder.amount)); 
-    weiDeposited[thisOrder.initiator] = weiDeposited[thisOrder.initiator].sub(thisOrder.amount.mul(thisOrder.price)); 
-    weiOwed[msg.sender] = weiOwed[msg.sender].add(thisOrder.amount.mul(thisOrder.price)); 
-    delete buyOrders[_buyOrderID]; 
-    LogBuyOrderCompleted(_buyOrderID, thisOrder.assetContract, msg.sender); 
+    bytes32 thisOrder = keccak256(_assetID, _buyer, _amount, _price, true);
+    require(orders[_buyer][thisOrder]);
+    require(Asset(database.addressStorage(keccak256("contract", "Asset"))).tradeShares(_assetID, msg.sender, _buyer, _amount)); 
+    weiDeposited[_buyer] = weiDeposited[_buyer].sub(_amount.mul(_price)); 
+    weiOwed[msg.sender] = weiOwed[msg.sender].add(_amount.mul(_price)); 
+    delete orders[_buyer][thisOrder]; 
+    LogBuyOrderCompleted(thisOrder, _assetID, msg.sender); 
     return true; 
   }
 
-  function createBuyOrder(uint _amount, uint _price, bytes32 _assetID)
+  function createBuyOrder(bytes32 _assetID, uint _amount, uint _price)
   external
   nonReentrant
   onlyApproved
@@ -87,15 +73,12 @@ contract MarketPlace {
   validAsset(_assetID)
   returns (bool) {
     require(msg.value == _amount.mul(_price)); 
-    bytes32 id = keccak256(_assetID, msg.sender);
-    require(buyOrders[id].initiator == address(0));  // Make user delete previous buy order first in order to reclaim deposited Ether
-    Buy storage thisOrder = buyOrders[id];   
-    thisOrder.initiator = msg.sender;
-    thisOrder.assetContract = _assetID;
-    thisOrder.amount = _amount; 
-    thisOrder.price = _price; 
+    bytes32 orderID = keccak256(_assetID, msg.sender, _amount, _price, true);
+    require(!orders[msg.sender][orderID]);
+    orders[msg.sender][orderID] = true;
     weiDeposited[msg.sender] = weiDeposited[msg.sender].add(msg.value); 
-    LogBuyOrderCreated(id, _assetID, msg.sender);
+    LogBuyOrderCreated(orderID, _assetID, msg.sender);
+    LogBuyOrderDetails(orderID, _amount, _price); 
     return true;
   }
 
@@ -107,43 +90,28 @@ contract MarketPlace {
   validAsset(_assetID)
   hasEnoughShares(_assetID, _amount)
   returns (bool) {
-    bytes32 id = keccak256(_assetID, msg.sender);
-    Sell storage thisOrder = sellOrders[id]; // This will get overwritten if user tries to create more than one sell order per asset
-    thisOrder.initiator = msg.sender; 
-    thisOrder.assetContract = _assetID; 
-    thisOrder.amount = _amount; 
-    thisOrder.price = _price; 
-    LogSellOrderCreated(id, _assetID, msg.sender); 
+    bytes32 orderID = keccak256(_assetID, msg.sender, _amount, _price, false);
+    orders[msg.sender][orderID] = true; 
+    LogSellOrderCreated(orderID, _assetID, msg.sender);
+    LogSellOrderDetails(orderID, _amount, _price);
     return true; 
   }
 
-  // Deletes previously made Buy order. Returns deposited Wei for Buy order.
-  // @Param: Buy OrderID
-  function deleteBuyOrder(bytes32 _orderID)
+  // Deletes previously made order. Returns deposited Wei if it is a Buy order
+  function deleteOrder(bytes32 _assetID, uint _amount, uint _price, bool _buyOrder)
   external
   nonReentrant
   onlyApproved
   returns (bool) {
-    Buy memory thisBuyOrder = buyOrders[_orderID]; 
-    require(thisBuyOrder.initiator == msg.sender);
-    uint returnValue = thisBuyOrder.amount.mul(thisBuyOrder.price); 
-    weiDeposited[msg.sender] = weiDeposited[msg.sender].sub(returnValue); 
-    weiOwed[msg.sender] = weiOwed[msg.sender].add(returnValue); 
-    delete buyOrders[_orderID];
+    bytes32 orderID = keccak256(_assetID, msg.sender, _amount, _price, _buyOrder); 
+    require(orders[msg.sender][orderID]);
+    if (_buyOrder) { 
+      uint returnValue = _amount.mul(_price); 
+      weiDeposited[msg.sender] = weiDeposited[msg.sender].sub(returnValue); 
+      weiOwed[msg.sender] = weiOwed[msg.sender].add(returnValue); 
+    }
+    delete orders[msg.sender][orderID];
     return true; 
-  }
-
-  // Deletes previously made Sell order. 
-  // @Param: Sell order ID
-  function deleteSellOrder(bytes32 _orderID)
-  external
-  nonReentrant
-  onlyApproved
-  returns (bool) {
-      Sell memory thisSellOrder = sellOrders[_orderID]; 
-      require(thisSellOrder.initiator == msg.sender); 
-      delete sellOrders[_orderID]; 
-      return true;
   }
 
   // User can withdraw the wei they are owed here 
@@ -151,6 +119,7 @@ contract MarketPlace {
   external
   nonReentrant 
   onlyApproved
+  whenNotPaused
   returns (bool){
     uint owed = weiOwed[msg.sender]; 
     weiOwed[msg.sender] = 0;
@@ -179,28 +148,19 @@ contract MarketPlace {
     _; 
   }
 
+  // Check if user has enough shares to create SellOrder
   modifier hasEnoughShares(bytes32 _assetID, uint _requiredShares) { 
     require(database.uintStorage(keccak256("shares", _assetID, msg.sender)) >= _requiredShares); 
     _; 
   }
 
   // Validates that the user does not have any Wei owed to them
-  modifier needsToWithdraw(bytes32 _assetID, address _seller) { 
+  modifier noPaymentPending(bytes32 _assetID, address _seller) { 
     uint totalReceived = database.uintStorage(keccak256("totalReceived", _assetID));
     uint payment = totalReceived.mul(database.uintStorage(keccak256("shares", _assetID, _seller))).div(database.uintStorage(keccak256("amountRaised", _assetID))).sub(database.uintStorage(keccak256("totalPaidToFunder", _assetID, _seller)));
     require(payment == 0); 
     _;
   }
-
-  modifier buyOrderExists(bytes32 _orderID) {
-    require (buyOrders[_orderID].initiator != address(0)); 
-    _;
-  }
-
-  modifier sellOrderExists(bytes32 _orderID) {
-    require (sellOrders[_orderID].initiator != address(0)); 
-    _;
-  }  
 
   modifier aboveZero(uint _amount, uint _price) { 
     require(_amount.mul(_price) > 0); 
@@ -236,11 +196,10 @@ contract MarketPlace {
   }
 
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller); 
-
-  event LogSellOrderCreated(bytes32 indexed _id, bytes32 indexed _assetAddress, address indexed _creator); 
-  event LogBuyOrderCreated(bytes32 indexed _id, bytes32 indexed _assetAddress, address indexed _creator); 
+  event LogBuyOrderCreated(bytes32 indexed _id, bytes32 indexed _assetAddress, address indexed _creator);
+  event LogBuyOrderDetails(bytes32 indexed orderID, uint indexed _amount, uint indexed _price); 
   event LogBuyOrderCompleted(bytes32 indexed _id, bytes32 indexed _assetAddress, address indexed _purchaser);
   event LogSellOrderCompleted(bytes32 indexed _id, bytes32 indexed _assetAddress, address indexed _purchaser); 
-
-
+  event LogSellOrderCreated(bytes32 indexed _id, bytes32 indexed _assetAddress, address indexed _creator); 
+  event LogSellOrderDetails(bytes32 indexed orderID, uint indexed _amount, uint indexed _price);
 }
