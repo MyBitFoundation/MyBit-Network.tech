@@ -34,7 +34,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let myBitTokenInstance;
   let tokenStakingInstance;
   let tokenBurnInstance;
-
+  let ownedInstance;
 
   it("Owners should be assigned", async () => {
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);
@@ -255,5 +255,9 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(tokenBurnInstance.address))), false, 'Contract manager(TokenBurn) to database === false');
      assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'TokenBurn')), tokenBurnInstance.address, 'TokenBurn address correctly stored');
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', tokenBurnInstance.address)), true, 'TokenBurn address == true');
+   });
+
+   it('finalize deployment', async () => {
+      await contractManagerInstance.setDeployFinished();
    });
 });
