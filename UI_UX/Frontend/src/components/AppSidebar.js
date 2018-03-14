@@ -1,5 +1,6 @@
 import React from 'react';
 import { Menu } from 'semantic-ui-react';
+import './AppSidebar.css';
 
 export const AppSidebar = () => {
   const menuOptions = [
@@ -13,10 +14,12 @@ export const AppSidebar = () => {
     { name: 'FAQ & Tutorials' }
   ];
   const sidebarMenu = menuOptions.map(menuItem => (
-    <Menu.Item style={{ color: 'white' }}>{menuItem.name}</Menu.Item>
+    <Menu.Item style={{ color: 'white' }} className="AppSidebar__menu-item">
+      {menuItem.name}
+    </Menu.Item>
   ));
   return (
-    <Menu secondary fluid vertical>
+    <Menu secondary fluid vertical className="AppSidebar__menu">
       {sidebarMenu}
     </Menu>
   );
