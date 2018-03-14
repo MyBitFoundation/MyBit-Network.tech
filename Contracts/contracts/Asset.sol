@@ -33,7 +33,7 @@ using SafeMath for *;
   // Invariants: Requires Eth is sent with transaction | Asset must be in "live" stage
   // @Param: The ID of the asset to send to
   // @Param: A note that can be left by the payee
-  function receiveIncome(bytes32 _assetID, string _note)
+  function receiveIncome(bytes32 _assetID, bytes32 _note)
   external
   payable
   requiresEther
@@ -80,6 +80,18 @@ using SafeMath for *;
     return true;
 }
 
+  function getAmountOwed(bytes32 _assetID, address _user)
+  public
+  view 
+  returns (uint){ 
+    uint shares = database.uintStorage(keccak256("shares", _assetID, _user));
+    if (shares == 0) { return 0; }
+    uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
+    uint totalPaidToFunders = database.uintStorage(keccak256("totalPaidToFunders", _assetID));
+    uint totalPaidToFunder = database.uintStorage(keccak256("totalPaidToFunder", _assetID, _user));
+    uint totalReceived = database.uintStorage(keccak256("totalReceived", _assetID));
+    return totalReceived.mul(shares).div(amountRaised).sub(totalPaidToFunder);
+  }
 
   // Trades shares of an asset to other user. Must trade relative amount paid to Funder to balance withdrawl amount.
   // Must trade over relative amount of paidToFunder, So person buying shares will also be recognized as being paid out for those shares in the past
@@ -89,9 +101,11 @@ using SafeMath for *;
   // @Param number of shares being traded
   function tradeShares(bytes32 _assetID, address _from, address _to, uint256 _amount)
   external
+  nonReentrant
   whenNotPaused
   returns (bool) {
     require(msg.sender == database.addressStorage(keccak256("contract", "MarketPlace")));
+    require(getAmountOwed(_assetID, _from) > 0);
     uint sharesFrom = database.uintStorage(keccak256("shares", _assetID, _from));
     require(sharesFrom >= _amount);
     uint sharesTo = database.uintStorage(keccak256("shares", _assetID, _to));
@@ -167,5 +181,5 @@ using SafeMath for *;
   event LogIncomeReceived(address indexed _sender, uint256 indexed _amount, bytes32 indexed _assetID);
   event LogInvestmentPaid(address indexed _funder, uint256 indexed _amount, uint256 indexed _timestamp);
   event LogInvestmentPaidToWithdrawalAddress(address indexed _funder, address indexed _withdrawalAddress, uint256 indexed _amount, uint256 _timestamp);
-  event LogAssetNote(string indexed _note, uint256 indexed _timestamp);
+  event LogAssetNote(bytes32 indexed _note, uint256 indexed _timestamp);
 }
