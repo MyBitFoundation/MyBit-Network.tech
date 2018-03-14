@@ -175,7 +175,7 @@ def test_upgradeable(chain):
     assert database.call().uintStorage(hashFunctions.call().stringBytes("fundingStage", firstAssetID)) == 4
     amountRaised = database.call().uintStorage(hashFunctions.call().stringBytes("amountRaised", firstAssetID))
     assert amountRaised - fundedAmount == database.call().uintStorage(hashFunctions.call().stringBytesAddress("shares", firstAssetID, firstAssetManager))
-    assert (fundedAmount / amountRaised) * 100 == 100 - managerPercentage
+    assert fundedAmount == amountRaised
 
 
 # ------------------------------------Upgrade ContractManagerAddress-----------------------------------------
@@ -216,17 +216,28 @@ def test_upgradeable(chain):
     txHash = TokenStaking.deploy({"gas": 4000000}, args=[database.address, myBitToken.address])
     receipt = getReceiptMined(chain, txHash)
     newTokenStakingAddress = receipt['contractAddress']
-    # Authorize owner to update ContractManager contract 
+    # Authorize owner to update tokenstaking contract 
     keyParam = hashFunctions.call().addressHash(newTokenStakingAddress)
     txHash = owned.transact().setFunctionAuthorized(contractManagerAddress, "addContract", keyParam)
     assert database.call().boolStorage(hashFunctions.call().getAuthorizeHash(contractManagerAddress, ownerOne, "addContract", keyParam))
-    # Add TokenStaking 
+
+    # Add new TokenStaking 
     txHash = newContractManager.transact({"from": ownerTwo}).addContract("TokenStaking", newTokenStakingAddress, ownerOne)
     # Check if new tokenStaking contract is working 
     newTokenStaking = TokenStaking(newTokenStakingAddress)
     assert newTokenStaking.call().database().upper() == database.address.upper()
+
     # Gain access level by burning tokens
     assert burnForAccess(myBitToken, tokenBurn, ownerThree, 3)
     numberOfTokensBurnt =  database.call().uintStorage(hashFunctions.call().sha3("numberOfTokensBurnt")) 
     assert numberOfTokensBurnt > accessCost[3]
     assert database.call().uintStorage(hashFunctions.call().stringAddress("userAccess", ownerThree)) == 3
+
+    #TODO: 
+    # Old staking contract isn't working as it shouldn't
+    # txHash = myBitToken.transact({"from": ownerThree}).approve(tokenStaking.address, 500)
+    # txHash = tokenStaking.transact({"from": ownerThree}).stakeTokens(200)
+
+    txHash = myBitToken.transact({"from": ownerThree}).approve(newTokenStakingAddress, 500)
+    txHash = newTokenStaking.transact({"from": ownerThree}).stakeTokens(500)
+
