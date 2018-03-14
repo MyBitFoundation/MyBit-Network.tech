@@ -40,7 +40,9 @@ using SafeMath for *;
   atStage(_assetID, 4)
   returns (bool)  {
     uint totalReceived = database.uintStorage(keccak256("totalReceived", _assetID));
-    database.setUint(keccak256("totalReceived", _assetID), totalReceived.add(msg.value));
+    uint managerAmount = msg.value.mul(database.uintStorage(keccak256("managerPercentage", _assetID))).div(100);
+    database.addressStorage(keccak256("assetManager", _assetID)).transfer(managerAmount); 
+    database.setUint(keccak256("totalReceived", _assetID), totalReceived.add(msg.value.sub(managerAmount)));
     LogIncomeReceived(msg.sender, msg.value, _assetID);
     LogAssetNote(_note, block.timestamp);
     return true;
@@ -90,7 +92,6 @@ using SafeMath for *;
   whenNotPaused
   returns (bool) {
     require(msg.sender == database.addressStorage(keccak256("contract", "MarketPlace")));
-    require(_from != database.addressStorage(keccak256("assetManager", _assetID)));  // Don't let assetManager trade his shares away
     uint sharesFrom = database.uintStorage(keccak256("shares", _assetID, _from));
     require(sharesFrom >= _amount);
     uint sharesTo = database.uintStorage(keccak256("shares", _assetID, _to));

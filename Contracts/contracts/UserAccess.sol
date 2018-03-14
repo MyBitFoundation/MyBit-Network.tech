@@ -13,6 +13,82 @@ contract UserAccess{
     database = Database(_database);
   }
 
+
+  // User can set a recovery address here. If initial address is lost they can still access the platform with the backup. 
+  // Note: BackupAddress must also go through KYC approval
+  // @Param: The address of the desired backup account
+  function setBackupAddress(address _backupAddress)
+  external
+  mustHaveKYC
+  noEmptyAddress(_backupAddress)
+  returns (bool) { 
+    database.setAddress(keccak256("backupAddress", msg.sender), _backupAddress);
+    LogBackupAddressSet(msg.sender, _backupAddress, block.number); 
+    return true;
+  }
+  
+  // User can activate their backup account here. 
+  // @Param: The old account
+  // @Param: The new desired backup account
+  // Invariants: Must be calling from pre-set backup address. Parameters must not be null. AccessLevel must be above 1
+  function switchToBackup(address _oldAddress, address _newBackup)
+  external
+  mustHaveKYC
+  noEmptyAddress(_oldAddress)
+  noEmptyAddress(_newBackup)
+  returns (bool) { 
+    require(msg.sender == database.addressStorage(keccak256("backupAddress", _oldAddress)));
+    require(_oldAddress != _newBackup);  
+    uint currentAccessLevel = database.uintStorage(keccak256("userAccess", _oldAddress));
+    database.deleteUint(keccak256("userAccess", _oldAddress));
+    database.deleteAddress(keccak256("backupAddress", _oldAddress));
+    database.setAddress(keccak256("backupAddress", msg.sender), _newBackup);
+    database.setUint(keccak256("userAccess", msg.sender), currentAccessLevel);
+    LogAddressChanged(_oldAddress, _newBackup, block.number);
+    return true;
+  }
+
+
+  // TODO: Move share references to an ID to allow easier changing of address then allow for share transfers
+
+  // function moveSharesToBackup(bytes32 _assetID, address _oldAddress)
+  // external
+  // mustHaveKYC
+  // noEmptyAddress(_oldAddress)
+  // mustHaveBackupSigned
+  // returns (bool) {
+  //   uint sharesFrom = database.uintStorage(keccak256("shares", _assetID, _oldAddress));
+  //   require(sharesFrom > 0);
+  //   uint sharesTo = database.uintStorage(keccak256("shares", _assetID, msg.sender));
+  //   uint totalPaidToFunder = database.uintStorage(keccak256("totalPaidToFunder", _assetID, _oldAddress));
+
+  //   database.deleteUint(keccak256("shares", _assetID, _oldAddress));
+  //   database.deleteUint(keccak256('totalPaidToFunder', _assetID, _oldAddress));
+
+  //   database.setUint(keccak256("shares", _assetID, msg.sender), sharesTo.add(sharesFrom));
+  //   database.setUint(keccak256("totalPaidToFunder", _assetID, msg.sender), totalPaidToFunder);
+
+  //   LogSharesMovedToBackup(_assetID, _oldAddress, msg.sender, sharesFrom, block.number);
+  //   return true;
+  // }
+
+
+  // /* TODO; Need to fix this when tokenstaking is finalized*/
+  // function moveStakesToBackup(bytes32 _stakeID, address _oldAddress)
+  // external
+  // mustHaveKYC
+  // mustHaveBackupSigned
+  // return (bool){
+  //   uint oldAddrOwed = database.uintStorage(keccak256('stakingRevenueOwedToUser', _oldAddress));
+  //   uint oldAddrPaid = database.uintStorage(keccak256("rewardPaidToStaker", _stakeID)
+
+  //   database.deleteUint(keccak256('stakingRevenueOwedToUser', _oldAddress));
+  //   database.setUint(keccak256('stakingRevenueOwedToUser', msg.sender), oldAddrOwed);
+
+  //   database.setUint(keccak256("rewardPaidToStaker", _stakeID), rewardPaidToStaker.add(owed));
+  // }
+
+
   // Owner can manually grant access to a user here. WIll be used for KYC approval
   // Invariants: Only called by Token Burning contract or Owner.  New address cannot be empty. Access level must be between 1-4
   // @Param: Address of new user. 

@@ -8,11 +8,11 @@ contract HashFunctions {
 
   }
 
-  function getOrderID(address _user, bytes _assetID)
+  function getOrderID(bytes _assetID, address _user, uint _amount, uint _price, bool _buyOrder)
   external
   view
   returns(bytes32) {
-    return keccak256(_assetID, _user); 
+    return keccak256(_assetID, _user, _amount, _price, _buyOrder); 
   }
   
 

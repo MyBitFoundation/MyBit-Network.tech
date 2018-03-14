@@ -56,18 +56,10 @@ contract FundingHub {
     uint stakedTokenAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("stakedTokenPercentage")));
     uint installerAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("installerPercentage")));
     assert (myBitAmount.add(stakedTokenAmount).add(installerAmount) == amountRaised);       // TODO: for testing
-    assert (myBitAmount != 0);        // TODO: testing
-    assert (stakedTokenAmount != 0);      // TODO: testing
     StakingBank stakingBank = StakingBank(database.addressStorage(keccak256("contract", "StakingBank")));
     stakingBank.receiveTransactionFee.value(stakedTokenAmount)(_assetID);
     database.addressStorage(keccak256("contract", "MyBitFoundation")).transfer(myBitAmount);             // Must be normal account
     database.addressStorage(keccak256("contract", "AssetEscrow")).transfer(installerAmount);             // Must be normal account
-    address manager = database.addressStorage(keccak256("assetManager", _assetID));
-    uint managerPercentage = database.uintStorage(keccak256("managerPercentage", _assetID));
-    uint investorPercentage = 100 - managerPercentage;
-    uint finalShares = amountRaised.div(investorPercentage).mul(100);
-    database.setUint(keccak256("shares", _assetID, manager), finalShares.sub(amountRaised));   // Give manager his percentage of shares    
-    database.setUint(keccak256("amountRaised", _assetID), finalShares);  // Add manager shares to amountRaised
     transitionToStage(_assetID, 4);
     LogAssetPayout(_assetID, amountRaised, block.number);
     return true;
