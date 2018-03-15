@@ -8,14 +8,27 @@ import {
   Progress,
   Table
 } from 'semantic-ui-react';
+import { getWeb3Async } from '../util/web3';
+import Accounts from './Accounts';
 import asset from '../images/bitcoin-atm.png';
 import metamaskAccount from '../images/metamask-account.png';
 
 export default class AppContent extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      web3: null,
+      isWeb3synced: false
+    };
+  }
+  async componentDidMount() {
+    const web3 = await getWeb3Async();
+    if (web3.isConnected()) {
+      this.setState({ web3: web3, isWeb3synced: true });
+    }
   }
   render() {
+    const { web3, isWeb3synced } = this.state;
     return (
       <Grid>
         <Grid.Row>
@@ -63,6 +76,7 @@ export default class AppContent extends React.Component {
                           <Grid.Column width={4}>
                             <Segment compact>
                               <Image src={metamaskAccount} />
+                              {isWeb3synced && <Accounts web3={web3} />}
                             </Segment>
                           </Grid.Column>
                         </Grid.Row>
