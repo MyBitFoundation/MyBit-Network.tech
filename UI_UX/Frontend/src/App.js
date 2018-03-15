@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Grid, Header, Menu } from 'semantic-ui-react';
+import { Grid, Header } from 'semantic-ui-react';
 import './App.css';
 
 import { AppHeader } from './components/AppHeader';
 import { AppSidebar } from './components/AppSidebar';
+import { default as AppContent } from './components/AppContent';
 
 class App extends Component {
   render() {
@@ -13,7 +14,7 @@ class App extends Component {
         <Grid>
           <Grid.Row>
             <Grid.Column
-              width={4}
+              width={3}
               style={{
                 backgroundColor: '#200344',
                 position: 'fixed',
@@ -26,7 +27,7 @@ class App extends Component {
               <AppSidebar />
             </Grid.Column>
             <Grid.Column
-              width={12}
+              width={13}
               style={{
                 position: 'fixed',
                 top: '74px',
@@ -36,7 +37,7 @@ class App extends Component {
             >
               <Grid>
                 <Grid.Column width={16}>
-                  <Header as="h1">Content</Header>
+                  <AppContent />
                 </Grid.Column>
               </Grid>
             </Grid.Column>
