@@ -32,6 +32,25 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_contract",
+        "type": "address"
+      }
+    ],
+    "name": "contractExists",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
       {
@@ -39,7 +58,7 @@
         "type": "string"
       },
       {
-        "name": "_contractAddress",
+        "name": "_newContractAddress",
         "type": "address"
       },
       {

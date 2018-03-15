@@ -14,13 +14,15 @@ contract FundingHub {
 
   bool private rentrancy_lock;    // Prevents re-entrancy attack
 
+  // Contructor: 
+  // @Param: The address for the MyBit database
   function FundingHub(address _database)
   public {
       database = Database(_database);
 
   }
 
-    // Users can send Ether here to fund asset if funding goal hasn't been reached and the funding period isn't over.
+  // Users can send Ether here to fund asset if funding goal hasn't been reached and the funding period isn't over.
   // Invariants: Requires Eth be sent with transaction |  Must be in funding stage. Must be under goal | Must have KYC approved. | contract is not paused
   function fund(bytes32 _assetID)
   external
@@ -115,12 +117,13 @@ contract FundingHub {
 
 // -------------------------------------------------------Getters-------------------------------------------------------
 
-
+  // Requires caller is one of the three owners
   modifier anyOwner {
     require(database.boolStorage(keccak256("owner", msg.sender)));
     _;
   }
 
+  // Requires that the contract is not paused
   modifier whenNotPaused {
     require(!database.boolStorage(keccak256("pause", this)));
     _;
@@ -133,11 +136,13 @@ contract FundingHub {
     rentrancy_lock = false;
   }
 
+  // Requires that Ether is sent with the transaction
   modifier requiresEther() {
     require(msg.value > 0);
     _;
   }
 
+  // Requires user has burnt tokens to access this function
   modifier onlyApproved(uint8 _accessLevel) {
     require(database.uintStorage(keccak256("userAccess", msg.sender)) >= _accessLevel);
     _;
@@ -155,11 +160,13 @@ contract FundingHub {
       }
   }
 
+  // Requires the funding stage is at a particular stage
   modifier atStage(bytes32 _assetID, uint _stage) {
     require(database.uintStorage(keccak256("fundingStage", _assetID)) == _stage);
     _;
   }
 
+  // Requires that the deadline has passed
   modifier fundingPeriodOver(bytes32 _assetID) {
     require(now >= database.uintStorage(keccak256("fundingDeadline", _assetID)));
     _;
