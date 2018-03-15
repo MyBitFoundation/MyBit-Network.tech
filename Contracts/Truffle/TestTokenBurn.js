@@ -146,9 +146,10 @@ contract('TokenBurnTest', async (accounts) => {
                  console.log('Access Level: ' + jsonData['args']._accessLevel);
                  console.log('--------------------------');
                  // TODO; need to grab the cost from inside smart contract
-                finalCost = (10/parseFloat(jsonData['args']._usdPrice) * (10 * 8));
-                await myBitTokenInstance.approve(tokenBurnInstance.address, finalCost);
-                await tokenBurnInstance.burnTokens(parseInt(jsonData['args']._accessLevel), finalCost);
+
+                 //  finalCost = (10/parseFloat(jsonData['args']._usdPrice) * (10 * 8));
+                await myBitTokenInstance.approve(tokenBurnInstance.address, jsonData['args']._usdPrice);
+                await tokenBurnInstance.burnTokens(parseInt(jsonData['args']._accessLevel));
                 // asset
              }
            }

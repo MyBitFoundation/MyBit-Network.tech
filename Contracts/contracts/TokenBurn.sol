@@ -27,11 +27,11 @@ public {
  whenNotPaused
  payable
  returns(bool){
-    bytes32 queryID = oraclize_query('URL', 'json(https://api.coinmarketcap.com/v1/ticker/mybit-token/).0.price_usd');
-    database.setAddress(queryID, msg.sender);
-    database.setUint(queryID, _accessLevelDesired);
-    LogOraclizeQuerySent(msg.sender, _accessLevelDesired, block.timestamp);
-    return true;
+  bytes32 queryID = oraclize_query('nested', '[WolframAlpha]  8*10 multiply by  ${[URL] json(https://api.coinmarketcap.com/v1/ticker/mybit-token/).0.price_usd}');
+  database.setAddress(queryID, msg.sender);
+  database.setUint(queryID, _accessLevelDesired);
+  LogOraclizeQuerySent(msg.sender, _accessLevelDesired, block.timestamp);
+  return true;
 }
 
  function __callback(bytes32 myid, string result)
@@ -41,29 +41,18 @@ public {
  {
    uint accessLevelDesired = database.uintStorage(myid);
    address sender = database.addressStorage(myid);
-   database.setString(keccak256("accessTokenFeeString", sender, accessLevelDesired), result);
+   database.setUint(keccak256("accessTokenFee", sender, accessLevelDesired), parseInt(result));
    database.deleteAddress(myid);
    database.deleteUint(myid);
-   LogCallBackRecieved(myid, sender, result, accessLevelDesired);
-  // bytes32 queryID = oraclize_query("WolframAlpha", "random number between 0 and 100");
+   LogCallBackRecieved(myid, sender, parseInt(result), accessLevelDesired);
 }
 
-/*function setTheUSDPriceFromResult( address sender, uint accessLevelDesired, uint usdWei)
-public
-basicVerification(_accessLevelDesired)
-whenNotPaused
-returns (bool)
-{
-
-  database.setUint(keccak256("accessTokenFee", sender, accessLevelDesired),
-}*/
-
-function burnTokens(uint _accessLevelDesired, uint accessCostMyB)
+function burnTokens(uint _accessLevelDesired)
 external
 basicVerification(_accessLevelDesired)
 whenNotPaused
 returns (bool) {
-  //uint256 accessCostMyB = database.uintStorage(keccak256("accessTokenFee", msg.sender, _accessLevelDesired));
+  uint256 accessCostMyB = database.uintStorage(keccak256("accessTokenFee", msg.sender, _accessLevelDesired));
   assert (accessCostMyB > 0);
   require(myBitToken.transferFrom(msg.sender, this, accessCostMyB));
   database.setUint(keccak256("userAccess", msg.sender), _accessLevelDesired);
@@ -93,6 +82,6 @@ modifier whenNotPaused {
 
 event LogOraclizeQuerySent( address _from, uint256 _accessLevelDesired, uint _timestamp);
 event LogMyBitBurnt(address _burner, uint256 _amount, uint256 _timestamp);
-event LogCallBackRecieved(bytes32 _myid, address _sender, string _usdPrice, uint256 _accessLevel);
+event LogCallBackRecieved(bytes32 _myid, address _sender, uint _usdPrice, uint256 _accessLevel);
 
 }
