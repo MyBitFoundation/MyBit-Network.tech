@@ -3,7 +3,7 @@ import './SafeMath.sol';
 import './Database.sol';
 
 
-// Asset contract manages all payments to the live asset, all withdraws of income from shareholders and all trading of shares.
+// Asset contract manages all payments, withdrawls and trading of shares for live assets
 // All information about assets are stored in Database.sol. Write privilege is given to the current live Asset contract.
 // TODO: Allow owner to change assetManager
 contract Asset {
@@ -11,18 +11,12 @@ using SafeMath for *;
 
   Database public database;
 
- // --------Stages & Timing------------
   bool private rentrancy_lock = false;    // Prevents re-entrancy attack
 
 
 
-  // The constructor is called when someone initiates a new funding period for an asset
-  // @Param: Creator of this asset contract
-  // @Param: The location of this assets information found on IPFS. Also serves as an ID within MyBitHub contract
-  // @Param: The ID of the installer chosen for this asset
-  // @Param: The amount of Wei to be raised in order to install asset
-  // @Param: The amount of time allowed for asset to try and reach it's funding goal
-  // @Param: The type of asset being funded (ie. Solar, Mining, ATM)
+  // Constructor
+  // @Param: Address of the database contract
   function Asset(address _database)
   public {
     database = Database(_database);
@@ -51,6 +45,8 @@ using SafeMath for *;
 
   // Asset funders can receive their share of the income here
   // Invariants: Asset must be live. Sender must have shares in the asset. There must be income earned.
+  // @Param: The assetID this funder is trying to withdraw from
+  // @Param: Boolean, whether or not the user wants the withdraw to go to an external address
   function withdraw(bytes32 _assetID, bool _otherWithdrawal)
   external
   nonReentrant
@@ -80,6 +76,9 @@ using SafeMath for *;
     return true;
 }
 
+  // Returns the amount of WEI owed to the asset shareholder 
+  // @Param: The ID of the asset
+  // @Param: The address of the shareholder
   function getAmountOwed(bytes32 _assetID, address _user)
   public
   view 
@@ -121,6 +120,7 @@ using SafeMath for *;
   }
 
   // Must be authorized by 1 of the 3 owners and then can be called by any of the other 2
+  // @Param: The address of the owner who authorized this function to be called in 
   // Invariants: Must be 1 of 3 owners. Cannot be called by same owner who authorized the function to be called.
   function destroy(address _functionInitiator, address _holdingAddress)
   anyOwner
@@ -140,11 +140,13 @@ using SafeMath for *;
     rentrancy_lock = false;
   }
 
+  // Checks that the asset is at the proper funding stage
   modifier atStage(bytes32 _assetID, uint _stage) {
     require(database.uintStorage(keccak256("fundingStage", _assetID)) == _stage);
     _;
   }
 
+  // Checks that the user has reached a high enough access level
   modifier onlyApproved(uint8 _accessLevel) {
     require(database.uintStorage(keccak256("userAccess", msg.sender)) >= _accessLevel);
     _;

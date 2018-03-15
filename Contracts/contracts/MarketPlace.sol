@@ -33,7 +33,6 @@ contract MarketPlace {
   nonReentrant
   whenNotPaused
   onlyApproved
-  noPaymentPending(_assetID, _seller)
   returns (bool){ 
     bytes32 thisOrder = keccak256(_assetID, _seller, _amount, _price, false);
     require(orders[_seller][thisOrder]);
@@ -51,7 +50,6 @@ contract MarketPlace {
   nonReentrant 
   onlyApproved
   whenNotPaused
-  noPaymentPending(_assetID, msg.sender)
   returns (bool){ 
     bytes32 thisOrder = keccak256(_assetID, _buyer, _amount, _price, true);
     require(orders[_buyer][thisOrder]);
@@ -82,6 +80,7 @@ contract MarketPlace {
     return true;
   }
 
+  // Creates an orde for user to sell their Asset shares
   function createSellOrder(uint _amount, uint _price, bytes32 _assetID)
   external
   nonReentrant
@@ -152,14 +151,6 @@ contract MarketPlace {
   modifier hasEnoughShares(bytes32 _assetID, uint _requiredShares) { 
     require(database.uintStorage(keccak256("shares", _assetID, msg.sender)) >= _requiredShares); 
     _; 
-  }
-
-  // Validates that the user does not have any Wei owed to them
-  modifier noPaymentPending(bytes32 _assetID, address _seller) { 
-    uint totalReceived = database.uintStorage(keccak256("totalReceived", _assetID));
-    uint payment = totalReceived.mul(database.uintStorage(keccak256("shares", _assetID, _seller))).div(database.uintStorage(keccak256("amountRaised", _assetID))).sub(database.uintStorage(keccak256("totalPaidToFunder", _assetID, _seller)));
-    require(payment == 0); 
-    _;
   }
 
   modifier aboveZero(uint _amount, uint _price) { 

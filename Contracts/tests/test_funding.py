@@ -1,5 +1,3 @@
-import binascii
-from sha3 import keccak_256
 from deploy import deployContracts
 
 
@@ -134,6 +132,17 @@ def test_successfulFunding(chain):
     assert numberOfTokensBurnt == accessCost[2]
     assert database.call().uintStorage(hashFunctions.call().stringAddress("userAccess", firstAssetManager)) == 2
 
+    #------------Change funding percentages------------------
+    myBPercentage = 3
+    stakePercentage = 1
+    installerPercentage = 96
+    paramHash = hashFunctions.call().uintUintUint(myBPercentage, stakePercentage, installerPercentage)
+    txHash = owned.transact().setFunctionAuthorized(assetCreation.address, "changeFundingPercentages", paramHash)
+    txHash = assetCreation.transact({"from": ownerTwo}).changeFundingPercentages(myBPercentage, stakePercentage, installerPercentage, ownerOne)
+    assert database.call().uintStorage(hashFunctions.call().sha3("myBitFoundationPercentage")) == myBPercentage
+    assert database.call().uintStorage(hashFunctions.call().sha3("stakedTokenPercentage")) == stakePercentage
+    assert database.call().uintStorage(hashFunctions.call().sha3("installerPercentage")) == installerPercentage
+
     # ------------Create Asset Info------------------------
     firstAssetID = hashFunctions.call().sha3("afakestoragehash")
     firstProjectGoal = convertEtherToWei(chain, 20)
@@ -209,7 +218,8 @@ def test_successfulFunding(chain):
 
     # ---------------------------Check Receiving ROI---------------------------------------
     assert database.call().uintStorage(hashFunctions.call().stringBytes("fundingStage", firstAssetID)) == 4
-    asset.transact({"value": firstROIPayment}).receiveIncome(firstAssetID, "First ROI payment")
+    pretendNote = hashFunctions.call().sha3("First ROI Payment")
+    asset.transact({"value": firstROIPayment}).receiveIncome(firstAssetID, pretendNote)
     firstROIPayment = firstROIPayment - (firstROIPayment * (managerPercentage / 100))
     assert database.call().uintStorage(hashFunctions.call().stringBytes("totalReceived", firstAssetID)) == firstROIPayment 
 
@@ -267,7 +277,7 @@ def test_successfulFunding(chain):
     # ------------Destroy AssetContract----------------------
     testBalance = test.call().getBalance()
     assetIncome = convertEtherToWei(chain, 3)
-    txHash = asset.transact({"value": assetIncome}).receiveIncome(secondAssetID, "something")  
+    txHash = asset.transact({"value": assetIncome}).receiveIncome(secondAssetID, pretendNote)  
     assetIncome = assetIncome - (assetIncome * (assetManagerPercentage / 100))
     beneficiaryHash = hashFunctions.call().addressHash(test.address)
     txHash = owned.transact().setFunctionAuthorized(asset.address, "destroy", beneficiaryHash)
@@ -306,6 +316,17 @@ def test_refund(chain):
     assetCreation.transact().changeFundingTime(newFundingTime)
     assert assetCreation.call().fundingTime() == newFundingTime
 
+    #------------Change funding percentages------------------
+    myBPercentage = 3
+    stakePercentage = 1
+    installerPercentage = 96
+    paramHash = hashFunctions.call().uintUintUint(myBPercentage, stakePercentage, installerPercentage)
+    txHash = owned.transact().setFunctionAuthorized(assetCreation.address, "changeFundingPercentages", paramHash)
+    txHash = assetCreation.transact({"from": ownerTwo}).changeFundingPercentages(myBPercentage, stakePercentage, installerPercentage, ownerOne)
+    assert database.call().uintStorage(hashFunctions.call().sha3("myBitFoundationPercentage")) == myBPercentage
+    assert database.call().uintStorage(hashFunctions.call().sha3("stakedTokenPercentage")) == stakePercentage
+    assert database.call().uintStorage(hashFunctions.call().sha3("installerPercentage")) == installerPercentage
+
     #---------------Burn Tokens to Gain Authorization to Create Asset---------------
     firstAssetManager = accounts[9]
     assert database.call().uintStorage(hashFunctions.call().stringAddress("userAccess", firstAssetManager)) == 1 
@@ -314,10 +335,10 @@ def test_refund(chain):
 
     # # ------------Create Asset Info------------------------
     firstAssetID = hashFunctions.call().sha3("afakestoragehash")
-    firstProjectGoal = convertEtherToWei(chain, 20)
+    firstProjectGoal = convertEtherToWei(chain, 200000)
     assetInstaller = hashFunctions.call().sha3("SolarCity")
     solarAssetType = hashFunctions.call().sha3("SolarFarm")
-    managerPercentage = 0
+    managerPercentage = 7
 
     # ---------------Create First Asset---------------------------
     assert assetCreation.call({"from": firstAssetManager}).newAsset(firstAssetID, firstProjectGoal, managerPercentage, assetInstaller, solarAssetType)
@@ -384,5 +405,84 @@ def test_refund(chain):
     txHash = fundingHub.transact({"from": thirdFunder}).refund(firstAssetID)
     assert getShares(database, hashFunctions, firstAssetID, thirdFunder) == 0
     assert database.call().uintStorage(hashFunctions.call().stringBytes("amountRaised", firstAssetID)) == 0
+
+
+    # Test Removing Assets
+    txHash = owned.transact().setFunctionAuthorized(assetCreation.address, "removeAsset", firstAssetID)
+    txHash = assetCreation.transact({"from": ownerTwo}).removeAsset(firstAssetID, ownerOne)
+    assert database.call().uintStorage(hashFunctions.call().stringBytes("fundingStage", firstAssetID)) == 5
+
+
+
+# // Note: this takes a long time to finish
+def test_recursiveFunding(chain):
+
+    # Constants 
+    accounts = chain.web3.eth.accounts
+
+    test, hashFunctions, database, contractManager, owned, userAccess, myBitToken, assetCreation, fundingHub, asset, stakingBank, bugBank, bugBounty, tokenStaking, marketPlace, tokenBurn = deployContracts(chain, accounts)
+
+    # Set constant address variables
+    myBitFoundation = accounts[4]
+    assetEscrow = test.address
+    ownerOne = accounts[0]  
+    ownerTwo = accounts[1]
+    ownerThree = accounts[2]
+
+
+    # --------------Spread MyBit Tokens----------------------
+    spreadMyBitTokens(myBitToken, accounts)
+
+    # -------------Approve Users KYC-------------------
+    assert kycApprove(userAccess, hashFunctions, database, accounts)
+
+    # ----------------------Create many assets and fund them with many small transactions---------------------------
+    for i in range(len(accounts)):
+      assert burnForAccess(myBitToken, tokenBurn, accounts[i], 3)
+
+    fundingHubBalance = 0
+    thisAssetManager = accounts[3]
+
+    for i in range(98):
+        # # ------------Create Asset Info------------------------
+        randomHash = hashFunctions.call().uintHash(i)
+        thisAssetID = hashFunctions.call().stringBytes("newhash", randomHash)
+        thisProjectGoal = convertEtherToWei(chain, 2000)
+        assetInstaller = hashFunctions.call().sha3("SolarNodes")
+        solarAssetType = hashFunctions.call().sha3("SolarFarm")
+        managerPercentage = 1 + i
+
+
+        # ---------------Create First Asset---------------------------
+        txHash = assetCreation.transact({"from": thisAssetManager}).newAsset(thisAssetID, thisProjectGoal, managerPercentage, assetInstaller, solarAssetType)
+        assert database.call().uintStorage(hashFunctions.call().stringBytes("fundingStage", thisAssetID)) == 1
+        assert database.call().uintStorage(hashFunctions.call().stringBytes("amountToBeRaised", thisAssetID)) == thisProjectGoal
+
+        for acc in range(len(accounts)):
+            thisFunder = accounts[acc]
+
+            # First funder 
+            fundingAmount = convertEtherToWei(chain, 1)
+            txHash = fundingHub.transact({"from": thisFunder, "value":fundingAmount}).fund(thisAssetID)
+            fundingHubBalance += fundingAmount
+
+
+        # Test Removing Assets
+        txHash = owned.transact().setFunctionAuthorized(assetCreation.address, "removeAsset", thisAssetID)
+        txHash = assetCreation.transact({"from": ownerTwo}).removeAsset(thisAssetID, ownerOne)
+        assert database.call().uintStorage(hashFunctions.call().stringBytes("fundingStage", thisAssetID)) == 5
+
+
+
+    # ------------Destroy FundingHubContract----------------------
+    testBalance = test.call().getBalance()
+    beneficiaryHash = hashFunctions.call().addressHash(test.address)
+    txHash = owned.transact().setFunctionAuthorized(fundingHub.address, "destroy", beneficiaryHash)
+    authorizedHash = hashFunctions.call().getAuthorizeHash(fundingHub.address, ownerOne, "destroy", beneficiaryHash)
+    assert database.call().boolStorage(authorizedHash)
+    txHash = fundingHub.transact({"from": ownerTwo}).destroy(ownerOne, test.address)
+    # assert asset.call().database() == database.address      # throws due to contract being destroyed
+    assert test.call().getBalance() == testBalance + fundingHubBalance
+
 
 

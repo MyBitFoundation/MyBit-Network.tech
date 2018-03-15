@@ -15,6 +15,12 @@ contract HashFunctions {
     return keccak256(_assetID, _user, _amount, _price, _buyOrder); 
   }
   
+  function uintHash(uint _param)
+  external
+  view 
+  returns (bytes32) { 
+    return keccak256(_param); 
+  }
 
   function getStakingID(address _staker, uint256 _blockNumber, uint256 _amount)
   external
@@ -86,6 +92,13 @@ contract HashFunctions {
   view 
   returns (bytes32) { 
     return keccak256(_contractAddress, _owner, _fnName, _recipient); 
+  }
+
+  function uintUintUint(uint _paramOne, uint _paramTwo, uint _paramThree)
+  external
+  view 
+  returns (bytes32) { 
+    return keccak256(_paramOne, _paramTwo, _paramThree); 
   }
 
   function nullBytes()

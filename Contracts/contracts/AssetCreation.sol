@@ -22,7 +22,6 @@ contract AssetCreation {
   // @Param: The amount of WEI required for asset to achieve successfull funding
   // @Param: The ID of the installer of this asset
   // @Param: The type of asset being created. (ie. Sha3("BitcoinATM"))
-  // TODO: Allow manager percentage to be 0 ??
   function newAsset(bytes32 _assetID, uint _amountToBeRaised, uint _managerPercentage, bytes32 _installerID, bytes32 _assetType)
   external
   whenNotPaused
@@ -34,7 +33,7 @@ contract AssetCreation {
   returns (bool){
     require(database.uintStorage(keccak256("userAccess", msg.sender)) >= 2);     
     require(database.uintStorage(keccak256("fundingStage", _assetID)) == 0);    // This ensures the asset isn't currently live or being funded
-    require(_managerPercentage < 100);
+    require(_managerPercentage < 100 && _managerPercentage > 0);
     database.setUint(keccak256("amountToBeRaised", _assetID), _amountToBeRaised);
     database.setUint(keccak256("managerPercentage", _assetID), _managerPercentage);
     database.setAddress(keccak256("assetManager", _assetID), msg.sender);
