@@ -19,6 +19,7 @@ export default class FundingHubUtil {
       gas: 2000000,
       value: _value
     });
+    return response;
     /*      if(this.modifier.fundingLimitValue(_assetID) &&
          this.modifier.fundingLimitTime(_assetID) &&
          this.modifier.onlyApproved(2) &&
@@ -43,6 +44,7 @@ export default class FundingHubUtil {
       from: this.web3.eth.coinbase,
       gas: 2000000
     });
+    return response;
     /*  if(this.modifier.atStage(_assetID, 3) &&
          this.modifier.fundingPeriodOver(_assetID)
       ){
@@ -65,6 +67,8 @@ export default class FundingHubUtil {
       from: this.web3.eth.coinbase,
       gas: 2000000
     });
+    return response;
+
     /*      if(this.modifier.fundingPeriodOver(_assetID) &&
          this.modifier.atStage(_assetID, 1)
       ){
@@ -87,6 +91,8 @@ export default class FundingHubUtil {
       from: this.web3.eth.coinbase,
       gas: 2000000
     });
+    return response;
+
     /*if(this.modifier.atStage(_assetID, 1))
         {
           this.instance.refund.estimateGas(

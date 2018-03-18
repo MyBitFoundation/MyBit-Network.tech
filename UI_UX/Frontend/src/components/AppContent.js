@@ -15,6 +15,10 @@ import { keccak256 } from 'js-sha3';
 import DatabaseUtil from './contracts/DatabaseUtil';
 import FundingHubUtil from './contracts/FundingHubUtil';
 
+/* APIs */
+import UpholdApi from '../apis/uphold';
+import CoinbaseApi from '../apis/coinbase';
+
 /* Images  */
 import Accounts from './Accounts';
 import asset from '../images/bitcoin-atm.png';
@@ -33,16 +37,15 @@ export default class AppContent extends React.Component {
     const web3 = await getWeb3Async();
     if (web3.isConnected()) {
       const databaseInstance = new DatabaseUtil();
-      const fundingHubInstance = new FundingHubUtil();
-      databaseInstance.load(web3);
-      fundingHubInstance.load(web3);
+    //  const fundingHubInstance = new FundingHubUtil();
+  //    await databaseInstance.load(web3);
+    //  await fundingHubInstance.load(web3);
       this.setState({
         web3: web3,
         isWeb3synced: true,
         assetID: 6374856,
-        databaseInstance: databaseInstance,
-        fundingHubInstance: fundingHubInstance
-      });
+        databaseInstance: databaseInstance
+    });
       // Fixed assetID for testing
       // Currently not a real assetID
     }
