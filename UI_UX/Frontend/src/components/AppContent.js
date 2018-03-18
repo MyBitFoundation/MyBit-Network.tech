@@ -12,8 +12,8 @@ import { getWeb3Async } from '../util/web3';
 import { keccak256 } from 'js-sha3';
 
 /* Smart Contract Utils not Apps */
-import DatabaseUtil from './contracts/DatabaseUtil';
-import FundingHubUtil from './contracts/FundingHubUtil';
+import  { DatabaseUtil }   from './contracts/DatabaseUtil';
+import  FundingHubUtil  from './contracts/FundingHubUtil';
 
 /* APIs */
 import UpholdApi from '../apis/uphold';
@@ -36,15 +36,15 @@ export default class AppContent extends React.Component {
   async componentDidMount() {
     const web3 = await getWeb3Async();
     if (web3.isConnected()) {
-      const databaseInstance = new DatabaseUtil();
-    //  const fundingHubInstance = new FundingHubUtil();
-  //    await databaseInstance.load(web3);
-    //  await fundingHubInstance.load(web3);
+      const dbInstance = new DatabaseUtil();
+      const fundingHubInstance = new FundingHubUtil();
+      ///await dbInstance.load(web3);
+      await fundingHubInstance.load(web3);
       this.setState({
         web3: web3,
         isWeb3synced: true,
         assetID: 6374856,
-        databaseInstance: databaseInstance
+        databaseInstance: dbInstance
     });
       // Fixed assetID for testing
       // Currently not a real assetID
