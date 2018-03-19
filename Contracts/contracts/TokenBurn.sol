@@ -52,7 +52,7 @@ external
 basicVerification(_accessLevelDesired)
 whenNotPaused
 returns (bool) {
-  uint256 accessCostMyB = database.uintStorage(keccak256("accessTokenFee", msg.sender, _accessLevelDesired));
+  uint256 accessCostMyB = database.uintStorage(keccak256("accessTokenFee", msg.sender, _accessLevelDesired)).mul(10^8);
   assert (accessCostMyB > 0);
   require(myBitToken.transferFrom(msg.sender, this, accessCostMyB));
   database.setUint(keccak256("userAccess", msg.sender), _accessLevelDesired);
