@@ -2,7 +2,7 @@ import { promisifyAll } from 'bluebird';
 
 import ABIInterfaceArray from '../../util/abi/FundingHub.json';
 
-const SMART_CONTRACT_ADDRESS = '0xeC4C8f87aA7f0Bd86FA471521f47dDA40feb67d2';
+const SMART_CONTRACT_ADDRESS = '0x566019cdaD6ece4b37B5551d23be8f453fDd467F';
 const instancePromisifier = instance =>
   promisifyAll(instance, { suffix: 'Async' });
 
@@ -13,20 +13,31 @@ export default class FundingHubUtil {
     const abi = await web3.eth.contract(ABIInterfaceArray);
     this.instance = instancePromisifier(abi.at(SMART_CONTRACT_ADDRESS));
     this.web3 = web3;
+
+    totalContributorsPerAssetID = {};
+
     this.LogNewFunder = this.instance.LogNewFunder(
       { _assetID: assetID },
       { fromBlock: 0, toBlock: 'latest' }
     );
+    this.setEventListeners();
   }
 
   async setEventListeners() {
     /* Listen for the events */
+    let _assetID;
+    let _totalContributors = 0;
     this.LogNewFunder.watch(function(e, r) {
       if (!e) {
-        totalContributorsPerAssetID[r['args']['_assetID']] += 1;
-        console.log(totalContributorsPerAssetID[r['args']['_assetID']]);
+        _assetID = r['args']['_assetID'];
+        _totalContributors += 1;
+        totalContributorsPerAssetID[_assetID] = _totalContributors;
       }
     });
+  }
+
+  async returnContributers(_assetID) {
+    return parseInt(totalContributorsPerAssetID[_assetID]);
   }
 
   async fund(_assetID, _value) {

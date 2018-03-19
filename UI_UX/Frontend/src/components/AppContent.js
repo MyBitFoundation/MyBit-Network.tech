@@ -41,12 +41,11 @@ export default class AppContent extends React.Component {
     const web3 = await getWeb3Async();
     if (web3.isConnected()) {
       const assetID =
-        '0xc1df9153411d6a4e91c75c8e0a4aa44d3993683a6ab89841f99f14dcde920048';
+        '0xcbb8744ce8cb288674fbafe1b6c111c6d86308af6b2e7d396780104341a1cf8e';
       const dbInstance = new DatabaseUtil();
       const fundingHubInstance = new FundingHubUtil();
       const hashFunctionsInstance = new HashFunctionsUtil();
       const assetCreationInstance = new AssetCreationUtil();
-      console.log('assetID; ', assetID);
       await dbInstance.load(web3);
       await hashFunctionsInstance.load(web3);
       await fundingHubInstance.load(web3, assetID);
@@ -72,6 +71,14 @@ export default class AppContent extends React.Component {
       );
       const percentageBar = amountRaised / amountToBeRaised * 100;
 
+      const installerID = await assetCreationInstance.returnInstallerID(
+        assetID
+      );
+      const totalContributors = await fundingHubInstance.returnContributers(
+        assetID
+      );
+      console.log(totalContributors);
+
       this.setState({
         web3: web3,
         isWeb3synced: true,
@@ -80,7 +87,9 @@ export default class AppContent extends React.Component {
         fundingDeadline: fundingDeadline,
         amountToBeRaised: amountToBeRaised,
         percentageBar: percentageBar,
-        humanReadableDate: humanReadableDate
+        humanReadableDate: humanReadableDate,
+        installerID: installerID,
+        totalContributors: totalContributors
       });
       // Fixed assetID for testing
       // Currently not a real assetID
@@ -96,7 +105,9 @@ export default class AppContent extends React.Component {
       amountToBeRaised,
       percentageBar,
       assetID,
-      humanReadableDate
+      humanReadableDate,
+      installerID,
+      totalContributors
     } = this.state;
 
     return (
@@ -218,10 +229,7 @@ export default class AppContent extends React.Component {
                         <Grid.Row className="stretched collapsed">
                           <Grid.Column width={10}>Installer</Grid.Column>
                           <Grid.Column width={6}>
-                            <b>
-                              {isWeb3synced && 'x0x0'}
-                              {/*TODO; need to grab from bigchaindb  */}
-                            </b>
+                            <b>{isWeb3synced && installerID}</b>
                           </Grid.Column>
                         </Grid.Row>
                       </Grid>
@@ -258,7 +266,7 @@ export default class AppContent extends React.Component {
                     </Segment>
                     <Segment textAlign="right">
                       Total Contributors:
-                      <b>50</b>
+                      <b>{isWeb3synced && totalContributors}</b>
                       {/* TODO; need to grab from bigchaindb */}
                     </Segment>
                   </Segment.Group>
