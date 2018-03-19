@@ -189,6 +189,23 @@
     "inputs": [
       {
         "indexed": true,
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogAssetFundingSuccess",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "name": "_funder",
         "type": "address"
       },

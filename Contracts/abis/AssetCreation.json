@@ -81,7 +81,7 @@
     "constant": false,
     "inputs": [
       {
-        "name": "_storageHash",
+        "name": "_assetID",
         "type": "bytes32"
       },
       {
@@ -156,7 +156,7 @@
       },
       {
         "indexed": true,
-        "name": "_assetLocation",
+        "name": "_assetID",
         "type": "bytes32"
       },
       {
@@ -173,7 +173,7 @@
     "inputs": [
       {
         "indexed": true,
-        "name": "_storageHash",
+        "name": "_assetID",
         "type": "bytes32"
       },
       {
@@ -195,7 +195,7 @@
       },
       {
         "indexed": true,
-        "name": "_id",
+        "name": "_assetID",
         "type": "bytes32"
       },
       {
@@ -227,6 +227,28 @@
       }
     ],
     "name": "LogFundingTimeChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "_myBitFoundationPercentage",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "_stakedTokenPercentage",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "_installerPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogFundingPercentageChanged",
     "type": "event"
   }
 ]
