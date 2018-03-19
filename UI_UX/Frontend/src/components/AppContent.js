@@ -14,6 +14,8 @@ import { keccak256 } from 'js-sha3';
 /* Smart Contract Utils not Apps */
 import { default as DatabaseUtil } from './contracts/DatabaseUtil';
 import { default as HashFunctionsUtil } from './contracts/HashFunctionsUtil';
+import { default as AssetCreationUtil } from './contracts/AssetCreationUtil';
+
 import FundingHubUtil from './contracts/FundingHubUtil';
 
 /* APIs */
@@ -34,18 +36,22 @@ export default class AppContent extends React.Component {
       assetID: null
     };
   }
+
   async componentDidMount() {
     const web3 = await getWeb3Async();
     if (web3.isConnected()) {
+      const assetID =
+        '0xc1df9153411d6a4e91c75c8e0a4aa44d3993683a6ab89841f99f14dcde920048';
       const dbInstance = new DatabaseUtil();
       const fundingHubInstance = new FundingHubUtil();
       const hashFunctionsInstance = new HashFunctionsUtil();
+      const assetCreationInstance = new AssetCreationUtil();
+      console.log('assetID; ', assetID);
       await dbInstance.load(web3);
-      await fundingHubInstance.load(web3);
       await hashFunctionsInstance.load(web3);
+      await fundingHubInstance.load(web3, assetID);
+      await assetCreationInstance.load(web3, assetID);
 
-      const assetID =
-        '0xc1df9153411d6a4e91c75c8e0a4aa44d3993683a6ab89841f99f14dcde920048';
       const amountRaised = web3.fromWei(
         await dbInstance.uintStored(
           await hashFunctionsInstance.stringBytes('amountRaised', assetID)
@@ -66,9 +72,6 @@ export default class AppContent extends React.Component {
       );
       const percentageBar = amountRaised / amountToBeRaised * 100;
 
-      console.log('fundingDeadline Epoch; ', fundingDeadline);
-      console.log('humanReadableDate; ', humanReadableDate);
-
       this.setState({
         web3: web3,
         isWeb3synced: true,
@@ -83,6 +86,7 @@ export default class AppContent extends React.Component {
       // Currently not a real assetID
     }
   }
+
   render() {
     const {
       web3,

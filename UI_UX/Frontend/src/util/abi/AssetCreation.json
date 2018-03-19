@@ -3,35 +3,29 @@
     "constant": false,
     "inputs": [
       {
-        "name": "_assetID",
-        "type": "bytes32"
+        "name": "_myBitFoundationPercentage",
+        "type": "uint256"
+      },
+      {
+        "name": "_stakedTokenPercentage",
+        "type": "uint256"
+      },
+      {
+        "name": "_installerPercentage",
+        "type": "uint256"
+      },
+      {
+        "name": "_functionSigner",
+        "type": "address"
       }
     ],
-    "name": "initiateRefund",
+    "name": "changeFundingPercentages",
     "outputs": [
       {
         "name": "",
         "type": "bool"
       }
     ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_functionInitiator",
-        "type": "address"
-      },
-      {
-        "name": "_holdingAddress",
-        "type": "address"
-      }
-    ],
-    "name": "destroy",
-    "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
@@ -54,11 +48,60 @@
     "constant": false,
     "inputs": [
       {
+        "name": "_newTimeGivenForFunding",
+        "type": "uint256"
+      }
+    ],
+    "name": "changeFundingTime",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "fundingTime",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
         "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_amountToBeRaised",
+        "type": "uint256"
+      },
+      {
+        "name": "_managerPercentage",
+        "type": "uint256"
+      },
+      {
+        "name": "_installerID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_assetType",
         "type": "bytes32"
       }
     ],
-    "name": "refund",
+    "name": "newAsset",
     "outputs": [
       {
         "name": "",
@@ -75,28 +118,13 @@
       {
         "name": "_assetID",
         "type": "bytes32"
-      }
-    ],
-    "name": "fund",
-    "outputs": [
+      },
       {
-        "name": "",
-        "type": "bool"
+        "name": "_functionSigner",
+        "type": "address"
       }
     ],
-    "payable": true,
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_assetID",
-        "type": "bytes32"
-      }
-    ],
-    "name": "payout",
+    "name": "removeAsset",
     "outputs": [
       {
         "name": "",
@@ -119,25 +147,25 @@
     "type": "constructor"
   },
   {
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "fallback"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
         "indexed": true,
-        "name": "_funder",
+        "name": "_creator",
         "type": "address"
       },
       {
         "indexed": true,
-        "name": "_timestamp",
-        "type": "uint256"
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_assetType",
+        "type": "bytes32"
       }
     ],
-    "name": "LogNewFunder",
+    "name": "LogAssetFundingStarted",
     "type": "event"
   },
   {
@@ -145,104 +173,60 @@
     "inputs": [
       {
         "indexed": true,
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_installerID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "LogAssetInfo",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_remover",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogAssetRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "name": "_sender",
         "type": "address"
       },
       {
-        "indexed": true,
-        "name": "_amount",
+        "indexed": false,
+        "name": "_newTimeForFunding",
         "type": "uint256"
       },
       {
-        "indexed": true,
-        "name": "_timestamp",
+        "indexed": false,
+        "name": "_blockTimestamp",
         "type": "uint256"
       }
     ],
-    "name": "LogAssetFunded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "_assetID",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "name": "_amountRaised",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "_timestamp",
-        "type": "uint256"
-      }
-    ],
-    "name": "LogAssetFundingFailed",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "_assetID",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "name": "_timestamp",
-        "type": "uint256"
-      }
-    ],
-    "name": "LogAssetFundingSuccess",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "_funder",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "name": "_amount",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "_timestamp",
-        "type": "uint256"
-      }
-    ],
-    "name": "LogRefund",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "_assetID",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "name": "_amount",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "_blockNumber",
-        "type": "uint256"
-      }
-    ],
-    "name": "LogAssetPayout",
+    "name": "LogFundingTimeChanged",
     "type": "event"
   },
   {
@@ -250,38 +234,21 @@
     "inputs": [
       {
         "indexed": false,
-        "name": "_newEscrowLocation",
-        "type": "address"
+        "name": "_myBitFoundationPercentage",
+        "type": "uint256"
       },
       {
         "indexed": false,
-        "name": "_timestamp",
-        "type": "uint256"
-      }
-    ],
-    "name": "LogAssetEscrowChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "_locationSent",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "name": "_amountSent",
+        "name": "_stakedTokenPercentage",
         "type": "uint256"
       },
       {
-        "indexed": true,
-        "name": "_caller",
-        "type": "address"
+        "indexed": false,
+        "name": "_installerPercentage",
+        "type": "uint256"
       }
     ],
-    "name": "LogDestruction",
+    "name": "LogFundingPercentageChanged",
     "type": "event"
   }
 ]
