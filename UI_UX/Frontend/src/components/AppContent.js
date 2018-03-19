@@ -12,9 +12,9 @@ import { getWeb3Async } from '../util/web3';
 import { keccak256 } from 'js-sha3';
 
 /* Smart Contract Utils not Apps */
-import  { default as DatabaseUtil }   from './contracts/DatabaseUtil';
-import  { default as HashFunctionsUtil } from './contracts/HashFunctionsUtil';
-import  FundingHubUtil  from './contracts/FundingHubUtil';
+import { default as DatabaseUtil } from './contracts/DatabaseUtil';
+import { default as HashFunctionsUtil } from './contracts/HashFunctionsUtil';
+import FundingHubUtil from './contracts/FundingHubUtil';
 
 /* APIs */
 import UpholdApi from '../apis/uphold';
@@ -44,14 +44,30 @@ export default class AppContent extends React.Component {
       await fundingHubInstance.load(web3);
       await hashFunctionsInstance.load(web3);
 
-      const assetID = '0xc1df9153411d6a4e91c75c8e0a4aa44d3993683a6ab89841f99f14dcde920048';
+      const assetID =
+        '0xc1df9153411d6a4e91c75c8e0a4aa44d3993683a6ab89841f99f14dcde920048';
+      const amountRaised = web3.fromWei(
+        await dbInstance.uintStored(
+          await hashFunctionsInstance.stringBytes('amountRaised', assetID)
+        ),
+        'ether'
+      );
+      const fundingDeadline = parseInt(
+        await dbInstance.uintStored(
+          await hashFunctionsInstance.stringBytes('fundingDeadline', assetID)
+        )
+      );
+      const humanReadableDate = new Date(fundingDeadline * 1000).toString();
+      const amountToBeRaised = web3.fromWei(
+        await dbInstance.uintStored(
+          await hashFunctionsInstance.stringBytes('amountToBeRaised', assetID)
+        ),
+        'ether'
+      );
+      const percentageBar = amountRaised / amountToBeRaised * 100;
 
-      const amountRaised = web3.fromWei(await dbInstance.uintStored(await hashFunctionsInstance.stringBytes('amountRaised', assetID)), 'ether');
-      const fundingDeadline =  parseInt(await dbInstance.uintStored(await hashFunctionsInstance.stringBytes('fundingDeadline', assetID)));
-      const humanReadableDate = new Date(fundingDeadline);
-      const amountToBeRaised = web3.fromWei(await dbInstance.uintStored(await hashFunctionsInstance.stringBytes('amountToBeRaised', assetID)), 'ether');
-      const percentageBar = (amountRaised / amountToBeRaised) * 100
-
+      console.log('fundingDeadline Epoch; ', fundingDeadline);
+      console.log('humanReadableDate; ', humanReadableDate);
 
       this.setState({
         web3: web3,
@@ -60,16 +76,24 @@ export default class AppContent extends React.Component {
         amountRaised: amountRaised,
         fundingDeadline: fundingDeadline,
         amountToBeRaised: amountToBeRaised,
-        percentageBar: percentageBar
-    });
+        percentageBar: percentageBar,
+        humanReadableDate: humanReadableDate
+      });
       // Fixed assetID for testing
       // Currently not a real assetID
     }
   }
   render() {
-    const { web3, isWeb3synced, amountRaised,
-     fundingDeadline, amountToBeRaised,
-    percentageBar, assetID} = this.state;
+    const {
+      web3,
+      isWeb3synced,
+      amountRaised,
+      fundingDeadline,
+      amountToBeRaised,
+      percentageBar,
+      assetID,
+      humanReadableDate
+    } = this.state;
 
     return (
       <Grid>
@@ -135,9 +159,7 @@ export default class AppContent extends React.Component {
                         <Grid.Row className="stretched collapsed">
                           <Grid.Column width={10}>Asset Cost</Grid.Column>
                           <Grid.Column width={6}>
-                            <b>
-                              {isWeb3synced && amountToBeRaised}
-                            </b>
+                            <b>{isWeb3synced && amountToBeRaised}</b>
                           </Grid.Column>
                         </Grid.Row>
                         <Grid.Row className="stretched collapsed">
@@ -185,9 +207,7 @@ export default class AppContent extends React.Component {
                         <Grid.Row className="stretched collapsed">
                           <Grid.Column width={10}>Asset ID</Grid.Column>
                           <Grid.Column width={6}>
-                            <b>
-                              {assetID}
-                            </b>{' '}
+                            <b>{assetID}</b>{' '}
                             {/* TODO; need to grab from bigchaindb */}
                           </Grid.Column>
                         </Grid.Row>
@@ -212,22 +232,16 @@ export default class AppContent extends React.Component {
                       <Segment>
                         {' '}
                         Current funding:
-                        <b>
-                          {isWeb3synced && amountRaised}
-                        </b>
+                        <b>{isWeb3synced && amountRaised}</b>
                       </Segment>
                       <Segment>
                         {' '}
                         Funding period ends on{' '}
-                        {isWeb3synced && fundingDeadline}
-                        {' '}
+                        {isWeb3synced && humanReadableDate}{' '}
                       </Segment>
                       <Segment>
                         {' '}
-                        Funding Goal:{' '}
-                        <b>
-                          {isWeb3synced && amountToBeRaised}
-                        </b>
+                        Funding Goal: <b>{isWeb3synced && amountToBeRaised}</b>
                       </Segment>
                     </Segment.Group>
                     <Segment>
