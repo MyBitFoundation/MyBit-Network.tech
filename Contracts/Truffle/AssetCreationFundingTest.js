@@ -47,6 +47,7 @@ contract('TestUserAccess', async (accounts) => {
 
 
   it("Deploy All Contracts", async () => {
+    console.log('Type of address', typeof ownerAddr1);
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);
      hfInstance = await HashFunctions.new();
      // ContractManager Contract

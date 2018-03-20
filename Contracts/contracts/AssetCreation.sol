@@ -14,7 +14,6 @@ contract AssetCreation {
   function AssetCreation(address _database)
   public  {
       database = Database(_database);
-
   }
 
   // This begins the funding period for an asset. If asset is success it will be added to the assets variable here in AssetCreation
@@ -31,7 +30,7 @@ contract AssetCreation {
   noEmptyBytes(_assetType)
   notZero(_amountToBeRaised)
   returns (bool){
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= 2);     
+    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= 2);
     require(database.uintStorage(keccak256("fundingStage", _assetID)) == 0);    // This ensures the asset isn't currently live or being funded
     require(_managerPercentage < 100 && _managerPercentage > 0);
     database.setUint(keccak256("amountToBeRaised", _assetID), _amountToBeRaised);
@@ -91,7 +90,7 @@ contract AssetCreation {
     database.setUint(keccak256("myBitFoundationPercentage"), _myBitFoundationPercentage);
     database.setUint(keccak256("stakedTokenPercentage"), _stakedTokenPercentage);
     database.setUint(keccak256("installerPercentage"), _installerPercentage);
-    LogFundingPercentageChanged(_myBitFoundationPercentage, _stakedTokenPercentage, _installerPercentage);  
+    LogFundingPercentageChanged(_myBitFoundationPercentage, _stakedTokenPercentage, _installerPercentage);
     return true;
   }
 
@@ -131,5 +130,5 @@ contract AssetCreation {
   event LogAssetInfo(bytes32 indexed _assetID, bytes32 indexed _installerID);
   event LogAssetRemoved(address indexed _remover, bytes32 indexed _id, uint indexed _timestamp);
   event LogFundingTimeChanged(address _sender, uint _newTimeForFunding, uint _blockTimestamp);
-  event LogFundingPercentageChanged(uint _myBitFoundationPercentage, uint _stakedTokenPercentage, uint _installerPercentage); 
+  event LogFundingPercentageChanged(uint _myBitFoundationPercentage, uint _stakedTokenPercentage, uint _installerPercentage);
 }

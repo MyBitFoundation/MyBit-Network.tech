@@ -36,6 +36,6 @@ export default class AssetCreationUtil {
   }
 
   async returnInstallerID(assetID) {
-    return parseInt(assetIDInstallerID[assetID]);
+    return assetIDInstallerID[assetID];
   }
 }

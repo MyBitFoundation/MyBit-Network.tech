@@ -52,8 +52,6 @@ contract('TokenBurnTest', async (accounts) => {
   let accessLevelQuery;
   let finalCost;
 
-  /* Events */
-  let LogOraclizeQuerySent;
 
   it("Deploy All Contracts", async () => {
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);
@@ -89,20 +87,22 @@ contract('TokenBurnTest', async (accounts) => {
      await contractManagerInstance.addContract('TokenBurn', tokenBurnInstance.address, ownerAddr2);
      // HashFunctions Contract
      hfInstance = await HashFunctions.new();
-     assetType = await hfInstance.sha3('BitcoinATM');
-     installerID =  await hfInstance.sha3('installerID');
-     assetID = await hfInstance.sha3('TestAsset');
+     assetType = await hfInstance.Sha3('BitcoinATM');
+     installerID =  await hfInstance.Sha3('installerID');
+     assetID = await hfInstance.Sha3('TestAsset');
      // Asset Contract*/
    });
 
+
    it('Initialize', async () => {
+     finalCost = 318659000; //TODO; need to change this to API call
      await initialInstance.startDapp();
      await contractManagerInstance.addContract('MyBitFoundation', myBitPayoutAddress, ownerAddr2);
      await contractManagerInstance.addContract('AssetEscrow', assetEscrowPayoutAddress, ownerAddr2);
      await userAccessInstance.approveUser(ownerAddr1, 1);
-//     console.log('accessLevel set properly;;;/? ' + await dbInstance.uintStorage(await hfInstance.stringUint("accessLevel", 1)));
-  //   console.log('minimum stake ;;;/? ' + await dbInstance.uintStorage(await hfInstance.sha3("minimumStakeAmount")));
 
+
+     LogTransfer = await myBitTokenInstance.Transfer({},{fromBlock:0, toBlock:'latest'});
      LogOraclizeQuerySent = await tokenBurnInstance.LogOraclizeQuerySent({},{fromBlock: 0, toBlock: 'latest'});
      LogCallBackRecieved = await tokenBurnInstance.LogCallBackRecieved({},{fromBlock: 0, toBlock: 'latest'});
      LogMyBitBurnt = await tokenBurnInstance.LogMyBitBurnt({},{fromBlock: 0, toBlock: 'latest'});
@@ -115,8 +115,11 @@ contract('TokenBurnTest', async (accounts) => {
                  console.log('---LogOraclizeQuerySent---');
                  console.log('From: ' + jsonData['args']._from);
                  console.log('AccessLevelDesired: ' + jsonData['args']._accessLevelDesired);
-                 console.log('Timestamp: ' + jsonData['args']._timestamp);
+                 console.log('QueryID: ' + jsonData['args']._queryID);
                  console.log('--------------------------');
+
+                 assert.equal(await dbInstance.addressStorage(jsonData['args']._queryID), web3.eth.coinbase, 'Correct address set after query sent');
+                 assert.equal(await dbInstance.uintStorage(jsonData['args']._queryID), accessLevelQuery, 'AssetEscrowAddr set');
              }
            }
          );
@@ -130,12 +133,16 @@ contract('TokenBurnTest', async (accounts) => {
                    console.log('Amount: ' + jsonData['args']._amount);
                    console.log('Timestamp: ' + jsonData['args']._timestamp);
                    console.log('--------------------------');
+                   assert.equal(jsonData['args']._burner, web3.eth.coinbase, 'Correct burner address');
+                   assert.equal(jsonData['args']._amount, finalCost, 'Correct amount burnt');
+                   assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', web3.eth.coinbase)), accessLevelQuery, 'New access has been added');
+                   assert.equal(await dbInstance.uintStorage(await hfInstance.Sha3('numberOfTokensBurnt')), finalCost, 'Correct number of tokens burnt');
               }
            }
          );
+
      LogCallBackRecieved.watch(
           async function(e,r){
-             console.log('inside callback');
                if(!e){
                  console.log(r);
                  let jsonResult = JSON.stringify(r);
@@ -143,25 +150,47 @@ contract('TokenBurnTest', async (accounts) => {
                  console.log('---LogCallBackRecieved---');
                  console.log('Sender: ' + jsonData['args']._sender);
                  console.log('Usd Price: ' + jsonData['args']._usdPrice);
-                 console.log('Access Level: ' + jsonData['args']._accessLevel);
+                 console.log('Query ID: ' + jsonData['args']._queryID);
                  console.log('--------------------------');
-                 // TODO; need to grab the cost from inside smart contract
+                 console.log('stringAddressUint; ' + await hfInstance.stringAddressUint(
+                   'accessTokenFee', web3.eth.coinbase, accessLevelQuery));
 
-                 //  finalCost = (10/parseFloat(jsonData['args']._usdPrice) * (10 * 8));
-                await myBitTokenInstance.approve(tokenBurnInstance.address, jsonData['args']._usdPrice);
-                await tokenBurnInstance.burnTokens(parseInt(jsonData['args']._accessLevel));
-                // asset
+                //assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddressUint('accessTokenFee', web3.eth.coinbase, accessLevelQuery)),finalCost, 'Correct amount of tokens queried');
+                assert.equal(await dbInstance.addressStorage(jsonData['args']._queryID),'0x0000000000000000000000000000000000000000','Address been deleted');
+                assert.equal(await dbInstance.uintStorage(jsonData['args']._queryID), 0, 'Uint deleted');
+
+                await myBitTokenInstance.approve(tokenBurnInstance.address, finalCost);
+                await tokenBurnInstance.burnTokens(accessLevelQuery);
              }
            }
         );
+
+    LogTransfer.watch(
+      async function(e,r){
+        console.log('----------------------------------------------------');
+        if(!e){
+          let jsonResult = JSON.stringify(r);
+          let jsonData = JSON.parse(jsonResult);
+          console.log('---LogTransfer---');
+          console.log('from: ' + jsonData['args'].from);
+          console.log('to: ' + jsonData['args'].to);
+          console.log('value: ' + jsonData['args'].value);
+          console.log('--------------------------');
+          assert.equal(jsonData['args'].from, web3.eth.coinbase, 'Correct from address for transfer');
+          assert.equal(jsonData['args'].to, tokenBurnInstance.address, 'Correct to address for transfer');
+          assert.equal(jsonData['args'].value, finalCost, 'Correct value for transfer');
+        }
+      }
+    )
 
    });
 
 
    it('Burn Query', async () => {
      accessLevelQuery = 2;
-     await tokenBurnInstance.burnQuery(2);
+     await tokenBurnInstance.burnQuery(accessLevelQuery);
    });
+
 
 
 

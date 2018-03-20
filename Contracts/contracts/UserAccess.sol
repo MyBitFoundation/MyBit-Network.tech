@@ -1,68 +1,87 @@
-pragma solidity ^0.4.19;
-
+pragma solidity ^0.4.18;
+import './MyBitToken.sol';
 import './Database.sol';
+import './oraclizeAPI_05.sol';
+import './SafeMath.sol';
 
-// This contract controls users access to the MyBit platform. TokenBurn will call this contract to add new users, once MyBit tokens have been burnt
-// There are 3 levels of access on the platform. First is basic access (creating/funding assets), Second is ability to stake, Third is ability to trade assets
-contract UserAccess{ 
- 
-  Database public database;
+// This contract transfers MyBit tokens and holds them forever with no mechanism to transfer them out again.
+// TODO: upgradeable myBitToken
+contract TokenBurn is usingOraclize{
+  using SafeMath for *;
 
-  function UserAccess(address _database) 
-  public  { 
-    database = Database(_database);
-  }
 
-  // Owner can manually grant access to a user here. WIll be used for KYC approval
-  // Invariants: Only called by Token Burning contract or Owner.  New address cannot be empty. Access level must be between 1-4
-  // @Param: Address of new user. 
-  // @Param: The level of access granted by owner/burningcontract
-  // TODO: owner requirement is removed for alpha testing
-  function approveUser(address _newUser, uint8 _accessLevel)
-  // anyOwner
-  noEmptyAddress(_newUser)
-  external
-  returns (bool) { 
-    require(_accessLevel < 5 && _accessLevel != 0);
-    database.setUint(keccak256("userAccess", _newUser), _accessLevel);
-    LogUserApproved(_newUser, _accessLevel, block.timestamp); 
-    return true;
-  }
+MyBitToken public myBitToken;
+Database public database;
 
-  // Owner can remove access for users if needed
-  // Invariants: Only owner can call. 
-  // @Param: User to be removed
-  function removeUser(address _user)
-  anyOwner
-  external
-  returns (bool) { 
-    database.deleteUint(keccak256("userAccess", _user));
-    database.deleteAddress(keccak256("backupAddress", _user));
-    LogUserRemoved(_user, block.timestamp); 
-    return true;
-  }
+function TokenBurn(address _database, address _myBitToken)
+public {
+  myBitToken = MyBitToken(_myBitToken);
+  database = Database(_database);
+  OAR = OraclizeAddrResolverI(0x6f485C8BF6fc43eA212E93BBF8ce046C7f1cb475);
+}
 
-  // Deny empty address parameters
-  modifier noEmptyAddress(address _param) {
-    require(_param != address(0)); 
-    _;
-  }
 
-  // User must have identification approved
-  modifier mustHaveKYC { 
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) > 0);
-    _;
-  }
+ function burnQuery(uint _accessLevelDesired)
+ external
+ basicVerification(_accessLevelDesired)
+ whenNotPaused
+ payable
+ returns(bool){
+  bytes32 queryID = oraclize_query('nested', '[WolframAlpha]  10 to the power of 8 multiplied by ${[URL] json(https://api.coinmarketcap.com/v1/ticker/mybit-token/).0.price_usd}');
+  database.setAddress(queryID, msg.sender);
+  database.setUint(queryID, _accessLevelDesired);
+  LogOraclizeQuerySent(msg.sender, _accessLevelDesired, queryID);
+  return true;
+}
 
-  // Only owners can call these functions
-  modifier anyOwner { 
-    require(database.boolStorage(keccak256("owner", msg.sender)));
-    _;
-  }
+ function __callback(bytes32 myid, string result)
+ public
+ isOraclize
+ whenNotPaused
+ {
+   uint accessLevelDesired = database.uintStorage(myid);
+   address sender = database.addressStorage(myid);
+   database.setUint(keccak256("accessTokenFee", sender, accessLevelDesired), parseInt(result));
+   database.deleteAddress(myid);
+   database.deleteUint(myid);
+   LogCallBackRecieved(myid, sender, parseInt(result));
+}
 
-  event LogBackupAddressSet(address _user, address _backupAddress, uint _blockNumber); 
-  event LogAddressChanged(address _oldAddress, address _newAddress, uint256 _timestamp); 
-  event LogUserApproved(address indexed _user, uint8 indexed _approvalLevel, uint256 indexed _timestamp); 
-  event LogUserRemoved(address indexed _user, uint256 indexed _timestamp); 
+function burnTokens(uint _accessLevelDesired)
+external
+basicVerification(_accessLevelDesired)
+whenNotPaused
+returns (bool) {
+  uint256 accessCostMyB = database.uintStorage(keccak256("accessTokenFee", msg.sender, _accessLevelDesired));
+  assert (accessCostMyB > 0);
+  require(myBitToken.transferFrom(msg.sender, this, accessCostMyB));
+  database.setUint(keccak256("userAccess", msg.sender), _accessLevelDesired);
+  uint numTokensBurnt = database.uintStorage(keccak256("numberOfTokensBurnt"));
+  database.setUint(keccak256("numberOfTokensBurnt"), numTokensBurnt.add(accessCostMyB));
+  LogMyBitBurnt(msg.sender, accessCostMyB, block.timestamp);
+  return true;
+}
+
+modifier basicVerification(uint _newAccessLevel) {
+  uint currentLevel = database.uintStorage(keccak256("userAccess", msg.sender));
+  require(_newAccessLevel >= 2);
+  require(_newAccessLevel <= 4);
+  require(_newAccessLevel > currentLevel);
+  _;
+}
+
+modifier whenNotPaused {
+  require(!database.boolStorage(keccak256("pause", this)));
+  _;
+}
+
+ modifier isOraclize() {
+   require(msg.sender == oraclize_cbAddress());
+   _;
+}
+
+event LogOraclizeQuerySent( address indexed _from, uint256 indexed _accessLevelDesired, bytes32 indexed _queryID);
+event LogMyBitBurnt(address _burner, uint256 _amount, uint256 _timestamp);
+event LogCallBackRecieved(bytes32 indexed _queryID, address indexed _sender, uint indexed _usdPrice);
 
 }

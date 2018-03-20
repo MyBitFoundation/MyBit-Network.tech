@@ -14,7 +14,7 @@ const StakingBank = artifacts.require('./StakingBank.sol');
 contract('TestUserAccess', async (accounts) => {
   const ownerAddr1 = web3.eth.accounts[0];
   const ownerAddr2 = web3.eth.accounts[1];
-  const ownerAddr3 = web3.eth.accounts[2];
+  const ownerAddr3 = web3.eth.accounts[2
   let dbInstance;
   let hfInstance;
   let initialInstance;
@@ -217,7 +217,7 @@ contract('TestUserAccess', async (accounts) => {
     console.log('totalPaidToFundersAfter' + totalPaidToFundersAfter);
     console.log('balanceOfFunderAfter' + balanceOfFunderAfter);
 
-    
+
 
   });
 
