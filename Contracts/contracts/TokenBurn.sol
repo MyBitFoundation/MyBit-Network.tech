@@ -17,7 +17,7 @@ function TokenBurn(address _database, address _myBitToken)
 public {
   myBitToken = MyBitToken(_myBitToken);
   database = Database(_database);
-  OAR = OraclizeAddrResolverI(0x6f485C8BF6fc43eA212E93BBF8ce046C7f1cb475);
+  // OAR = OraclizeAddrResolverI(0x6f485C8BF6fc43eA212E93BBF8ce046C7f1cb475); only for localhost
 }
 
 
@@ -27,10 +27,10 @@ public {
  whenNotPaused
  payable
  returns(bool){
-  bytes32 queryID = oraclize_query('nested', '[WolframAlpha]  8*10 multiply by  ${[URL] json(https://api.coinmarketcap.com/v1/ticker/mybit-token/).0.price_usd}');
+  bytes32 queryID = oraclize_query('nested', '[WolframAlpha]  10 to the power of 8 multiplied by ${[URL] json(https://api.coinmarketcap.com/v1/ticker/mybit-token/).0.price_usd}');
   database.setAddress(queryID, msg.sender);
   database.setUint(queryID, _accessLevelDesired);
-  LogOraclizeQuerySent(msg.sender, _accessLevelDesired, block.timestamp);
+  LogOraclizeQuerySent(msg.sender, _accessLevelDesired, queryID);
   return true;
 }
 
@@ -44,7 +44,7 @@ public {
    database.setUint(keccak256("accessTokenFee", sender, accessLevelDesired), parseInt(result));
    database.deleteAddress(myid);
    database.deleteUint(myid);
-   LogCallBackRecieved(myid, sender, parseInt(result), accessLevelDesired);
+   LogCallBackRecieved(myid, sender, parseInt(result));
 }
 
 function burnTokens(uint _accessLevelDesired)
@@ -52,7 +52,7 @@ external
 basicVerification(_accessLevelDesired)
 whenNotPaused
 returns (bool) {
-  uint256 accessCostMyB = database.uintStorage(keccak256("accessTokenFee", msg.sender, _accessLevelDesired)).mul(10^8);
+  uint256 accessCostMyB = database.uintStorage(keccak256("accessTokenFee", msg.sender, _accessLevelDesired));
   assert (accessCostMyB > 0);
   require(myBitToken.transferFrom(msg.sender, this, accessCostMyB));
   database.setUint(keccak256("userAccess", msg.sender), _accessLevelDesired);
@@ -80,8 +80,8 @@ modifier whenNotPaused {
    _;
 }
 
-event LogOraclizeQuerySent( address _from, uint256 _accessLevelDesired, uint _timestamp);
+event LogOraclizeQuerySent( address indexed _from, uint256 indexed _accessLevelDesired, bytes32 indexed _queryID);
 event LogMyBitBurnt(address _burner, uint256 _amount, uint256 _timestamp);
-event LogCallBackRecieved(bytes32 _myid, address _sender, uint _usdPrice, uint256 _accessLevel);
+event LogCallBackRecieved(bytes32 indexed _queryID, address indexed _sender, uint indexed _usdPrice);
 
 }
