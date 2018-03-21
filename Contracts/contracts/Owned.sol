@@ -38,7 +38,6 @@ contract Owned {
   function setFunctionAuthorized(address _contractAddress, string _functionName, bytes32 _beneficiary) 
   external
   anyOwner
-  MyBitContractOnly(_contractAddress)
   returns (bool) { 
     require(bytes(_functionName).length != 0); 
     database.setBool(keccak256(_contractAddress, msg.sender, _functionName, _beneficiary), true);    // Sign the function name + parameter
@@ -50,7 +49,6 @@ contract Owned {
   function pause(address _contract) 
   anyOwner  
   noZeroAddress(_contract)
-  MyBitContractOnly(_contract)
   public {
     database.setBool(keccak256("pause", _contract), true);
     Pause(_contract, block.timestamp);
@@ -67,11 +65,6 @@ contract Owned {
 
   modifier anyOwner { 
     require(database.boolStorage(keccak256("owner", msg.sender)));
-    _;
-  }
-
-  modifier MyBitContractOnly(address _contract) { 
-    require(database.boolStorage(keccak256("contract", _contract)));    // Make sure this is a MyBitContract
     _;
   }
 

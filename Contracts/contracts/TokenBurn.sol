@@ -20,13 +20,14 @@ public {
   // OAR = OraclizeAddrResolverI(0x6f485C8BF6fc43eA212E93BBF8ce046C7f1cb475); only for localhost
 }
 
-
+ // TODO: set requirement for how much ether is needed in this call
  function burnQuery(uint _accessLevelDesired)
  external
  basicVerification(_accessLevelDesired)
  whenNotPaused
  payable
  returns(bool){
+  require(msg.value == 40000000000000000);
   bytes32 queryID = oraclize_query('nested', '[WolframAlpha]  10 to the power of 8 multiplied by ${[URL] json(https://api.coinmarketcap.com/v1/ticker/mybit-token/).0.price_usd}');
   database.setAddress(queryID, msg.sender);
   database.setUint(queryID, _accessLevelDesired);
@@ -82,6 +83,6 @@ modifier whenNotPaused {
 
 event LogOraclizeQuerySent( address indexed _from, uint256 indexed _accessLevelDesired, bytes32 indexed _queryID);
 event LogMyBitBurnt(address _burner, uint256 _amount, uint256 _timestamp);
-event LogCallBackRecieved(bytes32 indexed _queryID, address indexed _sender, uint indexed _usdPrice);
+event LogCallBackRecieved(bytes32 indexed _queryID, address indexed _sender, uint indexed _numberOfTokens);
 
 }

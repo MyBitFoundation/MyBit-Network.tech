@@ -35,14 +35,16 @@ contract FundingHub {
   returns (bool) {
     uint shares = database.uintStorage(keccak256("shares", _assetID, msg.sender));
     if (shares == 0) {
-      LogNewFunder(msg.sender, block.timestamp);    // Create event to reference list of funders
+      LogNewFunder(msg.sender, _assetID, block.timestamp);    // Create event to reference list of funders
     }
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     database.setUint(keccak256("amountRaised", _assetID), amountRaised.add(msg.value));
     database.setUint(keccak256("shares", _assetID, msg.sender), shares.add(msg.value));
-    LogAssetFunded(msg.sender, msg.value, block.timestamp);
+    LogAssetFunded(msg.sender, msg.value, _assetID, block.timestamp);
     return true;
   }
+
+  
 
   // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
   // Invariants: Must be in stage FundingSuccess | MyBitFoundation + AssetEscrow  + BugEscrow addresses are set | Contract is not paused
@@ -178,8 +180,8 @@ contract FundingHub {
     revert();
   }
 
-  event LogNewFunder(address indexed _funder, uint indexed _timestamp);
-  event LogAssetFunded(address indexed _sender, uint indexed _amount, uint indexed _timestamp);
+  event LogNewFunder(address indexed _funder, bytes32 indexed _assetID, uint indexed _timestamp);
+  event LogAssetFunded(address indexed _sender, uint indexed _amount, bytes32 indexed _assetID, uint _timestamp);
   event LogAssetFundingFailed(bytes32 indexed _assetID, uint indexed _amountRaised, uint indexed _timestamp);
   event LogAssetFundingSuccess(bytes32 indexed _assetID, uint indexed _timestamp);
   event LogRefund(address indexed _funder, uint indexed _amount, uint indexed _timestamp);
