@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.18;
 import './SafeMath.sol';
 import './Database.sol';
 
@@ -35,7 +35,7 @@ using SafeMath for *;
   returns (bool)  {
     uint totalReceived = database.uintStorage(keccak256("totalReceived", _assetID));
     uint managerAmount = msg.value.mul(database.uintStorage(keccak256("managerPercentage", _assetID))).div(100);
-    database.addressStorage(keccak256("assetManager", _assetID)).transfer(managerAmount); 
+    database.addressStorage(keccak256("assetManager", _assetID)).transfer(managerAmount);
     database.setUint(keccak256("totalReceived", _assetID), totalReceived.add(msg.value.sub(managerAmount)));
     LogIncomeReceived(msg.sender, msg.value, _assetID);
     LogAssetNote(_note, block.timestamp);
@@ -76,13 +76,13 @@ using SafeMath for *;
     return true;
 }
 
-  // Returns the amount of WEI owed to the asset shareholder 
+  // Returns the amount of WEI owed to the asset shareholder
   // @Param: The ID of the asset
   // @Param: The address of the shareholder
   function getAmountOwed(bytes32 _assetID, address _user)
   public
-  view 
-  returns (uint){ 
+  view
+  returns (uint){
     uint shares = database.uintStorage(keccak256("shares", _assetID, _user));
     if (shares == 0) { return 0; }
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
@@ -104,7 +104,7 @@ using SafeMath for *;
   whenNotPaused
   returns (bool) {
     require(msg.sender == database.addressStorage(keccak256("contract", "MarketPlace")));
-    require(getAmountOwed(_assetID, _from) > 0);
+    require(getAmountOwed(_assetID, _from) == 0);
     uint sharesFrom = database.uintStorage(keccak256("shares", _assetID, _from));
     require(sharesFrom >= _amount);
     uint sharesTo = database.uintStorage(keccak256("shares", _assetID, _to));
@@ -120,7 +120,7 @@ using SafeMath for *;
   }
 
   // Must be authorized by 1 of the 3 owners and then can be called by any of the other 2
-  // @Param: The address of the owner who authorized this function to be called in 
+  // @Param: The address of the owner who authorized this function to be called in
   // Invariants: Must be 1 of 3 owners. Cannot be called by same owner who authorized the function to be called.
   function destroy(address _functionInitiator, address _holdingAddress)
   anyOwner
