@@ -81,7 +81,7 @@ contract MarketPlace {
   }
 
   // Creates an orde for user to sell their Asset shares
-  function createSellOrder(uint _amount, uint _price, bytes32 _assetID)
+  function createSellOrder(bytes32 _assetID, uint _amount, uint _price)
   external
   nonReentrant
   onlyApproved
