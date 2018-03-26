@@ -3,9 +3,12 @@ pragma solidity ^0.4.18;
 
 import './Database.sol';
 import './MyBitToken.sol';
+import './SafeMath.sol';
+
 
 
 contract Escrow { 
+  using SafeMath for *;
   MyBitToken public myBitToken;
   Database public database; 
 

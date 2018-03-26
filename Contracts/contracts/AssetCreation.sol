@@ -19,7 +19,7 @@ contract AssetCreation {
 
   // This begins the funding period for an asset. If asset is success it will be added to the assets variable here in AssetCreation
   // @Param: The storage hash created from IPFS. WIll act as the ID for this asset if funding is a success
-  // @Param: The amount of WEI required for asset to achieve successfull funding
+  // @Param: The amount of USD required for asset to achieve successfull funding
   // @Param: The ID of the installer of this asset
   // @Param: The type of asset being created. (ie. Sha3("BitcoinATM"))
   function newAsset(bytes32 _assetID, uint _amountToBeRaised, uint _managerPercentage, bytes32 _installerID, bytes32 _assetType)

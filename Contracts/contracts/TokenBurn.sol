@@ -37,9 +37,7 @@ public {
 
  function __callback(bytes32 myid, string result)
  public
- isOraclize
- whenNotPaused
- {
+ isOraclize {
    uint accessLevelDesired = database.uintStorage(myid);
    address sender = database.addressStorage(myid);
    database.setUint(keccak256("accessTokenFee", sender, accessLevelDesired), parseInt(result));
