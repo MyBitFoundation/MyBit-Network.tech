@@ -1,25 +1,20 @@
 pragma solidity ^0.4.19;
 
-// ERC20 token implementation. Modified for MyBit transfer() function not returning bool.
-contract Token {
+// ERC20 token interface. Modified for MyBit transfer() function not returning bool.
+interface Token {
 
-  function totalSupply() constant returns (uint256 supply) {}
+  function totalSupply() public constant returns (uint256 supply);
 
-  function balanceOf(address _owner) constant returns (uint256 balance) {}
+  function balanceOf(address _owner) public constant returns (uint256 balance);
 
-  function transfer(address _to, uint256 _value) {}
+  function transfer(address _to, uint256 _value) public;
 
-  function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {}
+  function transferFrom(address _from, address _to, uint256 _value) public returns (bool success);
 
-  function approve(address _spender, uint256 _value) returns (bool success) {}
+  function approve(address _spender, uint256 _value) public returns (bool success);
 
-  function allowance(address _owner, address _spender) constant returns (uint256 remaining) {}
+  function allowance(address _owner, address _spender) public constant returns (uint256 remaining);
 
-  event Transfer(address indexed _from, address indexed _to, uint256 _value);
-  event Approval(address indexed _owner, address indexed _spender, uint256 _value);
-
-  uint public decimals;
-  string public name;
 }
 
 // Can use this contract to give tokens away. 
