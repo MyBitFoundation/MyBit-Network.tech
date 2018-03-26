@@ -46,3 +46,7 @@ Resulting in Error: listen `EADDRINUSE :::8555` when attempting to run solidity-
 To fix this:
  > ps -fC node = PID
  sudo kill PID
+
+
+## How To Run
+ > solidity-coverage
