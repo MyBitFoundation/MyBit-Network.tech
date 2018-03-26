@@ -1,12 +1,11 @@
 pragma solidity ^0.4.18;
 import './MyBitToken.sol';
 import './Database.sol';
-import './oraclizeAPI_05.sol';
 import './SafeMath.sol';
 
 // This contract transfers MyBit tokens and holds them forever with no mechanism to transfer them out again.
 // TODO: upgradeable myBitToken
-contract TokenBurn is usingOraclize{
+contract TokenBurn {
   using SafeMath for *;
 
 
@@ -37,11 +36,6 @@ returns (bool) {
 modifier whenNotPaused {
   require(!database.boolStorage(keccak256("pause", this)));
   _;
-}
-
- modifier isOraclize() {
-   require(msg.sender == oraclize_cbAddress());
-   _;
 }
 
 event LogMyBitBurnt(address _burner, uint256 _amount, uint256 _timestamp);
