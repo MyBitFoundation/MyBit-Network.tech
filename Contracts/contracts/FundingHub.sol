@@ -1,12 +1,14 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.18;
 
 import './SafeMath.sol';
 import './Database.sol';
 import './StakingBank.sol';
+import './oraclizeAPI_05.sol';
+
 
 // This contract is in charge of creating individual asset contracts. It acts as a reference for locations of Assets and other funding parameters
 // Funding stages: { 0: funding hasn't started, 1: currently being funded, 2: funding failed,  3: funding success, 4: asset is live
-contract FundingHub {
+contract FundingHub is usingOraclize{
   using SafeMath for *;
 
   //-----------Platform Addresses----------------
@@ -14,7 +16,7 @@ contract FundingHub {
 
   bool private rentrancy_lock;    // Prevents re-entrancy attack
 
-  // Contructor: 
+  // Contructor:
   // @Param: The address for the MyBit database
   function FundingHub(address _database)
   public {
@@ -33,18 +35,32 @@ contract FundingHub {
   onlyApproved(2)
   atStage(_assetID, 1)
   returns (bool) {
-    uint shares = database.uintStorage(keccak256("shares", _assetID, msg.sender));
-    if (shares == 0) {
-      LogNewFunder(msg.sender, _assetID, block.timestamp);    // Create event to reference list of funders
-    }
-    uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
-    database.setUint(keccak256("amountRaised", _assetID), amountRaised.add(msg.value));
-    database.setUint(keccak256("shares", _assetID, msg.sender), shares.add(msg.value));
-    LogAssetFunded(msg.sender, msg.value, _assetID, block.timestamp);
+    bytes32 queryID = oraclize_query('URL', 'json(https://api.coinmarketcap.com/v1/ticker/ethereum/).0.price_usd}');
+    database.setAddress(queryID, msg.sender);
+    database.setUint(queryID, msg.value);
+    LogFundingOraclizeQuerySent(msg.sender, msg.value, queryID);
     return true;
   }
 
-  
+  function __callback(bytes32 myid, string result)
+  external
+  isOraclize
+  whenNotPaused
+  {
+    uint msgValue = database.uintStorage(myid);
+    address sender = database.addressStorage(myid);
+    /*
+    uint shares = database.uintStorage(keccak256("shares", _assetID, msg.sender));
+    if (shares == 0) {
+      LogNewFunder(msg.sender, block.timestamp);    // Create event to reference list of funders
+    }
+
+    uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
+    database.setUint(keccak256("amountRaised", _assetID), amountRaised.add(msg.value));
+    database.setUint(keccak256("shares", _assetID, msg.sender), shares.add(msg.value));
+    LogAssetFunded(msg.sender, msg.value, block.timestamp);*/
+    return true;
+  }
 
   // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
   // Invariants: Must be in stage FundingSuccess | MyBitFoundation + AssetEscrow  + BugEscrow addresses are set | Contract is not paused
@@ -180,8 +196,9 @@ contract FundingHub {
     revert();
   }
 
-  event LogNewFunder(address indexed _funder, bytes32 indexed _assetID, uint indexed _timestamp);
-  event LogAssetFunded(address indexed _sender, uint indexed _amount, bytes32 indexed _assetID, uint _timestamp);
+  event LogNewFunder(address indexed _funder, uint indexed _timestamp);
+  event LogFundingOraclizeQuerySent(address indexed _funder, uint value, bytes32 indexed _queryID);
+  event LogAssetFunded(address indexed _sender, uint indexed _amount, uint indexed _timestamp);
   event LogAssetFundingFailed(bytes32 indexed _assetID, uint indexed _amountRaised, uint indexed _timestamp);
   event LogAssetFundingSuccess(bytes32 indexed _assetID, uint indexed _timestamp);
   event LogRefund(address indexed _funder, uint indexed _amount, uint indexed _timestamp);
