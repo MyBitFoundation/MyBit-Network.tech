@@ -46,6 +46,7 @@ contract FundingHub is usingOraclize{
   external
   isOraclize
   whenNotPaused
+  returns (bool)
   {
     uint msgValue = database.uintStorage(myid);
     address sender = database.addressStorage(myid);
@@ -189,6 +190,13 @@ contract FundingHub is usingOraclize{
     require(now >= database.uintStorage(keccak256("fundingDeadline", _assetID)));
     _;
   }
+
+  // Reques that sender is oraclize service
+  modifier isOraclize() {
+    require(msg.sender == oraclize_cbAddress());
+    _;
+ }
+
 
 
   function ()
