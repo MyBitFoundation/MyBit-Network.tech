@@ -4,6 +4,7 @@ import './oraclizeAPI_05.sol';
 import './Database.sol';
 
 // TODO: Deploy usingOraclize as a seperate contract so we can update OracleHub independantly
+// TODO: Move gas returns to TokenBurn + Fund by referencing queryID in those functions. 
 contract OracleHub is usingOraclize{ 
 
   Database public database; 
@@ -25,7 +26,7 @@ contract OracleHub is usingOraclize{
     database.setAddress(queryID, msg.sender);
     database.setUint(keccak256("assetFundingPriceTimestamp", msg.sender), block.timestamp);
     database.setBool(queryID, true);
-    LogFundingOraclizeQuerySent(msg.sender, block.timestamp, queryID);
+    LogFundingQuerySent(msg.sender, block.timestamp, queryID);
   }
 
   // TODO: set requirement for how much ether is needed in this call
@@ -38,7 +39,7 @@ contract OracleHub is usingOraclize{
     database.setAddress(queryID, msg.sender);
     database.setUint(queryID, _accessLevelDesired);
     database.setBool(queryID, true);
-    LogOraclizeQuerySent(msg.sender, _accessLevelDesired, queryID);
+    LogBurnQuerySent(msg.sender, _accessLevelDesired, queryID);
     return true;
   }
 
@@ -59,6 +60,8 @@ contract OracleHub is usingOraclize{
     uint timestamp = database.uintStorage(keccak256("assetFundingPriceTimestamp", sender));
     database.setUint(keccak256("assetFundingPrice", sender, timestamp), parseInt(result)); 
     database.deleteAddress(myid); 
+    database.deleteBool(myid); 
+    LogFundingCallbackReceived(myid, sender, timestamp); 
   }
 
   function burnCallback(bytes32 myid, string result)
@@ -68,7 +71,8 @@ contract OracleHub is usingOraclize{
     database.setUint(keccak256("accessTokenFee", sender, accessLevelDesired), parseInt(result));
     database.deleteAddress(myid);
     database.deleteUint(myid);
-    LogCallBackRecieved(myid, sender, parseInt(result));
+    database.deleteBool(myid);
+    LogBurnCallbackReceived(myid, sender, parseInt(result));
   }
 
   modifier isOraclize() {
@@ -84,8 +88,8 @@ contract OracleHub is usingOraclize{
   _;
   }
 
-  event LogOraclizeQuerySent( address indexed _from, uint256 indexed _accessLevelDesired, bytes32 indexed _queryID);
-  event LogFundingOraclizeQuerySent(address indexed _funder, uint value, bytes32 indexed _queryID);
-  event LogCallBackRecieved(bytes32 indexed _queryID, address indexed _sender, uint indexed _numberOfTokens);
-
+  event LogBurnQuerySent( address _from, uint256 _accessLevelDesired, bytes32 _queryID);
+  event LogFundingQuerySent(address _funder, uint value, bytes32 _queryID);
+  event LogBurnCallbackReceived(bytes32 _queryID, address _sender, uint _numberOfTokens);
+  event LogFundingCallbackReceived(bytes32 queryID, address _sender, uint _timestamp); 
 }
