@@ -38,7 +38,6 @@ contract OracleHub is usingOraclize{
     bytes32 queryID = oraclize_query('nested', '[WolframAlpha]  10 to the power of 8 multiplied by ${[URL] json(https://api.coinmarketcap.com/v1/ticker/mybit-token/).0.price_usd}');
     database.setAddress(queryID, msg.sender);
     database.setUint(queryID, _accessLevelDesired);
-    database.setBool(queryID, true);
     LogBurnQuerySent(msg.sender, _accessLevelDesired, queryID);
     return true;
   }
