@@ -20,21 +20,18 @@ external  {
   database.setUint(keccak256("stakedTokenPercentage"), 2);
   database.setUint(keccak256("installerPercentage"), 97);
 
-  // ---------------------Staking Variables--------------------------
-  database.setUint(keccak256("minimumStakeAmount"), 100); 
-  database.setUint(keccak256("minimumStakeTime"), 10);    // TODO: testing number Minimum number of blocks to wait until withdraw can be requested
-  database.setUint(keccak256("minimumWithdrawTime"), 5);     // TODO: testing number. Minimum number of blocks need to wait after withdraw is requested.
+  // ---------------------Access Price in USD--------------------------
+  database.setUint(keccak256("accessTokenFee", 1), 10);
+  database.setUint(keccak256("accessTokenFee", 2), 50); 
+  database.setUint(keccak256("accessTokenFee", 3), 100); 
 
 
-  // -----------Bug Bounty Variables--------------------
-  database.setUint(keccak256("blocksForBugReview"), 25);      // TODO: testing number 
-  database.setUint(keccak256("blocksForExpertReview"), 25);      // TODO: testing number 
-  database.setUint(keccak256("bugSubmissionCost"), 1000000000000000000); 
-  database.setUint(keccak256("bugSeverityCost", 1), 100); 
-  database.setUint(keccak256("bugSeverityCost", 2), 1000); 
-  database.setUint(keccak256("bugSeverityCost", 3), 10000); 
-  database.setUint(keccak256("expertVotePower"), 5); 
-  database.setUint(keccak256("regularVotePower"), 1); 
+  // --------------------Operator Cost-----------------------
+  database.setUint(keccak256("operatorEscrowPercentage"), 10); 
+
+  // -------------Oracle Variables-------------------------
+  database.setUint(keccak256("priceUpdateTimeline"), 1000);     // TODO: testing number
+  
   LogInitialized(msg.sender, address(database), block.number);
 }
 

@@ -9,36 +9,32 @@ contract OracleHub is usingOraclize{
 
   Database public database; 
 
+  address OAR;
 
   function OracleHub(address _database)
   public {
     database = Database(_database); 
-    // OAR = OraclizeAddrResolverI(0x6f485C8BF6fc43eA212E93BBF8ce046C7f1cb475); only for localhost
+    OAR = OraclizeAddrResolverI(0x6f485C8BF6fc43eA212E93BBF8ce046C7f1cb475); // only for localhost
   }
 
   // TODO: get price of call
   // Asks oraclize what the current price of Ether is 
-  function fundQuery()
+  function ethUSDQuery()
   external 
   payable
   returns (bool) { 
     bytes32 queryID = oraclize_query('URL', 'json(https://api.coinmarketcap.com/v1/ticker/ethereum/).0.price_usd}');
-    database.setAddress(queryID, msg.sender);
-    database.setUint(keccak256("assetFundingPriceTimestamp", msg.sender), block.timestamp);
     database.setBool(queryID, true);
-    LogFundingQuerySent(msg.sender, block.timestamp, queryID);
+    LogEthUSDQuery(msg.sender, queryID, now);
   }
 
   // TODO: set requirement for how much ether is needed in this call
-  function burnQuery(uint _accessLevelDesired)
+  function mybUSDQuery()
   external
-  basicVerification(_accessLevelDesired)
   payable
   returns(bool){
-    bytes32 queryID = oraclize_query('nested', '[WolframAlpha]  10 to the power of 8 multiplied by ${[URL] json(https://api.coinmarketcap.com/v1/ticker/mybit-token/).0.price_usd}');
-    database.setAddress(queryID, msg.sender);
-    database.setUint(queryID, _accessLevelDesired);
-    LogBurnQuerySent(msg.sender, _accessLevelDesired, queryID);
+    bytes32 queryID = oraclize_query('nested', '[WolframAlpha]  10 to the power of 3 multiplied by ${[URL] json(https://api.coinmarketcap.com/v1/ticker/mybit-token/).0.price_usd}');
+    LogmybUSDQuery(msg.sender, queryID, now);
     return true;
   }
 
@@ -46,32 +42,28 @@ contract OracleHub is usingOraclize{
   public
   isOraclize {
     if (database.boolStorage(myid)) { 
-      fundingCallback(myid, result);
+      ethUSDCallback(myid, result);
     }
     else { 
-      burnCallback(myid, result); 
+      mybUSDCallback(myid, result); 
     }
   }
 
-  function fundingCallback(bytes32 myid, string result)
+  function ethUSDCallback(bytes32 myid, string result)
   internal { 
-    address sender = database.addressStorage(myid);
-    uint timestamp = database.uintStorage(keccak256("assetFundingPriceTimestamp", sender));
-    database.setUint(keccak256("assetFundingPrice", sender, timestamp), parseInt(result)); 
-    database.deleteAddress(myid); 
+    uint priceTimeline = database.uintStorage(keccak256("priceUpdateTimeline"));
+    database.setUint(keccak256("ethUSDPrice"), parseInt(result)); 
+    database.setUint(keccak256("ethUSDPriceExpiration"), (priceTimeline + now));
     database.deleteBool(myid); 
-    LogFundingCallbackReceived(myid, sender, timestamp); 
+    LogFundingCallbackReceived(myid, parseInt(result), now); 
   }
 
-  function burnCallback(bytes32 myid, string result)
+  function mybUSDCallback(bytes32 myid, string result)
   internal { 
-    uint accessLevelDesired = database.uintStorage(myid);
-    address sender = database.addressStorage(myid);
-    database.setUint(keccak256("accessTokenFee", sender, accessLevelDesired), parseInt(result));
-    database.deleteAddress(myid);
-    database.deleteUint(myid);
-    database.deleteBool(myid);
-    LogBurnCallbackReceived(myid, sender, parseInt(result));
+    uint priceTimeline = database.uintStorage(keccak256("priceUpdateTimeline"));
+    database.setUint(keccak256("mybUSDPrice"), parseInt(result));
+    database.setUint(keccak256("mybUSDPriceExpiration"), (priceTimeline + now));
+    LogBurnCallbackReceived(myid, parseInt(result), now);
   }
 
   modifier isOraclize() {
@@ -79,16 +71,8 @@ contract OracleHub is usingOraclize{
    _;
   }
 
-  modifier basicVerification(uint _newAccessLevel) {
-  uint currentLevel = database.uintStorage(keccak256("userAccess", msg.sender));
-  require(_newAccessLevel >= 2);
-  require(_newAccessLevel <= 4);
-  require(_newAccessLevel > currentLevel);
-  _;
-  }
-
-  event LogBurnQuerySent( address _from, uint256 _accessLevelDesired, bytes32 _queryID);
-  event LogFundingQuerySent(address _funder, uint value, bytes32 _queryID);
-  event LogBurnCallbackReceived(bytes32 _queryID, address _sender, uint _numberOfTokens);
-  event LogFundingCallbackReceived(bytes32 queryID, address _sender, uint _timestamp); 
+  event LogmybUSDQuery( address _from, bytes32 _queryID, uint _timestamp);
+  event LogEthUSDQuery(address _funder, bytes32 _queryID, uint _timestamp);
+  event LogBurnCallbackReceived(bytes32 _queryID, uint _tokenPrice, uint _timestamp);
+  event LogFundingCallbackReceived(bytes32 queryID, uint _result, uint _timestamp); 
 }

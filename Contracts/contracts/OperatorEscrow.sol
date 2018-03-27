@@ -7,36 +7,37 @@ import './SafeMath.sol';
 
 
 
-contract Escrow { 
+contract OperatorEscrow { 
   using SafeMath for *;
   MyBitToken public myBitToken;
   Database public database; 
 
-  function Escrow(address _database, address _tokenAddress)
+  function OperatorEscrow(address _database, address _tokenAddress)
   public { 
     database = Database(_database); 
     myBitToken = MyBitToken(_tokenAddress);
   }
 
-  function calculateTrust()
-  external { 
-    
-  }
-
-  function depositAssetEscrow(uint _amount, bytes32 _assetID)
+  function depositAssetEscrow(uint _amount)
   external 
-  payable { 
+  returns (bool) { 
     require(myBitToken.transferFrom(msg.sender, this, _amount)); 
-    uint depositedAmount = database.uintStorage(keccak256("operatorEscrowAmount", _assetID, msg.sender));
-    database.setUint(keccak256("operatorEscrowAmount", _assetID, msg.sender), depositedAmount.add(_amount));
+    uint depositedAmount = database.uintStorage(keccak256("operatorEscrowDeposited", msg.sender));
+    database.setUint(keccak256("operatorEscrowAmount", msg.sender), depositedAmount.add(_amount));
+    return true; 
   }
 
   function receiveIncome(bytes32 _assetID)
   external
   payable { 
     uint operatorIncome = database.uintStorage(keccak256("operatorIncome", msg.sender));
-    database.setUint(keccak256("operatorIncome", msg.sender), operatorIncome.add(msg.value)); 
+    address assetOperator = database.addressStorage(keccak256("assetOperator", _assetID)); 
+    database.setUint(keccak256("operatorIncome", assetOperator), operatorIncome.add(msg.value)); 
+    LogPaymentReceived(_assetID, msg.value, assetOperator); 
   }
+
+  // TODO: Withdraw tokens when no longer operator 
+  // TODO: Withdraw WEI payments 
 
 
   function() 
@@ -44,5 +45,12 @@ contract Escrow {
     revert();
   }
 
+  modifier priceUpdated { 
+    require (now < database.uintStorage(keccak256("mybUSDPriceExpiration")));
+    _;
+  }
+
+
+  event LogPaymentReceived(bytes32 indexed _assetID, uint indexed _amount, address indexed _operator);
 }
 

@@ -31,12 +31,10 @@ contract FundingHub {
   requiresEther
   whenNotPaused
   atStage(_assetID, 1)
+  priceUpdated(_etherPrice)
   fundingLimit(_assetID, _etherPrice)
   onlyApproved(2)
   returns (bool) {
-    uint timestamp = database.uintStorage(keccak256("assetFundingPriceTimestamp", msg.sender));
-    require(timestamp + 1000 > block.timestamp);   // User has 1000 seconds to get ETH price -> send Ether to fund asset
-    require(database.uintStorage(keccak256("assetFundingPrice", msg.sender, timestamp)) == _etherPrice && _etherPrice > 0);
     uint shares = database.uintStorage(keccak256("shares", _assetID, msg.sender));
     if (shares == 0) {
       LogNewFunder(msg.sender, block.timestamp);    // Create event to reference list of funders
@@ -50,7 +48,7 @@ contract FundingHub {
 
   // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
   // Invariants: Must be in stage FundingSuccess | MyBitFoundation + AssetEscrow  + BugEscrow addresses are set | Contract is not paused
-  // Note: Will fail if addresses + percentages are not set. AmountRaised = WeiRaised + assetManager shares
+  // Note: Will fail if addresses + percentages are not set. AmountRaised = WeiRaised + assetOperator shares
   function payout(bytes32 _assetID)
   external
   nonReentrant
@@ -156,6 +154,11 @@ contract FundingHub {
        LogAssetFundingSuccess(_assetID, block.timestamp);
        database.setUint(keccak256("fundingStage", _assetID), 3);
       }
+  }
+
+  modifier priceUpdated(uint _ethPrice) { 
+    require (now < database.uintStorage(keccak256("ethUSDPriceExpiration")) && _ethPrice == database.uintStorage(keccak256("ethUSDPrice")));
+    _;
   }
 
   // Requires the funding stage is at a particular stage

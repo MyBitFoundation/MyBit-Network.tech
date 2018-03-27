@@ -5,7 +5,6 @@ import './Database.sol';
 
 // Asset contract manages all payments, withdrawls and trading of shares for live assets
 // All information about assets are stored in Database.sol. Write privilege is given to the current live Asset contract.
-// TODO: Allow owner to change assetManager
 contract Asset {
 using SafeMath for *;
 
@@ -34,8 +33,8 @@ using SafeMath for *;
   atStage(_assetID, 4)
   returns (bool)  {
     uint totalReceived = database.uintStorage(keccak256("totalReceived", _assetID));
-    uint managerAmount = msg.value.mul(database.uintStorage(keccak256("managerPercentage", _assetID))).div(100);
-    database.addressStorage(keccak256("assetManager", _assetID)).transfer(managerAmount);
+    uint managerAmount = msg.value.mul(database.uintStorage(keccak256("operatorPercentage", _assetID))).div(100);
+    database.addressStorage(keccak256("assetOperator", _assetID)).transfer(managerAmount);
     database.setUint(keccak256("totalReceived", _assetID), totalReceived.add(msg.value.sub(managerAmount)));
     LogIncomeReceived(msg.sender, msg.value, _assetID);
     LogAssetNote(_note, block.timestamp);
@@ -86,7 +85,6 @@ using SafeMath for *;
     uint shares = database.uintStorage(keccak256("shares", _assetID, _user));
     if (shares == 0) { return 0; }
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
-    uint totalPaidToFunders = database.uintStorage(keccak256("totalPaidToFunders", _assetID));
     uint totalPaidToFunder = database.uintStorage(keccak256("totalPaidToFunder", _assetID, _user));
     uint totalReceived = database.uintStorage(keccak256("totalReceived", _assetID));
     return totalReceived.mul(shares).div(amountRaised).sub(totalPaidToFunder);

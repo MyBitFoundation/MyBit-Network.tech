@@ -76,5 +76,5 @@ contract Owned {
   event Pause(address _contract, uint256 _timestamp);
   event Unpause(address _contract, uint256 _timestamp);
   event LogOwnerChanged(address indexed _previousOwner, address indexed _newOwner, uint256 indexed _timestamp);
-  event LogFunctionAuthorized(address indexed _owner, string indexed _functionName, bytes32 indexed _beneficiary);
+  event LogFunctionAuthorized(address indexed _owner, string _functionName, bytes32 indexed _beneficiary);
 }

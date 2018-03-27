@@ -9,36 +9,42 @@ contract TokenBurn {
   using SafeMath for *;
 
 
-MyBitToken public myBitToken;
-Database public database;
+  MyBitToken public myBitToken;
+  Database public database;
 
-function TokenBurn(address _database, address _myBitToken)
-public {
-  myBitToken = MyBitToken(_myBitToken);
-  database = Database(_database);
-  // OAR = OraclizeAddrResolverI(0x6f485C8BF6fc43eA212E93BBF8ce046C7f1cb475); only for localhost
-}
+  function TokenBurn(address _database, address _myBitToken)
+  public {
+    myBitToken = MyBitToken(_myBitToken);
+    database = Database(_database);
+  }
 
-function burnTokens(uint _accessLevelDesired)
-external
-whenNotPaused
-returns (bool) {
-  uint256 accessCostMyB = database.uintStorage(keccak256("accessTokenFee", msg.sender, _accessLevelDesired));
-  assert (accessCostMyB > 0);
-  require(myBitToken.transferFrom(msg.sender, this, accessCostMyB));
-  database.setUint(keccak256("userAccess", msg.sender), _accessLevelDesired);
-  uint numTokensBurnt = database.uintStorage(keccak256("numberOfTokensBurnt"));
-  database.setUint(keccak256("numberOfTokensBurnt"), numTokensBurnt.add(accessCostMyB));
-  LogMyBitBurnt(msg.sender, accessCostMyB, block.timestamp);
-  return true;
-}
+  function burnTokens(uint _accessLevelDesired)
+  external
+  whenNotPaused
+  priceUpdated
+  returns (bool) {
+    uint mybPrice = database.uintStorage(keccak256("mybUSDPrice"));
+    uint accessCostMyB = database.uintStorage(keccak256("accessTokenFee", _accessLevelDesired)).mul(10^11).div(mybPrice);
+    assert (accessCostMyB > 0);
+    require(myBitToken.transferFrom(msg.sender, this, accessCostMyB));
+    database.setUint(keccak256("userAccess", msg.sender), _accessLevelDesired);
+    uint numTokensBurnt = database.uintStorage(keccak256("numberOfTokensBurnt"));
+    database.setUint(keccak256("numberOfTokensBurnt"), numTokensBurnt.add(accessCostMyB));
+    LogMyBitBurnt(msg.sender, accessCostMyB, block.timestamp);
+    return true;
+  }
 
-modifier whenNotPaused {
-  require(!database.boolStorage(keccak256("pause", this)));
-  _;
-}
+  modifier whenNotPaused {
+    require(!database.boolStorage(keccak256("pause", this)));
+    _;
+  }
 
-event LogMyBitBurnt(address _burner, uint256 _amount, uint256 _timestamp);
+  modifier priceUpdated { 
+    require (now < database.uintStorage(keccak256("mybUSDPriceExpiration")));
+    _;
+  }
+
+  event LogMyBitBurnt(address _burner, uint256 _amount, uint256 _timestamp);
 
 
 }

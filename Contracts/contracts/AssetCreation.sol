@@ -14,7 +14,6 @@ contract AssetCreation {
   function AssetCreation(address _database)
   public  {
       database = Database(_database);
-
   }
 
   // This begins the funding period for an asset. If asset is success it will be added to the assets variable here in AssetCreation
@@ -22,7 +21,7 @@ contract AssetCreation {
   // @Param: The amount of USD required for asset to achieve successfull funding
   // @Param: The ID of the installer of this asset
   // @Param: The type of asset being created. (ie. Sha3("BitcoinATM"))
-  function newAsset(bytes32 _assetID, uint _amountToBeRaised, uint _managerPercentage, bytes32 _installerID, bytes32 _assetType)
+  function newAsset(bytes32 _assetID, uint _amountToBeRaised, uint _operatorPercentage, bytes32 _installerID, bytes32 _assetType)
   external
   whenNotPaused
   nonReentrant
@@ -33,14 +32,28 @@ contract AssetCreation {
   returns (bool){
     require(database.uintStorage(keccak256("userAccess", msg.sender)) >= 2);     
     require(database.uintStorage(keccak256("fundingStage", _assetID)) == 0);    // This ensures the asset isn't currently live or being funded
-    require(_managerPercentage < 100 && _managerPercentage > 0);
+    require(_operatorPercentage < 100 && _operatorPercentage > 0);
+    require(database.boolStorage(keccak256("operatorSuccessfullyEscrowed", _assetID, msg.sender))); 
     database.setUint(keccak256("amountToBeRaised", _assetID), _amountToBeRaised);
-    database.setUint(keccak256("managerPercentage", _assetID), _managerPercentage);
-    database.setAddress(keccak256("assetManager", _assetID), msg.sender);
+    database.setUint(keccak256("operatorPercentage", _assetID), _operatorPercentage);
+    database.setAddress(keccak256("assetOperator", _assetID), msg.sender);
     database.setUint(keccak256("fundingDeadline", _assetID), block.timestamp.add(fundingTime));
     database.setUint(keccak256("fundingStage", _assetID), 1);
     LogAssetInfo(_assetID, _installerID, _amountToBeRaised);
     LogAssetFundingStarted(msg.sender, _assetID, _assetType);      // Use indexed event to keep track of pending assets
+    return true;
+  }
+
+  function lockAssetEscrow(bytes32 _assetID)
+  external 
+  priceUpdated
+  returns (bool) {
+    uint mybPrice = database.uintStorage(keccak256("mybUSDPrice")); 
+    uint amountMyBRequired = database.uintStorage(keccak256("amountToBeRaised", _assetID)).mul(10^10).div(mybPrice);    // This is 10% of total asset cost
+    uint lockedAmount = database.uintStorage(keccak256("operatorEscrowLocked", msg.sender)); 
+    assert (amountMyBRequired < database.uintStorage(keccak256("operatorEscrowDeposited", msg.sender)).sub(lockedAmount)); 
+    database.setUint(keccak256("operatorEscrowLocked", msg.sender), lockedAmount.add(amountMyBRequired));
+    database.setBool(keccak256("operatorSuccessfullyEscrowed", _assetID, msg.sender), true);
     return true;
   }
 
@@ -125,6 +138,11 @@ contract AssetCreation {
     rentrancy_lock = true;
     _;
     rentrancy_lock = false;
+  }
+
+  modifier priceUpdated { 
+    require (now < database.uintStorage(keccak256("mybUSDPriceExpiration")));
+    _;
   }
 
   event LogAssetFundingStarted(address indexed _creator, bytes32 indexed _assetID, bytes32 indexed _assetType);
