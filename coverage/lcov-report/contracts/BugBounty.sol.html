@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for contracts/BugBounty.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">contracts/</a> BugBounty.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>0/46</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/40</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/13</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>0/55</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity ^0.4.18;
+&nbsp;
+import './SafeMath.sol';
+import './Database.sol';
+import './TokenStaking.sol';
+&nbsp;
+&nbsp;
+&nbsp;
+// TODO: what to do with escrow for submitting bug
+contract BugBounty {
+  using SafeMath for *;
+&nbsp;
+Database public database;
+&nbsp;
+// ----------Bug Struct-------------------
+mapping (bytes32 =&gt; Bug) public bugs;
+&nbsp;
+// ------------Safety-------------------
+bool private rentrancy_lock = true;    // Prevents re-entrancy attack
+&nbsp;
+struct Bug {
+  address submitter;
+  mapping (address =&gt; bool) voted;
+  int voteSum;
+  uint stage;    // 0 = uninitialized, 1 = first stage, 2 = expert review
+  uint severity;  // 1 = lowest,  2 = mid,  3 = highest
+  uint deadline;
+}
+&nbsp;
+&nbsp;
+<span class="fstat-no" title="function not covered" >function BugBounty(address _database)</span>
+public {
+<span class="cstat-no" title="statement not covered" >  database = Database(_database)</span>;
+}
+&nbsp;
+// NOTE: Limit of 1 bug per block
+<span class="fstat-no" title="function not covered" >function submitBug(uint _severity)</span>
+external
+payable
+whenNotPaused {
+<span class="cstat-no" title="statement not covered" >  require (msg.value == database.uintStorage(keccak256("bugSubmissionCost")))</span>;
+<span class="cstat-no" title="statement not covered" >  require (_severity &lt; 4 &amp;&amp; _severity &gt; 0)</span>;
+<span class="cstat-no" title="statement not covered" >  bytes32 bugID = keccak256(msg.sender, block.number)</span>;
+<span class="cstat-no" title="statement not covered" >  Bug storage thisBug = bugs[bugID]</span>;
+<span class="cstat-no" title="statement not covered" >  thisBug.submitter = msg.sender</span>;
+<span class="cstat-no" title="statement not covered" >  thisBug.deadline = block.number.add(database.uintStorage(keccak256("blocksForBugReview")))</span>;
+<span class="cstat-no" title="statement not covered" >  thisBug.stage = 1</span>;
+<span class="cstat-no" title="statement not covered" >  thisBug.severity = _severity</span>;
+<span class="cstat-no" title="statement not covered" >  LogNewBugSubmitted(msg.sender, bugID, _severity)</span>;
+}
+&nbsp;
+// User can vote for a proposed bug here if they have not already voted on it
+<span class="fstat-no" title="function not covered" >function voteForBug(bytes32 _bugID, bool _upvote)</span>
+external
+whenNotPaused
+bugExists(_bugID)
+beforeDeadline(_bugID)
+noDoubleVote(_bugID)
+onlyCertified(_bugID) {
+<span class="cstat-no" title="statement not covered" >  Bug storage thisBug = bugs[_bugID]</span>;
+<span class="cstat-no" title="statement not covered" >  if (_upvote) { thisBug.voteSum++; }</span>
+  else { thisBug.voteSum--; }
+<span class="cstat-no" title="statement not covered" >  if (database.boolStorage(keccak256("regularBugReviewer", msg.sender))) { <span class="cstat-no" title="statement not covered" >vote(database.uintStorage(keccak256("expertVotePower")))</span>;  }</span>
+  else { <span class="cstat-no" title="statement not covered" >vote(database.uintStorage(keccak256("regularVotePower")))</span>; }
+<span class="cstat-no" title="statement not covered" >  LogBugVotedFor(msg.sender, _bugID, _upvote)</span>;
+}
+&nbsp;
+// Checks if experts have confirmed or denied the bug. If confirmed, MyB tokens are taken from stakers, if denied the bug struct is deleted.
+// TODO: send bug funds somewhere.
+<span class="fstat-no" title="function not covered" >function resolveStageTwo(bytes32 _bugID)</span>
+external
+bugExists(_bugID)
+passedDeadline(_bugID)
+whenNotPaused {
+<span class="cstat-no" title="statement not covered" >  Bug storage thisBug = bugs[_bugID]</span>;
+<span class="cstat-no" title="statement not covered" >  if (bugs[_bugID].voteSum &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >    uint amountOwed = database.uintStorage(keccak256("severityCost", thisBug.severity))</span>;
+<span class="cstat-no" title="statement not covered" >    require(TokenStaking(database.addressStorage(keccak256("contract", "TokenStaking"))).payBugBounty(amountOwed, thisBug.submitter))</span>;
+  }
+  delete bugs[_bugID];
+<span class="cstat-no" title="statement not covered" >  LogBugFinishedStageTwo(_bugID, amountOwed &gt; 0, block.number)</span>;  // Test that amountOwed == 0 when fails
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >function resolveStageOne(bytes32 _bugID)</span>
+external
+bugExists(_bugID)
+passedDeadline(_bugID) {
+<span class="cstat-no" title="statement not covered" >  Bug storage thisBug = bugs[_bugID]</span>;
+<span class="cstat-no" title="statement not covered" >  if (thisBug.voteSum &lt;= 0) {</span>
+    delete bugs[_bugID];
+  }
+  else {
+<span class="cstat-no" title="statement not covered" >  thisBug.voteSum = 0</span>;   // reuse voting count for expert votes
+<span class="cstat-no" title="statement not covered" >  thisBug.stage = 2</span>;
+  }
+<span class="cstat-no" title="statement not covered" >  LogBugFinishedStageOne(_bugID, thisBug.stage == 2, block.number)</span>;
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >function vote(uint _votePower)</span>
+internal {
+<span class="cstat-no" title="statement not covered" >    uint totalNumberOfVotes = database.uintStorage(keccak256("totalNumberOfBugVotes"))</span>;
+    database.setUint(keccak256("totalNumberOfBugVotes"), totalNumberOfVotes.add(_votePower));
+<span class="cstat-no" title="statement not covered" >    uint totalUserVotes = database.uintStorage(keccak256("totalUserVotes", msg.sender))</span>;
+    database.setUint(keccak256("totalUserVotes", msg.sender), totalUserVotes.add(_votePower));
+}
+&nbsp;
+&nbsp;
+<span class="fstat-no" title="function not covered" >modifier bugExists(bytes32 _bugID){</span>
+<span class="cstat-no" title="statement not covered" >  require(bugs[_bugID].stage != 0)</span>;
+  _;
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >modifier onlyCertified(bytes32 _bugID) {</span>
+<span class="cstat-no" title="statement not covered" >  if (bugs[_bugID].stage == 1) {</span>
+<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(keccak256("regularBugReviewer", msg.sender)))</span>;
+  }
+  else {
+<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(keccak256("expertBugReviewer", msg.sender)))</span>;
+  }
+  _;
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >modifier passedDeadline(bytes32 _bugID) {</span>
+<span class="cstat-no" title="statement not covered" >  Bug storage thisBug = bugs[_bugID]</span>;
+<span class="cstat-no" title="statement not covered" >  if (thisBug.stage == 1) {</span>
+<span class="cstat-no" title="statement not covered" >    require (block.number &gt; thisBug.deadline)</span>;
+  }
+  else{
+<span class="cstat-no" title="statement not covered" >    require (block.number &gt; thisBug.deadline.add(database.uintStorage(keccak256("blocksforExpertReview"))))</span>;
+  }
+  _;
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >modifier beforeDeadline(bytes32 _bugID) {</span>
+<span class="cstat-no" title="statement not covered" >  Bug storage thisBug = bugs[_bugID]</span>;
+<span class="cstat-no" title="statement not covered" >  if (thisBug.stage == 1) {</span>
+<span class="cstat-no" title="statement not covered" >    require (block.number &lt; thisBug.deadline)</span>;
+  }
+  else{
+<span class="cstat-no" title="statement not covered" >    require (block.number &lt; thisBug.deadline.add(database.uintStorage(keccak256("blocksforExpertReview"))))</span>;
+  }
+  _;
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >modifier noDoubleVote(bytes32 _bugID) {</span>
+<span class="cstat-no" title="statement not covered" >  require(!bugs[_bugID].voted[msg.sender])</span>;
+<span class="cstat-no" title="statement not covered" >  bugs[_bugID].voted[msg.sender] = true</span>;
+  _;
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >modifier nonReentrant() {</span>
+<span class="cstat-no" title="statement not covered" >  require(!rentrancy_lock)</span>;
+<span class="cstat-no" title="statement not covered" >  rentrancy_lock = true</span>;
+  _;
+<span class="cstat-no" title="statement not covered" >  rentrancy_lock = false</span>;
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >modifier whenNotPaused {</span>
+<span class="cstat-no" title="statement not covered" >  require(!database.boolStorage(keccak256("pause", this)))</span>;
+  _;
+}
+&nbsp;
+event LogBugFinishedStageOne(bytes32 _bugID, bool _passedStageOne, uint _blockNumber);
+event LogBountyReceived(address indexed _sender, uint indexed _value, uint indexed _blockNumber);
+event LogBugVotedFor(address _voter, bytes32 _bugID, bool _upvote);
+event LogNewBugSubmitted(address indexed _bugSubmitter, bytes32 indexed bugID, uint indexed _severity);
+event LogBugFinishedStageTwo(bytes32 _bugID, bool passedVote, uint _blockNumber);
+&nbsp;
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Mar 27 2018 15:51:11 GMT+0200 (CEST)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

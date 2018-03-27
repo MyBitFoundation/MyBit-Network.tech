@@ -66,6 +66,8 @@ using SafeMath for *;
     database.setUint(keccak256("totalPaidToFunders", _assetID), totalPaidToFunders.add(payment));
     if(_otherWithdrawal){
       address withdrawalAddress = database.addressStorage(keccak256("withdrawalAddress", msg.sender));
+      uint withdrawalAddressValue = database.uintStorage(keccak256("withdrawalAddress", msg.sender));
+      database.setUint(keccak256("withdrawalAddress", withdrawalAddress), withdrawalAddressValue.add(payment));
       withdrawalAddress.transfer(payment);
       LogInvestmentPaidToWithdrawalAddress(msg.sender, withdrawalAddress, payment, block.timestamp);
     }

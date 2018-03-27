@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for contracts/StakingBank.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">contracts/</a> StakingBank.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">15.38% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>6/39</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">3.85% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>1/26</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">17.65% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>3/17</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">16.07% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>9/56</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity ^0.4.18;
+import './SafeMath.sol';
+import './Database.sol'; 
+&nbsp;
+&nbsp;
+&nbsp;
+// TODO: prevent users from accidentally transferring in tokens 
+// TODO: store previous stakeID as well?? 
+contract StakingBank { 
+using SafeMath for *; 
+&nbsp;
+  // --------MyBit Contracts-----------------
+  Database public database; 
+&nbsp;
+&nbsp;
+  // -------Safety------------------
+  bool private rentrancy_lock = false;    // Prevents re-entrancy attack
+&nbsp;
+&nbsp;
+  function StakingBank(address _database) 
+  public {
+    database = Database(_database); 
+  }
+&nbsp;
+  // This function settles the ledger for this user and initiates his waiting period to withdraw tokens. These tokens can still be claimed by the bug bounty if necessary
+  // Note: User will not be eligable for further rewards
+<span class="fstat-no" title="function not covered" >  function requestWithdraw(bytes32 _stakeID)</span>
+  external
+  nonReentrant
+  onlyApproved
+  whenNotPaused
+  ownerOfLock(_stakeID, msg.sender)
+  stakingFinished(_stakeID)
+  returns (bool) { 
+<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(keccak256("pendingWithdraw", _stakeID)) == false)</span>;
+<span class="cstat-no" title="statement not covered" >    settleLedger(msg.sender, _stakeID)</span>;
+<span class="cstat-no" title="statement not covered" >    uint totalMyBitStaked = database.uintStorage(keccak256("totalMyBitStaked"))</span>;
+    database.setUint(keccak256("totalMyBitStaked"), totalMyBitStaked.sub(database.uintStorage(keccak256("amountStaked", _stakeID))));
+    database.setBool(keccak256("pendingWithdraw", _stakeID), true);
+<span class="cstat-no" title="statement not covered" >    LogTokenWithdraw(msg.sender, _stakeID, block.number)</span>;
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+  }
+&nbsp;
+  // This function sends Ether to staker based on what he is owed
+  // Note: Must call SettleLedger before calling this function to get the lastest amount owed 
+  // TODO: settleLedger within this transaction....check gas difference
+<span class="fstat-no" title="function not covered" >  function withdraw(bytes32 _stakeID)</span>
+  external
+  nonReentrant
+  whenNotPaused
+  ownerOfLock(_stakeID, msg.sender)
+  returns (bool) {
+<span class="cstat-no" title="statement not covered" >    uint owed = database.uintStorage(keccak256("stakingRevenueOwedToUser", msg.sender))</span>; 
+<span class="cstat-no" title="statement not covered" >    assert(owed != 0)</span>;
+    database.deleteUint(keccak256("stakingRevenueOwedToUser", msg.sender));
+<span class="cstat-no" title="statement not covered" >    uint rewardPaidToStaker = database.uintStorage(keccak256("rewardPaidToStaker", _stakeID))</span>;
+<span class="cstat-no" title="statement not covered" >    uint rewardPaidToStakers = database.uintStorage(keccak256("rewardPaidToStakers"))</span>;
+    database.setUint(keccak256("rewardPaidToStaker", _stakeID), rewardPaidToStaker.add(owed));
+    database.setUint(keccak256("rewardPaidToStakers"), rewardPaidToStakers.add(owed));
+    msg.sender.transfer(owed);
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+  }
+&nbsp;
+  // Called by BugBounty contract when necessary
+<span class="fstat-no" title="function not covered" >  function bugWithdraw(uint _amount, address _userAddress)</span>
+  external 
+  returns (bool) { 
+<span class="cstat-no" title="statement not covered" >    require(msg.sender == database.addressStorage(keccak256("contract", "BugBank")))</span>;
+    _userAddress.transfer(_amount); 
+<span class="cstat-no" title="statement not covered" >    return true; </span>
+  }
+&nbsp;
+  // Asset contracts send fee here 
+  function receiveTransactionFee(bytes32 _assetID) 
+  external 
+  payable
+  requiresEther 
+  { 
+    uint stakingRewardReceived = database.uintStorage(keccak256("stakingRewardReceived"));
+    uint bugBountyAmount = msg.value.mul(10).div(100);
+    uint totalBountyReceived = database.uintStorage(keccak256("bugBountyRewardReceived"));
+    database.setUint(keccak256("bugBountyRewardReceived"), totalBountyReceived.add(bugBountyAmount)); 
+    database.setUint(keccak256("stakingRewardReceived"), stakingRewardReceived.add(msg.value.sub(bugBountyAmount)));
+    LogFeeReceived(_assetID, msg.value, block.number); 
+  }
+&nbsp;
+&nbsp;
+  // Must be authorized by 1 of the 3 owners and then can be called by any of the other 2
+  // Invariants: Must be 1 of 3 owners. Cannot be called by same owner who authorized the function to be called.
+<span class="fstat-no" title="function not covered" >  function destroy(address _functionInitiator, address _holdingAddress) </span>
+  anyOwner 
+  public {
+<span class="cstat-no" title="statement not covered" >    require(_functionInitiator != msg.sender)</span>; 
+<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(keccak256(this, _functionInitiator, "destroy", keccak256(_holdingAddress))))</span>;
+<span class="cstat-no" title="statement not covered" >    LogDestruction(_holdingAddress, this.balance, msg.sender)</span>; 
+<span class="cstat-no" title="statement not covered" >    selfdestruct(_holdingAddress)</span>;
+  }
+&nbsp;
+// -------------------------------------Internal-----------------------------------
+  // TODO: maybe batch multiple stakeID's 
+<span class="fstat-no" title="function not covered" >  function settleLedger(address _staker, bytes32 _stakeID)</span>
+  public { 
+<span class="cstat-no" title="statement not covered" >    uint owed = calculateOwed(_staker, _stakeID)</span>;
+<span class="cstat-no" title="statement not covered" >    if (owed &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >      uint owedToUser = database.uintStorage(keccak256("stakingRevenueOwedToUser", _staker))</span>; 
+      database.setUint(keccak256("stakingRevenueOwedToUser", _staker), owedToUser.add(owed));
+    }
+  }
+&nbsp;
+&nbsp;
+// ------------------------------------View only functions-------------------------------------------------
+&nbsp;
+<span class="fstat-no" title="function not covered" >  function getBalance()</span>
+  view 
+  external 
+  returns (uint) {
+<span class="cstat-no" title="statement not covered" >    return this.balance;</span>
+  }
+&nbsp;
+&nbsp;
+<span class="fstat-no" title="function not covered" >  function calculateOwed(address _staker, bytes32 _stakeID)</span>
+  public 
+  view
+  returns (uint) { 
+<span class="cstat-no" title="statement not covered" >    uint amountStaked = database.uintStorage(keccak256("amountStaked", _stakeID))</span>;
+<span class="cstat-no" title="statement not covered" >    uint totalMyBitStaked = database.uintStorage(keccak256("totalMyBitStaked"))</span>;
+<span class="cstat-no" title="statement not covered" >    uint rewardPaidToStaker = database.uintStorage(keccak256("rewardPaidToStaker", _staker))</span>;
+<span class="cstat-no" title="statement not covered" >    return database.uintStorage(keccak256("stakingRewardReceived")).mul(amountStaked).div(totalMyBitStaked).sub(rewardPaidToStaker);</span>
+  }
+&nbsp;
+  // -------------------------------Fallback------------------------
+&nbsp;
+<span class="fstat-no" title="function not covered" >  function() </span>
+  public {
+<span class="cstat-no" title="statement not covered" >    revert()</span>;
+  }
+&nbsp;
+&nbsp;
+  // -------------------------------Modifiers--------------------------------
+&nbsp;
+<span class="fstat-no" title="function not covered" >  modifier onlyApproved </span>{ 
+<span class="cstat-no" title="statement not covered" >    require(database.uintStorage(keccak256("userAccess", msg.sender)) &gt;= 3)</span>;
+    _; 
+  }
+  
+<span class="fstat-no" title="function not covered" >  modifier whenNotPaused </span>{ 
+<span class="cstat-no" title="statement not covered" >    require(!database.boolStorage(keccak256("pause", this)))</span>;
+    _; 
+  }
+&nbsp;
+  modifier requiresEther {
+    <span class="missing-if-branch" title="else path not taken" >E</span>require(msg.value &gt; 0);
+    _;
+  }
+&nbsp;
+<span class="fstat-no" title="function not covered" >  modifier nonReentrant() </span>{
+<span class="cstat-no" title="statement not covered" >    require(!rentrancy_lock)</span>;
+<span class="cstat-no" title="statement not covered" >    rentrancy_lock = true</span>;
+    _;
+<span class="cstat-no" title="statement not covered" >    rentrancy_lock = false</span>;
+  }
+&nbsp;
+<span class="fstat-no" title="function not covered" >  modifier ownerOfLock(bytes32 _ID, address _owner) </span>{ 
+<span class="cstat-no" title="statement not covered" >    require(database.addressStorage(keccak256("staker", _ID)) == _owner)</span>; 
+    _;
+  }
+&nbsp;
+<span class="fstat-no" title="function not covered" >  modifier stakingFinished(bytes32 _ID) </span>{
+<span class="cstat-no" title="statement not covered" >    require(database.uintStorage(keccak256("blockAtWithdraw")) &lt;= block.number)</span>;
+    _;
+  }
+&nbsp;
+&nbsp;
+<span class="fstat-no" title="function not covered" >  modifier anyOwner </span>{ 
+<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(keccak256("owner", msg.sender)))</span>;
+    _;
+  }
+&nbsp;
+  event LogDestruction(address indexed _locationSent, uint256 indexed _amountSent, address indexed _caller); 
+  event LogFeeReceived(bytes32 indexed _assetID, uint indexed _amount, uint indexed _blockNumber); 
+  event LogTokensStaked(address indexed _staker, uint indexed _blockNumber, bytes32 indexed _ID); 
+  event LogTokenWithdraw(address indexed _staker, bytes32 indexed _ID, uint indexed _blockNumber);
+&nbsp;
+&nbsp;
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Mar 27 2018 15:51:11 GMT+0200 (CEST)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

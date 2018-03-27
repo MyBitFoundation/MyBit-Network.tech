@@ -43,6 +43,13 @@ contract HashFunctions {
     return keccak256(_param);
   }
 
+  function stringString(string _param, string _paramTwo)
+  external
+  view
+  returns (bytes32) {
+    return keccak256(_param, _paramTwo);
+  }
+
 
   function contractHash(string _name)
   external

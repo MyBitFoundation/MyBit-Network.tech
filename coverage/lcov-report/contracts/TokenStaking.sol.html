@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for contracts/TokenStaking.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">contracts/</a> TokenStaking.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>0/37</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/26</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/11</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>0/59</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity ^0.4.18;
+import './SafeMath.sol';
+import './MyBitToken.sol';
+import './StakingBank.sol';
+import './Database.sol';
+&nbsp;
+&nbsp;
+&nbsp;
+// TODO: prevent users from accidentally transferring in tokens
+// This contract holds all the MyBitTokens which are currently being staked by users
+contract TokenStaking {
+using SafeMath for *;
+&nbsp;
+&nbsp;
+  Database public database;
+  MyBitToken public myBitToken;
+&nbsp;
+  bool internal rentrancy_lock = false;
+&nbsp;
+<span class="fstat-no" title="function not covered" >  function TokenStaking(address _database, address _myBitToken)</span>
+  public {
+<span class="cstat-no" title="statement not covered" >    database = Database(_database)</span>;
+<span class="cstat-no" title="statement not covered" >    myBitToken = MyBitToken(_myBitToken)</span>;
+  }
+&nbsp;
+  // Once users approve TokenStaking contract to transfer tokens, they can stake tokens here/
+  // User will be added to the end of a linkedlist
+  // Note: sending two stakes with equal amounts in same block will overwrite the previous &amp; make tokens inaccesible
+<span class="fstat-no" title="function not covered" >  function stakeTokens(uint _amount)</span>
+  external
+  onlyApproved
+  whenNotPaused
+  nonReentrant
+  returns (bool) {
+<span class="cstat-no" title="statement not covered" >    require (_amount &gt;= database.uintStorage(keccak256("minimumStakeAmount")))</span>;
+<span class="cstat-no" title="statement not covered" >    require (myBitToken.transferFrom(msg.sender, this, _amount))</span>;
+<span class="cstat-no" title="statement not covered" >    uint totalMyBitStaked = database.uintStorage(keccak256("totalMyBitStaked"))</span>;
+<span class="cstat-no" title="statement not covered" >    uint stakingRewardReceived = database.uintStorage(keccak256("stakingRewardReceived"))</span>;
+    database.setUint(keccak256("stakingRewardReceived"), stakingRewardReceived.sub(database.uintStorage(keccak256("rewardPaidToStakers"))));
+    database.setUint(keccak256("totalMyBitStaked"), totalMyBitStaked.add(_amount));
+<span class="cstat-no" title="statement not covered" >    uint minimumStakeTime = database.uintStorage(keccak256("minimumStakeTime"))</span>; 
+<span class="cstat-no" title="statement not covered" >    uint blockAtWithdraw = minimumStakeTime.add(block.number)</span>;
+<span class="cstat-no" title="statement not covered" >    bytes32 ID = keccak256(msg.sender, block.number, _amount)</span>;
+    database.setAddress(keccak256("staker", ID), msg.sender);
+    database.setUint(keccak256("amountStaked", ID), _amount);
+    database.setUint(keccak256("blockAtWithdraw", ID), blockAtWithdraw);
+    database.setBytes32(keccak256("nextStaker", ID), database.bytes32Storage(keccak256("headStaker")));
+    database.setBytes32(keccak256("headStaker"), ID);
+<span class="cstat-no" title="statement not covered" >    LogTokensStaked(msg.sender, ID, block.number)</span>;
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+}
+&nbsp;
+&nbsp;
+&nbsp;
+  // Once the minimum staking time has been fulfilled user can withdraw tokens here
+  // TODO: Must update back-end to adjust _previousStakeID
+<span class="fstat-no" title="function not covered" >  function removeStake(bytes32 _stakeID, bytes32 _previousStakeID)</span>
+  external
+  nonReentrant
+  onlyApproved
+  whenNotPaused
+  ownerOfStake(_stakeID, msg.sender)
+  stakingFinished(_stakeID)
+  returns (bool) {
+<span class="cstat-no" title="statement not covered" >    bytes32 head = database.bytes32Storage(keccak256("headStaker"))</span>;
+<span class="cstat-no" title="statement not covered" >    require(database.bytes32Storage(keccak256("nextStaker", _previousStakeID)) == _stakeID || (_previousStakeID == bytes32(0) &amp;&amp; _stakeID == head))</span>;    // Make sure the previous stakeID is pointing to this one
+<span class="cstat-no" title="statement not covered" >    uint thisStakeAmount = database.uintStorage(keccak256("amountStaked", _stakeID))</span>;
+    myBitToken.transfer(msg.sender, thisStakeAmount);   // If transfer() fails the call will bubble up
+<span class="cstat-no" title="statement not covered" >    if (_stakeID == head) { database.setBytes32(keccak256("headStaker"), database.bytes32Storage(keccak256("nextStaker", _stakeID))); } // If this staker is last in list, make next person the last         </span>
+    else { database.setBytes32(keccak256("nextStaker", _previousStakeID), database.bytes32Storage(keccak256("nextStaker", _stakeID))); }   // Point previous stakeID ahead one place
+<span class="cstat-no" title="statement not covered" >    deleteStake(_stakeID)</span>;
+<span class="cstat-no" title="statement not covered" >    LogStakeWithdraw(msg.sender, block.number, _stakeID)</span>;
+  }
+&nbsp;
+&nbsp;
+&nbsp;
+  // TODO: only be called by bugbounty contract
+<span class="fstat-no" title="function not covered" >  function payBugBounty(uint _amount, address _bugFinder)</span>
+  nonReentrant
+  whenNotPaused
+  external
+  returns (bool) {
+<span class="cstat-no" title="statement not covered" >    require(msg.sender == database.addressStorage(keccak256("contract", "BugBank")))</span>;
+<span class="cstat-no" title="statement not covered" >    uint paidAmount = 0</span>;
+<span class="cstat-no" title="statement not covered" >    while (paidAmount &lt; _amount) {</span>
+<span class="cstat-no" title="statement not covered" >      bytes32 thisID = database.bytes32Storage(keccak256("headStaker"))</span>;
+      database.setBytes32(keccak256("headStaker", database.bytes32Storage(keccak256("nextStaker"))), thisID);
+<span class="cstat-no" title="statement not covered" >      uint thisStakeAmount = database.uintStorage(keccak256("amountStaked", thisID))</span>;
+<span class="cstat-no" title="statement not covered" >      StakingBank(database.addressStorage(keccak256("contract", "StakingBank")))</span>.settleLedger(database.addressStorage(keccak256("staker", thisID)), thisID);
+<span class="cstat-no" title="statement not covered" >      if (thisStakeAmount &lt;= _amount.sub(paidAmount)) {</span>
+<span class="cstat-no" title="statement not covered" >        paidAmount = paidAmount.add(thisStakeAmount)</span>;
+<span class="cstat-no" title="statement not covered" >        deleteStake(thisID)</span>;
+      }
+      else {
+        database.setUint(keccak256("amountStaked", thisID), thisStakeAmount.sub(_amount.sub(paidAmount)));
+<span class="cstat-no" title="statement not covered" >        paidAmount = _amount</span>;
+      }
+    }
+    myBitToken.transfer(_bugFinder, _amount);
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+  }
+&nbsp;
+<span class="fstat-no" title="function not covered" >  function deleteStake(bytes32 _stakeID)</span>
+  internal {
+    database.deleteBool(keccak256("pendingWithdraw", _stakeID));
+    database.deleteUint(keccak256("amountStaked", _stakeID));
+    database.deleteUint(keccak256("blockAtWithdraw", _stakeID));
+    database.deleteAddress(keccak256("staker", _stakeID));
+    database.deleteBytes32(keccak256("nextStaker", _stakeID));
+  }
+&nbsp;
+<span class="fstat-no" title="function not covered" >  modifier nonReentrant() </span>{
+<span class="cstat-no" title="statement not covered" >    require(!rentrancy_lock)</span>;
+<span class="cstat-no" title="statement not covered" >    rentrancy_lock = true</span>;
+    _;
+<span class="cstat-no" title="statement not covered" >    rentrancy_lock = false</span>;
+  }
+&nbsp;
+<span class="fstat-no" title="function not covered" >  modifier ownerOfStake(bytes32 _ID, address _owner) </span>{
+<span class="cstat-no" title="statement not covered" >    require(database.addressStorage(keccak256("staker", _ID)) == _owner)</span>;
+    _;
+  }
+&nbsp;
+<span class="fstat-no" title="function not covered" >  modifier stakingFinished(bytes32 _ID) </span>{
+<span class="cstat-no" title="statement not covered" >    require(database.uintStorage(keccak256("blockAtWithdraw")).add(database.uintStorage(keccak256("minimumWithdrawTime"))) &lt;= block.number)</span>;
+<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(keccak256("pendingWithdraw", _ID)))</span>;
+    _;
+  }
+&nbsp;
+<span class="fstat-no" title="function not covered" >  modifier anyOwner </span>{
+<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(keccak256("owner", msg.sender)))</span>;
+    _;
+  }
+&nbsp;
+<span class="fstat-no" title="function not covered" >  modifier onlyApproved </span>{
+<span class="cstat-no" title="statement not covered" >    require(database.uintStorage(keccak256("userAccess", msg.sender)) &gt;= 3)</span>;
+    _;
+  }
+&nbsp;
+<span class="fstat-no" title="function not covered" >  modifier whenNotPaused </span>{
+<span class="cstat-no" title="statement not covered" >    require(!database.boolStorage(keccak256("pause", this)))</span>;
+    _;
+  }
+&nbsp;
+  event LogStakeWithdraw(address _user, uint _blockNumber, bytes32 _stakeID);
+  event LogTokensStaked(address _staker, bytes32 _ID, uint _blockNumber);
+&nbsp;
+&nbsp;
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Mar 27 2018 15:51:11 GMT+0200 (CEST)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>
