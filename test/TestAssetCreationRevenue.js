@@ -11,7 +11,7 @@ const FundingHub = artifacts.require('./FundingHub.sol');
 const StakingBank = artifacts.require('./StakingBank.sol');
 
 
-contract('TestUserAccess', async (accounts) => {
+contract('Test asset creation', async (accounts) => {
   const ownerAddr1 = web3.eth.accounts[0];
   const ownerAddr2 = web3.eth.accounts[1];
   const ownerAddr3 = web3.eth.accounts[2];
@@ -201,28 +201,40 @@ contract('TestUserAccess', async (accounts) => {
     let payment = ((totalReceived * shares) / amountRaised) - totalPaidToFunder;
     let balanceOfFunder = web3.eth.getBalance(access1Account);
 
-    /*console.log('shares; ' + shares);
-    console.log('amountRaised; ' + amountRaised);
-    console.log('totalPaidToFunders; ' + totalPaidToFunders);
-    console.log('totalPaidToFunder; ' + totalPaidToFunder);
-    console.log('totalPaidToFunders; ' + totalPaidToFunders);
-    console.log('totalReceived; ' + totalReceived);
-    console.log('payment; ' + payment);
-    console.log('balanceOfFunder; ' + balanceOfFunder);*/
-
     await assetInstance.withdraw(assetID, false, {from:access1Account});
 
     let totalPaidToFunderAfter = await dbInstance.uintStorage(await hfInstance.stringBytesAddress("totalPaidToFunder", assetID, access1Account));
     let totalPaidToFundersAfter = await dbInstance.uintStorage(await hfInstance.stringBytes("totalPaidToFunders", assetID));
     let balanceOfFunderAfter = web3.eth.getBalance(access1Account);
-    /*console.log('totalPaidToFunderAfter' + totalPaidToFunderAfter);
-    console.log('totalPaidToFundersAfter' + totalPaidToFundersAfter);
-    console.log('balanceOfFunderAfter' + balanceOfFunderAfter);*/
+
     assert.equal(totalPaidToFunderAfter, (amountRaised-web3.toWei(managerPercentage/100, 'ether')) * assetAccount1FundedAmount, 'correctly paid the funder');
   });
 
+  it('Change asset funding time', async () => {
+      let defaultTime = 3000;
+      assert.equal(parseInt(await assetCreationInstance.fundingTime()), defaultTime, 'default time == 3000');
 
+      let newDefaultTime = 1000;
+      await assetCreationInstance.changeFundingTime(newDefaultTime);
+      assert.equal(parseInt(await assetCreationInstance.fundingTime()), newDefaultTime, 'default time == 1000');
+  });
+
+  it('Assign function signer', async () => {
+    await ownedInstance.setFunctionAuthorized(assetCreationInstance.address, 'removeAsset', assetID,{from:ownerAddr1});
+    await ownedInstance.setFunctionAuthorized(assetCreationInstance.address, 'changeFundingPercentages', await hfInstance.uintUintUint(50,25,25),{from:ownerAddr1});
+  });
+
+  it('Change Funding percentages', async () => {
+    await assetCreationInstance.changeFundingPercentages(50, 25, 25, ownerAddr1, {from:ownerAddr2});
+    assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.Sha3('myBitFoundationPercentage'))), 50, 'myBitFoundationPercentage updated to 50');
+    assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.Sha3('stakedTokenPercentage'))), 25, 'stakedTokenPercentage updated to 25');
+    assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.Sha3('installerPercentage'))), 25, 'installerPercentage updated to 25');
+  });
+
+  it('Remove asset', async () => {
+    await assetCreationInstance.removeAsset(assetID, ownerAddr1, {from:ownerAddr3});
+    let funcHash = await hfInstance.getAuthorizeHash(assetCreationInstance.address, ownerAddr1, 'removeAsset', assetID);
+    assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytes('fundingStage',assetID)), 5, 'state set to 5');
+    assert.equal(await dbInstance.boolStorage(funcHash), false, 'boolstorage == false');
+  });
 });
-//stress test 100000 accounts?
-// multiple accounts same address reentry etc??
-// setBackupAddress different users address already verified??? - backup address need to sign before backup is set

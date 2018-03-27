@@ -1,20 +1,21 @@
-var Migrations = artifacts.require("./Migrations.sol");
-var MyBitToken = artifacts.require("./MyBitToken.sol");
-var HashFunctions = artifacts.require("./HashFunctions.sol");
-var Database = artifacts.require("./Database.sol");
-var InitialVariables = artifacts.require("./InitialVariables.sol");
-var ContractManager = artifacts.require('./ContractManager.sol');
-var AssetCreation = artifacts.require('./AssetCreation.sol');
-var Asset = artifacts.require("./Asset.sol");
+
 var Owned = artifacts.require('./Owned.sol');
 var UserAccess = artifacts.require("./UserAccess.sol");
-var FundingHub = artifacts.require("./FundingHub.sol");
 var StakingBank = artifacts.require("./StakingBank.sol");
-var BugBank = artifacts.require("./BugBank.sol");
-var BugBounty = artifacts.require('./BugBounty.sol');
-var MarketPlace = artifacts.require("./MarketPlace.sol");
-var TokenStaking = artifacts.require("./TokenStaking.sol");
 var TokenBurn = artifacts.require("./TokenBurn.sol");
+
+var Asset = artifacts.require("./Asset.sol");
+var AssetCreation = artifacts.require('./AssetCreation.sol');
+var ContractManager = artifacts.require('./ContractManager.sol');
+var Database = artifacts.require("./Database.sol");
+var FundingHub = artifacts.require("./FundingHub.sol");
+var HashFunctions = artifacts.require("./HashFunctions.sol");
+var InitialVariables = artifacts.require("./InitialVariables.sol");
+var MarketPlace = artifacts.require("./MarketPlace.sol");
+var Migrations = artifacts.require("./Migrations.sol");
+var MyBitToken = artifacts.require("./MyBitToken.sol");
+
+
 
 /*
 var Asset = artifacts.require("./Asset.sol");
@@ -42,10 +43,7 @@ module.exports = function(deployer) {
       deployer.deploy(FundingHub, Database.address);
       deployer.deploy(Asset, Database.address);
       deployer.deploy(StakingBank, Database.address);
-      deployer.deploy(BugBank, Database.address);
-      deployer.deploy(BugBounty, Database.address);
       deployer.deploy(MarketPlace, Database.address);
-      deployer.deploy(TokenStaking, Database.address, MyBitToken.address);
       deployer.deploy(TokenBurn, Database.address, MyBitToken.address);
     })
   };
