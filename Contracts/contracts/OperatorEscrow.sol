@@ -1,5 +1,5 @@
 
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.19;
 
 import './Database.sol';
 import './MyBitToken.sol';
@@ -36,9 +36,36 @@ contract OperatorEscrow {
     LogPaymentReceived(_assetID, msg.value, assetOperator); 
   }
 
-  // TODO: Withdraw tokens when no longer operator 
-  // TODO: Withdraw WEI payments 
+  function withdrawToken(uint _amount)
+  external 
+  returns (bool){ 
+    uint unlockedBalance = getUnlockedBalance(msg.sender); 
+    require(unlockedBalance > _amount);
+    require(myBitToken.transferFrom(msg.sender, this, _amount)); 
+    return true; 
+  }
 
+  function withdrawEther()
+  external
+  returns (bool) { 
+    uint owed = database.uintStorage(keccak256("operatorIncome", msg.sender));
+    assert (owed > 0);
+    database.deleteUint(keccak256("operatorIncome", msg.sender)); 
+    msg.sender.transfer(owed); 
+    return true; 
+  }
+
+  /////////////////////////
+  //       Read-Only     //
+  /////////////////////////
+
+  function getUnlockedBalance(address _operator)
+  public 
+  view 
+  returns (uint){ 
+    uint lockedBalance = database.uintStorage(keccak256("operatorEscrowLocked", _operator)); 
+    return database.uintStorage(keccak256("operatorEscrowDeposited", _operator)).sub(lockedBalance);
+  }
 
   function() 
   external { 

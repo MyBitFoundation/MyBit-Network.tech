@@ -8,9 +8,17 @@ contract FunderControls {
 
 Database public database;
 
+
+
 function FunderControls(address _database)
 public { 
   database = Database(_database); 
 }
 
+function NewOperator(bytes32 _assetID) 
+public { 
+
 }
+
+}
+

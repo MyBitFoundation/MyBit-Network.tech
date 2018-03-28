@@ -59,6 +59,13 @@ contract HashFunctions {
     return keccak256(_param, _paramTwo); 
   }
 
+  function stringString(string _param, string _paramTwo)
+  external
+  pure 
+  returns (bytes32) { 
+    return (keccak256(_param, _paramTwo)); 
+  }
+
   function stringBytes(string _param, bytes32 _paramTwo)
   external
   pure 

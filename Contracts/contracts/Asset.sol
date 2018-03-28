@@ -73,7 +73,7 @@ using SafeMath for *;
       LogInvestmentPaid(msg.sender, payment, block.timestamp);
     }
     return true;
-}
+  }
 
   // Returns the amount of WEI owed to the asset shareholder
   // @Param: The ID of the asset
