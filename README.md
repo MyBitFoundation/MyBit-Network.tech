@@ -57,9 +57,13 @@ Then kill this PID:
 
 ## How To Run
  > mkdir truffleFolder && cd truffleFolder      
+ 
  > npm i truffle ethereumjs-testrpc ganache-cli solidity-coverage coveralls
+ 
  > truffle init 
+ 
  > Create files in file modification section and edit them with the contents or use the echo command given
+ 
  > sudo solidity-coverage
      
 ## Results
