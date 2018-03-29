@@ -30,6 +30,12 @@ contract  Test {
     oracleHub.mybUSDQuery.value(40000000); 
   }
 
+  function burnAccessTokens(address _myBitToken, address _tokenBurn, uint _accessLevel, uint _amount)
+  external { 
+    MyBitToken(_myBitToken).approve(_tokenBurn, _amount);
+    TokenBurn(_myBitToken).burnTokens(_accessLevel); 
+  }
+
   function getBalance()
   view 
   returns (uint) { 
