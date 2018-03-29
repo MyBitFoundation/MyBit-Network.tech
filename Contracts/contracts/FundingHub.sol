@@ -151,7 +151,7 @@ contract FundingHub {
     _;
     if (database.uintStorage(keccak256("amountRaised", _assetID)).mul(_currentEthPrice) >= database.uintStorage(keccak256("amountToBeRaised", _assetID))) {
        database.deleteUint(keccak256("amountToBeRaised", _assetID));      // No longer need this variable
-       LogAssetFundingSuccess(_assetID, block.timestamp);
+       LogAssetFundingSuccess(_assetID, _currentEthPrice, block.timestamp);
        database.setUint(keccak256("fundingStage", _assetID), 3);
       }
   }
@@ -181,7 +181,7 @@ contract FundingHub {
   event LogNewFunder(address indexed _funder, uint indexed _timestamp);
   event LogAssetFunded(address indexed _sender, uint indexed _amount, uint indexed _timestamp);
   event LogAssetFundingFailed(bytes32 indexed _assetID, uint indexed _amountRaised, uint indexed _timestamp);
-  event LogAssetFundingSuccess(bytes32 indexed _assetID, uint indexed _timestamp);
+  event LogAssetFundingSuccess(bytes32 indexed _assetID, uint indexed _currentEthPrice, uint indexed _timestamp);
   event LogRefund(address indexed _funder, uint indexed _amount, uint indexed _timestamp);
   event LogAssetPayout(bytes32 indexed _assetID, uint indexed _amount, uint indexed _blockNumber);
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);

@@ -28,9 +28,9 @@ contract AssetCreation {
   noEmptyBytes(_assetID)
   noEmptyBytes(_installerID)
   noEmptyBytes(_assetType)
-  notZero(_amountToBeRaised)
   returns (bool){
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= 2);     
+    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= 2); 
+    require(_amountToBeRaised >= 100);    
     require(database.uintStorage(keccak256("fundingStage", _assetID)) == 0);    // This ensures the asset isn't currently live or being funded
     require(_operatorPercentage < 100 && _operatorPercentage > 0);
     require(database.boolStorage(keccak256("operatorSuccessfullyEscrowed", _assetID, msg.sender))); 

@@ -26,6 +26,7 @@ contract OracleHub is usingOraclize{
     bytes32 queryID = oraclize_query('URL', 'json(https://api.coinmarketcap.com/v1/ticker/ethereum/).0.price_usd}');
     database.setBool(queryID, true);
     LogEthUSDQuery(msg.sender, queryID, now);
+    return true;
   }
 
   // TODO: set requirement for how much ether is needed in this call
