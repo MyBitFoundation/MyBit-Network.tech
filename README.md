@@ -1,8 +1,13 @@
 # Setting up solidity-coverage
 
+[Solidity-coverage](https://github.com/sc-forks/solidity-coverage "Solidity-coverage") is a tool used to analyse tests built for the assocated Solidity code.  When it has completed the analysis, it outputs the results in not only the console, but also a usable webpack similar to [metacoin](https://sc-forks.github.io/metacoin/ "metacoin").  
+
 ## Dependencies
- `$ mkdir truffleFolder && cd truffleFolder && truffle init`
- `$ npm i truffle ethereumjs-testrpc ganache-cli solidity-coverage coveralls`
+[ethereumjs-testrpc](https://www.npmjs.com/package/ethereumjs-testrpc "ethereumjs-testrpc") 
+[ganache-cli](https://www.npmjs.com/package/ganache-cli "ganache-cli") 
+[solidity-coverage](https://www.npmjs.com/package/solidity-coverage "solidity-coverage") 
+[coveralls](https://www.npmjs.com/package/coveralls "coveralls")
+[solc](https://www.npmjs.com/package/solc "solc")
 
 
 ## File Modifications
@@ -42,11 +47,20 @@ package.json
 
 ## Typical Errors
 Typically as solidity-coverage starts testrpc as a childprocess, it does not kill the process once the coverage has been completed.
-Resulting in Error: listen `EADDRINUSE :::8555` when attempting to run solidity-coverage again.
-To fix this:
- > ps -fC node = PID
- sudo kill PID
+Resulting in Error: listen `EADDRINUSE :::8555` when attempting to run solidity-coverage again.  This error happens everytime you try to rerun solidity-coverage, even after it has been completed.
+To fix this, grab the services PID:
+ > ps -fC node 
+
+Then kill this PID: 
+ > sudo kill PID
 
 
 ## How To Run
- > solidity-coverage
+ >  mkdir truffleFolder && cd truffleFolder      
+      npm i truffle ethereumjs-testrpc ganache-cli solidity-coverage coveralls
+      truffle init 
+      Create files in file modification section and edit them with the contents or use the echo command given
+	  sudo solidity-coverage
+     
+## Results
+Results are stored in coverage folder and stores all necessary html/css files for displaying on a webpage.  Specifically the root index.html located in coverage, displays code coverage report for all files. 
