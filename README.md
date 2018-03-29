@@ -67,4 +67,4 @@ Then kill this PID:
  > sudo solidity-coverage
      
 ## Results
-Results are stored in coverage folder and stores all necessary html/css files for displaying on a webpage.  Specifically the root index.html located in coverage, displays code coverage report for all files. 
+Results are stored in coverage folder and stores all necessary html/css files for displaying on a webpage.  Specifically the root [index.html](https://github.com/MyBitFoundation/MyBitDapp/blob/solcCoverage/coverage/index.html "index.html") located in coverage, displays code coverage report for all files. 
