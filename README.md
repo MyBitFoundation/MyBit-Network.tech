@@ -56,11 +56,11 @@ Then kill this PID:
 
 
 ## How To Run
- >  mkdir truffleFolder && cd truffleFolder      
-    npm i truffle ethereumjs-testrpc ganache-cli solidity-coverage coveralls
-    truffle init 
-    Create files in file modification section and edit them with the contents or use the echo command given
-    sudo solidity-coverage
+ > mkdir truffleFolder && cd truffleFolder      
+ > npm i truffle ethereumjs-testrpc ganache-cli solidity-coverage coveralls
+ > truffle init 
+ > Create files in file modification section and edit them with the contents or use the echo command given
+ > sudo solidity-coverage
      
 ## Results
 Results are stored in coverage folder and stores all necessary html/css files for displaying on a webpage.  Specifically the root index.html located in coverage, displays code coverage report for all files. 
