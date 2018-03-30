@@ -1,9 +1,11 @@
+pragma solidity ^0.4.19;
+
 import './Database.sol';
 import './Asset.sol';
 import './AssetCreation.sol';
 import './ContractManager.sol';
 import './FunderControls.sol';
-import './InititalVariables.sol';
+import './InitialVariables.sol';
 import './MarketPlace.sol';
 import './MyBitToken.sol';
 import './OperatorEscrow.sol';

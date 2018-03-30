@@ -22,6 +22,7 @@ contract TokenBurn {
   external
   whenNotPaused
   priceUpdated
+  basicVerification(_accessLevelDesired)
   returns (bool) {
     uint mybPrice = database.uintStorage(keccak256("mybUSDPrice"));
     uint accessCostMyB = database.uintStorage(keccak256("accessTokenFee", _accessLevelDesired)).mul(10^11).div(mybPrice);
@@ -34,6 +35,14 @@ contract TokenBurn {
     return true;
   }
 
+  modifier basicVerification(uint8 _newAccessLevel) { 
+  uint currentLevel = database.uintStorage(keccak256("userAccess", msg.sender));
+  require(currentLevel >= 1);    // Must have basic KYC verification 
+  require(currentLevel < _newAccessLevel);       // Dont allow burning to downgrade access level
+  require (_newAccessLevel < 5); 
+  _; 
+}
+
   modifier whenNotPaused {
     require(!database.boolStorage(keccak256("pause", this)));
     _;
@@ -44,7 +53,7 @@ contract TokenBurn {
     _;
   }
 
-  event LogMyBitBurnt(address _burner, uint256 _amount, uint256 _timestamp);
+  event LogMyBitBurnt(address _burner, uint _amount, uint _timestamp);
 
 
 }

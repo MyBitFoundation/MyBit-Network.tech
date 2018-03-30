@@ -18,7 +18,7 @@ contract UserAccess{
   // @Param: Address of new user. 
   // @Param: The level of access granted by owner/burningcontract
   // TODO: owner requirement is removed for alpha testing
-  function approveUser(address _newUser, uint8 _accessLevel)
+  function approveUser(address _newUser, uint _accessLevel)
   // anyOwner
   noEmptyAddress(_newUser)
   external
@@ -61,8 +61,8 @@ contract UserAccess{
   }
 
   event LogBackupAddressSet(address _user, address _backupAddress, uint _blockNumber); 
-  event LogAddressChanged(address _oldAddress, address _newAddress, uint256 _timestamp); 
-  event LogUserApproved(address indexed _user, uint8 indexed _approvalLevel, uint256 indexed _timestamp); 
-  event LogUserRemoved(address indexed _user, uint256 indexed _timestamp); 
+  event LogAddressChanged(address _oldAddress, address _newAddress, uint _timestamp); 
+  event LogUserApproved(address indexed _user, uint indexed _approvalLevel, uint indexed _timestamp); 
+  event LogUserRemoved(address indexed _user, uint indexed _timestamp); 
 
 }

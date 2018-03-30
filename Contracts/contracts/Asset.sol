@@ -58,7 +58,7 @@ using SafeMath for *;
     uint totalPaidToFunders = database.uintStorage(keccak256("totalPaidToFunders", _assetID));
     uint totalPaidToFunder = database.uintStorage(keccak256("totalPaidToFunder", _assetID, msg.sender));
     uint totalReceived = database.uintStorage(keccak256("totalReceived", _assetID));
-    uint256 payment = (totalReceived.mul(shares).div(amountRaised)).sub(totalPaidToFunder);
+    uint payment = (totalReceived.mul(shares).div(amountRaised)).sub(totalPaidToFunder);
     assert (payment != 0);
     assert (totalPaidToFunders <= totalReceived);    // Don't let amount paid to funders exceed amount received
     database.setUint(keccak256("totalPaidToFunder", _assetID, msg.sender), totalPaidToFunder.add(payment));
@@ -96,7 +96,7 @@ using SafeMath for *;
   // @Param address selling shares
   // @Param address buying shares
   // @Param number of shares being traded
-  function tradeShares(bytes32 _assetID, address _from, address _to, uint256 _amount)
+  function tradeShares(bytes32 _assetID, address _from, address _to, uint _amount)
   external
   nonReentrant
   whenNotPaused
@@ -108,7 +108,7 @@ using SafeMath for *;
     uint sharesTo = database.uintStorage(keccak256("shares", _assetID, _to));
     uint paidToFunderFrom = database.uintStorage(keccak256("totalPaidToFunder", _assetID, _from));
     uint paidToFunderTo = database.uintStorage(keccak256("totalPaidToFunder", _assetID, _to));
-    uint256 relativePaidOutAmount = (paidToFunderFrom.mul(_amount)).div(sharesFrom);
+    uint relativePaidOutAmount = (paidToFunderFrom.mul(_amount)).div(sharesFrom);
     database.setUint(keccak256("totalPaidToFunder", _assetID, _to), paidToFunderTo.add(relativePaidOutAmount));
     database.setUint(keccak256("totalPaidToFunder", _assetID, _from), paidToFunderFrom.sub(relativePaidOutAmount));
     database.setUint(keccak256("shares", _assetID, _from), sharesFrom.sub(_amount));
@@ -177,9 +177,9 @@ using SafeMath for *;
   }
 
   event LogSharesTraded(bytes32 indexed _assetID, address indexed _from, address indexed _to, uint _timestamp);
-  event LogDestruction(address indexed _locationSent, uint256 indexed _amountSent, address indexed _caller);
-  event LogIncomeReceived(address indexed _sender, uint256 indexed _amount, bytes32 indexed _assetID);
-  event LogInvestmentPaid(address indexed _funder, uint256 indexed _amount, uint256 indexed _timestamp);
-  event LogInvestmentPaidToWithdrawalAddress(address indexed _funder, address indexed _withdrawalAddress, uint256 indexed _amount, uint256 _timestamp);
-  event LogAssetNote(bytes32 indexed _note, uint256 indexed _timestamp);
+  event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
+  event LogIncomeReceived(address indexed _sender, uint indexed _amount, bytes32 indexed _assetID);
+  event LogInvestmentPaid(address indexed _funder, uint indexed _amount, uint indexed _timestamp);
+  event LogInvestmentPaidToWithdrawalAddress(address indexed _funder, address indexed _withdrawalAddress, uint indexed _amount, uint _timestamp);
+  event LogAssetNote(bytes32 indexed _note, uint indexed _timestamp);
 }

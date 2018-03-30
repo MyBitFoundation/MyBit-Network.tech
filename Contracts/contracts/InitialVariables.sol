@@ -21,9 +21,9 @@ external  {
   database.setUint(keccak256("installerPercentage"), 97);
 
   // ---------------------Access Price in USD--------------------------
-  database.setUint(keccak256("accessTokenFee", 1), 10);
-  database.setUint(keccak256("accessTokenFee", 2), 50); 
-  database.setUint(keccak256("accessTokenFee", 3), 100); 
+  database.setUint(keccak256("accessTokenFee", 2), 10);
+  database.setUint(keccak256("accessTokenFee", 3), 50); 
+  database.setUint(keccak256("accessTokenFee", 4), 100); 
 
 
   // --------------------Operator Cost-----------------------
