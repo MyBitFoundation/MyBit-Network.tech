@@ -35,7 +35,11 @@ contract TokenBurn {
     return true;
   }
 
+<<<<<<< HEAD
   modifier basicVerification(uint _newAccessLevel) {
+=======
+  modifier basicVerification(uint _newAccessLevel) { 
+>>>>>>> 3ce145f6384e72b9ce97c37f0a41c647581c64ec
   uint currentLevel = database.uintStorage(keccak256("userAccess", msg.sender));
   require(currentLevel >= 1);    // Must have basic KYC verification
   require(currentLevel < _newAccessLevel);       // Dont allow burning to downgrade access level

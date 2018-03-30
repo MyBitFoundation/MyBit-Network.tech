@@ -22,8 +22,13 @@ external  {
 
   // ---------------------Access Price in USD--------------------------
   database.setUint(keccak256("accessTokenFee", uint(2)), 10);
+<<<<<<< HEAD
   database.setUint(keccak256("accessTokenFee", uint(3)), 50);
   database.setUint(keccak256("accessTokenFee", uint(4)), 100);
+=======
+  database.setUint(keccak256("accessTokenFee", uint(3)), 50); 
+  database.setUint(keccak256("accessTokenFee", uint(4)), 100); 
+>>>>>>> 3ce145f6384e72b9ce97c37f0a41c647581c64ec
 
 
   // --------------------Operator Cost-----------------------
