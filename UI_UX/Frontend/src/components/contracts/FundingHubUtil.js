@@ -41,98 +41,51 @@ export default class FundingHubUtil {
   }
 
   async fund(_assetID, _value) {
-    const response = await this.instance.fundAsync(_assetID, {
-      from: this.web3.eth.coinbase,
-      gas: 2000000,
-      value: _value
-    });
-    return response;
-    /*      if(this.modifier.fundingLimitValue(_assetID) &&
-         this.modifier.fundingLimitTime(_assetID) &&
-         this.modifier.onlyApproved(2) &&
-         this.modifier.atStage(_assetID, 1) &&
-         this.modifier.notZero(_value)
-      ){
-        this.instance.fund.estimateGas(
-          _assetID,
-          {from: this.web3.eth.coinbase, value:_value},
-          async function(e,gasEstimate){
-            if(!e){
-              const response = await this.instance.fundAsync(_assetID,{
-                  from: this.web3.eth.coinbase, gas:gasEstimate, value: _value});
-                }
-              })
-            }
-          };*/
-  }
+    let ethValue = this.web3.toWei(_value);
+    let iT = this.instance;
+    let w3 = this.web3;
+    this.instance.fund.estimateGas(_assetID,
+      {from:this.web3.eth.coinbase,value:ethValue}, async function(error,result){
+        if(!error){
+          await iT.fundAsync(_assetID, {
+            from:w3.eth.coinbase,value:ethValue, gas:parseInt(result)});
+          }
+      });
+    }
 
   async payout(_assetID) {
-    const response = await this.instance.payoutAsync(_assetID, {
-      from: this.web3.eth.coinbase,
-      gas: 2000000
-    });
-    return response;
-    /*  if(this.modifier.atStage(_assetID, 3) &&
-         this.modifier.fundingPeriodOver(_assetID)
-      ){
-        this.instance.payout.estimateGas(
-          _assetID,
-          {from: this.web3.eth.coinbase},
-          async function(e,gasEstimate){
-            if(!e){
-              const response = await this.instance.payoutAsync(_assetID,{
-                from: this.web3.eth.coinbase, gas:gasEstimate});
-              }
+    let iT = this.instance;
+    let w3 = this.web3;
+    this.instance.payout.estimateGas(_assetID,
+      {from:this.web3.eth.coinbase}, async function(error,result){
+        if(!error){
+          await iT.payoutAsync(_assetID, {
+            from:w3.eth.coinbase, gas:parseInt(result)});
           }
-        )
-      }
-    }*/
-  }
+      });
+    }
 
   async initiateRefund(_assetID) {
-    const response = await this.instance.initiateRefundAsync(_assetID, {
-      from: this.web3.eth.coinbase,
-      gas: 2000000
-    });
-    return response;
-
-    /*      if(this.modifier.fundingPeriodOver(_assetID) &&
-         this.modifier.atStage(_assetID, 1)
-      ){
-        this.instance.initiateRefund.estimateGas(
-          _assetID,
-          {from: this.web3.eth.coinbase},
-          async function(e,gasEstimate){
-            if(!e){
-              const response = await this.instance.initiateRefundAsync(_assetID,{
-                from: this.web3.eth.coinbase, gas:gasEstimate});
-              }
+    let iT = this.instance;
+    let w3 = this.web3;
+    this.instance.initiateRefund.estimateGas(_assetID,
+      {from:this.web3.eth.coinbase}, async function(error,result){
+        if(!error){
+          await iT.initiateRefundAsync(_assetID, {
+            from:w3.eth.coinbase, gas:parseInt(result)});
           }
-        )
-      }
-    }*/
-  }
+      });
+    }
 
   async refund(_assetID) {
-    const response = await this.instance.refundAsync(_assetID, {
-      from: this.web3.eth.coinbase,
-      gas: 2000000
-    });
-    return response;
-
-    /*if(this.modifier.atStage(_assetID, 1))
-        {
-          this.instance.refund.estimateGas(
-            _assetID,
-            {from:this.web3.eth.coinbase},
-            async function(e,gasEstimate){
-              if(!e){
-                const response = await this.instance.refundAsync(_assetID,{
-                from: this.web3.eth.coinbase, gas:gasEstimate});
-              }
-            }
-          )
-        }
-      }*/
-  }
+    let iT = this.instance;
+    let w3 = this.web3;
+    this.instance.refundAsync.estimateGas(_assetID,
+      {from:this.web3.eth.coinbase}, async function(error,result){
+        if(!error){
+          await iT.refundAsync(_assetID, {
+            from:w3.eth.coinbase, gas:parseInt(result)});
+          }
+      });
+    }
 }
