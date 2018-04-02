@@ -40,7 +40,7 @@ contract AssetCreation {
     database.setUint(keccak256("fundingDeadline", _assetID), block.timestamp.add(fundingTime));
     database.setUint(keccak256("fundingStage", _assetID), 1);
     LogAssetInfo(_assetID, _installerID, _amountToBeRaised);
-    LogAssetFundingStarted(msg.sender, _assetID, _assetType);      // Use indexed event to keep track of pending assets
+    LogAssetFundingStarted(msg.sender, _assetID, _assetType);   
     return true;
   }
 
