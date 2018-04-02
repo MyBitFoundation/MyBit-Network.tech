@@ -23,7 +23,7 @@ contract UserAccess{
   noEmptyAddress(_newUser)
   external
   returns (bool) { 
-    require(_accessLevel < 5 && _accessLevel != 0);
+    require(_accessLevel < uint(5) && _accessLevel != uint(0));
     database.setUint(keccak256("userAccess", _newUser), _accessLevel);
     LogUserApproved(_newUser, _accessLevel, block.timestamp); 
     return true;
@@ -50,7 +50,7 @@ contract UserAccess{
 
   // User must have identification approved
   modifier mustHaveKYC { 
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) > 0);
+    require(database.uintStorage(keccak256("userAccess", msg.sender)) > uint(0));
     _;
   }
 

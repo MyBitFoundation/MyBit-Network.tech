@@ -13,13 +13,16 @@ public {
   database = Database(_database);
 }
 
-function startDapp()
+function startDapp(address _myBitFoundation, address _installerEscrow)
 external  {
+  require(_myBitFoundation != address(0) && _installerEscrow != address(0)); 
+  // --------------------Set Local Wallets-------------------------
+  database.setAddress(keccak256("MyBitFoundation"), _myBitFoundation);
+  database.setAddress(keccak256("InstallerEscrow"), _installerEscrow); 
   // --------------------Asset Creation Variables-----------------
   database.setUint(keccak256("myBitFoundationPercentage"), 1);
   database.setUint(keccak256("stakedTokenPercentage"), 2);
   database.setUint(keccak256("installerPercentage"), 97);
-
   // ---------------------Access Price in USD--------------------------
   database.setUint(keccak256("accessTokenFee", uint(2)), 25);
   database.setUint(keccak256("accessTokenFee", uint(3)), 75); 

@@ -30,16 +30,6 @@ contract OperatorEscrow {
     return true; 
   }
 
-  // Assets can send earned funds to the operator here.
-  function receiveIncome(bytes32 _assetID)
-  external
-  payable { 
-    address assetOperator = database.addressStorage(keccak256("assetOperator", _assetID)); 
-    uint operatorIncome = database.uintStorage(keccak256("operatorIncome", assetOperator));
-    database.setUint(keccak256("operatorIncome", assetOperator), operatorIncome.add(msg.value)); 
-    LogPaymentReceived(_assetID, msg.value, assetOperator); 
-  }
-
   // Operator can withdraw any escrowed tokens that are no longer needed in escrow here 
   // To withdraw the asset must have: Not started funding (stage = 0), Failed Funding (stage = 2), Finished lifecycle (stage = 5)) 
   function unlockEscrow(bytes32 _assetID)
