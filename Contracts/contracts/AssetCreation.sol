@@ -33,7 +33,7 @@ contract AssetCreation {
     require(_amountToBeRaised >= 100);    
     require(database.uintStorage(keccak256("fundingStage", _assetID)) == 0);    // This ensures the asset isn't currently live or being funded
     require(_operatorPercentage < 100 && _operatorPercentage > 0);
-    require(database.boolStorage(keccak256("operatorSuccessfullyEscrowed", _assetID, msg.sender))); 
+    require(database.addressStorage(keccak256("operatorEscrowed", _assetID)) ==  msg.sender);   // Check that this user has deposited the necessary escrow for the asset.
     database.setUint(keccak256("amountToBeRaised", _assetID), _amountToBeRaised);
     database.setUint(keccak256("operatorPercentage", _assetID), _operatorPercentage);
     database.setAddress(keccak256("assetOperator", _assetID), msg.sender);
@@ -44,16 +44,20 @@ contract AssetCreation {
     return true;
   }
 
+  // Note: That the AssetID is being registered before created above. 
   function lockAssetEscrow(bytes32 _assetID)
   external 
   priceUpdated
   returns (bool) {
+    require(database.addressStorage(keccak256("operatorEscrowed", _assetID)) == address(0));    // Check that another user didn't already submit escrow for this asset
     uint mybPrice = database.uintStorage(keccak256("mybUSDPrice")); 
     uint amountMyBRequired = database.uintStorage(keccak256("amountToBeRaised", _assetID)).mul(10^10).div(mybPrice);    // This is 10% of total asset cost
-    uint lockedAmount = database.uintStorage(keccak256("operatorEscrowLocked", msg.sender)); 
-    assert (amountMyBRequired < database.uintStorage(keccak256("operatorEscrowDeposited", msg.sender)).sub(lockedAmount)); 
-    database.setUint(keccak256("operatorEscrowLocked", msg.sender), lockedAmount.add(amountMyBRequired));
-    database.setBool(keccak256("operatorSuccessfullyEscrowed", _assetID, msg.sender), true);
+    assert (amountMyBRequired > 0);
+    database.setUint(keccak256("assetEscrowRequirement", _assetID), amountMyBRequired);
+    uint lockedAmount = database.uintStorage(keccak256("operatorAmountEscrowed", msg.sender)); 
+    assert (amountMyBRequired < database.uintStorage(keccak256("operatorAmountDeposited", msg.sender)).sub(lockedAmount)); 
+    database.setUint(keccak256("operatorAmountEscrowed", msg.sender), lockedAmount.add(amountMyBRequired));
+    database.setAddress(keccak256("operatorEscrowed", _assetID), msg.sender);
     return true;
   }
 
@@ -110,11 +114,6 @@ contract AssetCreation {
 
   modifier whenNotPaused {
     require(!database.boolStorage(keccak256("pause", this)));
-    _;
-  }
-
-  modifier noEmptyAddress(address _addr) {
-    require(_addr != address(0));
     _;
   }
 

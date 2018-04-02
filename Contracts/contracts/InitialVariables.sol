@@ -21,8 +21,8 @@ external  {
   database.setUint(keccak256("installerPercentage"), 97);
 
   // ---------------------Access Price in USD--------------------------
-  database.setUint(keccak256("accessTokenFee", uint(2)), 10);
-  database.setUint(keccak256("accessTokenFee", uint(3)), 50); 
+  database.setUint(keccak256("accessTokenFee", uint(2)), 25);
+  database.setUint(keccak256("accessTokenFee", uint(3)), 75); 
   database.setUint(keccak256("accessTokenFee", uint(4)), 100); 
 
 
@@ -30,7 +30,7 @@ external  {
   database.setUint(keccak256("operatorEscrowPercentage"), 10); 
 
   // -------------Oracle Variables-------------------------
-  database.setUint(keccak256("priceUpdateTimeline"), 1000);     // TODO: testing number
+  database.setUint(keccak256("priceUpdateTimeline"), 1000);     // TODO: testing number. This is the length of time an Oracle price is valid for
   
   LogInitialized(msg.sender, address(database), block.number);
 }

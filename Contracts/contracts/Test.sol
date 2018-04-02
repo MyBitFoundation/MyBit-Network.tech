@@ -6,7 +6,7 @@ import './AssetCreation.sol';
 import './ContractManager.sol';
 import './FunderControls.sol';
 import './InitialVariables.sol';
-import './MarketPlace.sol';
+import './AssetExchange.sol';
 import './MyBitToken.sol';
 import './OperatorEscrow.sol';
 import './OracleHub.sol';
