@@ -35,12 +35,12 @@ contract TokenBurn {
     return true;
   }
 
-  modifier basicVerification(uint _newAccessLevel) {
+  modifier basicVerification(uint _newAccessLevel) { 
   uint currentLevel = database.uintStorage(keccak256("userAccess", msg.sender));
-  require(currentLevel >= 1);    // Must have basic KYC verification
+  require(currentLevel >= 1);    // Must have basic KYC verification 
   require(currentLevel < _newAccessLevel);       // Dont allow burning to downgrade access level
-  require (_newAccessLevel < 5);
-  _;
+  require (_newAccessLevel < 5); 
+  _; 
 }
 
   modifier whenNotPaused {
@@ -48,7 +48,7 @@ contract TokenBurn {
     _;
   }
 
-  modifier priceUpdated {
+  modifier priceUpdated { 
     require (now < database.uintStorage(keccak256("mybUSDPriceExpiration")));
     _;
   }

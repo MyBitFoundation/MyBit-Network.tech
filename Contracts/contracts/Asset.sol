@@ -101,7 +101,7 @@ using SafeMath for *;
   nonReentrant
   whenNotPaused
   returns (bool) {
-    require(msg.sender == database.addressStorage(keccak256("contract", "MarketPlace")));
+    require(msg.sender == database.addressStorage(keccak256("contract", "AssetExchange")));
     require(getAmountOwed(_assetID, _from) == 0);
     uint sharesFrom = database.uintStorage(keccak256("shares", _assetID, _from));
     require(sharesFrom >= _amount);
