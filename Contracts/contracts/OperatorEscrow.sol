@@ -12,12 +12,14 @@ contract OperatorEscrow {
   MyBitToken public myBitToken;
   Database public database; 
 
+  // Constructor. Initiate Database and MyBitToken
   function OperatorEscrow(address _database, address _tokenAddress)
   public { 
     database = Database(_database); 
     myBitToken = MyBitToken(_tokenAddress);
   }
 
+  // Operator can deposit MyBit here to be locked for escrow
   function depositEscrow(uint _amount)
   external 
   funderApproved
@@ -28,6 +30,7 @@ contract OperatorEscrow {
     return true; 
   }
 
+  // Assets can send earned funds to the operator here.
   function receiveIncome(bytes32 _assetID)
   external
   payable { 
@@ -37,12 +40,13 @@ contract OperatorEscrow {
     LogPaymentReceived(_assetID, msg.value, assetOperator); 
   }
 
-  
+  // Operator can withdraw any escrowed tokens that are no longer needed in escrow here 
+  // To withdraw the asset must have: Not started funding (stage = 0), Failed Funding (stage = 2), Finished lifecycle (stage = 5)) 
   function unlockEscrow(bytes32 _assetID)
   external 
   funderApproved { 
     require(database.boolStorage(keccak256("operatorEscrowed", _assetID, msg.sender)));    // Make sure sender has escrowed tokens for this asset
-    uint fundingStage = database.uintStorage(keccak256("fundingStage", _assetID));
+    uint fundingStage = database.uintStorage(keccak256("fundingStage", _assetID)); 
     assert (fundingStage == 0 || fundingStage == 2 || fundingStage == 5);    // check that asset is not live
     database.deleteBool(keccak256("operatorEscrowed", _assetID, msg.sender));    // Remove senders as operator
     uint lockedAmount = database.uintStorage(keccak256("operatorAmountEscrowed", msg.sender)); 
