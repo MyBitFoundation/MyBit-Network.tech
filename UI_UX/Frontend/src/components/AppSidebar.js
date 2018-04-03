@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu } from 'semantic-ui-react';
+import { Menu, Grid } from 'semantic-ui-react';
 import './AppSidebar.css';
 
 export const AppSidebar = () => {
@@ -19,8 +19,20 @@ export const AppSidebar = () => {
     </Menu.Item>
   ));
   return (
-    <Menu secondary fluid vertical className="AppSidebar__menu">
-      {sidebarMenu}
-    </Menu>
+    <Grid.Column
+      width={3}
+      style={{
+        backgroundColor: '#200344',
+        position: 'fixed',
+        top: '74px',
+        left: '0',
+        bottom: '0',
+        padding: '0'
+      }}
+    >
+      <Menu secondary fluid vertical className="AppSidebar__menu">
+        {sidebarMenu}
+      </Menu>
+    </Grid.Column>
   );
 };
