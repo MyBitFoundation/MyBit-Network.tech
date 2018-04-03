@@ -13,19 +13,7 @@ class App extends Component {
         <AppHeader />
         <Grid>
           <Grid.Row>
-            <Grid.Column
-              width={3}
-              style={{
-                backgroundColor: '#200344',
-                position: 'fixed',
-                top: '74px',
-                left: '0',
-                bottom: '0',
-                padding: '0'
-              }}
-            >
-              <AppSidebar />
-            </Grid.Column>
+            <AppSidebar />
             <Grid.Column
               width={13}
               style={{
