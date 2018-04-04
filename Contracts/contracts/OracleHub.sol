@@ -22,7 +22,11 @@ contract OracleHub is usingOraclize{
   function ethUSDQuery()
   external
   payable
+<<<<<<< HEAD
   returns (bool) {
+=======
+  returns (bool) { 
+>>>>>>> 20ed659807c98ee3795c2680184275807ef777c1
     bytes32 queryID = oraclize_query('URL', 'json(https://api.coinmarketcap.com/v1/ticker/ethereum/).0.price_usd');
     database.setBool(queryID, true);
     LogEthUSDQuery(msg.sender, queryID, now);
