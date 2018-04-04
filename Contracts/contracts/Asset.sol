@@ -108,7 +108,7 @@ using SafeMath for *;
     uint sharesTo = database.uintStorage(keccak256("shares", _assetID, _to));
     uint paidToFunderFrom = database.uintStorage(keccak256("totalPaidToFunder", _assetID, _from));
     uint paidToFunderTo = database.uintStorage(keccak256("totalPaidToFunder", _assetID, _to));
-    uint relativePaidOutAmount = (paidToFunderFrom.mul(_amount)).div(sharesFrom);
+    uint relativePaidOutAmount = (paidToFunderFrom.mul(_amount)).div(sharesFrom);   // Move Funder revenue with shares 
     database.setUint(keccak256("totalPaidToFunder", _assetID, _to), paidToFunderTo.add(relativePaidOutAmount));
     database.setUint(keccak256("totalPaidToFunder", _assetID, _from), paidToFunderFrom.sub(relativePaidOutAmount));
     database.setUint(keccak256("shares", _assetID, _from), sharesFrom.sub(_amount));
