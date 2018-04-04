@@ -37,9 +37,9 @@ contract  Test {
   function burnAccessTokens(uint _accessLevel, uint _amount)
   external { 
     TokenFaucet(getAddress("TokenFaucet")).withdraw(_amount);
-    MyBitToken(getAddress("MyBitToken")).approve(getAddress("TokenBurn"), _amount);
-    setPrices(getAddress("OracleHub"));
-    TokenBurn(getAddress("TokenBurn")).burnTokens(_accessLevel); 
+    // MyBitToken(getAddress("MyBitToken")).approve(getAddress("TokenBurn"), _amount);
+    // setPrices(getAddress("OracleHub"));
+    // TokenBurn(getAddress("TokenBurn")).burnTokens(_accessLevel); 
   }
 
   function deposit()
