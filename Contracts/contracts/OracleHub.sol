@@ -23,7 +23,7 @@ contract OracleHub is usingOraclize{
   external 
   payable
   returns (bool) { 
-    bytes32 queryID = oraclize_query('URL', 'json(https://api.coinmarketcap.com/v1/ticker/ethereum/).0.price_usd}');
+    bytes32 queryID = oraclize_query('URL', 'json(https://api.coinmarketcap.com/v1/ticker/ethereum/).0.price_usd');
     database.setBool(queryID, true);
     LogEthUSDQuery(msg.sender, queryID, now);
     return true;
