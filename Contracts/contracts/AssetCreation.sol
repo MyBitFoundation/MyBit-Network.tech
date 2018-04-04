@@ -52,7 +52,8 @@ contract AssetCreation {
   returns (bool) {
     require(database.addressStorage(keccak256("operatorEscrowed", _assetID)) == address(0));    // Check that another user didn't already submit escrow for this asset
     uint mybPrice = database.uintStorage(keccak256("mybUSDPrice"));
-    uint amountMyBRequired = _amountToBeRaised.mul(10000000000).div(mybPrice);    // This is 10% of total asset cost
+    // Note: amountToBeRaised is multiplied by 100, as MYBPrice is rounded up by 2 decimal places (3.34 -> 334) 
+    uint amountMyBRequired = _amountToBeRaised.mul(100).div(mybPrice);    // This is 10% of total asset cost
     assert (amountMyBRequired > 0);
     database.setUint(keccak256("assetEscrowRequirement", _assetID), amountMyBRequired);
     uint lockedAmount = database.uintStorage(keccak256("operatorAmountEscrowed", msg.sender));

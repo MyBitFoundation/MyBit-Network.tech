@@ -151,11 +151,11 @@ contract FundingHub {
     require(now <= database.uintStorage(keccak256("fundingDeadline", _assetID)));
     _;
     uint value1 = database.uintStorage(keccak256("amountRaised", _assetID)).mul(_currentEthPrice);
-    uint value2 = database.uintStorage(keccak256("amountToBeRaised", _assetID)).mul(1000000000000000000);
+    uint value2 = database.uintStorage(keccak256("amountToBeRaised", _assetID)).mul(1e18);
     uint value3 = database.uintStorage(keccak256("amountRaised", _assetID));
 
     fundingLimitModifier(value1, value2, value3);
-    if (database.uintStorage(keccak256("amountRaised", _assetID)).mul(_currentEthPrice) >= database.uintStorage(keccak256("amountToBeRaised", _assetID)).mul(1000000000000000000)){
+    if (database.uintStorage(keccak256("amountRaised", _assetID)).mul(_currentEthPrice).div(1e18) >= database.uintStorage(keccak256("amountToBeRaised", _assetID))) {
        database.deleteUint(keccak256("amountToBeRaised", _assetID));      // No longer need this variable
        LogAssetFundingSuccess(_assetID, _currentEthPrice, block.timestamp);
        database.setUint(keccak256("fundingStage", _assetID), 3);
