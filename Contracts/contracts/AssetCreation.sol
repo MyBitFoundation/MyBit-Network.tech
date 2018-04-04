@@ -33,8 +33,8 @@ contract AssetCreation {
     require(_amountToBeRaised >= 100);    
     require(database.uintStorage(keccak256("fundingStage", _assetID)) == 0);    // This ensures the asset isn't currently live or being funded
     require(_operatorPercentage < 100 && _operatorPercentage > 0);
-    require(database.addressStorage(keccak256("operatorEscrowed", _assetID)) ==  msg.sender);   // Check that this user has deposited the necessary escrow for the asset.
     require(lockAssetEscrow(_assetID, _amountToBeRaised)); 
+    require(database.addressStorage(keccak256("operatorEscrowed", _assetID)) ==  msg.sender);   // Check that this user has deposited the necessary escrow for the asset.
     database.setUint(keccak256("amountToBeRaised", _assetID), _amountToBeRaised);
     database.setUint(keccak256("operatorPercentage", _assetID), _operatorPercentage);
     database.setAddress(keccak256("assetOperator", _assetID), msg.sender);
@@ -52,7 +52,6 @@ contract AssetCreation {
   returns (bool) {
     require(database.addressStorage(keccak256("operatorEscrowed", _assetID)) == address(0));    // Check that another user didn't already submit escrow for this asset
     uint mybPrice = database.uintStorage(keccak256("mybUSDPrice")); 
-    // TODO: test math here. mybPrice = price for 10**8
     uint amountMyBRequired = _amountToBeRaised.mul(10**10).div(mybPrice);  // TODO: check myPrice return decimals  // This is 10% of total asset cost
     assert (amountMyBRequired > 0);
     database.setUint(keccak256("assetEscrowRequirement", _assetID), amountMyBRequired);
