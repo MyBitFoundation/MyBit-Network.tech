@@ -29,11 +29,11 @@ contract AssetCreation {
   noEmptyBytes(_installerID)
   noEmptyBytes(_assetType)
   returns (bool){
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= 2); 
-    require(_amountToBeRaised >= 100);    
+    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= 2);
+    require(_amountToBeRaised >= 100);
     require(database.uintStorage(keccak256("fundingStage", _assetID)) == 0);    // This ensures the asset isn't currently live or being funded
     require(_operatorPercentage < 100 && _operatorPercentage > 0);
-    require(lockAssetEscrow(_assetID, _amountToBeRaised)); 
+    require(lockAssetEscrow(_assetID, _amountToBeRaised));
     require(database.addressStorage(keccak256("operatorEscrowed", _assetID)) ==  msg.sender);   // Check that this user has deposited the necessary escrow for the asset.
     database.setUint(keccak256("amountToBeRaised", _assetID), _amountToBeRaised);
     database.setUint(keccak256("operatorPercentage", _assetID), _operatorPercentage);
@@ -41,28 +41,23 @@ contract AssetCreation {
     database.setUint(keccak256("fundingDeadline", _assetID), block.timestamp.add(fundingTime));
     database.setUint(keccak256("fundingStage", _assetID), 1);
     LogAssetInfo(_assetID, _installerID, _amountToBeRaised);
-    LogAssetFundingStarted(msg.sender, _assetID, _assetType);   
+    LogAssetFundingStarted(msg.sender, _assetID, _assetType);
     return true;
   }
 
-  // Note: That the AssetID is being registered before created above. 
+  // Note: That the AssetID is being registered before created above.
   function lockAssetEscrow(bytes32 _assetID, uint _amountToBeRaised)
-  internal 
+  internal
   priceUpdated
   returns (bool) {
     require(database.addressStorage(keccak256("operatorEscrowed", _assetID)) == address(0));    // Check that another user didn't already submit escrow for this asset
-<<<<<<< HEAD
     uint mybPrice = database.uintStorage(keccak256("mybUSDPrice"));
     // Note: amountToBeRaised is multiplied by 100, as MYBPrice is rounded up by 2 decimal places (3.34 -> 334) 
     uint amountMyBRequired = _amountToBeRaised.mul(100).div(mybPrice);    // This is 10% of total asset cost
-=======
-    uint mybPrice = database.uintStorage(keccak256("mybUSDPrice")); 
-    uint amountMyBRequired = _amountToBeRaised.mul(10**10).div(mybPrice);  // TODO: check myPrice return decimals  // This is 10% of total asset cost
->>>>>>> d6486ccf0ba51738755d9c397f144e410c07e295
     assert (amountMyBRequired > 0);
     database.setUint(keccak256("assetEscrowRequirement", _assetID), amountMyBRequired);
-    uint lockedAmount = database.uintStorage(keccak256("operatorAmountEscrowed", msg.sender)); 
-    assert (amountMyBRequired <= database.uintStorage(keccak256("operatorAmountDeposited", msg.sender)).sub(lockedAmount)); 
+    uint lockedAmount = database.uintStorage(keccak256("operatorAmountEscrowed", msg.sender));
+    assert (amountMyBRequired < database.uintStorage(keccak256("operatorAmountDeposited", msg.sender)).sub(lockedAmount));
     database.setUint(keccak256("operatorAmountEscrowed", msg.sender), lockedAmount.add(amountMyBRequired));
     database.setAddress(keccak256("operatorEscrowed", _assetID), msg.sender);
     LogLockAssetEscrow(msg.sender, _assetID, amountMyBRequired);
@@ -116,7 +111,7 @@ contract AssetCreation {
     database.setUint(keccak256("myBitFoundationPercentage"), _myBitFoundationPercentage);
     database.setUint(keccak256("stakedTokenPercentage"), _stakedTokenPercentage);
     database.setUint(keccak256("installerPercentage"), _installerPercentage);
-    LogFundingPercentageChanged(_myBitFoundationPercentage, _stakedTokenPercentage, _installerPercentage);  
+    LogFundingPercentageChanged(_myBitFoundationPercentage, _stakedTokenPercentage, _installerPercentage);
     return true;
   }
 
@@ -147,15 +142,16 @@ contract AssetCreation {
     rentrancy_lock = false;
   }
 
-  modifier priceUpdated { 
+  modifier priceUpdated {
     require (now < database.uintStorage(keccak256("mybUSDPriceExpiration")));
     _;
   }
 
   event LogAssetFundingStarted(address indexed _creator, bytes32 indexed _assetID, bytes32 indexed _assetType);
   event LogAssetInfo(bytes32 indexed _assetID, bytes32 indexed _installerID, uint indexed _amountToBeRaised);
+  event LogTesting(uint _amountToBeRaised, uint testVal, uint test2Val, uint mybPrice);
+  event LogLockAssetEscrow(address indexed _from, bytes32 indexed _assetID, uint indexed _amountOf);
   event LogAssetRemoved(address indexed _remover, bytes32 indexed _assetID, uint indexed _timestamp);
   event LogFundingTimeChanged(address _sender, uint _newTimeForFunding, uint _blockTimestamp);
-  event LogFundingPercentageChanged(uint _myBitFoundationPercentage, uint _stakedTokenPercentage, uint _installerPercentage); 
-  event LogLockAssetEscrow(address indexed _from, bytes32 indexed _assetID, uint indexed _amountOf);
+  event LogFundingPercentageChanged(uint _myBitFoundationPercentage, uint _stakedTokenPercentage, uint _installerPercentage);
 }

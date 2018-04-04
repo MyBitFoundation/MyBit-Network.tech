@@ -34,17 +34,15 @@ contract OracleHub is usingOraclize{
   external
   payable
   returns(bool){
-    bytes32 queryID = oraclize_query('nested', '[WolframAlpha]  10 to the power of 2 multiplied by ${[URL] json(https://api.coinmarketcap.com/v1/ticker/mybit-token/).0.price_usd}');
+    bytes32 queryID = oraclize_query('nested', '[WolframAlpha]  10 to the power of 3 multiplied by ${[URL] json(https://api.coinmarketcap.com/v1/ticker/mybit-token/).0.price_usd}');
     LogmybUSDQuery(msg.sender, queryID, now);
     return true;
   }
 
-  // mybUSDQuery must wait until ethUSDQuery is finished running 
   function __callback(bytes32 myid, string result)
   public
   isOraclize {
-    if (database.boolStorage(myid)) {
-      database.deleteBool(myid); 
+    if (database.boolStorage(myid)) { 
       ethUSDCallback(myid, result);
     }
     else { 
@@ -57,6 +55,7 @@ contract OracleHub is usingOraclize{
     uint priceTimeline = database.uintStorage(keccak256("priceUpdateTimeline"));
     database.setUint(keccak256("ethUSDPrice"), parseInt(result)); 
     database.setUint(keccak256("ethUSDPriceExpiration"), (priceTimeline + now));
+    database.deleteBool(myid); 
     LogFundingCallbackReceived(myid, parseInt(result), now); 
   }
 
