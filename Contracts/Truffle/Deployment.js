@@ -1,40 +1,48 @@
-const Database = artifacts.require("./Database.sol");
-const HashFunctions = artifacts.require("./HashFunctions.sol");
+const Asset = artifacts.require('./Asset.sol');
+const AssetCreation = artifacts.require('./AssetCreation.sol');
 const ContractManager = artifacts.require("./ContractManager.sol");
-const InitialVariables = artifacts.require("./InitialVariables.sol");
-const AssetCreation = artifacts.require("./AssetCreation.sol");
-const Asset = artifacts.require("./Asset.sol");
-const Owned = artifacts.require("./Owned.sol");
-const UserAccess = artifacts.require("./UserAccess.sol");
+const Database = artifacts.require("./Database.sol");
+const FunderControls = artifacts.require('./FunderControls.sol');
 const FundingHub = artifacts.require("./FundingHub.sol");
-const StakingBank = artifacts.require("./StakingBank.sol");
-const BugBank = artifacts.require("./BugBank.sol");
-const BugBounty = artifacts.require('./BugBounty.sol');
-const MarketPlace = artifacts.require('./MarketPlace.sol');
+const HashFunctions = artifacts.require("./HashFunctions.sol");
+const InitialVariables = artifacts.require("./InitialVariables.sol");
+const AssetExchange = artifacts.require('./AssetExchange.sol');
 const MyBitToken = artifacts.require('./MyBitToken.sol');
-const TokenStaking = artifacts.require('./TokenStaking.sol');
+const OperatorEscrow = artifacts.require('./OperatorEscrow.sol');
+const OracleHub = artifacts.require('./OracleHub.sol');
+const Owned = artifacts.require("./Owned.sol");
+const StakingBank = artifacts.require('./StakingBank.sol');
 const TokenBurn = artifacts.require('./TokenBurn.sol');
+const TokenFaucet = artifacts.require('./TokenFaucet.sol');
+const UserAccess = artifacts.require('./UserAccess.sol');
+
 
 contract('Deploying and storing all contracts + validation', async (accounts) => {
   const ownerAddr1 = web3.eth.accounts[0];
   const ownerAddr2 = web3.eth.accounts[1];
   const ownerAddr3 = web3.eth.accounts[2];
-  let dbInstance;
-  let hfInstance;
-  let initialInstance;
-  let contractManagerInstance;
-  let assetCreationInstance;
+
   let assetInstance;
-  let userAccessInstance;
+  let assetCreationInstance;
+  let contractManagerInstance;
+  let dbInstance;
+  let funderControlsInstance;
   let fundingHubInstance;
-  let stakingBankInstance;
-  let bugBankInstance;
-  let bugBountyInstance;
-  let marketPlaceInstance;
+  let hfInstance;
+  let initialVariableInstance;
+  let AssetExchangeInstance;
   let myBitTokenInstance;
-  let tokenStakingInstance;
-  let tokenBurnInstance;
+  let operatorEscrowInstance;
+  let oracleHubInstance;
   let ownedInstance;
+  let stakingBankInstance;
+  let tokenBurnInstance;
+  let tokenFaucetInstance;
+  let userAccessInstance;
+
+  let myBitPayoutAddress = web3.eth.accounts[8];
+  let assetEscrowPayoutAddress = web3.eth.accounts[9];
+
 
   it("Owners should be assigned", async () => {
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);
@@ -49,54 +57,32 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    it('Assign ContractManager', async () => {
       contractManagerInstance = await ContractManager.new(dbInstance.address);
 
-      // Correct way of setting contract manager & check if its been assigned
       await dbInstance.setContractManager(contractManagerInstance.address);
       assert.equal(await dbInstance.addressStorage(await hfInstance.stringString("contract", "ContractManager")),contractManagerInstance.address, 'Contract manager address equal');
       assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress("contract", contractManagerInstance.address)), true, 'Contract manager stored true');
 
-      //  Attempt to changeContractManager with wrong {from: details} & correct function signer since its fully viewable on blockchain
-      // await dbInstance.changeContractManager(ownerAddr1, contractManagerInstance.address, web3.eth.accounts[5],{from:web3.eth.accounts[8]});
    });
 
    it('Add InitialVariables contract to database via contract manager', async () => {
-    initialInstance = await InitialVariables.new(dbInstance.address);
+    initialVariableInstance = await InitialVariables.new(dbInstance.address);
     // Check that initialvariables database address is correct compared to real database address
-    assert.equal(await initialInstance.database(), await dbInstance.address, 'Initial Variables database Address assigned properly');
+    assert.equal(await initialVariableInstance.database(), await dbInstance.address, 'Initial Variables database Address assigned properly');
 
     // Add initialvariables contract to database and validate all fields are updated with correct outcome
-    await contractManagerInstance.addContract('InitialVariables', initialInstance.address, ownerAddr2);
-    assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(initialInstance.address))), false, 'Contract manager to database === false');
-    assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'InitialVariables')), initialInstance.address, 'Initial variables address correctly stored');
-    assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', initialInstance.address)), true, 'Initial variables address == true');
+    await contractManagerInstance.addContract('InitialVariables', initialVariableInstance.address, ownerAddr2);
+    assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(initialVariableInstance.address))), false, 'Contract manager to database === false');
+    assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'InitialVariables')), initialVariableInstance.address, 'Initial variables address correctly stored');
+    assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', initialVariableInstance.address)), true, 'Initial variables address == true');
 
    });
 
 
    it('Initialize InitialVariables  variables via startDapp', async () => {
-     await initialInstance.startDapp();
+     await initialVariableInstance.startDapp(myBitPayoutAddress, assetEscrowPayoutAddress);
      //--------------------Asset Creation Variables-----------------
-     assert.equal(await dbInstance.uintStorage(await hfInstance.sha3('myBitFoundationPercentage')), 1, 'myBitFoundationPercentage == 1');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.sha3('stakedTokenPercentage')), 2, 'myBitFoundationPercentage == 2');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.sha3('installerPercentage')), 97, 'installerPercentage == 97');
-
-     // ---------------------Staking Variables--------------------------
-     assert.equal(await dbInstance.uintStorage(await hfInstance.sha3('minimumStakeAmount')), 100, 'minimumStakeAmount == 100');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.sha3('minimumStakeTime')), 10, 'minimumStakeTime == 10');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.sha3('minimumWithdrawTime')), 5, 'minimumWithdrawTime == 5');
-
-
-     //-------------------Bug Bounty Variables------------------------
-     assert.equal(await dbInstance.uintStorage(await hfInstance.sha3('blocksForBugReview')), 25, 'blocksForBugReview == 25');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.sha3('blocksForExpertReview')), 25, 'blocksForExpertReview == 25');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.sha3('bugSubmissionCost')), 1000000000000000000, 'bugSubmissionCost == 1000000000000000000');
-
-     assert.equal(await dbInstance.uintStorage(await hfInstance.sha3('expertVotePower')), 5, 'expertVotePower == 5');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.sha3('regularVotePower')), 1, 'expertVotePower == 1');
-
-    // assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('bugSeverityCost', 1)), 100, 'bugSeverityCost 1 == 100');
-    // assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('bugSeverityCost', 2)), 1000, 'bugSeverityCost 2 == 1000');
-    // assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('bugSeverityCost', 3)), 10000, 'bugSeverityCost 3 == 10000');
-
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('myBitFoundationPercentage')), 1, 'myBitFoundationPercentage == 1');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('stakedTokenPercentage')), 2, 'myBitFoundationPercentage == 2');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('installerPercentage')), 97, 'installerPercentage == 97');
    });
 
    it('MyBitToken contract deployment ', async () => {
@@ -109,7 +95,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(await myBitTokenInstance.name(), 'MyBit Token', 'MyBitToken - Correct token name');
      assert.equal(await myBitTokenInstance.symbol(), 'MyB', 'MyBitToken - Correct Token symbol');
      assert.equal(await myBitTokenInstance.decimals(), 8, 'MyBitToken - Correct decimals');
-
    });
 
 
@@ -191,54 +176,51 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    });
 
 
-   it('BugBank contract deployment ', async () => {
-     bugBankInstance = await BugBank.new(dbInstance.address);
-
-     //Ensure all variables are set in constructor and passed
-     assert.equal(await bugBankInstance.database(), await dbInstance.address, 'BugBank database Address assigned properly');
-
-     await contractManagerInstance.addContract('BugBank', bugBankInstance.address, ownerAddr2);
-     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(bugBankInstance.address))), false, 'Contract manager(BugBank) to database === false');
-     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'BugBank')), bugBankInstance.address, 'BugBank address correctly stored');
-     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', bugBankInstance.address)), true, 'BugBank address == true');
+   it('funderControlsInstance contract deployment ', async () => {
+     funderControlsInstance = await FunderControls.new(dbInstance.address);
+     await contractManagerInstance.addContract('FunderControls', funderControlsInstance.address, ownerAddr2);
+     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(funderControlsInstance.address))), false, 'Contract manager(ContratManager) to database === false');
+     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'FunderControls')), funderControlsInstance.address, 'FunderControls address correctly stored');
+     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', funderControlsInstance.address)), true, 'FunderControls address == true');
    });
 
-   it('BugBounty contract deployment ', async () => {
-     bugBountyInstance = await BugBounty.new(dbInstance.address);
-
-     //Ensure all variables are set in constructor and passed
-     assert.equal(await bugBountyInstance.database(), await dbInstance.address, 'BugBounty database Address assigned properly');
-
-     await contractManagerInstance.addContract('BugBounty', bugBountyInstance.address, ownerAddr2);
-     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(bugBountyInstance.address))), false, 'Contract manager(BugBounty) to database === false');
-     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'BugBounty')), bugBountyInstance.address, 'BugBounty address correctly stored');
-     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', bugBountyInstance.address)), true, 'BugBounty address == true');
+   it('operatorEscrowInstance contract deployment ', async () => {
+     operatorEscrowInstance = await OperatorEscrow.new(dbInstance.address, myBitTokenInstance.address);
+     await contractManagerInstance.addContract('OperatorEscrow', operatorEscrowInstance.address, ownerAddr2);
+     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(operatorEscrowInstance.address))), false, 'Contract manager(OperatorEscrow) to database === false');
+     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'OperatorEscrow')), operatorEscrowInstance.address, 'OperatorEscrow address correctly stored');
+     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', operatorEscrowInstance.address)), true, 'OperatorEscrow address == true');
    });
 
-   it('MarketPlace contract deployment ', async () => {
-     marketPlaceInstance = await MarketPlace.new(dbInstance.address);
-
-     //Ensure all variables are set in constructor and passed
-     assert.equal(await marketPlaceInstance.database(), await dbInstance.address, 'MarketPlace database Address assigned properly');
-
-     await contractManagerInstance.addContract('MarketPlace', marketPlaceInstance.address, ownerAddr2);
-     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(marketPlaceInstance.address))), false, 'Contract manager(MarketPlace) to database === false');
-     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'MarketPlace')), marketPlaceInstance.address, 'MarketPlace address correctly stored');
-     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', marketPlaceInstance.address)), true, 'MarketPlace address == true');
+   it('oracleHubInstance contract deployment ', async () => {
+     oracleHubInstance = await OracleHub.new(dbInstance.address);
+     await contractManagerInstance.addContract('OracleHub', oracleHubInstance.address, ownerAddr2);
+     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(oracleHubInstance.address))), false, 'Contract manager(OracleHub) to database === false');
+     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'OracleHub')), oracleHubInstance.address, 'OracleHub address correctly stored');
+     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', oracleHubInstance.address)), true, 'OracleHub address == true');
    });
 
-   it('TokenStaking contract deployment ', async () => {
-     tokenStakingInstance = await TokenStaking.new(dbInstance.address, myBitTokenInstance.address);
+   it('tokenFaucetInstance contract deployment ', async () => {
+     tokenFaucetInstance = await TokenFaucet.new(myBitTokenInstance.address);
+     await contractManagerInstance.addContract('TokenFaucet', tokenFaucetInstance.address, ownerAddr2);
+     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(tokenFaucetInstance.address))), false, 'Contract manager(TokenFaucet) to database === false');
+     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'TokenFaucet')), tokenFaucetInstance.address, 'TokenFaucet address correctly stored');
+     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', tokenFaucetInstance.address)), true, 'TokenFaucet address == true');
+   });
+
+
+   it('AssetExchange contract deployment ', async () => {
+     AssetExchangeInstance = await AssetExchange.new(dbInstance.address);
 
      //Ensure all variables are set in constructor and passed
-     assert.equal(await tokenStakingInstance.database(), await dbInstance.address, 'TokenStaking database Address assigned properly');
-     assert.equal(await tokenStakingInstance.myBitToken(), await myBitTokenInstance.address, 'TokenStaking myBitToken Address assigned properly');
+     assert.equal(await AssetExchangeInstance.database(), await dbInstance.address, 'AssetExchange database Address assigned properly');
 
-     await contractManagerInstance.addContract('TokenStaking', tokenStakingInstance.address, ownerAddr2);
-     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(tokenStakingInstance.address))), false, 'Contract manager(TokenStaking) to database === false');
-     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'TokenStaking')), tokenStakingInstance.address, 'TokenStaking address correctly stored');
-     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', tokenStakingInstance.address)), true, 'TokenStaking address == true');
+     await contractManagerInstance.addContract('AssetExchange', AssetExchangeInstance.address, ownerAddr2);
+     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(AssetExchangeInstance.address))), false, 'Contract manager(AssetExchange) to database === false');
+     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'AssetExchange')), AssetExchangeInstance.address, 'AssetExchange address correctly stored');
+     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', AssetExchangeInstance.address)), true, 'AssetExchange address == true');
    });
+
 
    it('TokenBurn contract deployment ', async () => {
      tokenBurnInstance = await TokenBurn.new(dbInstance.address, myBitTokenInstance.address);
@@ -247,9 +229,10 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(await tokenBurnInstance.database(), await dbInstance.address, 'TokenBurn database Address assigned properly');
      assert.equal(await tokenBurnInstance.myBitToken(), await myBitTokenInstance.address, 'TokenBurn myBitToken Address assigned properly');
 
-     assert.equal(await tokenBurnInstance.accessCostUSD(2), 10, 'TokenBurn access 2 == 10');
-     assert.equal(await tokenBurnInstance.accessCostUSD(3), 100, 'TokenBurn access 3 == 100');
-     assert.equal(await tokenBurnInstance.accessCostUSD(4), 1000, 'TokenBurn access 4 == 1000');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 2)), 25, 'access level 2 set');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 3)), 75, 'access level 2 set');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 4)), 100, 'access level 2 set');
+
 
      await contractManagerInstance.addContract('TokenBurn', tokenBurnInstance.address, ownerAddr2);
      assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(tokenBurnInstance.address))), false, 'Contract manager(TokenBurn) to database === false');

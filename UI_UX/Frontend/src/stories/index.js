@@ -23,7 +23,6 @@ import { AssetDetails } from '../components/AssetDetails';
 import { AssetFunding } from '../components/AssetFunding';
 import { ConfirmationPopup } from '../components/ConfirmationPopup';
 import { Grid } from 'semantic-ui-react';
-
 import 'semantic-ui-css/semantic.css';
 
 storiesOf('Sidebar', module).add('view', () => {

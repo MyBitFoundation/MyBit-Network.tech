@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.19;
 import './SafeMath.sol';
 import './Database.sol';
 
@@ -175,6 +175,9 @@ using SafeMath for *;
   function () public {
     revert();
   }
+
+  event LogIncomeReceivedManagerTest(uint managerAmount, address assetOperator, uint operatorIncome, uint operatorIncomeAfter);
+
 
   event LogSharesTraded(bytes32 indexed _assetID, address indexed _from, address indexed _to, uint _timestamp);
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);

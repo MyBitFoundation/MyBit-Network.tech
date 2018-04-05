@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.19;
 
 import './SafeMath.sol';
 import './Database.sol';
@@ -42,7 +42,8 @@ contract FundingHub {
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     database.setUint(keccak256("amountRaised", _assetID), amountRaised.add(msg.value));
     database.setUint(keccak256("shares", _assetID, msg.sender), shares.add(msg.value));
-    LogAssetFunded(msg.sender, msg.value, block.timestamp);    return true;
+    LogAssetFunded(msg.sender, msg.value, block.timestamp);
+    return true;
   }
 
 
@@ -149,14 +150,19 @@ contract FundingHub {
   modifier fundingLimit(bytes32 _assetID, uint _currentEthPrice) {
     require(now <= database.uintStorage(keccak256("fundingDeadline", _assetID)));
     _;
-    if (database.uintStorage(keccak256("amountRaised", _assetID)).mul(_currentEthPrice) >= database.uintStorage(keccak256("amountToBeRaised", _assetID))) {
+    uint value1 = database.uintStorage(keccak256("amountRaised", _assetID)).mul(_currentEthPrice);
+    uint value2 = database.uintStorage(keccak256("amountToBeRaised", _assetID)).mul(1e18);
+    uint value3 = database.uintStorage(keccak256("amountRaised", _assetID));
+
+    fundingLimitModifier(value1, value2, value3);
+    if (database.uintStorage(keccak256("amountRaised", _assetID)).mul(_currentEthPrice).div(1e18) >= database.uintStorage(keccak256("amountToBeRaised", _assetID))) {
        database.deleteUint(keccak256("amountToBeRaised", _assetID));      // No longer need this variable
        LogAssetFundingSuccess(_assetID, _currentEthPrice, block.timestamp);
        database.setUint(keccak256("fundingStage", _assetID), 3);
       }
   }
 
-  modifier priceUpdated(uint _ethPrice) { 
+  modifier priceUpdated(uint _ethPrice) {
     require (now < database.uintStorage(keccak256("ethUSDPriceExpiration")) && _ethPrice == database.uintStorage(keccak256("ethUSDPrice")));
     _;
   }
@@ -185,4 +191,5 @@ contract FundingHub {
   event LogRefund(address indexed _funder, uint indexed _amount, uint indexed _timestamp);
   event LogAssetPayout(bytes32 indexed _assetID, uint indexed _amount, uint indexed _blockNumber);
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
+  event fundingLimitModifier(uint _value1, uint _value2, uint _value3);
 }
