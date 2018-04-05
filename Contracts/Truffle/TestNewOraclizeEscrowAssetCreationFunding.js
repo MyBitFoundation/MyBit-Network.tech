@@ -33,7 +33,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let funderControlsInstance;
   let fundingHubInstance;
   let hfInstance;
-  let initailVariableInstance;
+  let initialVariableInstance;
   let AssetExchangeInstance;
   let myBitTokenInstance;
   let operatorEscrowInstance;
@@ -86,21 +86,21 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    });
 
    it('Add InitialVariables contract to database via contract manager', async () => {
-    initailVariableInstance = await InitialVariables.new(dbInstance.address);
+    initialVariableInstance = await InitialVariables.new(dbInstance.address);
     // Check that initialvariables database address is correct compared to real database address
-    assert.equal(await initailVariableInstance.database(), await dbInstance.address, 'Initial Variables database Address assigned properly');
+    assert.equal(await initialVariableInstance.database(), await dbInstance.address, 'Initial Variables database Address assigned properly');
 
     // Add initialvariables contract to database and validate all fields are updated with correct outcome
-    await contractManagerInstance.addContract('InitialVariables', initailVariableInstance.address, ownerAddr2);
-    assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(initailVariableInstance.address))), false, 'Contract manager to database === false');
-    assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'InitialVariables')), initailVariableInstance.address, 'Initial variables address correctly stored');
-    assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', initailVariableInstance.address)), true, 'Initial variables address == true');
+    await contractManagerInstance.addContract('InitialVariables', initialVariableInstance.address, ownerAddr2);
+    assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(initialVariableInstance.address))), false, 'Contract manager to database === false');
+    assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'InitialVariables')), initialVariableInstance.address, 'Initial variables address correctly stored');
+    assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', initialVariableInstance.address)), true, 'Initial variables address == true');
 
    });
 
 
    it('Initialize InitialVariables  variables via startDapp', async () => {
-     await initailVariableInstance.startDapp(myBitPayoutAddress, assetEscrowPayoutAddress);
+     await initialVariableInstance.startDapp(myBitPayoutAddress, assetEscrowPayoutAddress);
      //--------------------Asset Creation Variables-----------------
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('myBitFoundationPercentage')), 1, 'myBitFoundationPercentage == 1');
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('stakedTokenPercentage')), 2, 'myBitFoundationPercentage == 2');
