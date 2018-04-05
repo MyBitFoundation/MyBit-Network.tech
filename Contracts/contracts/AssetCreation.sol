@@ -54,12 +54,14 @@ contract AssetCreation {
     uint mybPrice = database.uintStorage(keccak256("mybUSDPrice"));
     // Note: amountToBeRaised is multiplied by 100, as MYBPrice is rounded up by 2 decimal places (3.34 -> 334)
     uint amountMyBRequired = _amountToBeRaised.mul(100).div(mybPrice);    // This is 10% of total asset cost
+    LogLockAssetEscrow(msg.sender, _assetID, amountMyBRequired);
     assert (amountMyBRequired > 0);
     database.setUint(keccak256("assetEscrowRequirement", _assetID), amountMyBRequired);
     uint lockedAmount = database.uintStorage(keccak256("operatorAmountEscrowed", msg.sender));
     assert (amountMyBRequired < database.uintStorage(keccak256("operatorAmountDeposited", msg.sender)).sub(lockedAmount));
     database.setUint(keccak256("operatorAmountEscrowed", msg.sender), lockedAmount.add(amountMyBRequired));
     database.setAddress(keccak256("operatorEscrowed", _assetID), msg.sender);
+    database.setBool(keccak256("operatorEscrowed", _assetID, msg.sender), true);
     LogLockAssetEscrow(msg.sender, _assetID, amountMyBRequired);
     return true;
   }

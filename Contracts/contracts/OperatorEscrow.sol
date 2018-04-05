@@ -1,4 +1,3 @@
-
 pragma solidity ^0.4.19;
 
 import './Database.sol';
@@ -41,7 +40,10 @@ contract OperatorEscrow {
     assert (fundingStage == 0 || fundingStage == 2 || fundingStage == 5);    // check that asset is not live
     database.deleteBool(keccak256("operatorEscrowed", _assetID, msg.sender));    // Remove senders as operator
     uint lockedAmount = database.uintStorage(keccak256("operatorAmountEscrowed", msg.sender));
-    database.setUint(keccak256("operatorAmountEscrowed", msg.sender), lockedAmount.sub(database.uintStorage(keccak256("assetEscrowRequirement", _assetID))));
+    uint assetLockedAmount = database.uintStorage(keccak256("assetEscrowRequirement", _assetID));
+    uint depositedAmount = database.uintStorage(keccak256("operatorAmountDeposited", msg.sender));
+    database.setUint(keccak256("operatorAmountEscrowed", msg.sender), lockedAmount.sub(assetLockedAmount));
+    database.setUint(keccak256("operatorAmountDeposited", msg.sender), depositedAmount.add(lockedAmount.sub(assetLockedAmount)));
   }
 
   function withdrawToken(uint _amount)
@@ -53,19 +55,7 @@ contract OperatorEscrow {
     uint depositedAmount = database.uintStorage(keccak256("operatorAmountDeposited", msg.sender));
     assert (depositedAmount >= _amount);
     database.setUint(keccak256("operatorAmountDeposited", msg.sender), depositedAmount.sub(_amount));
-    require(myBitToken.transferFrom(msg.sender, this, _amount));
-    return true;
-  }
-
-  // Operator can retrieve payments here. Must retrieve all WEI.
-  function withdrawEther()
-  external
-  funderApproved
-  returns (bool) {
-    uint owed = database.uintStorage(keccak256("operatorIncome", msg.sender));
-    assert (owed > 0);
-    database.deleteUint(keccak256("operatorIncome", msg.sender));
-    msg.sender.transfer(owed);
+    myBitToken.transfer(msg.sender, _amount);
     return true;
   }
 

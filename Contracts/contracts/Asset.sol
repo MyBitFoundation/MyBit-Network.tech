@@ -176,6 +176,9 @@ using SafeMath for *;
     revert();
   }
 
+  event LogIncomeReceivedManagerTest(uint managerAmount, address assetOperator, uint operatorIncome, uint operatorIncomeAfter);
+
+
   event LogSharesTraded(bytes32 indexed _assetID, address indexed _from, address indexed _to, uint _timestamp);
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
   event LogIncomeReceived(address indexed _sender, uint indexed _amount, bytes32 indexed _assetID);
