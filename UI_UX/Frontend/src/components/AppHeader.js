@@ -1,7 +1,7 @@
 import React from 'react';
 import { Menu, Image } from 'semantic-ui-react';
 import logo from '../images/mybit-logo-white.png';
-import './AppHeader.css';
+import '../styles/AppHeader.css';
 
 export const AppHeader = () => {
   return (

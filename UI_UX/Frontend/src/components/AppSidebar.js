@@ -1,6 +1,6 @@
 import React from 'react';
 import { Menu, Grid } from 'semantic-ui-react';
-import './AppSidebar.css';
+import '../styles/AppSidebar.css';
 
 export const AppSidebar = () => {
   const menuOptions = [
