@@ -139,7 +139,7 @@ using SafeMath for *;
   // -------------------------------Modifiers--------------------------------
 
   modifier onlyApproved { 
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= 3);
+    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= uint(2));
     _; 
   }
   

@@ -42,6 +42,14 @@ contract UserAccess{
     return true;
   }
 
+  // Owner can approve KYC for user
+  function approveKYC(address _user)
+  anyOwner
+  external
+  returns (bool) { 
+    database.setBool(keccak256("kycApproved", msg.sender), true);
+  }
+
   // Deny empty address parameters
   modifier noEmptyAddress(address _param) {
     require(_param != address(0)); 
@@ -50,7 +58,7 @@ contract UserAccess{
 
   // User must have identification approved
   modifier mustHaveKYC { 
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) > uint(0));
+    require(database.boolStorage(keccak256("kycApproved", msg.sender)));
     _;
   }
 

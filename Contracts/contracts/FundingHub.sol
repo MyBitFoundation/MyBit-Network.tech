@@ -30,18 +30,18 @@ contract FundingHub {
   payable
   requiresEther
   whenNotPaused
-  atStage(_assetID, 1)
+  atStage(_assetID, uint(1))
   priceUpdated(_etherPrice)
   fundingLimit(_assetID, _etherPrice)
-  onlyApproved(2)
+  onlyApproved
   returns (bool) {
-    uint shares = database.uintStorage(keccak256("shares", _assetID, msg.sender));
-    if (shares == 0) {
+    uint ownershipUnits = database.uintStorage(keccak256("ownershipUnits", _assetID, msg.sender));
+    if (ownershipUnits == 0) {
       LogNewFunder(msg.sender, block.timestamp);    // Create event to reference list of funders
     }
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     database.setUint(keccak256("amountRaised", _assetID), amountRaised.add(msg.value));
-    database.setUint(keccak256("shares", _assetID, msg.sender), shares.add(msg.value));
+    database.setUint(keccak256("ownershipUnits", _assetID, msg.sender), ownershipUnits.add(msg.value));
     LogAssetFunded(msg.sender, msg.value, block.timestamp);
     return true;
   }
@@ -49,12 +49,12 @@ contract FundingHub {
 
   // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
   // Invariants: Must be in stage FundingSuccess | MyBitFoundation + AssetEscrow  + BugEscrow addresses are set | Contract is not paused
-  // Note: Will fail if addresses + percentages are not set. AmountRaised = WeiRaised + assetOperator shares
+  // Note: Will fail if addresses + percentages are not set. AmountRaised = WeiRaised + assetOperator ownershipUnits
   function payout(bytes32 _assetID)
   external
   nonReentrant
   whenNotPaused
-  atStage(_assetID, 3)       // Can only get to stage 3 by receiving enough funding within time limit
+  atStage(_assetID, uint(3))       // Can only get to stage 3 by receiving enough funding within time limit
   returns (bool) {
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     uint myBitAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("myBitFoundationPercentage")));
@@ -65,7 +65,7 @@ contract FundingHub {
     stakingBank.receiveTransactionFee.value(stakedTokenAmount)(_assetID);
     database.addressStorage(keccak256("MyBitFoundation")).transfer(myBitAmount);             // Must be normal account
     database.addressStorage(keccak256("InstallerEscrow")).transfer(installerAmount);             // Must be normal account
-    database.setUint(keccak256("fundingStage", _assetID), 4);
+    database.setUint(keccak256("fundingStage", _assetID), uint(4));
     LogAssetPayout(_assetID, amountRaised, block.number);
     return true;
   }
@@ -75,28 +75,28 @@ contract FundingHub {
   function initiateRefund(bytes32 _assetID)
   external
   fundingPeriodOver(_assetID)
-  atStage(_assetID, 1)
+  atStage(_assetID, uint(1))
   returns (bool) {
-    database.setUint(keccak256("fundingStage", _assetID), 2);
+    database.setUint(keccak256("fundingStage", _assetID), uint(2));
     LogAssetFundingFailed(_assetID, database.uintStorage(keccak256("amountRaised", _assetID)), block.timestamp);
     return true;
   }
 
   // Contributors can retrieve their funds here if campaign is finished + failure and initateRefund() has been called.
-  // Invariants: sender must have shares | Must be in failed funding stage || No re-entry | Contract must not be paused
+  // Invariants: sender must have ownershipUnits | Must be in failed funding stage || No re-entry | Contract must not be paused
   function refund(bytes32 _assetID)
   external
   nonReentrant
   whenNotPaused
-  atStage(_assetID, 2)
+  atStage(_assetID, uint(2))
   returns (bool) {
-    uint shares = database.uintStorage(keccak256("shares", _assetID, msg.sender));
-    require (shares > 0);
-    database.deleteUint(keccak256("shares", _assetID, msg.sender));
+    uint ownershipUnits = database.uintStorage(keccak256("ownershipUnits", _assetID, msg.sender));
+    require (ownershipUnits > 0);
+    database.deleteUint(keccak256("ownershipUnits", _assetID, msg.sender));
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
-    database.setUint(keccak256("amountRaised", _assetID), amountRaised.sub(shares));
-    msg.sender.transfer(shares);
-    LogRefund(msg.sender, shares, block.timestamp);
+    database.setUint(keccak256("amountRaised", _assetID), amountRaised.sub(ownershipUnits));
+    msg.sender.transfer(ownershipUnits);
+    LogRefund(msg.sender, ownershipUnits, block.timestamp);
     return true;
   }
 
@@ -140,8 +140,8 @@ contract FundingHub {
   }
 
   // Requires user has burnt tokens to access this function
-  modifier onlyApproved(uint8 _accessLevel) {
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= _accessLevel);
+  modifier onlyApproved{
+    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= uint(1));
     _;
   }
 

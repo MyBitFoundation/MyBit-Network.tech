@@ -29,10 +29,10 @@ contract AssetCreation {
   noEmptyBytes(_installerID)
   noEmptyBytes(_assetType)
   returns (bool){
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= 2);
-    require(_amountToBeRaised >= 100);
-    require(database.uintStorage(keccak256("fundingStage", _assetID)) == 0);    // This ensures the asset isn't currently live or being funded
-    require(_operatorPercentage < 100 && _operatorPercentage > 0);
+    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= uint(1));
+    require(_amountToBeRaised >= uint(100));
+    require(database.uintStorage(keccak256("fundingStage", _assetID)) == uint(0));    // This ensures the asset isn't currently live or being funded
+    require(_operatorPercentage < uint(100) && _operatorPercentage > uint(0));
     require(lockAssetEscrow(_assetID, _amountToBeRaised));
     require(database.addressStorage(keccak256("operatorEscrowed", _assetID)) ==  msg.sender);   // Check that this user has deposited the necessary escrow for the asset.
     database.setUint(keccak256("amountToBeRaised", _assetID), _amountToBeRaised);
@@ -55,7 +55,7 @@ contract AssetCreation {
     // Note: amountToBeRaised is multiplied by 100, as MYBPrice is rounded up by 2 decimal places (3.34 -> 334)
     uint amountMyBRequired = _amountToBeRaised.mul(100).div(mybPrice);    // This is 10% of total asset cost
     LogLockAssetEscrow(msg.sender, _assetID, amountMyBRequired);
-    assert (amountMyBRequired > 0);
+    assert (amountMyBRequired > uint(0));
     database.setUint(keccak256("assetEscrowRequirement", _assetID), amountMyBRequired);
     uint lockedAmount = database.uintStorage(keccak256("operatorAmountEscrowed", msg.sender));
     assert (amountMyBRequired < database.uintStorage(keccak256("operatorAmountDeposited", msg.sender)).sub(lockedAmount));
@@ -76,11 +76,11 @@ contract AssetCreation {
   whenNotPaused
   returns(bool) {
     require (_functionSigner != msg.sender);
-    require(database.uintStorage(keccak256("fundingStage", _assetID)) > 0);
+    require(database.uintStorage(keccak256("fundingStage", _assetID)) > uint(0));
     bytes32 functionHash = keccak256(this, _functionSigner, "removeAsset", _assetID);
     require(database.boolStorage(functionHash));
     database.setBool(functionHash, false);
-    database.setUint(keccak256("fundingStage", _assetID), 5);   // Asset won't receive income & shares won't be able to be traded.
+    database.setUint(keccak256("fundingStage", _assetID), uint(5));   // Asset won't receive income & ownership won't be able to be traded.
     LogAssetRemoved(msg.sender, _assetID, block.timestamp);
     return true;
   }

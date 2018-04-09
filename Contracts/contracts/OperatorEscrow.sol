@@ -80,7 +80,7 @@ contract OperatorEscrow {
   // ----------------------------Modifiers-----------------------
 
   modifier funderApproved {
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= 2);
+    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= uint(1));
     _;
   }
 

@@ -26,7 +26,7 @@ contract TokenBurn {
   returns (bool) {
     uint mybPrice = database.uintStorage(keccak256("mybUSDPrice"));
     uint accessCostMyB = database.uintStorage(keccak256("accessTokenFee", _accessLevelDesired)).mul(10^11).div(mybPrice);
-    assert (accessCostMyB > 0);
+    assert (accessCostMyB > uint(0));
     require(myBitToken.transferFrom(msg.sender, this, accessCostMyB));
     database.setUint(keccak256("userAccess", msg.sender), _accessLevelDesired);
     uint numTokensBurnt = database.uintStorage(keccak256("numberOfTokensBurnt"));
@@ -37,9 +37,8 @@ contract TokenBurn {
 
   modifier basicVerification(uint _newAccessLevel) { 
   uint currentLevel = database.uintStorage(keccak256("userAccess", msg.sender));
-  require(currentLevel >= 1);    // Must have basic KYC verification 
   require(currentLevel < _newAccessLevel);       // Dont allow burning to downgrade access level
-  require (_newAccessLevel < 5); 
+  require (_newAccessLevel < 4 && _newAccessLevel > uint(0));      // Must be 1, 2 or 3
   _; 
 }
 
