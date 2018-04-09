@@ -458,7 +458,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
         if(!e){
           console.log('LogAssetFundedAccess1 - Triggered');
           assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('amountRaised', assetID))), web3.toWei(halfOfUSDValueInEth,'ether'), 'Amount raised added properly');
-          assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('shares', assetID, access1Account))), web3.toWei(halfOfUSDValueInEth,'ether'), 'Shares added properly');
+          assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, access1Account))), web3.toWei(halfOfUSDValueInEth,'ether'), 'ownershipUnits added properly');
           let fundingStage = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('fundingStage', assetID)));
           let amountRaised = await dbInstance.uintStorage(await hfInstance.stringBytes('amountRaised', assetID));
           console.log('fundingStage', fundingStage);
@@ -470,7 +470,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
         if(!e){
           console.log('LogAssetFundedAccess2 - Triggered');
           //assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('amountRaised', assetID))), web3.toWei(halfOfUSDValueInEth*2,'ether'), 'Amount raised added properly');
-          assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('shares', assetID, access2Account))), web3.toWei(halfOfUSDValueInEth,'ether'), 'Shares added properly');
+          assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, access2Account))), web3.toWei(halfOfUSDValueInEth,'ether'), 'ownershipUnits added properly');
           let fundingStage = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('fundingStage', assetID)));
 
           // Check asset has updated stage to fully funded and no-one can fund it anymore
@@ -526,12 +526,12 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
       async function(e,r){
         if(!e){
           console.log('LogIncomeReceived - Triggered');
-          let shares = await dbInstance.uintStorage(await hfInstance.stringBytesAddress("shares", assetID, access1Account));
+          let ownershipUnits = await dbInstance.uintStorage(await hfInstance.stringBytesAddress("ownershipUnits", assetID, access1Account));
           let totalPaidToFundersBefore = await dbInstance.uintStorage(await hfInstance.stringBytes("totalPaidToFunders", assetID));
           let totalPaidToFunderBefore = await dbInstance.uintStorage(await hfInstance.stringBytesAddress("totalPaidToFunder", assetID, access1Account));
           let totalReceived = await dbInstance.uintStorage(await hfInstance.stringBytes("totalReceived", assetID));
           let amountRaised = await dbInstance.uintStorage(await hfInstance.stringBytes('amountRaised', assetID));
-          let payment = ((totalReceived * shares) / amountRaised) - totalPaidToFunderBefore;
+          let payment = ((totalReceived * ownershipUnits) / amountRaised) - totalPaidToFunderBefore;
           let balanceOfFunder = web3.eth.getBalance(access1Account);
 
           var withdrawalGasEstimate = parseInt(await assetInstance.withdraw.estimateGas(assetID, false, {from:access2Account})).toFixed(7) / 10000000;

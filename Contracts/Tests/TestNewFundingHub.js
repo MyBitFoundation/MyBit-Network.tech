@@ -271,10 +271,11 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
     it('refund', async () => {
       let userBalanceBefore = parseInt(web3.eth.getBalance(funder1));
       var refundGasEstimate = parseInt(await fundingHubInstance.refund.estimateGas(assetID, {from:funder1})).toFixed(7) / 10000000;
-      let sharesBefore = await dbInstance.uintStorage(await hfInstance.stringBytesAddress('shares',assetID,funder1));
+      let ownershipBefore = await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits',assetID,funder1));
 
       await fundingHubInstance.refund(assetID, {from:funder1});
-      assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('shares',assetID,funder1)),0,'shares deleted');
+      assert.notEqual(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits',assetID,funder1)), ownershipBefore, "Refund didn't reset ownership");
+      assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits',assetID,funder1)),0,'ownership deleted');
       assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytes('amountRaised',assetID)),0,'amountRaised reduced');
 
       let shouldBeBalanceAfter = (userBalanceBefore - parseInt(web3.toWei(refundGasEstimate,'ether'))) + parseInt(web3.toWei(0.5,'ether'));
