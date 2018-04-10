@@ -6,8 +6,12 @@ import { AppHeader } from './components/AppHeader';
 import { AppSidebar } from './components/AppSidebar';
 import { default as AppContent } from './components/AppContent';
 
+import { connect } from 'react-redux';
+import * as actions from './actions';
+
 class App extends Component {
   render() {
+    this.props.sendTestAction(false);
     return (
       <div>
         <AppHeader />
@@ -36,4 +40,12 @@ class App extends Component {
   }
 }
 
-export default App;
+const mapStateToProps = state => {
+  console.log('printing a variable from redux state: ', state.example.testVar);
+
+  return {
+    testVar: state.example.testVar
+  };
+};
+
+export default connect(mapStateToProps, actions)(App);
