@@ -117,6 +117,20 @@ contract AssetCreation {
     return true;
   }
 
+  // Must be authorized by 1 of the 3 owners and then can be called by any of the other 2
+  // @Param: The address of the owner who authorized this function to be called in
+  // Invariants: Must be 1 of 3 owners. Cannot be called by same owner who authorized the function to be called.
+  function destroy(address _functionInitiator, address _holdingAddress)
+  anyOwner
+  public {
+    require(_functionInitiator != msg.sender);
+    bytes32 functionHash = keccak256(this, _functionInitiator, "destroy", keccak256(_holdingAddress));
+    require(database.boolStorage(functionHash));
+    database.setBool(functionHash, false);
+    LogDestruction(_holdingAddress, this.balance, msg.sender);
+    selfdestruct(_holdingAddress);
+  }
+
   modifier whenNotPaused {
     require(!database.boolStorage(keccak256("pause", this)));
     _;
@@ -156,4 +170,5 @@ contract AssetCreation {
   event LogAssetRemoved(address indexed _remover, bytes32 indexed _assetID, uint indexed _timestamp);
   event LogFundingTimeChanged(address _sender, uint _newTimeForFunding, uint _blockTimestamp);
   event LogFundingPercentageChanged(uint _myBitFoundationPercentage, uint _stakedTokenPercentage, uint _installerPercentage);
+  event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
 }
