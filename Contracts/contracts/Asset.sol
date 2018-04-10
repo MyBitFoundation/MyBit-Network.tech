@@ -37,7 +37,7 @@ using SafeMath for *;
     database.addressStorage(keccak256("assetOperator", _assetID)).transfer(managerAmount);
     database.setUint(keccak256("totalReceived", _assetID), totalReceived.add(msg.value.sub(managerAmount)));
     LogIncomeReceived(msg.sender, msg.value, _assetID);
-    LogAssetNote(_note, block.timestamp);
+    LogAssetNote(_note, block.timestamp, _assetID);
     return true;
   }
 
@@ -184,5 +184,5 @@ using SafeMath for *;
   event LogIncomeReceived(address indexed _sender, uint indexed _amount, bytes32 indexed _assetID);
   event LogInvestmentPaid(address indexed _funder, uint indexed _amount, uint indexed _timestamp);
   event LogInvestmentPaidToWithdrawalAddress(address indexed _funder, address indexed _withdrawalAddress, uint indexed _amount, uint _timestamp);
-  event LogAssetNote(bytes32 indexed _note, uint indexed _timestamp);
+  event LogAssetNote(bytes32 indexed _note, uint indexed _timestamp, bytes32 indexed _assetID);
 }
