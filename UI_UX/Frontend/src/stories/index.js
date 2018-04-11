@@ -23,15 +23,15 @@ import { AssetDetails } from '../components/AssetDetails';
 import { AssetFunding } from '../components/AssetFunding';
 import { ConfirmationPopup } from '../components/ConfirmationPopup';
 import { Grid } from 'semantic-ui-react';
-import 'semantic-ui-css/semantic.css';
+import 'carbon-components/css/carbon-components.min.css';
+import 'gridlex/dist/gridlex.min.css';
+import '../styles/AppSidebar.css';
 
 storiesOf('Sidebar', module).add('view', () => {
   return (
-    <Grid>
-      <Grid.Row>
-        <AppSidebar />
-      </Grid.Row>
-    </Grid>
+    <div className="grid">
+      <AppSidebar />
+    </div>
   );
 });
 
