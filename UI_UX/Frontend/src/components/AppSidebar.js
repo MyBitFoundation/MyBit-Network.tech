@@ -26,7 +26,3 @@ export const AppSidebar = ({ clickHandler = undefined }) => {
 
   return <div className="col-3 AppSidebar">{sidebarMenu}</div>;
 };
-
-function handleClick(name) {
-  console.log('Clicked ', name);
-}
