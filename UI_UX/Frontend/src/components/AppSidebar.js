@@ -1,8 +1,8 @@
 import React from 'react';
-import { Tile } from 'carbon-components-react';
 import '../styles/AppSidebar.css';
+import { NavigationOption } from './NavigationOption';
 
-export const AppSidebar = () => {
+export const AppSidebar = ({ clickHandler = undefined }) => {
   const menuOptions = [
     { name: 'Explore' },
     { name: 'List Asset' },
@@ -15,8 +15,18 @@ export const AppSidebar = () => {
   ];
 
   const sidebarMenu = menuOptions.map(menuItem => (
-    <Tile className="AppSidebar__menu-item">{menuItem.name}</Tile>
+    <NavigationOption
+      key={menuItem.name}
+      name={menuItem.name}
+      clickHandler={
+        !clickHandler ? name => console.log('Clicked ', name) : clickHandler
+      }
+    />
   ));
 
-  return <div className="col-4 AppSidebar">{sidebarMenu}</div>;
+  return <div className="col-3 AppSidebar">{sidebarMenu}</div>;
 };
+
+function handleClick(name) {
+  console.log('Clicked ', name);
+}
