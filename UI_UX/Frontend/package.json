@@ -40,7 +40,8 @@
     "test": "react-scripts test --env=jsdom",
     "precommit": "lint-staged",
     "eject": "react-scripts eject",
-    "storybook": "start-storybook -p 9001 -c .storybook",
+    "start-storybook": "cross-env start-storybook -p $PORT -c .storybook",
+    "storybook": "cross-env PORT=8080 npm-run-all -p watch-css start-storybook",
     "build-storybook": "build-storybook -c .storybook -o .out"
   },
   "devDependencies": {
