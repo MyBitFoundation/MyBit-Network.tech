@@ -5,6 +5,10 @@
   "dependencies": {
     "axios": "^0.18.0",
     "bluebird": "^3.5.1",
+    "carbon-components": "^8.18.5",
+    "carbon-components-react": "^5.41.6",
+    "carbon-icons": "^6.3.2",
+    "gridlex": "^2.7.1",
     "husky": "^0.14.3",
     "js-sha3": "^0.7.0",
     "lint-staged": "^7.0.0",
@@ -13,6 +17,7 @@
     "prettier": "^1.11.1",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
+    "react-jazzicon": "0.0.1",
     "react-redux": "^5.0.7",
     "react-scripts": "^1.1.1",
     "redux-logger": "^3.0.6",
@@ -36,7 +41,8 @@
     "test": "react-scripts test --env=jsdom",
     "precommit": "lint-staged",
     "eject": "react-scripts eject",
-    "storybook": "start-storybook -p 9001 -c .storybook",
+    "start-storybook": "cross-env start-storybook -p $PORT -c .storybook",
+    "storybook": "cross-env PORT=8080 npm-run-all -p watch-css start-storybook",
     "build-storybook": "build-storybook -c .storybook -o .out"
   },
   "devDependencies": {

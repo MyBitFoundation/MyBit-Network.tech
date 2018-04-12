@@ -1,9 +1,81 @@
+$headerHeight: 90px;
+
 .AppHeader {
-    &__menu {
-        height: 74px;
-    }
-    &__logo {
+	height: $headerHeight;
+	background-image: linear-gradient(to right, #0b3f9c, #2e58db);;
+    margin: 0px 0px;
+    color: white;
+
+    .AppHeader_logo {
         padding: 0 25px;
         margin: auto 0;
+        height: 73px;
+    }
+
+    .AppHeader_exchange_rate{
+    	line-height: $headerHeight;
+    	font-size: 14px;
+    }
+
+    .AppHeader_exchange_rate_loading{
+    	float: left;
+    	top: 27px;
+    	position: relative;
+    }
+
+    .AppHeader_account_info{
+    	position: absolute;
+    	right: 60px;
+    	height: $headerHeight;
+    }
+
+    .AppHeader_balance{
+    	text-align: right;
+    	height: $headerHeight;
+    	float: left;
+    	position: relative;
+    	margin-right: 20px;
+
+    	& p{
+    		font-size: 18px;
+    		padding-top: 20px;
+    		position: relative;
+    		top: 2px;
+    	}
+
+    	& span{
+    		font-size: 14px;
+    	}
+
+    	& .AppHeader_balance_loading{
+			top: 42px;
+		    position: absolute;
+		    right: 15px;
+    	}
+    }
+
+    .AppHeader_address{
+    	height: $headerHeight;
+    	float: left;
+
+    	& span{
+    		font-size: 14px;
+    		line-height: $headerHeight;
+    		padding-left: 10px;
+    	}
+
+    	& .paper{
+    		top: 14px;
+		 	position: relative;
+    	}
+
+    	& .AppHeader_address_loading{
+    		position: absolute;
+    		top: 28px;
+    	}
+
+    	& .AppHeader_address_loading + span{
+    		padding-left: 32px;
+    	}
     }
 }

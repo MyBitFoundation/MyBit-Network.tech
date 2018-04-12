@@ -1,9 +1,13 @@
 import React from 'react';
 
 import { storiesOf } from '@storybook/react';
+import { action } from '@storybook/addon-actions';
+
+import 'carbon-components/css/carbon-components.min.css';
+import 'gridlex/dist/gridlex.min.css';
+import '../styles/index.css';
 
 import { AppHeader } from '../components/AppHeader';
-import { AppSidebar } from '../components/AppSidebar';
 import { NavigationOption } from '../components/NavigationOption';
 import { Address } from '../components/Address';
 import { ExplorePage } from '../components/ExplorePage';
@@ -23,19 +27,39 @@ import { AssetDetails } from '../components/AssetDetails';
 import { AssetFunding } from '../components/AssetFunding';
 import { ConfirmationPopup } from '../components/ConfirmationPopup';
 import { Grid } from 'semantic-ui-react';
-import 'semantic-ui-css/semantic.css';
+import { AppSidebar } from '../components/AppSidebar';
 
-storiesOf('Sidebar', module).add('view', () => {
-  return (
-    <Grid>
-      <Grid.Row>
-        <AppSidebar />
-      </Grid.Row>
-    </Grid>
-  );
-});
+storiesOf('Sidebar', module)
+  .addDecorator(story => (
+    <div className="grid" style={{ width: '100%', height: '100vh' }}>
+      {story()}
+    </div>
+  ))
+  .add('view', () => {
+    return <AppSidebar clickHandler={action('Clicked nav button')} />;
+  });
 
-storiesOf('Header', module).add('view', () => <AppHeader />);
+storiesOf('Header', module)
+  .add('Normal view', () => (
+    <AppHeader
+      loadingBalance={false}
+      exchangeRate={2.13}
+      myBitBalance={215}
+      loadingAccountInfo={false}
+      ethBalance={20}
+      address="0xde0BF ..."
+    />
+  ))
+  .add('Loading', () => (
+    <AppHeader
+      loadingBalance={true}
+      exchangeRate={-1}
+      myBitBalance={0}
+      loadingAccountInfo={true}
+      ethBalance={0}
+      address=""
+    />
+  ));
 
 storiesOf('Explore Page', module).add('view', () => <ExplorePage />);
 
