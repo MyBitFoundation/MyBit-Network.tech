@@ -5,6 +5,7 @@ import { action } from '@storybook/addon-actions';
 
 import 'carbon-components/css/carbon-components.min.css';
 import 'gridlex/dist/gridlex.min.css';
+import '../styles/index.css';
 
 import { AppHeader } from '../components/AppHeader';
 import { NavigationOption } from '../components/NavigationOption';
@@ -38,7 +39,27 @@ storiesOf('Sidebar', module)
     return <AppSidebar clickHandler={action('Clicked nav button')} />;
   });
 
-storiesOf('Header', module).add('view', () => <AppHeader />);
+storiesOf('Header', module)
+  .add('Normal view', () => (
+    <AppHeader
+      loadingBalance={false}
+      exchangeRate={2.13}
+      myBitBalance={215}
+      loadingAccountInfo={false}
+      ethBalance={20}
+      address="0xde0BF ..."
+    />
+  ))
+  .add('Loading', () => (
+    <AppHeader
+      loadingBalance={true}
+      exchangeRate={-1}
+      myBitBalance={0}
+      loadingAccountInfo={true}
+      ethBalance={0}
+      address=""
+    />
+  ));
 
 storiesOf('Explore Page', module).add('view', () => <ExplorePage />);
 
