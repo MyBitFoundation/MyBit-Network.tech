@@ -27,6 +27,7 @@ import { AssetFunding } from '../components/AssetFunding';
 import { ConfirmationPopup } from '../components/ConfirmationPopup';
 import { Grid } from 'semantic-ui-react';
 import { AppSidebar } from '../components/AppSidebar';
+import { Achievements } from '../components/Achievements';
 
 storiesOf('Sidebar', module)
   .addDecorator(story => (
@@ -79,3 +80,34 @@ storiesOf('Transaction History', module).add('view', () => (
 storiesOf('Row', module).add('view', () => <Row />);
 
 storiesOf('NavigationOption', module).add('view', () => <NavigationOption />);
+
+const achievements = [
+  {
+    title: 'Q4 2016',
+    description: 'idea conceived'
+  },
+  {
+    title: 'Q4 2016',
+    description: 'idea conceived'
+  },
+  {
+    title: 'Q4 2016',
+    description: 'idea conceived'
+  },
+  {
+    title: 'Q4 2016',
+    description: 'idea conceived'
+  },
+  {
+    title: 'Q4 2016',
+    description: 'idea conceived'
+  },
+  {
+    title: 'Q4 2016',
+    description: 'idea conceived'
+  }
+];
+
+storiesOf('Achievements', module).add('view', () => (
+  <Achievements achievements={achievements} />
+));
