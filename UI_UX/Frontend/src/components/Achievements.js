@@ -3,10 +3,6 @@ import PropTypes from 'prop-types';
 import '../styles/Achievements.css';
 
 export class Achievements extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     return (
       <ol className="achievements">
