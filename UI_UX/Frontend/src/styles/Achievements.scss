@@ -40,40 +40,39 @@
       margin-top: 170px;
     }
 
-    &__wrapper {
+    &--wrapper {
       transform: rotate(-45deg);
       margin-left: -15px;
-
-      &--title {
-        display: block;
-        font-size: 24px;
-        font-weight: 800;
-        color: #fff;
-        position: relative;
-        top: 20px;
-
-        &:after {
-          display: block;
-          width: 10px;
-          height: 10px;
-          background-color: #fb3448;
-          content: '';
-          transform: rotate(45deg);
-          position: absolute;
-          left: 40px;
-          top: 35px;
-        }
-      }
-
-      &--description {
-        color: #fff;
-        font-size: 14px;
-        display: block;
-        position: relative;
-        top: 50px;
-      }
-
     }
+
+    &--title {
+      display: block;
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      position: relative;
+      top: 20px;
+      &:after {
+        display: block;
+        width: 10px;
+        height: 10px;
+        background-color: #fb3448;
+        content: '';
+        transform: rotate(45deg);
+        position: absolute;
+        left: 40px;
+        top: 35px;
+      }
+    }
+
+    &--description {
+      color: #fff;
+      font-size: 14px;
+      display: block;
+      position: relative;
+      top: 50px;
+    }
+
   }
 
 }

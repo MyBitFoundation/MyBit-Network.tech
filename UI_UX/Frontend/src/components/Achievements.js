@@ -8,11 +8,11 @@ export class Achievements extends Component {
       <ol className="Achievements">
         {this.props.achievements.map(milestone => (
           <li key={milestone.endpoint} className="Achievements__list-item">
-            <div className="Achievements__list-item__wrapper">
-              <b className="Achievements__list-item__wrapper--title">
+            <div className="Achievements__list-item--wrapper">
+              <b className="Achievements__list-item--title">
                 {milestone.title}
               </b>
-              <span className="Achievements__list-item__wrapper--description">
+              <span className="Achievements__list-item--description">
                 {milestone.description}
               </span>
             </div>
