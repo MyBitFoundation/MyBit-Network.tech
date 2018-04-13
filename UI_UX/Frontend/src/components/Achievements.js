@@ -5,7 +5,7 @@ import '../styles/Achievements.css';
 export class Achievements extends Component {
   render() {
     return (
-      <ol className="achievements">
+      <ol className="Achievements">
         {this.props.achievements.map(milestone => (
           <li key={milestone.endpoint}>
             <div>
