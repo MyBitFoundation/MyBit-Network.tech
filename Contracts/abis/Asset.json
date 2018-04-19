@@ -3,6 +3,37 @@
     "constant": false,
     "inputs": [
       {
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "tradeOwnershipUnits",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
         "name": "_functionInitiator",
         "type": "address"
       },
@@ -39,37 +70,6 @@
         "type": "bytes32"
       },
       {
-        "name": "_from",
-        "type": "address"
-      },
-      {
-        "name": "_to",
-        "type": "address"
-      },
-      {
-        "name": "_amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "tradeShares",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_assetID",
-        "type": "bytes32"
-      },
-      {
         "name": "_otherWithdrawal",
         "type": "bool"
       }
@@ -86,6 +86,29 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "getAmountOwed",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
       {
@@ -94,7 +117,7 @@
       },
       {
         "name": "_note",
-        "type": "string"
+        "type": "bytes32"
       }
     ],
     "name": "receiveIncome",
@@ -128,6 +151,33 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "name": "managerAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "assetOperator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "operatorIncome",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "operatorIncomeAfter",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogIncomeReceivedManagerTest",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "name": "_assetID",
         "type": "bytes32"
@@ -148,7 +198,7 @@
         "type": "uint256"
       }
     ],
-    "name": "LogSharesTraded",
+    "name": "LogownershipUnitsTraded",
     "type": "event"
   },
   {
@@ -250,7 +300,7 @@
       {
         "indexed": true,
         "name": "_note",
-        "type": "string"
+        "type": "bytes32"
       },
       {
         "indexed": true,

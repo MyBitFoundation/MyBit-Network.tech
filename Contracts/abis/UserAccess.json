@@ -3,34 +3,11 @@
     "constant": false,
     "inputs": [
       {
-        "name": "_oldAddress",
-        "type": "address"
-      },
-      {
-        "name": "_newBackup",
+        "name": "_user",
         "type": "address"
       }
     ],
-    "name": "switchToBackup",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_backupAddress",
-        "type": "address"
-      }
-    ],
-    "name": "setBackupAddress",
+    "name": "approveKYC",
     "outputs": [
       {
         "name": "",
@@ -50,7 +27,7 @@
       },
       {
         "name": "_accessLevel",
-        "type": "uint8"
+        "type": "uint256"
       }
     ],
     "name": "approveUser",
@@ -163,7 +140,7 @@
       {
         "indexed": true,
         "name": "_approvalLevel",
-        "type": "uint8"
+        "type": "uint256"
       },
       {
         "indexed": true,
