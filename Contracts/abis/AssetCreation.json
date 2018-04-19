@@ -7,10 +7,6 @@
         "type": "uint256"
       },
       {
-        "name": "_stakedTokenPercentage",
-        "type": "uint256"
-      },
-      {
         "name": "_installerPercentage",
         "type": "uint256"
       },
@@ -31,6 +27,24 @@
     "type": "function"
   },
   {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_functionInitiator",
+        "type": "address"
+      },
+      {
+        "name": "_holdingAddress",
+        "type": "address"
+      }
+    ],
+    "name": "destroy",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "constant": true,
     "inputs": [],
     "name": "database",
@@ -42,6 +56,45 @@
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_amountToBeRaised",
+        "type": "uint256"
+      },
+      {
+        "name": "_operatorPercentage",
+        "type": "uint256"
+      },
+      {
+        "name": "_amountToEscrow",
+        "type": "uint256"
+      },
+      {
+        "name": "_installerID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_assetType",
+        "type": "bytes32"
+      }
+    ],
+    "name": "newAsset",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -75,41 +128,6 @@
     ],
     "payable": false,
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_assetID",
-        "type": "bytes32"
-      },
-      {
-        "name": "_amountToBeRaised",
-        "type": "uint256"
-      },
-      {
-        "name": "_managerPercentage",
-        "type": "uint256"
-      },
-      {
-        "name": "_installerID",
-        "type": "bytes32"
-      },
-      {
-        "name": "_assetType",
-        "type": "bytes32"
-      }
-    ],
-    "name": "newAsset",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -180,9 +198,36 @@
         "indexed": true,
         "name": "_installerID",
         "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_amountToBeRaised",
+        "type": "uint256"
       }
     ],
     "name": "LogAssetInfo",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_amountOf",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogLockAssetEscrow",
     "type": "event"
   },
   {
@@ -239,16 +284,33 @@
       },
       {
         "indexed": false,
-        "name": "_stakedTokenPercentage",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
         "name": "_installerPercentage",
         "type": "uint256"
       }
     ],
     "name": "LogFundingPercentageChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_locationSent",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_amountSent",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "_caller",
+        "type": "address"
+      }
+    ],
+    "name": "LogDestruction",
     "type": "event"
   }
 ]

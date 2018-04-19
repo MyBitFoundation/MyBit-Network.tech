@@ -11,7 +11,6 @@ import './MyBitToken.sol';
 import './OperatorEscrow.sol';
 import './OracleHub.sol';
 import './Owned.sol';
-import './StakingBank.sol';
 import './TokenBurn.sol';
 import './TokenFaucet.sol';
 import './UserAccess.sol';

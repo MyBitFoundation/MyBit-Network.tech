@@ -14,25 +14,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "accessCostUSD",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {
@@ -100,33 +81,6 @@
       }
     ],
     "name": "LogMyBitBurnt",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "_sender",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "_usdPrice",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "_subscribeLevel",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "_myBitTokensNeeded",
-        "type": "uint256"
-      }
-    ],
-    "name": "LogCallBackRecieved",
     "type": "event"
   }
 ]

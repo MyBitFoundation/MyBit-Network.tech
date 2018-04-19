@@ -2,42 +2,44 @@ pragma solidity ^0.4.19;
 
 import './SafeMath.sol';
 import './Database.sol';
-import './StakingBank.sol';
 
-
-// This contract is in charge of creating individual asset contracts. It acts as a reference for locations of Assets and other funding parameters
-// Funding stages: { 0: funding hasn't started, 1: currently being funded, 2: funding failed,  3: funding success, 4: asset is live
+//------------------------------------------------------------------------------------------------------------------
+// This contract is where users can fund assets or receive refunds from failed funding periods. Funding stages are represented by uints.
+// Funding stages: 0: funding hasn't started, 1: currently being funded, 2: funding failed,  3: funding success, 4: asset is live 
+//------------------------------------------------------------------------------------------------------------------
 contract FundingHub {
   using SafeMath for *;
 
-  //-----------Platform Addresses----------------
   Database public database;
 
   bool private rentrancy_lock;    // Prevents re-entrancy attack
 
+  //------------------------------------------------------------------------------------------------------------------
   // Contructor:
   // @Param: The address for the MyBit database
+  //------------------------------------------------------------------------------------------------------------------
   function FundingHub(address _database)
   public {
       database = Database(_database);
-
   }
 
+  //------------------------------------------------------------------------------------------------------------------
   // Users can send Ether here to fund asset if funding goal hasn't been reached and the funding period isn't over.
   // Invariants: Requires Eth be sent with transaction |  Must be in funding stage. Must be under goal | Must have KYC approved. | contract is not paused
-  function fund(bytes32 _assetID, uint _etherPrice)
+  //------------------------------------------------------------------------------------------------------------------
+  function fund(bytes32 _assetID)
   external
   payable
   requiresEther
   whenNotPaused
   atStage(_assetID, uint(1))
-  priceUpdated(_etherPrice)
-  fundingLimit(_assetID, _etherPrice)
+  priceUpdated
+  fundingLimit(_assetID)
   onlyApproved
   returns (bool) {
     uint ownershipUnits = database.uintStorage(keccak256("ownershipUnits", _assetID, msg.sender));
     if (ownershipUnits == 0) {
-      LogNewFunder(msg.sender, block.timestamp);    // Create event to reference list of funders
+      LogNewFunder(msg.sender, _assetID, block.timestamp);    // Create event to reference list of funders
     }
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     database.setUint(keccak256("amountRaised", _assetID), amountRaised.add(msg.value));
@@ -46,10 +48,11 @@ contract FundingHub {
     return true;
   }
 
-
+  //------------------------------------------------------------------------------------------------------------------
   // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
   // Invariants: Must be in stage FundingSuccess | MyBitFoundation + AssetEscrow  + BugEscrow addresses are set | Contract is not paused
   // Note: Will fail if addresses + percentages are not set. AmountRaised = WeiRaised + assetOperator ownershipUnits
+  //------------------------------------------------------------------------------------------------------------------
   function payout(bytes32 _assetID)
   external
   nonReentrant
@@ -58,11 +61,8 @@ contract FundingHub {
   returns (bool) {
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     uint myBitAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("myBitFoundationPercentage")));
-    uint stakedTokenAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("stakedTokenPercentage")));
     uint installerAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("installerPercentage")));
-    assert (myBitAmount.add(stakedTokenAmount).add(installerAmount) == amountRaised);       // TODO: for testing
-    StakingBank stakingBank = StakingBank(database.addressStorage(keccak256("contract", "StakingBank")));
-    stakingBank.receiveTransactionFee.value(stakedTokenAmount)(_assetID);
+    assert (myBitAmount.add(installerAmount) == amountRaised);       // TODO: for testing
     database.addressStorage(keccak256("MyBitFoundation")).transfer(myBitAmount);             // Must be normal account
     database.addressStorage(keccak256("InstallerEscrow")).transfer(installerAmount);             // Must be normal account
     database.setUint(keccak256("fundingStage", _assetID), uint(4));
@@ -70,8 +70,10 @@ contract FundingHub {
     return true;
   }
 
+  //------------------------------------------------------------------------------------------------------------------
   // This function needs to be called to allow refunds to be made. Signals to the myBitHub contract that funding has failed + moves stage to Funding failed
   // Invariants: Must be still be in funding stage | must be passed deadline
+  //------------------------------------------------------------------------------------------------------------------
   function initiateRefund(bytes32 _assetID)
   external
   fundingPeriodOver(_assetID)
@@ -82,8 +84,10 @@ contract FundingHub {
     return true;
   }
 
+  //------------------------------------------------------------------------------------------------------------------
   // Contributors can retrieve their funds here if campaign is finished + failure and initateRefund() has been called.
   // Invariants: sender must have ownershipUnits | Must be in failed funding stage || No re-entry | Contract must not be paused
+  //------------------------------------------------------------------------------------------------------------------
   function refund(bytes32 _assetID)
   external
   nonReentrant
@@ -100,8 +104,10 @@ contract FundingHub {
     return true;
   }
 
+  //------------------------------------------------------------------------------------------------------------------
   // Must be authorized by 1 of the 3 owners and then can be called by any of the other 2
   // Invariants: Must be 1 of 3 owners. Cannot be called by same owner who authorized the function to be called.
+  //------------------------------------------------------------------------------------------------------------------
   function destroy(address _functionInitiator, address _holdingAddress)
   anyOwner
   public {
@@ -112,20 +118,29 @@ contract FundingHub {
   }
 
 
-// -------------------------------------------------------Getters-------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------------
+  //                                            Modifiers
+  //------------------------------------------------------------------------------------------------------------------
 
+  //------------------------------------------------------------------------------------------------------------------
   // Requires caller is one of the three owners
+  //------------------------------------------------------------------------------------------------------------------
   modifier anyOwner {
     require(database.boolStorage(keccak256("owner", msg.sender)));
     _;
   }
 
+  //------------------------------------------------------------------------------------------------------------------
   // Requires that the contract is not paused
+  //------------------------------------------------------------------------------------------------------------------
   modifier whenNotPaused {
     require(!database.boolStorage(keccak256("pause", this)));
     _;
   }
 
+  //------------------------------------------------------------------------------------------------------------------
+  // Don't let function caller re-enter function before initial transaction finishes 
+  //------------------------------------------------------------------------------------------------------------------
   modifier nonReentrant() {
     require(!rentrancy_lock);
     rentrancy_lock = true;
@@ -133,58 +148,80 @@ contract FundingHub {
     rentrancy_lock = false;
   }
 
+  //------------------------------------------------------------------------------------------------------------------
   // Requires that Ether is sent with the transaction
+  //------------------------------------------------------------------------------------------------------------------
   modifier requiresEther() {
     require(msg.value > 0);
     _;
   }
 
+  //------------------------------------------------------------------------------------------------------------------
   // Requires user has burnt tokens to access this function
+  //------------------------------------------------------------------------------------------------------------------
   modifier onlyApproved{
     require(database.uintStorage(keccak256("userAccess", msg.sender)) >= uint(1));
     _;
   }
 
+  //------------------------------------------------------------------------------------------------------------------
+  // Transitions funding period to success if enough Ether is raised
   // Must be in funding stage 3 (currently being funded).
   // Deletes funding raising variables if current transaction puts it over the goal.
-  modifier fundingLimit(bytes32 _assetID, uint _currentEthPrice) {
+  //------------------------------------------------------------------------------------------------------------------
+  modifier fundingLimit(bytes32 _assetID) {
     require(now <= database.uintStorage(keccak256("fundingDeadline", _assetID)));
+    uint currentEthPrice = database.uintStorage(keccak256("ethUSDPrice"));
     _;
-    uint value1 = database.uintStorage(keccak256("amountRaised", _assetID)).mul(_currentEthPrice);
+    uint value1 = database.uintStorage(keccak256("amountRaised", _assetID)).mul(currentEthPrice);
     uint value2 = database.uintStorage(keccak256("amountToBeRaised", _assetID)).mul(1e18);
     uint value3 = database.uintStorage(keccak256("amountRaised", _assetID));
 
     fundingLimitModifier(value1, value2, value3);
-    if (database.uintStorage(keccak256("amountRaised", _assetID)).mul(_currentEthPrice).div(1e18) >= database.uintStorage(keccak256("amountToBeRaised", _assetID))) {
+    if (database.uintStorage(keccak256("amountRaised", _assetID)).mul(currentEthPrice).div(1e18) >= database.uintStorage(keccak256("amountToBeRaised", _assetID))) {
        database.deleteUint(keccak256("amountToBeRaised", _assetID));      // No longer need this variable
-       LogAssetFundingSuccess(_assetID, _currentEthPrice, block.timestamp);
+       LogAssetFundingSuccess(_assetID, currentEthPrice, block.timestamp);
        database.setUint(keccak256("fundingStage", _assetID), 3);
       }
   }
-
-  modifier priceUpdated(uint _ethPrice) {
-    require (now < database.uintStorage(keccak256("ethUSDPriceExpiration")) && _ethPrice == database.uintStorage(keccak256("ethUSDPrice")));
+  //------------------------------------------------------------------------------------------------------------------
+  // Check that the Ether/USD prices have been updated 
+  //------------------------------------------------------------------------------------------------------------------
+  modifier priceUpdated {
+    require (now < database.uintStorage(keccak256("ethUSDPriceExpiration")));
     _;
   }
 
+  //------------------------------------------------------------------------------------------------------------------
   // Requires the funding stage is at a particular stage
+  //------------------------------------------------------------------------------------------------------------------
   modifier atStage(bytes32 _assetID, uint _stage) {
     require(database.uintStorage(keccak256("fundingStage", _assetID)) == _stage);
     _;
   }
 
-  // Requires that the deadline has passed
+  //------------------------------------------------------------------------------------------------------------------
+  // Requires that the funding deadline has passed 
+  //------------------------------------------------------------------------------------------------------------------
   modifier fundingPeriodOver(bytes32 _assetID) {
     require(now >= database.uintStorage(keccak256("fundingDeadline", _assetID)));
     _;
   }
 
+  //------------------------------------------------------------------------------------------------------------------
+  // Fallback: Reject Ether
+  //------------------------------------------------------------------------------------------------------------------
   function ()
   public {
     revert();
   }
 
-  event LogNewFunder(address indexed _funder, uint indexed _timestamp);
+
+  //------------------------------------------------------------------------------------------------------------------
+  //                                            Events 
+  //------------------------------------------------------------------------------------------------------------------
+
+  event LogNewFunder(address indexed _funder, bytes32 indexed _assetID, uint indexed _timestamp);
   event LogAssetFunded(address indexed _sender, uint indexed _amount, uint indexed _timestamp);
   event LogAssetFundingFailed(bytes32 indexed _assetID, uint indexed _amountRaised, uint indexed _timestamp);
   event LogAssetFundingSuccess(bytes32 indexed _assetID, uint indexed _currentEthPrice, uint indexed _timestamp);

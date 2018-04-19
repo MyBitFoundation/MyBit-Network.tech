@@ -13,6 +13,11 @@ contract('TestContractManager', async (accounts) => {
   const assetEscrowPayoutAddress = web3.eth.accounts[4];
 
   const newAssetCreationAddress = web3.eth.accounts[5];
+  const notOwnerAddress = web3.eth.accounts[6];
+  const realAddressNotStoredNotStored = web3.eth.accounts[9];
+
+  const emptyAddress = '0x0000000000000000000000000000000000000000';
+  const emptyString = '';
 
   let oldACAddress;
 
@@ -23,10 +28,16 @@ contract('TestContractManager', async (accounts) => {
   let acInstance;
   let oInstance;
 
-  it("Deploy All Contracts", async () => {
-    console.log('Type of address', typeof ownerAddr1);
+  it("TestNewContractManager", async () => {
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);
      hfInstance = await HashFunctions.new();
+
+     // Modifier Check
+     let addressNotEmptyModifier = null;
+     try {await ContractManager.new(emptyAddress);}
+     catch (error) {addressNotEmptyModifier = error}
+     assert.notEqual(addressNotEmptyModifier, null, 'modifier addressNotEmptyModifier');
+
      // ContractManager Contract
      cmInstance = await ContractManager.new(dbInstance.address);
      await dbInstance.setContractManager(cmInstance.address);
@@ -40,8 +51,92 @@ contract('TestContractManager', async (accounts) => {
      // Owned contract
      oInstance = await Owned.new(dbInstance.address);
      await cmInstance.addContract('Owned', oInstance.address, ownerAddr2);
-
    });
+
+   it('Add contract Modifier', async () => {
+     // Modifier check
+     let addressNotEmptyModifier = null;
+     try {await cmInstance.addContract('TestContract', emptyAddress, ownerAddr2);}
+     catch (error) {addressNotEmptyModifier = error}
+     assert.notEqual(addressNotEmptyModifier, null, 'modifier addressNotEmptyModifier');
+
+     let noEmptyStringModifier = null;
+     try {await cmInstance.addContract('', realAddressNotStored, ownerAddr2);}
+     catch (error) {noEmptyStringModifier = error}
+     assert.notEqual(noEmptyStringModifier, null, 'modifier noEmptyStringModifier');
+
+     let anyOwnerModifier = null;
+     try {await cmInstance.addContract('TestContract', realAddressNotStored, ownerAddr2, {from:notOwnerAddress});}
+     catch (error) {anyOwnerModifier = error}
+     assert.notEqual(anyOwnerModifier, null, 'modifier anyOwnerModifier');
+   });
+
+   it('Add contract Requires', async () => {
+     let senderNotFunctionSignerRequire = null;
+     try {await cmInstance.addContract('TestContract', realAddressNotStored, ownerAddr2,{from:ownerAddr2});}
+     catch (error) {senderNotFunctionSignerRequire = error}
+     assert.notEqual(senderNotFunctionSignerRequire, null, 'require senderNotFunctionSignerRequire');
+
+     let contractExistsRequire = null;
+     try {await cmInstance.addContract('TestContract', acInstance.address, ownerAddr2);}
+     catch (error) {contractExistsRequire = error}
+     assert.notEqual(contractExistsRequire, null, 'require contractExistsRequire');
+
+     let contractNameExistsRequire = null;
+     try {await cmInstance.addContract('AssetCreation', realAddressNotStored, ownerAddr2);}
+     catch (error) {contractNameExistsRequire = error}
+     assert.notEqual(contractNameExistsRequire, null, 'require contractNameExistsRequire');
+   });
+
+   it('Remove Contract Modifiers', async () => {
+      let noEmptyStringModifier = null;
+      try {await cmInstance.removeContract('', ownerAddr2);}
+      catch (error) {noEmptyStringModifier = error}
+      assert.notEqual(noEmptyStringModifier, null, 'modifier noEmptyStringModifier');
+
+      let anyOwnerModifier = null;
+      try {await cmInstance.removeContract('TestContract', ownerAddr2, {from:notOwnerAddress});}
+      catch (error) {anyOwnerModifier = error}
+      assert.notEqual(anyOwnerModifier, null, 'modifier anyOwnerModifier');
+
+      let multiSigRequiredModifier = null;
+      try {await cmInstance.removeContract('TestContract', notOwnerAddress);}
+      catch (error) {multiSigRequiredModifier = error}
+      assert.notEqual(multiSigRequiredModifier, null, 'modifier multiSigRequiredModifier');
+    });
+
+
+    it('Remove Contract Requires', async () => {
+      let contractExistsRequire = null;
+      try {await cmInstance.addContract('AssetCreation', realAddressNotStored, ownerAddr2);}
+      catch (error) {contractExistsRequire = error}
+      assert.notEqual(contractExistsRequire, null, 'require contractExistsRequire');
+    });
+
+   it('Update Contract Modifiers', async () => {
+      let noEmptyStringModifier = null;
+      try {await cmInstance.updateContract('', ownerAddr2);}
+      catch (error) {noEmptyStringModifier = error}
+      assert.notEqual(noEmptyStringModifier, null, 'modifier noEmptyStringModifier');
+
+      let anyOwnerModifier = null;
+      try {await cmInstance.updateContract('TestContract', ownerAddr2, {from:notOwnerAddress});}
+      catch (error) {anyOwnerModifier = error}
+      assert.notEqual(anyOwnerModifier, null, 'modifier anyOwnerModifier');
+
+      let multiSigRequiredModifier = null;
+      try {await cmInstance.updateContract('TestContract', notOwnerAddress);}
+      catch (error) {multiSigRequiredModifier = error}
+      assert.notEqual(multiSigRequiredModifier, null, 'modifier multiSigRequiredModifier');
+    });
+
+
+    it('Update Contract Requires', async () => {
+      let contractExistsRequire = null;
+      try {await cmInstance.updateContract('AssetCreation', realAddressNotStored, ownerAddr2);}
+      catch (error) {contractExistsRequire = error}
+      assert.notEqual(contractExistsRequire, null, 'require contractExistsRequire');
+    });
 
    it('Initialize', async () => {
      await ivInstance.startDapp(myBitPayoutAddress, assetEscrowPayoutAddress);
@@ -75,7 +170,18 @@ contract('TestContractManager', async (accounts) => {
    });
 
    it('Set deployed', async () => {
-     await cmInstance.setDeployFinished();
-   });
+     // Modifier Check
+     let anyOwnerModifier = null;
+     try {await cmInstance.setDeployFinished({from:notOwnerAddress});}
+     catch (error) {anyOwnerModifier = error}
+     assert.notEqual(anyOwnerModifier, null, 'modifier anyOwnerModifier');
 
+     await cmInstance.setDeployFinished();
+
+     // Require try add after deploy finished
+     let deployFinishedRequire = null;
+     try {await cmInstance.addContract('TestContract', realAddressNotStored, ownerAddr2);}
+     catch (error) {deployFinishedRequire = error}
+     assert.notEqual(deployFinishedRequire, null, 'require deployFinishedRequire');
+   });
 });
