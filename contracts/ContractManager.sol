@@ -14,7 +14,7 @@ contract ContractManager{
     database = Database(_database);
   }
 
-  // This function removes the ability for an owner to add a contract without another owner authorizing it. Call this once finished deploying initial contracts.
+  // This function removes the ability for an owner to add a contract without another owner authorizing it. Call this once finished deploying initial contracts. 
   function setDeployFinished()
   external
   anyOwner {
@@ -22,8 +22,8 @@ contract ContractManager{
   }
 
   // This function adds new contracts to the platform. Giving them write access to Database.sol
-  // @Param: The name of the contract
-  // @Param: The address of the new contract
+  // @Param: The name of the contract 
+  // @Param: The address of the new contract 
   // @Param: The owner who authorized this function to be called
   function addContract(string _name, address _contractAddress, address _functionSigner)
   external
@@ -41,8 +41,8 @@ contract ContractManager{
   }
 
   // Owner can remove an existing contract on the platform.
-  // @Param: The name of the contract
-  // @Param: The owner who authorized this function to be called
+  // @Param: The name of the contract 
+  // @Param: The owner who authorized this function to be called 
   function removeContract(string _name, address _functionSigner)
   external
   noEmptyString(_name)
@@ -58,7 +58,7 @@ contract ContractManager{
   }
 
   // Owner can update an existing contract on the platform, giving it write access to Database
-  // Invariants: New contract must not have null address. Function must be authorized by other owner.
+  // Invariants: New contract must not have null address. Function must be authorized by other owner. 
   // @Param: The name of the contract (First Letter Capitalized)
   // @Param: The address of the new contract
   // @Param: The address of the owner who authorized this function to be called
@@ -78,9 +78,9 @@ contract ContractManager{
   }
 
   function contractExists(address _contract)
-  public
-  view
-  returns (bool){
+  public 
+  view 
+  returns (bool){ 
     return database.boolStorage(keccak256("contract", _contract));
   }
 
@@ -99,7 +99,7 @@ contract ContractManager{
     _;
   }
 
-  modifier multiSigRequired(address _signer, string _functionName, bytes32 _keyParam) {
+  modifier multiSigRequired(address _signer, string _functionName, bytes32 _keyParam) { 
     require(msg.sender != _signer);
     require(database.boolStorage(keccak256(this, _signer, _functionName, _keyParam)));
     _;

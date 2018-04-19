@@ -3,9 +3,8 @@ import './SafeMath.sol';
 import './Database.sol';
 
 
-// Asset contract manages all payments, withdrawls and trading of shares for live assets
+// Asset contract manages all payments, withdrawls and trading of ownershipUnits for live assets
 // All information about assets are stored in Database.sol. Write privilege is given to the current live Asset contract.
-// TODO: Allow owner to change assetManager
 contract Asset {
 using SafeMath for *;
 
@@ -34,8 +33,8 @@ using SafeMath for *;
   atStage(_assetID, 4)
   returns (bool)  {
     uint totalReceived = database.uintStorage(keccak256("totalReceived", _assetID));
-    uint managerAmount = msg.value.mul(database.uintStorage(keccak256("managerPercentage", _assetID))).div(100);
-    database.addressStorage(keccak256("assetManager", _assetID)).transfer(managerAmount);
+    uint managerAmount = msg.value.mul(database.uintStorage(keccak256("operatorPercentage", _assetID))).div(100);
+    database.addressStorage(keccak256("assetOperator", _assetID)).transfer(managerAmount);
     database.setUint(keccak256("totalReceived", _assetID), totalReceived.add(msg.value.sub(managerAmount)));
     LogIncomeReceived(msg.sender, msg.value, _assetID);
     LogAssetNote(_note, block.timestamp);
@@ -44,7 +43,7 @@ using SafeMath for *;
 
 
   // Asset funders can receive their share of the income here
-  // Invariants: Asset must be live. Sender must have shares in the asset. There must be income earned.
+  // Invariants: Asset must be live. Sender must have ownershipUnits in the asset. There must be income earned.
   // @Param: The assetID this funder is trying to withdraw from
   // @Param: Boolean, whether or not the user wants the withdraw to go to an external address
   function withdraw(bytes32 _assetID, bool _otherWithdrawal)
@@ -53,21 +52,19 @@ using SafeMath for *;
   whenNotPaused
   mustHaveAddressSet(_otherWithdrawal)
   returns (bool){
-    uint shares = database.uintStorage(keccak256("shares", _assetID, msg.sender));
-    require (shares > 0);
+    uint ownershipUnits = database.uintStorage(keccak256("ownershipUnits", _assetID, msg.sender));
+    require (ownershipUnits > 0);
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     uint totalPaidToFunders = database.uintStorage(keccak256("totalPaidToFunders", _assetID));
     uint totalPaidToFunder = database.uintStorage(keccak256("totalPaidToFunder", _assetID, msg.sender));
     uint totalReceived = database.uintStorage(keccak256("totalReceived", _assetID));
-    uint256 payment = (totalReceived.mul(shares).div(amountRaised)).sub(totalPaidToFunder);
+    uint payment = (totalReceived.mul(ownershipUnits).div(amountRaised)).sub(totalPaidToFunder);
     assert (payment != 0);
     assert (totalPaidToFunders <= totalReceived);    // Don't let amount paid to funders exceed amount received
     database.setUint(keccak256("totalPaidToFunder", _assetID, msg.sender), totalPaidToFunder.add(payment));
     database.setUint(keccak256("totalPaidToFunders", _assetID), totalPaidToFunders.add(payment));
     if(_otherWithdrawal){
       address withdrawalAddress = database.addressStorage(keccak256("withdrawalAddress", msg.sender));
-      uint withdrawalAddressValue = database.uintStorage(keccak256("withdrawalAddress", msg.sender));
-      database.setUint(keccak256("withdrawalAddress", withdrawalAddress), withdrawalAddressValue.add(payment));
       withdrawalAddress.transfer(payment);
       LogInvestmentPaidToWithdrawalAddress(msg.sender, withdrawalAddress, payment, block.timestamp);
     }
@@ -76,48 +73,48 @@ using SafeMath for *;
       LogInvestmentPaid(msg.sender, payment, block.timestamp);
     }
     return true;
-}
+  }
 
-  // Returns the amount of WEI owed to the asset shareholder
+  // Returns the amount of WEI owed to the asset owner
   // @Param: The ID of the asset
-  // @Param: The address of the shareholder
+  // @Param: The address of the owner
   function getAmountOwed(bytes32 _assetID, address _user)
   public
   view
   returns (uint){
-    uint shares = database.uintStorage(keccak256("shares", _assetID, _user));
-    if (shares == 0) { return 0; }
+    uint ownershipUnits = database.uintStorage(keccak256("ownershipUnits", _assetID, _user));
+    if (ownershipUnits == 0) { return 0; }
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
-    uint totalPaidToFunders = database.uintStorage(keccak256("totalPaidToFunders", _assetID));
     uint totalPaidToFunder = database.uintStorage(keccak256("totalPaidToFunder", _assetID, _user));
     uint totalReceived = database.uintStorage(keccak256("totalReceived", _assetID));
-    return totalReceived.mul(shares).div(amountRaised).sub(totalPaidToFunder);
+    return totalReceived.mul(ownershipUnits).div(amountRaised).sub(totalPaidToFunder);
   }
 
-  // Trades shares of an asset to other user. Must trade relative amount paid to Funder to balance withdrawl amount.
-  // Must trade over relative amount of paidToFunder, So person buying shares will also be recognized as being paid out for those shares in the past
-  // Invariants: Can only be called by current marketplace contract. User must have enough shares to make trade.
-  // @Param address selling shares
-  // @Param address buying shares
-  // @Param number of shares being traded
-  function tradeShares(bytes32 _assetID, address _from, address _to, uint256 _amount)
+  // Trades ownershipUnits of an asset to other user. Must trade relative amount paid to Funder to balance withdrawl amount.
+  // Must trade over relative amount of paidToFunder, So person buying ownershipUnits will also be recognized as being paid out for those ownershipUnits in the past
+  // Invariants: Can only be called by current marketplace contract. User must have enough ownershipUnits to make trade.
+  // @Param address selling ownershipUnits
+  // @Param address buying ownershipUnits
+  // @Param number of ownershipUnits being traded
+  function tradeOwnershipUnits(bytes32 _assetID, address _from, address _to, uint _amount)
   external
   nonReentrant
+  onlyExchange
   whenNotPaused
   returns (bool) {
-    require(msg.sender == database.addressStorage(keccak256("contract", "MarketPlace")));
+    require(msg.sender == database.addressStorage(keccak256("contract", "AssetExchange")));
     require(getAmountOwed(_assetID, _from) == 0);
-    uint sharesFrom = database.uintStorage(keccak256("shares", _assetID, _from));
-    require(sharesFrom >= _amount);
-    uint sharesTo = database.uintStorage(keccak256("shares", _assetID, _to));
+    uint ownershipUnitsFrom = database.uintStorage(keccak256("ownershipUnits", _assetID, _from));
+    require(ownershipUnitsFrom >= _amount);
+    uint ownershipUnitsTo = database.uintStorage(keccak256("ownershipUnits", _assetID, _to));
     uint paidToFunderFrom = database.uintStorage(keccak256("totalPaidToFunder", _assetID, _from));
     uint paidToFunderTo = database.uintStorage(keccak256("totalPaidToFunder", _assetID, _to));
-    uint256 relativePaidOutAmount = (paidToFunderFrom.mul(_amount)).div(sharesFrom);
+    uint relativePaidOutAmount = (paidToFunderFrom.mul(_amount)).div(ownershipUnitsFrom);
     database.setUint(keccak256("totalPaidToFunder", _assetID, _to), paidToFunderTo.add(relativePaidOutAmount));
     database.setUint(keccak256("totalPaidToFunder", _assetID, _from), paidToFunderFrom.sub(relativePaidOutAmount));
-    database.setUint(keccak256("shares", _assetID, _from), sharesFrom.sub(_amount));
-    database.setUint(keccak256("shares", _assetID, _to), sharesTo.add(_amount));
-    LogSharesTraded(_assetID, _from, _to, block.number);
+    database.setUint(keccak256("ownershipUnits", _assetID, _from), ownershipUnitsFrom.sub(_amount));
+    database.setUint(keccak256("ownershipUnits", _assetID, _to), ownershipUnitsTo.add(_amount));
+    LogownershipUnitsTraded(_assetID, _from, _to, block.number);
     return true;
   }
 
@@ -133,6 +130,11 @@ using SafeMath for *;
     database.setBool(functionHash, false);
     LogDestruction(_holdingAddress, this.balance, msg.sender);
     selfdestruct(_holdingAddress);
+  }
+
+  modifier onlyExchange() {
+      require(database.addressStorage(keccak256("contract", 'AssetExchange')) == msg.sender);
+      _;
   }
 
   modifier nonReentrant() {
@@ -180,10 +182,13 @@ using SafeMath for *;
     revert();
   }
 
-  event LogSharesTraded(bytes32 indexed _assetID, address indexed _from, address indexed _to, uint _timestamp);
-  event LogDestruction(address indexed _locationSent, uint256 indexed _amountSent, address indexed _caller);
-  event LogIncomeReceived(address indexed _sender, uint256 indexed _amount, bytes32 indexed _assetID);
-  event LogInvestmentPaid(address indexed _funder, uint256 indexed _amount, uint256 indexed _timestamp);
-  event LogInvestmentPaidToWithdrawalAddress(address indexed _funder, address indexed _withdrawalAddress, uint256 indexed _amount, uint256 _timestamp);
-  event LogAssetNote(bytes32 indexed _note, uint256 indexed _timestamp);
+  event LogIncomeReceivedManagerTest(uint managerAmount, address assetOperator, uint operatorIncome, uint operatorIncomeAfter);
+
+
+  event LogownershipUnitsTraded(bytes32 indexed _assetID, address indexed _from, address indexed _to, uint _timestamp);
+  event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
+  event LogIncomeReceived(address indexed _sender, uint indexed _amount, bytes32 indexed _assetID);
+  event LogInvestmentPaid(address indexed _funder, uint indexed _amount, uint indexed _timestamp);
+  event LogInvestmentPaidToWithdrawalAddress(address indexed _funder, address indexed _withdrawalAddress, uint indexed _amount, uint _timestamp);
+  event LogAssetNote(bytes32 indexed _note, uint indexed _timestamp);
 }

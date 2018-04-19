@@ -4,40 +4,40 @@ import './Database.sol';
 
 // This contract is involved in setting default variables. These will be set before the contracts are deployed, since contracts cannot write to database before the database approves their address
 // tODO: add controls for these variables
-contract InitialVariables {
+contract InitialVariables { 
 
-Database public database;
+Database public database; 
 
 function InitialVariables(address _database)
-public {
+public { 
   database = Database(_database);
 }
 
-function startDapp()
+function startDapp(address _myBitFoundation, address _installerEscrow)
 external  {
+  require(_myBitFoundation != address(0) && _installerEscrow != address(0)); 
+  // --------------------Set Local Wallets-------------------------
+  database.setAddress(keccak256("MyBitFoundation"), _myBitFoundation);
+  database.setAddress(keccak256("InstallerEscrow"), _installerEscrow); 
   // --------------------Asset Creation Variables-----------------
-  database.setUint(keccak256("myBitFoundationPercentage"), 1);
-  database.setUint(keccak256("stakedTokenPercentage"), 2);
-  database.setUint(keccak256("installerPercentage"), 97);
+  database.setUint(keccak256("myBitFoundationPercentage"), uint(1));
+  database.setUint(keccak256("stakedTokenPercentage"), uint(2));
+  database.setUint(keccak256("installerPercentage"), uint(97));
+  // ---------------------Access Price in USD--------------------------
+  database.setUint(keccak256("accessTokenFee", uint(2)), uint(25));
+  database.setUint(keccak256("accessTokenFee", uint(3)), uint(75)); 
+  database.setUint(keccak256("accessTokenFee", uint(4)), uint(100)); 
 
-  // ---------------------Staking Variables--------------------------
-  database.setUint(keccak256("minimumStakeAmount"), 100);
-  database.setUint(keccak256("minimumStakeTime"), 10);    // TODO: testing number Minimum number of blocks to wait until withdraw can be requested
-  database.setUint(keccak256("minimumWithdrawTime"), 5);     // TODO: testing number. Minimum number of blocks need to wait after withdraw is requested.
 
+  // --------------------Operator Cost-----------------------
+  database.setUint(keccak256("operatorEscrowPercentage"), uint(10)); 
 
-  // -----------Bug Bounty Variables--------------------
-  database.setUint(keccak256("blocksForBugReview"), 25);      // TODO: testing number
-  database.setUint(keccak256("blocksForExpertReview"), 25);      // TODO: testing number
-  database.setUint(keccak256("bugSubmissionCost"), 1000000000000000000);
-  database.setUint(keccak256("bugSeverityCost", uint(1)), 100);
-  database.setUint(keccak256("bugSeverityCost", uint(2)), 1000);
-  database.setUint(keccak256("bugSeverityCost", uint(3)), 10000);
-  database.setUint(keccak256("expertVotePower"), 5);
-  database.setUint(keccak256("regularVotePower"), 1);
+  // -------------Oracle Variables-------------------------
+  database.setUint(keccak256("priceUpdateTimeline"), uint(1000));     // TODO: testing number. This is the length of time an Oracle price is valid for
+  
   LogInitialized(msg.sender, address(database), block.number);
 }
 
-event LogInitialized(address _sender, address _database, uint _blockNumber);
+event LogInitialized(address _sender, address _database, uint _blockNumber); 
 
 }

@@ -18,12 +18,12 @@ contract UserAccess{
   // @Param: Address of new user.
   // @Param: The level of access granted by owner/burningcontract
   // TODO: owner requirement is removed for alpha testing
-  function approveUser(address _newUser, uint8 _accessLevel)
+  function approveUser(address _newUser, uint _accessLevel)
   // anyOwner
   noEmptyAddress(_newUser)
   external
   returns (bool) {
-    require(_accessLevel < 5 && _accessLevel != 0);
+    require(_accessLevel < uint(5) && _accessLevel != uint(0));
     database.setUint(keccak256("userAccess", _newUser), _accessLevel);
     LogUserApproved(_newUser, _accessLevel, block.timestamp);
     return true;
@@ -42,6 +42,14 @@ contract UserAccess{
     return true;
   }
 
+  // Owner can approve KYC for user
+  function approveKYC(address _user)
+  anyOwner
+  external
+  returns (bool) {
+    database.setBool(keccak256("kycApproved", _user), true);
+  }
+
   // Deny empty address parameters
   modifier noEmptyAddress(address _param) {
     require(_param != address(0));
@@ -50,7 +58,7 @@ contract UserAccess{
 
   // User must have identification approved
   modifier mustHaveKYC {
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) > 0);
+    require(database.boolStorage(keccak256("kycApproved", msg.sender)));
     _;
   }
 
@@ -61,8 +69,8 @@ contract UserAccess{
   }
 
   event LogBackupAddressSet(address _user, address _backupAddress, uint _blockNumber);
-  event LogAddressChanged(address _oldAddress, address _newAddress, uint256 _timestamp);
-  event LogUserApproved(address indexed _user, uint8 indexed _approvalLevel, uint256 indexed _timestamp);
-  event LogUserRemoved(address indexed _user, uint256 indexed _timestamp);
+  event LogAddressChanged(address _oldAddress, address _newAddress, uint _timestamp);
+  event LogUserApproved(address indexed _user, uint indexed _approvalLevel, uint indexed _timestamp);
+  event LogUserRemoved(address indexed _user, uint indexed _timestamp);
 
 }

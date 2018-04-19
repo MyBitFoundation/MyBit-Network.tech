@@ -6,7 +6,7 @@ import './Asset.sol';
 
 // Note: Users can only have 1 sell order and 1 buy order for each individual asset, as the orders are stored as as sha3 hash of assetAddress + sender address
 // InVariants: Users must withdraw available funds from asset before trading
-contract MarketPlace {
+contract AssetExchange {
   using SafeMath for *;
 
   Database public database;
@@ -18,13 +18,13 @@ contract MarketPlace {
   bool public reentrancyLock = false;
 
 
-  function MarketPlace(address _database)
+  function AssetExchange(address _database)
   public {
     database = Database(_database);
   }
 
-  // Gives Ether sent to initatior of this sellOrder and transfers shares of asset to purchaser
-  // Note: Check if creator of sell order has enough shares left
+  // Gives Ether sent to initatior of this sellOrder and transfers ownership units of asset to purchaser
+  // Note: Check if creator of sell order has enough ownership units left
   // @Param: ID of the sell order to be bought
   // TODO: log amounts?
   function buyAsset(bytes32 _assetID, address _seller, uint _amount, uint _price)
@@ -37,7 +37,7 @@ contract MarketPlace {
     bytes32 thisOrder = keccak256(_assetID, _seller, _amount, _price, false);
     require(orders[_seller][thisOrder]);
     require(msg.value == (_amount.mul(_price)));
-    require(Asset(database.addressStorage(keccak256("contract", "Asset"))).tradeShares(_assetID, _seller, msg.sender, _amount));
+    require(Asset(database.addressStorage(keccak256("contract", "Asset"))).tradeOwnershipUnits(_assetID, _seller, msg.sender, _amount));
     weiOwed[_seller] = weiOwed[_seller].add(msg.value);
     delete orders[_seller][thisOrder];
     LogSellOrderCompleted(thisOrder, _assetID, msg.sender);
@@ -53,7 +53,7 @@ contract MarketPlace {
   returns (bool){
     bytes32 thisOrder = keccak256(_assetID, _buyer, _amount, _price, true);
     require(orders[_buyer][thisOrder]);
-    require(Asset(database.addressStorage(keccak256("contract", "Asset"))).tradeShares(_assetID, msg.sender, _buyer, _amount));
+    require(Asset(database.addressStorage(keccak256("contract", "Asset"))).tradeOwnershipUnits(_assetID, msg.sender, _buyer, _amount));
     weiDeposited[_buyer] = weiDeposited[_buyer].sub(_amount.mul(_price));
     weiOwed[msg.sender] = weiOwed[msg.sender].add(_amount.mul(_price));
     delete orders[_buyer][thisOrder];
@@ -80,14 +80,14 @@ contract MarketPlace {
     return true;
   }
 
-  // Creates an orde for user to sell their Asset shares
+  // Creates an orde for user to sell their Asset ownership
   function createSellOrder(bytes32 _assetID, uint _amount, uint _price)
   external
   nonReentrant
   onlyApproved
   aboveZero(_amount, _price)
   validAsset(_assetID)
-  hasEnoughShares(_assetID, _amount)
+  hasEnoughOwnership(_assetID, _amount)
   returns (bool) {
     // TODO; matching buy/sell orders
     bytes32 orderID = keccak256(_assetID, msg.sender, _amount, _price, false);
@@ -148,9 +148,9 @@ contract MarketPlace {
     _;
   }
 
-  // Check if user has enough shares to create SellOrder
-  modifier hasEnoughShares(bytes32 _assetID, uint _requiredShares) {
-    require(database.uintStorage(keccak256("shares", _assetID, msg.sender)) >= _requiredShares);
+  // Check if user has enough ownershipUnits to create SellOrder
+  modifier hasEnoughOwnership(bytes32 _assetID, uint _requiredOwnership) {
+    require(database.uintStorage(keccak256("ownershipUnits", _assetID, msg.sender)) >= _requiredOwnership);
     _;
   }
 
@@ -159,9 +159,9 @@ contract MarketPlace {
     _;
   }
 
-  // Must have access level of 2 to use
+  // Must have access level of 3 to use
   modifier onlyApproved {
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) == 4);
+    require(database.uintStorage(keccak256("userAccess", msg.sender)) == uint(3));
     _;
   }
 
