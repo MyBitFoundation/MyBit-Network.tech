@@ -20,6 +20,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   const assetEscrowPayoutAddress = web3.eth.accounts[9];
 
   const contractMimik = web3.eth.accounts[10];
+  const decemberExpire = 1544015678;
 
   let dbInstance;
   let hfInstance;
@@ -32,7 +33,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
   let transferAmount;
   let initialSupply;
-  let myBitPrice = 3000;  // 10 to the power of 3 * 3 usd == 3000
+  let myBitPrice = 3;  // 10 to the power of 3 * 3 usd == 3000
 
 
   it("Owners should be assigned", async () => {
@@ -118,8 +119,8 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    it('Manually Approve user', async () => {
      await userAccessInstance.approveUser(account1, 1);
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', account1)), 1, 'Access 1 manually granted');
-     await userAccessInstance.approveUser(account1, 2);
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', account1)), 2, 'Access 2 manually granted');
+     await userAccessInstance.approveUser(account2, 2);
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', account2)), 2, 'Access 2 manually granted');
    });
 
    it('Manually remove user', async () => {
@@ -131,7 +132,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      await contractManagerInstance.addContract('testContract', contractMimik, ownerAddr2);
      assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'testContract')), contractMimik, 'testContract set');
      await dbInstance.setUint(await hfInstance.stringHash('mybUSDPrice'), myBitPrice,{from:contractMimik});
-     await dbInstance.setUint(await hfInstance.stringHash('mybUSDPriceExpiration'), 1544015678,{from:contractMimik}); //1544015678 - 12 months ahead
+     await dbInstance.setUint(await hfInstance.stringHash('mybUSDPriceExpiration'), decemberExpire,{from:contractMimik}); //1544015678 - 12 months ahead
   });
 
   it('Transfer Tokens to user and approve again', async () => {
@@ -142,7 +143,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(balanceOfOwnerBefore, initialSupply, 'Owner has full initial supply');
      assert.equal(balanceOfAccess1Before, 0, 'account1 has 0 initial supply');
 
-     transferAmount = 304954;
+     transferAmount = 30004954;
      await myBitTokenInstance.transfer(account1, transferAmount,{from:ownerAddr1}); //transfer tokens for escrow
 
      let balanceOfOwnerAfterTransfer = parseInt(await myBitTokenInstance.balanceOf(ownerAddr1));
@@ -158,7 +159,54 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(allowance, approvalAmount, 'Approval granted');
    });
 
-  it('Burn tokens for access', async () => { //10000 00000 00
+   it('Burn token validation', async () => {
+     // Modifier Check
+     let whenNotPausedModifier = null;
+     try {
+       await dbInstance.setBool(await hfInstance.stringAddress('pause',tokenBurnInstance.address), true,{from:contractMimik});
+       await tokenBurnInstance.burnTokens(2, {from:account1});
+     }
+     catch (error) {whenNotPausedModifier = error}
+     assert.notEqual(whenNotPausedModifier, null, 'modifier whenNotPausedModifier');
+     // set back to false after test
+     await dbInstance.setBool(await hfInstance.stringAddress('pause',tokenBurnInstance.address), false,{from:contractMimik});
+
+     let priceUpdatedModifier = null;
+     try {
+       await dbInstance.setUint(await hfInstance.stringHash('mybUSDPriceExpiration'), 0, {from:contractMimik});
+       await tokenBurnInstance.burnTokens(2, {from:account1});
+     }
+     catch (error) {priceUpdatedModifier = error}
+     assert.notEqual(priceUpdatedModifier, null, 'modifier priceUpdatedModifier');
+     // set back to false after test
+     await dbInstance.setUint(await hfInstance.stringHash('mybUSDPriceExpiration'), decemberExpire, {from:contractMimik});
+
+     let basicverificationModifier = null;
+     try {await tokenBurnInstance.burnTokens(7, {from:account1});}
+     catch (error) {basicverificationModifier = error}
+     assert.notEqual(basicverificationModifier, null, 'modifier basicVerificationModifierCurrentlevel');
+
+     // assert accessCostMyB
+     let accessCostMyBAssert = null;
+     try {
+       await dbInstance.setUint(await hfInstance.stringUint('accessTokenFee', 3), 0, {from:contractMimik});
+       await tokenBurnInstance.burnTokens(3, {from:account1});
+     }
+     catch (error) {accessCostMyBAssert = error}
+     assert.notEqual(accessCostMyBAssert, null, 'assert accessCostMyBAssert');
+     // set back real value
+     await dbInstance.setUint(await hfInstance.stringUint('accessTokenFee', 3), 100, {from:contractMimik});
+
+     // require transferFrom
+     let transferFromRequire = null;
+     try {
+       await tokenBurnInstance.burnTokens(3, {from:account2});
+     }
+     catch (error) {transferFromRequire = error}
+     assert.notEqual(transferFromRequire, null, 'require transferFromRequire');
+   });
+
+  it('Burn tokens for access', async () => {
     await tokenBurnInstance.burnTokens(2, {from:account1});
     let accessLevel = parseInt(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', account1)));
     let tokensBurned = parseInt(await dbInstance.uintStorage(await hfInstance.stringHash('numberOfTokensBurnt')));
