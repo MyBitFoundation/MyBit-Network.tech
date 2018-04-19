@@ -2,8 +2,9 @@ pragma solidity ^0.4.19;
 
 import "./Database.sol";
 
-// Contract Manager determines which contracts are allowed to make changes to the shares database contract. Changes in contracts require multi-sig from owners.
-// TODO: Add event logs
+// ------------------------------------------------------------------------------------------------
+// This contract determines which contracts are allowed to make changes to the database contract. 
+// ------------------------------------------------------------------------------------------------
 contract ContractManager{
   Database public database;
 
@@ -14,17 +15,22 @@ contract ContractManager{
     database = Database(_database);
   }
 
-  // This function removes the ability for an owner to add a contract without another owner authorizing it. Call this once finished deploying initial contracts. 
+  // ------------------------------------------------------------------------------------------------
+  // Call this once finished deploying initial contracts. 
+  // This initiates multi-sig requirement to add new contracts
+  // ------------------------------------------------------------------------------------------------
   function setDeployFinished()
   external
   anyOwner {
     database.setBool(keccak256("deployFinished"), true);
   }
 
+  // ------------------------------------------------------------------------------------------------  
   // This function adds new contracts to the platform. Giving them write access to Database.sol
   // @Param: The name of the contract 
   // @Param: The address of the new contract 
   // @Param: The owner who authorized this function to be called
+  // ------------------------------------------------------------------------------------------------  
   function addContract(string _name, address _contractAddress, address _functionSigner)
   external
   noEmptyAddress(_contractAddress)
@@ -40,9 +46,11 @@ contract ContractManager{
     LogContractAdded(_contractAddress, _name, block.number);
   }
 
+  // ------------------------------------------------------------------------------------------------  
   // Owner can remove an existing contract on the platform.
   // @Param: The name of the contract 
   // @Param: The owner who authorized this function to be called 
+  // ------------------------------------------------------------------------------------------------  
   function removeContract(string _name, address _functionSigner)
   external
   noEmptyString(_name)
@@ -57,11 +65,13 @@ contract ContractManager{
     LogContractRemoved(contractToDelete, _name, block.number);
   }
 
+  // ------------------------------------------------------------------------------------------------  
   // Owner can update an existing contract on the platform, giving it write access to Database
   // Invariants: New contract must not have null address. Function must be authorized by other owner. 
   // @Param: The name of the contract (First Letter Capitalized)
   // @Param: The address of the new contract
   // @Param: The address of the owner who authorized this function to be called
+  // ------------------------------------------------------------------------------------------------  
   function updateContract(string _name, address _newContractAddress, address _functionSigner)
   external
   noEmptyAddress(_newContractAddress)
@@ -77,6 +87,9 @@ contract ContractManager{
     LogNewContractLocation(_newContractAddress, _name, block.number);
   }
 
+  // ------------------------------------------------------------------------------------------------  
+  // Checks if the contract is already registered in database
+  // ------------------------------------------------------------------------------------------------  
   function contractExists(address _contract)
   public 
   view 
@@ -84,27 +97,48 @@ contract ContractManager{
     return database.boolStorage(keccak256("contract", _contract));
   }
 
+  // ------------------------------------------------------------------------------------------------  
+  //                                                Modifiers 
+  // ------------------------------------------------------------------------------------------------  
+
+
+  // ------------------------------------------------------------------------------------------------  
+  //  Verify that sender is an owner  
+  // ------------------------------------------------------------------------------------------------ 
   modifier anyOwner {
     require(database.boolStorage(keccak256("owner", msg.sender)));
     _;
   }
 
+  // ------------------------------------------------------------------------------------------------  
+  //  Verify address isn't null  
+  // ------------------------------------------------------------------------------------------------ 
   modifier noEmptyAddress(address _contract) {
     require(_contract != address(0));
     _;
   }
 
+  // ------------------------------------------------------------------------------------------------  
+  //  Don't accept empty string input  
+  // ------------------------------------------------------------------------------------------------ 
   modifier noEmptyString(string _name) {
     require(bytes(_name).length != 0);
     _;
   }
 
+  // ------------------------------------------------------------------------------------------------  
+  //  Verify that function has been signed off by another owner 
+  // ------------------------------------------------------------------------------------------------ 
   modifier multiSigRequired(address _signer, string _functionName, bytes32 _keyParam) { 
     require(msg.sender != _signer);
     require(database.boolStorage(keccak256(this, _signer, _functionName, _keyParam)));
     _;
   }
 
+
+  // ------------------------------------------------------------------------------------------------  
+  //                                    Events
+  // ------------------------------------------------------------------------------------------------  
   event LogContractAdded(address _contractAddress, string _name, uint _blockNumber);
   event LogContractRemoved(address contractToDelete, string _name, uint _blockNumber);
   event LogContractUpdated(address oldAddress, string _name, uint _blockNumber);
