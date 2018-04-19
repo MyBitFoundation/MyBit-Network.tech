@@ -4,21 +4,28 @@ import './Database.sol';
 import './MyBitToken.sol';
 import './SafeMath.sol';
 
+//------------------------------------------------------------------------------------------------------------------
 // This contract is where operators can deposit MyBit tokens to be eligable to create an asset on the platform.
 // The escrowed tokens are available to withdraw if the Asset Fails funding or the operator is replaced or the Asset finishes it's lifecycle
+//------------------------------------------------------------------------------------------------------------------
 contract OperatorEscrow {
   using SafeMath for *;
+
   MyBitToken public myBitToken;
   Database public database;
 
+  //------------------------------------------------------------------------------------------------------------------
   // Constructor. Initiate Database and MyBitToken
+  //------------------------------------------------------------------------------------------------------------------
   function OperatorEscrow(address _database, address _tokenAddress)
   public {
     database = Database(_database);
     myBitToken = MyBitToken(_tokenAddress);
   }
 
+  //------------------------------------------------------------------------------------------------------------------
   // Operator can deposit MyBit here to be locked for escrow
+  //------------------------------------------------------------------------------------------------------------------
   function depositEscrow(uint _amount)
   external
   funderApproved
@@ -30,8 +37,10 @@ contract OperatorEscrow {
     return true;
   }
 
+  //------------------------------------------------------------------------------------------------------------------
   // Operator can withdraw any escrowed tokens that are no longer needed in escrow here
   // To withdraw the asset must have: Not started funding (stage = 0), Failed Funding (stage = 2), Finished lifecycle (stage = 5))
+  //------------------------------------------------------------------------------------------------------------------
   function unlockEscrow(bytes32 _assetID)
   external
   funderApproved {
@@ -46,6 +55,9 @@ contract OperatorEscrow {
     database.setUint(keccak256("operatorAmountDeposited", msg.sender), depositedAmount.add(lockedAmount.sub(assetLockedAmount)));
   }
 
+  //------------------------------------------------------------------------------------------------------------------
+  // Operator can withdraw tokens here once they have unlocked them from a previous asset escrow
+  //------------------------------------------------------------------------------------------------------------------
   function withdrawToken(uint _amount)
   external
   funderApproved
@@ -59,16 +71,18 @@ contract OperatorEscrow {
     return true;
   }
 
-
+  //------------------------------------------------------------------------------------------------------------------
   // ---------Fallback Function------------
+  //------------------------------------------------------------------------------------------------------------------
   function()
   external {
     revert();
   }
 
-  // --------------Read Only---------------
-
+ 
+  //------------------------------------------------------------------------------------------------------------------
   // Get the amount of tokens that are not currently in escrow
+  //------------------------------------------------------------------------------------------------------------------
   function getUnlockedBalance(address _operator)
   public
   view
@@ -77,13 +91,23 @@ contract OperatorEscrow {
     return database.uintStorage(keccak256("operatorAmountDeposited", _operator)).sub(lockedBalance);
   }
 
-  // ----------------------------Modifiers-----------------------
+  //------------------------------------------------------------------------------------------------------------------
+  //                                            Modifiers
+  //------------------------------------------------------------------------------------------------------------------
 
+  //------------------------------------------------------------------------------------------------------------------
+  // Must have access level greater than or equal to 1
+  //------------------------------------------------------------------------------------------------------------------
   modifier funderApproved {
     require(database.uintStorage(keccak256("userAccess", msg.sender)) >= uint(1));
     _;
   }
 
-  event LogPaymentReceived(bytes32 indexed _assetID, uint indexed _amount, address indexed _operator);
+
+
+  //------------------------------------------------------------------------------------------------------------------
+  //                                              Events 
+  //------------------------------------------------------------------------------------------------------------------
+
   event LogEscrowDeposited(address indexed _from, uint _amount, uint _timestamp);
 }
