@@ -29,6 +29,8 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   const myBitPayoutAddress = web3.eth.accounts[8];
   const assetEscrowPayoutAddress = web3.eth.accounts[9];
 
+  const emptyAddress = '0x0000000000000000000000000000000000000000';
+
   let contractManagerInstance;
   let hfInstance;
   let initialVariableInstance;
@@ -282,13 +284,25 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      let withdrawalAddress = await dbInstance.addressStorage(await hfInstance.stringAddress('withdrawalAddress', funder1));
      let withdrawalAmountAddress = await dbInstance.uintStorage(await hfInstance.stringAddress('withdrawalAddress', funder1));
 
-     assert.equal(withdrawalAddress, '0x0000000000000000000000000000000000000000', 'address empty');
+     assert.equal(withdrawalAddress, emptyAddress, 'address empty');
      assert.equal(withdrawalAmountAddress, 0, 'address empty value');
    });
 
 
    it("Add withdrawalAddress - addWithdrawalAddress", async () => {
+     // Modifier Check
+     let addressNotEmptyModifier = null;
+     try {await withdrawalManagerInstance.addWithdrawalAddress(emptyAddress);}
+     catch (error) {addressNotEmptyModifier = error}
+     assert.notEqual(addressNotEmptyModifier, null, 'modifier addressNotEmptyModifier');
+
      await withdrawalManagerInstance.addWithdrawalAddress(withdrawalAddressSet,{from:funder1});
+
+     /// Modifier check
+     let mustNotHaveAddressSetModifier = null;
+     try {await withdrawalManagerInstance.addWithdrawalAddress(funder2,{from:funder1});}
+     catch (error) {mustNotHaveAddressSetModifier = error}
+     assert.notEqual(mustNotHaveAddressSetModifier, null, 'modifier mustNotHaveAddressSetModifier');
 
      let withdrawalAddress = await dbInstance.addressStorage(await hfInstance.stringAddress('withdrawalAddress', funder1));
      let withdrawalAmountAddress = await dbInstance.uintStorage(await hfInstance.stringAddress('withdrawalAddress', withdrawalAddressSet));
@@ -299,6 +313,17 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
 
    it("Update withdrawalAddress - updateWithdrawalAddress", async () => {
+     // Modifier Check
+     let addressNotEmptyModifier = null;
+     try {await withdrawalManagerInstance.updateWithdrawalAddress(emptyAddress);}
+     catch (error) {addressNotEmptyModifier = error}
+     assert.notEqual(addressNotEmptyModifier, null, 'modifier addressNotEmptyModifier');
+
+     let mustHaveAddressSetModifier = null;
+     try {await withdrawalManagerInstance.updateWithdrawalAddress({from:funder2});}
+     catch (error) {mustHaveAddressSetModifier = error}
+     assert.notEqual(mustHaveAddressSetModifier, null, 'modifier mustHaveAddressSetModifier');
+
      await withdrawalManagerInstance.updateWithdrawalAddress(withdrawalAddressSet2,{from:funder1});
 
      let withdrawalAddress = await dbInstance.addressStorage(await hfInstance.stringAddress('withdrawalAddress', funder1));
@@ -318,7 +343,13 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    });
 
    it('Remove withdrawalAddress - removeWithdrawalAddress', async () => {
-    await withdrawalManagerInstance.removeWithdrawalAddress({from:funder1});
+     // Modifier Check
+     let mustHaveAddressSetModifier = null;
+     try {await withdrawalManagerInstance.removeWithdrawalAddress({from:funder2});}
+     catch (error) {mustHaveAddressSetModifier = error}
+     assert.notEqual(mustHaveAddressSetModifier, null, 'modifier mustHaveAddressSetModifier');
+
+     await withdrawalManagerInstance.removeWithdrawalAddress({from:funder1});
 
      let withdrawalAddress = await dbInstance.addressStorage(
        await hfInstance.stringAddress('withdrawalAddress', funder1));
