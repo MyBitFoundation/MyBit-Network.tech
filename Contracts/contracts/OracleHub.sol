@@ -22,6 +22,7 @@ contract OracleHub is usingOraclize{
   function ethUSDQuery()
   external
   payable
+  requiresEther
   returns (bool) {
     bytes32 queryID = oraclize_query('URL', 'json(https://api.coinmarketcap.com/v1/ticker/ethereum/).0.price_usd');
     database.setBool(queryID, true);
@@ -33,6 +34,7 @@ contract OracleHub is usingOraclize{
   function mybUSDQuery()
   external
   payable
+  requiresEther
   returns(bool){
     bytes32 queryID = oraclize_query('nested', '[WolframAlpha]  10 to the power of 3 multiplied by ${[URL] json(https://api.coinmarketcap.com/v1/ticker/mybit-token/).0.price_usd}');
     LogmybUSDQuery(msg.sender, queryID, now);
@@ -72,8 +74,13 @@ contract OracleHub is usingOraclize{
    _;
   }
 
-  event LogmybUSDQuery( address _from, bytes32 _queryID, uint _timestamp);
-  event LogEthUSDQuery(address _funder, bytes32 _queryID, uint _timestamp);
-  event LogBurnCallbackReceived(bytes32 _queryID, uint _tokenPrice, uint _timestamp);
-  event LogFundingCallbackReceived(bytes32 queryID, uint _result, uint _timestamp);
+  modifier requiresEther() {
+    require(msg.value > 0);
+    _;
+  }
+
+  event LogmybUSDQuery(address indexed _from, bytes32 indexed _queryID, uint indexed _timestamp);
+  event LogEthUSDQuery(address indexed _funder, bytes32 indexed _queryID, uint indexed _timestamp);
+  event LogBurnCallbackReceived(bytes32 indexed _queryID, uint indexed _tokenPrice, uint indexed _timestamp);
+  event LogFundingCallbackReceived(bytes32 indexed _queryID, uint indexed _result, uint indexed _timestamp);
 }
