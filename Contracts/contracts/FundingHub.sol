@@ -44,7 +44,7 @@ contract FundingHub {
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     database.setUint(keccak256("amountRaised", _assetID), amountRaised.add(msg.value));
     database.setUint(keccak256("ownershipUnits", _assetID, msg.sender), ownershipUnits.add(msg.value));
-    LogAssetFunded(msg.sender, msg.value, block.timestamp);
+    LogAssetFunded(msg.sender, msg.value, _assetID);
     return true;
   }
 
@@ -225,7 +225,7 @@ contract FundingHub {
   //------------------------------------------------------------------------------------------------------------------
 
   event LogNewFunder(address indexed _funder, bytes32 indexed _assetID, uint indexed _timestamp);
-  event LogAssetFunded(address indexed _sender, uint indexed _amount, uint indexed _timestamp);
+  event LogAssetFunded(address indexed _sender, uint indexed _amount, bytes32 indexed _assetID);
   event LogAssetFundingFailed(bytes32 indexed _assetID, uint indexed _amountRaised, uint indexed _timestamp);
   event LogAssetFundingSuccess(bytes32 indexed _assetID, uint indexed _currentEthPrice, uint indexed _timestamp);
   event LogRefund(address indexed _funder, uint indexed _amount, uint indexed _timestamp);
