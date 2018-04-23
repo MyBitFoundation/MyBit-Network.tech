@@ -7,6 +7,7 @@ import './SafeMath.sol';
 //------------------------------------------------------------------------------------------------------------------
 // This contract is where operators can deposit MyBit tokens to be eligable to create an asset on the platform.
 // The escrowed tokens are available to withdraw if the Asset Fails funding or the operator is replaced or the Asset finishes it's lifecycle
+// TODO: Variable names escrowed vs deposited (make clearer)
 //------------------------------------------------------------------------------------------------------------------
 contract OperatorEscrow {
   using SafeMath for *;
@@ -44,15 +45,16 @@ contract OperatorEscrow {
   function unlockEscrow(bytes32 _assetID)
   external
   funderApproved {
-    require(database.boolStorage(keccak256("operatorEscrowed", _assetID, msg.sender)));    // Make sure sender has escrowed tokens for this asset
+    require(database.addressStorage(keccak256("assetOperator", _assetID)) == msg.sender);    // Make sure sender has escrowed tokens for this asset
+    uint amountToUnlock = database.uintStorage(keccak256("assetEscrowRequirement", _assetID));
+    assert(amountToUnlock > 0);
     uint fundingStage = database.uintStorage(keccak256("fundingStage", _assetID));
     assert (fundingStage == 0 || fundingStage == 2 || fundingStage == 5);    // check that asset is not live
     database.deleteBool(keccak256("operatorEscrowed", _assetID, msg.sender));    // Remove senders as operator
-    uint lockedAmount = database.uintStorage(keccak256("operatorAmountEscrowed", msg.sender));
-    uint assetLockedAmount = database.uintStorage(keccak256("assetEscrowRequirement", _assetID));
+    uint totalEscrowedAmount = database.uintStorage(keccak256("operatorAmountEscrowed", msg.sender));
     uint depositedAmount = database.uintStorage(keccak256("operatorAmountDeposited", msg.sender));
-    database.setUint(keccak256("operatorAmountEscrowed", msg.sender), lockedAmount.sub(assetLockedAmount));
-    database.setUint(keccak256("operatorAmountDeposited", msg.sender), depositedAmount.add(lockedAmount.sub(assetLockedAmount)));
+    database.setUint(keccak256("operatorAmountEscrowed", msg.sender), totalEscrowedAmount.sub(amountToUnlock));
+    database.setUint(keccak256("operatorAmountDeposited", msg.sender), depositedAmount.add(totalEscrowedAmount.sub(amountToUnlock)));
   }
 
   //------------------------------------------------------------------------------------------------------------------

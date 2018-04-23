@@ -22,7 +22,7 @@ The MyBit platform requires users to burn MyBit tokens to interact with the smar
 
 * Before funding or burning tokens the current price of Ether or MyBit must be resolved in OracleHub.
 
-* Make sure you approving TokenBurn + OperatorEscrow to transfer tokens before calling them. 
+* Make sure you are approving TokenBurn + OperatorEscrow to transfer tokens before calling them. 
 
 
 # Current MyBit Contracts:
