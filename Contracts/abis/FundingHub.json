@@ -77,29 +77,6 @@
         "type": "bytes32"
       }
     ],
-    "name": "payout",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_assetID",
-        "type": "bytes32"
-      },
-      {
-        "name": "_etherPrice",
-        "type": "uint256"
-      }
-    ],
     "name": "fund",
     "outputs": [
       {
@@ -109,6 +86,25 @@
     ],
     "payable": true,
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "payout",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
