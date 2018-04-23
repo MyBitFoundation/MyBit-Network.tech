@@ -168,10 +168,12 @@ contract FundingHub {
   // Transitions funding period to success if enough Ether is raised
   // Must be in funding stage 3 (currently being funded).
   // Deletes funding raising variables if current transaction puts it over the goal.
+  // TODO: Remove fundingLimitModifier when done testing 
   //------------------------------------------------------------------------------------------------------------------
   modifier fundingLimit(bytes32 _assetID) {
     require(now <= database.uintStorage(keccak256("fundingDeadline", _assetID)));
     uint currentEthPrice = database.uintStorage(keccak256("ethUSDPrice"));
+    assert (currentEthPrice > 0); 
     _;
     uint value1 = database.uintStorage(keccak256("amountRaised", _assetID)).mul(currentEthPrice);
     uint value2 = database.uintStorage(keccak256("amountToBeRaised", _assetID)).mul(1e18);
@@ -184,6 +186,7 @@ contract FundingHub {
        database.setUint(keccak256("fundingStage", _assetID), 3);
       }
   }
+  
   //------------------------------------------------------------------------------------------------------------------
   // Check that the Ether/USD prices have been updated 
   //------------------------------------------------------------------------------------------------------------------

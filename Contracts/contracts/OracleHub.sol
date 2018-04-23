@@ -29,6 +29,7 @@ contract OracleHub is usingOraclize{
   function ethUSDQuery()
   external
   payable
+  requiresEther
   returns (bool) {
     bytes32 queryID = oraclize_query('URL', 'json(https://api.coinmarketcap.com/v1/ticker/ethereum/).0.price_usd');
     database.setBool(queryID, true);
@@ -43,6 +44,7 @@ contract OracleHub is usingOraclize{
   function mybUSDQuery()
   external
   payable
+  requiresEther
   returns(bool){
     bytes32 queryID = oraclize_query('nested', '[WolframAlpha]  10 to the power of 3 multiplied by ${[URL] json(https://api.coinmarketcap.com/v1/ticker/mybit-token/).0.price_usd}');
     LogmybUSDQuery(msg.sender, queryID, now);
@@ -99,6 +101,14 @@ contract OracleHub is usingOraclize{
   modifier isOraclize() {
    require(msg.sender == oraclize_cbAddress());
    _;
+  }
+
+  //------------------------------------------------------------------------------------------------------------------
+  // Veriies that sender is Oraclize 
+  //------------------------------------------------------------------------------------------------------------------
+  modifier requiresEther() {
+    require(msg.value > 0);
+    _;
   }
 
 
