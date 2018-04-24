@@ -75,7 +75,7 @@ contract OracleHub is usingOraclize{
     database.setUint(keccak256("ethUSDPrice"), parseInt(result));
     database.setUint(keccak256("ethUSDPriceExpiration"), (priceTimeline + now));
     database.deleteBool(myid);
-    LogEthUSDCallback(myid, parseInt(result), now);
+    LogEthUSDCallbackReceived(myid, parseInt(result), now);
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -86,7 +86,7 @@ contract OracleHub is usingOraclize{
     uint priceTimeline = database.uintStorage(keccak256("priceUpdateTimeline"));
     database.setUint(keccak256("mybUSDPrice"), parseInt(result));
     database.setUint(keccak256("mybUSDPriceExpiration"), (priceTimeline + now));
-    LogMYBUSDCallback(myid, parseInt(result), now);
+    LogMYBUSDCallbackReceived(myid, parseInt(result), now);
   }
 
 
@@ -118,6 +118,6 @@ contract OracleHub is usingOraclize{
 
   event LogmybUSDQuery( address _from, bytes32 _queryID, uint _timestamp);
   event LogEthUSDQuery(address _funder, bytes32 _queryID, uint _timestamp);
-  event LogMYBUSDCallback(bytes32 _queryID, uint _tokenPrice, uint _timestamp);
-  event LogEthUSDCallback(bytes32 queryID, uint _result, uint _timestamp);
+  event LogMYBUSDCallbackReceived(bytes32 _queryID, uint _tokenPrice, uint _timestamp);
+  event LogEthUSDCallbackReceived(bytes32 queryID, uint _result, uint _timestamp);
 }

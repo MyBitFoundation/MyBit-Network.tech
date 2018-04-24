@@ -57,7 +57,7 @@ contract AssetCreation {
   function lockAssetEscrow(bytes32 _assetID, uint _amountToEscrow)
   internal
   returns (bool) {
-    database.setUint(keccak256("assetEscrowRequirement", _assetID), _amountToEscrow);
+    database.setUint(keccak256("lockedForAsset", _assetID), _amountToEscrow);
     uint lockedAmount = database.uintStorage(keccak256("operatorAmountEscrowed", msg.sender));
     assert (_amountToEscrow <= database.uintStorage(keccak256("operatorAmountDeposited", msg.sender)).sub(lockedAmount));
     database.setUint(keccak256("operatorAmountEscrowed", msg.sender), lockedAmount.add(_amountToEscrow));
