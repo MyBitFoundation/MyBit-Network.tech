@@ -44,7 +44,7 @@ contract FundingHub {
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     database.setUint(keccak256("amountRaised", _assetID), amountRaised.add(msg.value));
     database.setUint(keccak256("ownershipUnits", _assetID, msg.sender), ownershipUnits.add(msg.value));
-    LogAssetFunded(msg.sender, msg.value, block.timestamp);
+    LogAssetFunded(msg.sender, msg.value, _assetID);
     return true;
   }
 
@@ -168,10 +168,12 @@ contract FundingHub {
   // Transitions funding period to success if enough Ether is raised
   // Must be in funding stage 3 (currently being funded).
   // Deletes funding raising variables if current transaction puts it over the goal.
+  // TODO: Remove fundingLimitModifier when done testing 
   //------------------------------------------------------------------------------------------------------------------
   modifier fundingLimit(bytes32 _assetID) {
     require(now <= database.uintStorage(keccak256("fundingDeadline", _assetID)));
     uint currentEthPrice = database.uintStorage(keccak256("ethUSDPrice"));
+    assert (currentEthPrice > 0); 
     _;
     uint value1 = database.uintStorage(keccak256("amountRaised", _assetID)).mul(currentEthPrice);
     uint value2 = database.uintStorage(keccak256("amountToBeRaised", _assetID)).mul(1e18);
@@ -184,6 +186,7 @@ contract FundingHub {
        database.setUint(keccak256("fundingStage", _assetID), 3);
       }
   }
+  
   //------------------------------------------------------------------------------------------------------------------
   // Check that the Ether/USD prices have been updated 
   //------------------------------------------------------------------------------------------------------------------
@@ -222,7 +225,7 @@ contract FundingHub {
   //------------------------------------------------------------------------------------------------------------------
 
   event LogNewFunder(address indexed _funder, bytes32 indexed _assetID, uint indexed _timestamp);
-  event LogAssetFunded(address indexed _sender, uint indexed _amount, uint indexed _timestamp);
+  event LogAssetFunded(address indexed _sender, uint indexed _amount, bytes32 indexed _assetID);
   event LogAssetFundingFailed(bytes32 indexed _assetID, uint indexed _amountRaised, uint indexed _timestamp);
   event LogAssetFundingSuccess(bytes32 indexed _assetID, uint indexed _currentEthPrice, uint indexed _timestamp);
   event LogRefund(address indexed _funder, uint indexed _amount, uint indexed _timestamp);
