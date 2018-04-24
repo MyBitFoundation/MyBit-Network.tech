@@ -50,7 +50,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let installerID;
   let assetType;
 
-  let amountMyBRequired;
   let user1ownershipUnitsInitially;
 
 
@@ -229,13 +228,11 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      let mybUSDPrice = await dbInstance.uintStorage(await hfInstance.stringHash("mybUSDPrice"));
      await assetCreationInstance.newAsset(assetID, amountToBeRaised, operatorPercentage, escrowAmount, installerID, assetType, {from:assetCreator});
 
-     amountMyBRequired = await dbInstance.uintStorage(await hfInstance.stringBytes("assetEscrowRequirement", assetID));
      let myBPrice = await dbInstance.uintStorage(await hfInstance.stringHash('mybUSDPrice'));
      let addressAssigned = await dbInstance.addressStorage(await hfInstance.stringBytes("assetOperator", assetID));
-     let operatorEscrowedAmount = await dbInstance.uintStorage(await hfInstance.stringAddress('operatorAmountEscrowed', assetCreator));
+     let operatorEscrowedAmount = await dbInstance.uintStorage(await hfInstance.stringBytes('lockedForAsset', assetID));
 
-     assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringAddress('operatorAmountEscrowed', assetCreator))), amountMyBRequired, 'escrow deposited');
-     assert.equal(parseInt(amountMyBRequired), escrowAmount, 'escrow correctly set');
+
      assert.equal(addressAssigned, assetCreator, 'asset creator assigned to asset');
      assert.equal(parseInt(operatorEscrowedAmount), escrowAmount, 'operatorEscrowedAmount updated');
 
