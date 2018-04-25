@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity 0.4.19;
 
 import "./Database.sol";
 
@@ -56,10 +56,8 @@ contract ContractManager{
   noEmptyString(_name)
   multiSigRequired(_functionSigner, "removeContract", keccak256(_name))
   anyOwner {
-    require(database.boolStorage(keccak256(this, _functionSigner, "removeContract", keccak256(_name))));
     address contractToDelete = database.addressStorage(keccak256("contract", _name));
     require(contractExists(contractToDelete));
-    database.setBool(keccak256(this, _functionSigner, "removeContract", keccak256(_name)), false);
     database.deleteBool(keccak256("contract", contractToDelete));
     database.deleteAddress(keccak256("contract", _name));
     LogContractRemoved(contractToDelete, _name, block.number);
@@ -79,7 +77,6 @@ contract ContractManager{
   anyOwner {
     address oldAddress = database.addressStorage(keccak256("contract", _name));
     require (contractExists(oldAddress));
-    database.setBool(keccak256(this, _functionSigner, "updateContract", keccak256(_newContractAddress)), false);
     database.setAddress(keccak256("contract", _name), _newContractAddress);
     database.setBool(keccak256("contract", _newContractAddress), true);
     database.deleteBool(keccak256("contract", oldAddress));
@@ -127,11 +124,12 @@ contract ContractManager{
   }
 
   // ------------------------------------------------------------------------------------------------  
-  //  Verify that function has been signed off by another owner 
+  //  Verify that function has been approved by another owner 
   // ------------------------------------------------------------------------------------------------ 
   modifier multiSigRequired(address _signer, string _functionName, bytes32 _keyParam) { 
     require(msg.sender != _signer);
     require(database.boolStorage(keccak256(this, _signer, _functionName, _keyParam)));
+    database.setBool(keccak256(this, _signer, _functionName, _keyParam), false);
     _;
   }
 

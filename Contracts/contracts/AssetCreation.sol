@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity 0.4.19;
 import './Database.sol';
 import './SafeMath.sol';
 

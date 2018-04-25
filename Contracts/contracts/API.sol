@@ -74,13 +74,13 @@ contract API {
 
 
   //-----------------------------------------------------------------------------------------------------------------------
-  //                                                  User Permissions Information 
+  //                                                Permissions Information 
   //-----------------------------------------------------------------------------------------------------------------------
   function userAccess(address _user)
   public 
   view
   returns (uint) { 
-    return database.uintStorage(keccak256("userAccess", msg.sender)); 
+    return database.uintStorage(keccak256("userAccess", _user)); 
   }
 
   function isOwner(address _user)
@@ -90,9 +90,25 @@ contract API {
     return database.boolStorage(keccak256("owner", _user)); 
   }
 
+  function getFunctionAuthorized(address _contractAddress, address _signer, string _functionName, bytes32 _agreedParameter)
+  public 
+  view 
+  returns (bytes32) { 
+    return keccak256(_contractAddress, _signer, _functionName, _agreedParameter); 
+  }
+
+  function isFunctionAuthorized(bytes32 _functionAuthorizationHash)
+  public 
+  view 
+  returns (bool) { 
+    return database.boolStorage(_functionAuthorizationHash); 
+  }
+
   //-----------------------------------------------------------------------------------------------------------------------
   //                                                  Asset Revenue Information 
   //-----------------------------------------------------------------------------------------------------------------------
+
+  // Total amount of income earned by the asset
   function totalReceived(bytes32 _assetID)
   public 
   view
@@ -100,6 +116,7 @@ contract API {
     return database.uintStorage(keccak256("totalReceived", _assetID));
   }
 
+  // Amount of income paid to funders
   function totalPaidToFunders(bytes32 _assetID)
   public 
   view
@@ -107,21 +124,31 @@ contract API {
     return database.uintStorage(keccak256("totalPaidToFunders", _assetID)); 
   }
 
-  function totalPaidToFunder(address _funder, bytes32 _assetID) 
+  // Amount of income already paid to the funder 
+  function totalPaidToFunder(bytes32 _assetID, address _funder) 
   public 
   view
   returns (uint) { 
-    return database.uintStorage(keccak256("totalPaidToFunder", _assetID, msg.sender));
+    return database.uintStorage(keccak256("totalPaidToFunder", _assetID, _funder));
   }
 
+  // Returns the amount of WEI owed to asset owner  AmountOwed = (userIncome - userIncomeAlreadyPaid)
+  function getAmountOwed(bytes32 _assetID, address _user)
+  public
+  view
+  returns (uint){
+    if (ownershipUnits(_assetID, _user) == 0) { return 0; }
+    return ((totalReceived(_assetID) * ownershipUnits(_assetID, _user)) / amountRaised(_assetID)) - totalPaidToFunder(_assetID, _user);
+  }
+  
   //-----------------------------------------------------------------------------------------------------------------------
-  // Funding Information 
+  //                                             Funding Information 
   //-----------------------------------------------------------------------------------------------------------------------
-  function ownershipUnits(address _owner, bytes32 _assetID)
+  function ownershipUnits(bytes32 _assetID, address _owner)
   public 
   view
   returns (uint) { 
-    database.uintStorage(keccak256("ownershipUnits", _assetID, _owner)); 
+    return database.uintStorage(keccak256("ownershipUnits", _assetID, _owner)); 
   }
 
   function amountRaised(bytes32 _assetID)
@@ -180,14 +207,14 @@ contract API {
   public
   view 
   returns (uint) { 
-    return database.uintStorage(keccak256("operatorAmountEscrowed", msg.sender)); 
+    return database.uintStorage(keccak256("operatorAmountEscrowed", _operator)); 
   }
 
   function operatorAmountDeposited(address _operator)
   public
   view 
   returns (uint) { 
-    return database.uintStorage(keccak256("operatorAmountDeposited", msg.sender)); 
+    return database.uintStorage(keccak256("operatorAmountDeposited", _operator)); 
   }
 
 
@@ -213,12 +240,26 @@ contract API {
   public 
   view 
   returns (uint) { 
+    return database.uintStorage(keccak256("ethUSDPriceExpiration")); 
+  }
+
+  function mybUSDPriceExpiration()
+  public 
+  view 
+  returns (uint) { 
+    return database.uintStorage(keccak256("mybUSDPriceExpiration")); 
+  }
+
+  function ethUSDSecondsRemaining()
+  public 
+  view 
+  returns (uint) { 
     uint expiration = database.uintStorage(keccak256("ethUSDPriceExpiration")); 
     if (now > expiration) return 0;
     return (expiration - now);
   }
 
-  function mybUSDPriceExpiration()
+  function mybUSDSecondsRemaining()
   public 
   view 
   returns (uint) { 

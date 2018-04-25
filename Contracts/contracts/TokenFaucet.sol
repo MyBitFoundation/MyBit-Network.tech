@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity 0.4.19;
 
 // ERC20 token interface. Modified for MyBit transfer() function not returning bool.
 interface Token {
