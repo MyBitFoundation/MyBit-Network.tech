@@ -11,7 +11,7 @@ const MyBitToken = artifacts.require('./MyBitToken.sol');
 const AssetCreation = artifacts.require('./AssetCreation.sol');
 const Asset = artifacts.require('./Asset.sol');
 const FundingHub = artifacts.require('./FundingHub.sol');
-const StakingBank = artifacts.require('./StakingBank.sol');
+
 
 
 contract('Deploying and storing all contracts + validation', async (accounts) => {
@@ -45,7 +45,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let assetCreationInstance;
   let assetInstance;
   let fundingHubInstance;
-  let stakingBankInstance;
 
 
   var initialSupply;
@@ -149,9 +148,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      // Asset Contract
      assetInstance = await Asset.new(dbInstance.address);
      await contractManagerInstance.addContract('Asset', assetInstance.address, ownerAddr2);
-     // Staking Bank Contract
-     stakingBankInstance = await StakingBank.new(dbInstance.address);
-     await contractManagerInstance.addContract('StakingBank', stakingBankInstance.address, ownerAddr2);
 
    });
 

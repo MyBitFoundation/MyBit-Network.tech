@@ -116,8 +116,6 @@ using SafeMath for *;
     uint ownershipUnitsTo = database.uintStorage(keccak256("ownershipUnits", _assetID, _to));
     uint paidToFunderFrom = database.uintStorage(keccak256("totalPaidToFunder", _assetID, _from));
     uint paidToFunderTo = database.uintStorage(keccak256("totalPaidToFunder", _assetID, _to));
-    uint combinedOwnership = ownershipUnitsFrom.add(ownershipUnitsTo); 
-    uint combinedPaid = paidToFunderFrom.add(paidToFunderTo); 
     uint relativePaidOutAmount = (paidToFunderFrom.mul(_amount)).div(ownershipUnitsFrom);    // TODO: Can round down, letting user withdraw 1 wei 
     assert(relativePaidOutAmount > 0); 
     database.setUint(keccak256("totalPaidToFunder", _assetID, _to), paidToFunderTo.add(relativePaidOutAmount));
