@@ -11,7 +11,7 @@ const MyBitToken = artifacts.require('./MyBitToken.sol');
 const AssetCreation = artifacts.require('./AssetCreation.sol');
 const Asset = artifacts.require('./Asset.sol');
 const FundingHub = artifacts.require('./FundingHub.sol');
-const StakingBank = artifacts.require('./StakingBank.sol');
+
 
 
 contract('Deploying and storing all contracts + validation', async (accounts) => {
@@ -45,7 +45,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let assetCreationInstance;
   let assetInstance;
   let fundingHubInstance;
-  let stakingBankInstance;
 
 
   var initialSupply;
@@ -149,9 +148,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      // Asset Contract
      assetInstance = await Asset.new(dbInstance.address);
      await contractManagerInstance.addContract('Asset', assetInstance.address, ownerAddr2);
-     // Staking Bank Contract
-     stakingBankInstance = await StakingBank.new(dbInstance.address);
-     await contractManagerInstance.addContract('StakingBank', stakingBankInstance.address, ownerAddr2);
 
    });
 
@@ -244,11 +240,11 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      installerID =  await hfInstance.stringHash('installerID');
      assetID = await hfInstance.stringHash('TestAsset');
      let mybUSDPrice = await dbInstance.uintStorage(await hfInstance.stringHash("mybUSDPrice"));
-     escrowAmount = 100000
+     escrowAmount = 1
      await assetCreationInstance.newAsset(assetID, amountToBeRaised, operatorPercentage, escrowAmount, installerID, assetType, {from:assetCreator});
 
      let myBPrice = await dbInstance.uintStorage(await hfInstance.stringHash('mybUSDPrice'));
-     let operatorEscrowedAmount = await dbInstance.uintStorage(await hfInstance.stringAddress('operatorAmountEscrowed', assetCreator));
+     let operatorEscrowedAmount = await dbInstance.uintStorage(await hfInstance.stringBytes('lockedForAsset', assetID));
 
      assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringAddress('operatorAmountEscrowed', assetCreator))), escrowAmount, 'escrow deposited');
      assert.equal(parseInt(operatorEscrowedAmount), escrowAmount, 'operatorEscrowedAmount updated');

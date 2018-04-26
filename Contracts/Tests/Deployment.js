@@ -11,7 +11,6 @@ const MyBitToken = artifacts.require('./MyBitToken.sol');
 const OperatorEscrow = artifacts.require('./OperatorEscrow.sol');
 const OracleHub = artifacts.require('./OracleHub.sol');
 const Owned = artifacts.require("./Owned.sol");
-const StakingBank = artifacts.require('./StakingBank.sol');
 const TokenBurn = artifacts.require('./TokenBurn.sol');
 const TokenFaucet = artifacts.require('./TokenFaucet.sol');
 const UserAccess = artifacts.require('./UserAccess.sol');
@@ -35,7 +34,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let operatorEscrowInstance;
   let oracleHubInstance;
   let ownedInstance;
-  let stakingBankInstance;
   let tokenBurnInstance;
   let tokenFaucetInstance;
   let userAccessInstance;
@@ -160,18 +158,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(assetInstance.address))), false, 'Contract manager(Asset) to database === false');
      assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'Asset')), assetInstance.address, 'Asset address correctly stored');
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', assetInstance.address)), true, 'Asset address == true');
-   });
-
-   it('StakingBank contract deployment ', async () => {
-     stakingBankInstance = await StakingBank.new(dbInstance.address);
-
-     //Ensure all variables are set in constructor and passed
-     assert.equal(await stakingBankInstance.database(), await dbInstance.address, 'StakingBank database Address assigned properly');
-
-     await contractManagerInstance.addContract('StakingBank', stakingBankInstance.address, ownerAddr2);
-     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(stakingBankInstance.address))), false, 'Contract manager(StakingBank) to database === false');
-     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'StakingBank')), stakingBankInstance.address, 'StakingBank address correctly stored');
-     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', stakingBankInstance.address)), true, 'StakingBank address == true');
    });
 
 

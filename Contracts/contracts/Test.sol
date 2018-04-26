@@ -1,10 +1,11 @@
-pragma solidity ^0.4.19;
+pragma solidity 0.4.19;
 
 import './Database.sol';
 import './Asset.sol';
 import './AssetCreation.sol';
 import './ContractManager.sol';
 import './FunderControls.sol';
+import './FundingHub.sol';
 import './InitialVariables.sol';
 import './AssetExchange.sol';
 import './MyBitToken.sol';
@@ -20,26 +21,37 @@ contract  Test {
 
   Database public database;
 
+  bytes32 public assetFunded;   // ID of asset funded by this contract
+
   function Test(address _database) 
   public { 
     database = Database(_database);
   }
 
-  function setPrices(address _oracleHub) 
-  public { 
-    OracleHub oracleHub = OracleHub(_oracleHub);
-    oracleHub.ethUSDQuery.value(40000000)();
-    oracleHub.mybUSDQuery.value(40000000)(); 
-  }
-
-
-  function burnAccessTokens(uint _accessLevel, uint _amount)
+  function withdrawAndApprove(address _spender, uint _amount) 
   external { 
     TokenFaucet(getAddress("TokenFaucet")).withdraw(_amount);
-    MyBitToken(getAddress("MyBitToken")).approve(getAddress("TokenBurn"), _amount);
-    setPrices(getAddress("OracleHub"));
-    TokenBurn(getAddress("TokenBurn")).burnTokens(_accessLevel); 
+    require(MyBitToken(getAddress("MyBitToken")).approve(getAddress("TokenBurn"), _amount));
   }
+
+  function burnAccessTokens(uint _accessLevel)
+  external { 
+    uint numTokensBurnt = database.uintStorage(keccak256("numberOfTokensBurnt")); 
+    require(TokenBurn(getAddress("TokenBurn")).burnTokens(_accessLevel)); 
+  }
+
+  function createAsset(bytes32 _assetID, uint _amountToBeRaised, uint _operatorPercentage, uint _amountToEscrow, bytes32 _installerID, bytes32 _assetType)
+  external { 
+    AssetCreation(getAddress("AssetCreation")).newAsset(_assetID, _amountToBeRaised, _operatorPercentage, _amountToEscrow, _installerID, _assetType);
+    assetFunded = _assetID; 
+  }
+  
+
+  function fund(bytes32 _assetID, uint _amount)
+  external { 
+    FundingHub(getAddress("FundingHub")).fund.value(_amount)(_assetID);
+  }
+
 
   function deposit()
   payable
@@ -48,6 +60,7 @@ contract  Test {
   }
 
   function getBalance()
+  public
   view 
   returns (uint) { 
     return this.balance; 
@@ -60,10 +73,11 @@ contract  Test {
     return database.addressStorage(keccak256("contract", _name)); 
   }
 
+  // Test Re-entrancy here 
   function()
   public
   payable { 
-    logpayment(msg.sender, msg.value, block.timestamp); 
+    FundingHub(msg.sender).refund(assetFunded); 
   }
 
 

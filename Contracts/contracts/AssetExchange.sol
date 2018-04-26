@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity 0.4.19;
 import './Database.sol';
 import './SafeMath.sol';
 import './Asset.sol';
@@ -108,6 +108,7 @@ contract AssetExchange {
   // @Param: ID of the asset, which sender is trying to sell 
   // @Param: Number of ownershipUnits being sold
   // @Param: The WEI cost per unit
+  // NOTE: This will re-write previous sell orders
   //------------------------------------------------------------------------------------------------------------------
   function createSellOrder(bytes32 _assetID, uint _amount, uint _price)
   external
@@ -151,7 +152,7 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   function withdraw()
   external
-  nonReentrant        // This is probably redundant
+  nonReentrant        
   onlyApproved
   whenNotPaused
   returns (bool){
@@ -260,10 +261,10 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
 
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
-  event LogBuyOrderCreated(bytes32 indexed _id, bytes32 indexed _assetAddress, address indexed _creator);
-  event LogBuyOrderDetails(bytes32 indexed orderID, uint indexed _amount, uint indexed _price);
-  event LogBuyOrderCompleted(bytes32 indexed _id, bytes32 indexed _assetAddress, address indexed _purchaser);
-  event LogSellOrderCompleted(bytes32 indexed _id, bytes32 indexed _assetAddress, address indexed _purchaser);
-  event LogSellOrderCreated(bytes32 indexed _id, bytes32 indexed _assetAddress, address indexed _creator);
-  event LogSellOrderDetails(bytes32 indexed orderID, uint indexed _amount, uint indexed _price);
+  event LogBuyOrderCreated(bytes32 indexed _orderID, bytes32 indexed _assetID, address indexed _creator);
+  event LogBuyOrderCompleted(bytes32 indexed _orderID, bytes32 indexed _assetAddress, address indexed _purchaser);
+  event LogSellOrderCreated(bytes32 indexed _orderID, bytes32 indexed _assetAddress, address indexed _creator);
+  event LogSellOrderCompleted(bytes32 indexed _orderID, bytes32 indexed _assetAddress, address indexed _purchaser);
+  event LogBuyOrderDetails(bytes32 _orderID, uint indexed _amount, uint indexed _price);
+  event LogSellOrderDetails(bytes32 orderID, uint indexed _amount, uint indexed _price);
 }

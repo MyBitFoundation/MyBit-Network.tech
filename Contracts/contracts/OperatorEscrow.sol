@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity 0.4.19;
 
 import './Database.sol';
 import './MyBitToken.sol';
@@ -46,7 +46,7 @@ contract OperatorEscrow {
   external
   funderApproved {
     require(database.addressStorage(keccak256("assetOperator", _assetID)) == msg.sender);    // Make sure sender has escrowed tokens for this asset
-    uint amountToUnlock = database.uintStorage(keccak256("assetEscrowRequirement", _assetID));
+    uint amountToUnlock = database.uintStorage(keccak256("lockedForAsset", _assetID));
     assert(amountToUnlock > 0);
     uint fundingStage = database.uintStorage(keccak256("fundingStage", _assetID));
     assert (fundingStage == 0 || fundingStage == 2 || fundingStage == 5);    // check that asset is not live

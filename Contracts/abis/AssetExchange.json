@@ -1,0 +1,440 @@
+[
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "reentrancyLock",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "name": "_price",
+        "type": "uint256"
+      },
+      {
+        "name": "_buyOrder",
+        "type": "bool"
+      }
+    ],
+    "name": "deleteOrder",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "withdraw",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_functionInitiator",
+        "type": "address"
+      },
+      {
+        "name": "_holdingAddress",
+        "type": "address"
+      }
+    ],
+    "name": "destroy",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "database",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "name": "_price",
+        "type": "uint256"
+      }
+    ],
+    "name": "createSellOrder",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "address"
+      },
+      {
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "orders",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "weiOwed",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_seller",
+        "type": "address"
+      },
+      {
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "name": "_price",
+        "type": "uint256"
+      }
+    ],
+    "name": "buyAsset",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": true,
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "name": "_price",
+        "type": "uint256"
+      }
+    ],
+    "name": "createBuyOrder",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": true,
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_buyer",
+        "type": "address"
+      },
+      {
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "name": "_price",
+        "type": "uint256"
+      }
+    ],
+    "name": "sellAsset",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "weiDeposited",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "name": "_database",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "fallback"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_locationSent",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_amountSent",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "_caller",
+        "type": "address"
+      }
+    ],
+    "name": "LogDestruction",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_assetAddress",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_creator",
+        "type": "address"
+      }
+    ],
+    "name": "LogBuyOrderCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "orderID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "_price",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogBuyOrderDetails",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_assetAddress",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_purchaser",
+        "type": "address"
+      }
+    ],
+    "name": "LogBuyOrderCompleted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_assetAddress",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_purchaser",
+        "type": "address"
+      }
+    ],
+    "name": "LogSellOrderCompleted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_assetAddress",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_creator",
+        "type": "address"
+      }
+    ],
+    "name": "LogSellOrderCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "orderID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "_price",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogSellOrderDetails",
+    "type": "event"
+  }
+]

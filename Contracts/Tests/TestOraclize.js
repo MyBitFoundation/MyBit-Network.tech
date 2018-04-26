@@ -105,8 +105,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      await initialVariableInstance.startDapp(myBitPayoutAddress, assetEscrowPayoutAddress);
      //--------------------Asset Creation Variables-----------------
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('myBitFoundationPercentage')), 1, 'myBitFoundationPercentage == 1');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('stakedTokenPercentage')), 2, 'myBitFoundationPercentage == 2');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('installerPercentage')), 97, 'installerPercentage == 97');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('installerPercentage')), 99, 'installerPercentage == 99');
    });
 
     it('Owned deployment ', async () => {
@@ -147,8 +146,8 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
     let LogEthUSDQuery = await oracleHubInstance.LogEthUSDQuery({},{fromBlock:0, toBlock:'latest'});
     let LogmybUSDQuery = await oracleHubInstance.LogmybUSDQuery({},{fromBlock:0, toBlock:'latest'});
 
-    let LogCallBackUSDEth = await oracleHubInstance.LogFundingCallbackReceived({},{fromBlock:0, toBlock:'latest'});
-    let LogCallBackUSDMyB = await oracleHubInstance.LogBurnCallbackReceived({},{fromBlock:0, toBlock:'latest'});
+    let LogCallBackUSDEth = await oracleHubInstance.LogEthUSDCallbackReceived({},{fromBlock:0, toBlock:'latest'});
+    let LogCallBackUSDMyB = await oracleHubInstance.LogMYBUSDCallbackReceived({},{fromBlock:0, toBlock:'latest'});
 
 
     LogEthUSDQuery.watch(
@@ -202,9 +201,10 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
     it('Attempt to mimik oraclize', async () => {
       let bytes32Value = web3.fromAscii('ethereum', 32);
+      let oraclizeImposter = web3.eth.accounts[10]; 
 
       let isOraclizeModifier = null;
-      try {await oracleHubInstance.__callback(bytes32Value, 'test');}
+      try {await oracleHubInstance.__callback(bytes32Value, 'test', {from: oraclizeImposter});}
       catch (error) {isOraclizeModifier = error}
       assert.notEqual(isOraclizeModifier, null, 'modifier isOraclizeModifier');
     });

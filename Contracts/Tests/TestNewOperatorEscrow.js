@@ -54,7 +54,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let installerID;
   let assetType;
 
-  let amountMyBRequired;
+  let amountEscrowedForAsset; 
 
   it("Owners should be assigned", async () => {
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);
@@ -178,7 +178,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(balanceOfOwnerBefore, initialSupply, 'Owner has full initial supply');
      assert.equal(balanceOfAccess1Before, 0, 'assetCreator has 0 initial supply');
 
-     transferAmount = 304954;
+     transferAmount = 30495 * 10**8;
      await myBitTokenInstance.transfer(assetCreator, transferAmount,{from:ownerAddr1}); //transfer tokens for escrow
 
      let balanceOfOwnerAfterTransfer = parseInt(await myBitTokenInstance.balanceOf(ownerAddr1));
@@ -244,16 +244,12 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      let escrowAmount = parseInt((amountToBeRaised*100)/ mybUSDPrice);
      await assetCreationInstance.newAsset(assetID, amountToBeRaised, operatorPercentage, escrowAmount, installerID, assetType, {from:assetCreator});
 
-     amountMyBRequired = await dbInstance.uintStorage(await hfInstance.stringBytes("assetEscrowRequirement", assetID));
      let addressAssigned = await dbInstance.addressStorage(await hfInstance.stringBytes("assetOperator", assetID));
-     let operatorEscrowedAmount = await dbInstance.uintStorage(await hfInstance.stringAddress('operatorAmountEscrowed', assetCreator));
+     amountEscrowedForAsset = await dbInstance.uintStorage(await hfInstance.stringBytes('lockedForAsset', assetID));
 
      
-
-     assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringAddress('operatorAmountEscrowed', assetCreator))), amountMyBRequired, 'escrow deposited');
-     assert.equal(parseInt(amountMyBRequired), escrowAmount, 'escrow correctly set');
      assert.equal(addressAssigned, assetCreator, 'asset creator assigned to asset');
-     assert.equal(parseInt(operatorEscrowedAmount), escrowAmount, 'operatorEscrowedAmount updated');
+     assert.equal(parseInt(amountEscrowedForAsset), escrowAmount, 'amountEscrowedForAsset updated');
 
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytes("amountToBeRaised", assetID)), amountToBeRaised,'amountToBeRaised asset set');
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytes("operatorPercentage", assetID)), operatorPercentage, 'operatorPercentage asset set');
@@ -284,7 +280,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
    it('Get Unlocked amount', async () => {
      let unlockedBalance = parseInt(await operatorEscrowInstance.getUnlockedBalance(assetCreator));
-     assert.equal(unlockedBalance, Number(approvalAmount)-Number(amountMyBRequired), 'correct amount still escrowed');
+     assert.equal(unlockedBalance, Number(approvalAmount)-Number(amountEscrowedForAsset), 'correct amount still escrowed');
     });
 
   it('withdrawToken ', async () => {
@@ -312,9 +308,9 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
     let mybBalanceOperator = parseInt(await myBitTokenInstance.balanceOf(assetCreator));
     let escrowBalance = parseInt(await myBitTokenInstance.balanceOf(operatorEscrowInstance.address));
 
-    let shouldBeBalance = transferAmount - amountMyBRequired;
+    let shouldBeBalance = transferAmount - amountEscrowedForAsset;
     assert.equal(mybBalanceOperator, shouldBeBalance, 'tokens given back to oeprator after withdrawal');
-    assert.equal(escrowBalance, amountMyBRequired, 'tokens removed from escrow');
+    assert.equal(escrowBalance, amountEscrowedForAsset, 'tokens removed from escrow');
    });
 
    it('Unlock escrow', async () => {
@@ -351,7 +347,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      let operatorAmountEscrowed = parseInt(await dbInstance.uintStorage(await hfInstance.stringAddress("operatorAmountEscrowed", assetCreator)));
      let operatorAmountDeposited = parseInt(await dbInstance.uintStorage(await hfInstance.stringAddress("operatorAmountDeposited", assetCreator)));
      assert.equal(operatorAmountEscrowed, 0, 'unlocked funds');
-     assert.equal(operatorAmountDeposited, parseInt(amountMyBRequired), 'funds back in deposit - can withdraw');
+     assert.equal(operatorAmountDeposited, parseInt(amountEscrowedForAsset), 'funds back in deposit - can withdraw');
    });
 
    it('Withdraw funds unlocked', async () => {
