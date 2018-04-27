@@ -1,10 +1,10 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.18;
 
 import './oraclizeAPI_05.sol';
 import './Database.sol';
 
 //------------------------------------------------------------------------------------------------------------------
-// All calls to Oraclize can be done here. The results are stored in Databse and expire after x seconds. 
+// All calls to Oraclize can be done here. The results are stored in Databse and expire after x seconds.
 // Can find price expiration time under keccak256("priceUpdateTimeline") in the Database
 //------------------------------------------------------------------------------------------------------------------
 contract OracleHub is usingOraclize{
@@ -31,6 +31,7 @@ contract OracleHub is usingOraclize{
   payable
   requiresEther
   returns (bool) {
+    require(msg.value >= oraclize.getPrice('USD'));
     bytes32 queryID = oraclize_query('URL', 'json(https://api.coinmarketcap.com/v1/ticker/ethereum/).0.price_usd');
     database.setBool(queryID, true);
     LogEthUSDQuery(msg.sender, queryID, now);
@@ -46,14 +47,15 @@ contract OracleHub is usingOraclize{
   payable
   requiresEther
   returns(bool){
+    require(msg.value >= oraclize.getPrice('nested'));
     bytes32 queryID = oraclize_query('nested', '[WolframAlpha]  10 to the power of 3 multiplied by ${[URL] json(https://api.coinmarketcap.com/v1/ticker/mybit-token/).0.price_usd}');
     LogmybUSDQuery(msg.sender, queryID, now);
     return true;
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Oraclize will call this function when it gets requested information. 
-  // If ID == bool then the callback is for Ether/USD callback 
+  // Oraclize will call this function when it gets requested information.
+  // If ID == bool then the callback is for Ether/USD callback
   //------------------------------------------------------------------------------------------------------------------
   function __callback(bytes32 myid, string result)
   public
@@ -67,7 +69,7 @@ contract OracleHub is usingOraclize{
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Callback for Ether/USD price requests. Stores current price and expiration time for this price 
+  // Callback for Ether/USD price requests. Stores current price and expiration time for this price
   //------------------------------------------------------------------------------------------------------------------
   function ethUSDCallback(bytes32 myid, string result)
   internal {
@@ -91,12 +93,33 @@ contract OracleHub is usingOraclize{
 
 
   //------------------------------------------------------------------------------------------------------------------
+  // Return price of URL oraclize query cost for FE
+  //------------------------------------------------------------------------------------------------------------------
+  function urlQueryCost()
+  external
+  view
+  returns(uint){
+    return oraclize.getPrice('URL');
+  }
+
+  //------------------------------------------------------------------------------------------------------------------
+  // Return price of nested oraclize query cost for FE
+  //------------------------------------------------------------------------------------------------------------------
+  function nestedQueryCost()
+  external
+  view
+  returns(uint){
+    return oraclize.getPrice('nested');
+  }
+
+
+  //------------------------------------------------------------------------------------------------------------------
   //                                            Modifiers
   //------------------------------------------------------------------------------------------------------------------
 
 
   //------------------------------------------------------------------------------------------------------------------
-  // Veriies that sender is Oraclize 
+  // Veriies that sender is Oraclize
   //------------------------------------------------------------------------------------------------------------------
   modifier isOraclize() {
    require(msg.sender == oraclize_cbAddress());
@@ -104,7 +127,7 @@ contract OracleHub is usingOraclize{
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Veriies that sender is Oraclize 
+  // Veriies that sender is Oraclize
   //------------------------------------------------------------------------------------------------------------------
   modifier requiresEther() {
     require(msg.value > 0);
