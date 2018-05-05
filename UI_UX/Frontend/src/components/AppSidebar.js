@@ -1,8 +1,8 @@
 import React from 'react';
-import { Menu, Grid } from 'semantic-ui-react';
 import '../styles/AppSidebar.css';
+import { NavigationOption } from './NavigationOption';
 
-export const AppSidebar = () => {
+export const AppSidebar = ({ clickHandler = undefined }) => {
   const menuOptions = [
     { name: 'Explore' },
     { name: 'List Asset' },
@@ -13,26 +13,16 @@ export const AppSidebar = () => {
     { name: 'Transaction History' },
     { name: 'FAQ & Tutorials' }
   ];
+
   const sidebarMenu = menuOptions.map(menuItem => (
-    <Menu.Item style={{ color: 'white' }} className="AppSidebar__menu-item">
-      {menuItem.name}
-    </Menu.Item>
+    <NavigationOption
+      key={menuItem.name}
+      name={menuItem.name}
+      clickHandler={
+        !clickHandler ? name => console.log('Clicked ', name) : clickHandler
+      }
+    />
   ));
-  return (
-    <Grid.Column
-      width={3}
-      style={{
-        backgroundColor: '#200344',
-        position: 'fixed',
-        top: '74px',
-        left: '0',
-        bottom: '0',
-        padding: '0'
-      }}
-    >
-      <Menu secondary fluid vertical className="AppSidebar__menu">
-        {sidebarMenu}
-      </Menu>
-    </Grid.Column>
-  );
+
+  return <div className="col-3 AppSidebar">{sidebarMenu}</div>;
 };

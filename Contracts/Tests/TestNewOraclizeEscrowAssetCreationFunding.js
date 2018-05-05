@@ -11,7 +11,6 @@ const MyBitToken = artifacts.require('./MyBitToken.sol');
 const OperatorEscrow = artifacts.require('./OperatorEscrow.sol');
 const OracleHub = artifacts.require('./OracleHub.sol');
 const Owned = artifacts.require("./Owned.sol");
-const StakingBank = artifacts.require('./StakingBank.sol');
 const TokenBurn = artifacts.require('./TokenBurn.sol');
 const TokenFaucet = artifacts.require('./TokenFaucet.sol');
 const UserAccess = artifacts.require('./UserAccess.sol');
@@ -39,7 +38,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let operatorEscrowInstance;
   let oracleHubInstance;
   let ownedInstance;
-  let stakingBankInstance;
   let tokenBurnInstance;
   let tokenFaucetInstance;
   let userAccessInstance;
@@ -64,7 +62,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
   var myBitPayoutAddressBalance;
   var assetEscrowPayoutAddressBalance;
-  var stakingBankAddressBalance;
 
   it("Owners should be assigned", async () => {
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);
@@ -103,8 +100,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      await initialVariableInstance.startDapp(myBitPayoutAddress, assetEscrowPayoutAddress);
      //--------------------Asset Creation Variables-----------------
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('myBitFoundationPercentage')), 1, 'myBitFoundationPercentage == 1');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('stakedTokenPercentage')), 2, 'myBitFoundationPercentage == 2');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('installerPercentage')), 97, 'installerPercentage == 97');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('installerPercentage')), 99, 'installerPercentage == 99');
    });
 
    it('MyBitToken contract deployment ', async () => {
@@ -185,19 +181,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', assetInstance.address)), true, 'Asset address == true');
    });
 
-   it('StakingBank contract deployment ', async () => {
-     stakingBankInstance = await StakingBank.new(dbInstance.address);
-
-     //Ensure all variables are set in constructor and passed
-     assert.equal(await stakingBankInstance.database(), await dbInstance.address, 'StakingBank database Address assigned properly');
-
-     await contractManagerInstance.addContract('StakingBank', stakingBankInstance.address, ownerAddr2);
-     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(stakingBankInstance.address))), false, 'Contract manager(StakingBank) to database === false');
-     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'StakingBank')), stakingBankInstance.address, 'StakingBank address correctly stored');
-     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', stakingBankInstance.address)), true, 'StakingBank address == true');
-   });
-
-
    it('funderControlsInstance contract deployment ', async () => {
      funderControlsInstance = await FunderControls.new(dbInstance.address);
      await contractManagerInstance.addContract('FunderControls', funderControlsInstance.address, ownerAddr2);
@@ -251,9 +234,9 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(await tokenBurnInstance.database(), await dbInstance.address, 'TokenBurn database Address assigned properly');
      assert.equal(await tokenBurnInstance.myBitToken(), await myBitTokenInstance.address, 'TokenBurn myBitToken Address assigned properly');
 
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 2)), 25, 'access level 2 set');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 3)), 75, 'access level 2 set');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 4)), 100, 'access level 2 set');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 1)), 25, 'access level 1 set');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 2)), 75, 'access level 2 set');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 3)), 100, 'access level 3 set');
 
 
      await contractManagerInstance.addContract('TokenBurn', tokenBurnInstance.address, ownerAddr2);
@@ -278,8 +261,8 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
     await userAccessInstance.approveUser(backupAddress, 1);
     assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', backupAddress)), 1, 'Access 1 for set backup');
 
-    await userAccessInstance.approveUser(assetCreator, 4);
-    assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', assetCreator)), 4, 'Access 4 for owner1');
+    await userAccessInstance.approveUser(assetCreator, 3);
+    assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', assetCreator)), 3, 'Access 3 for owner1');
   });
 
   it('Update USD prices', async () => {
@@ -296,8 +279,8 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
     var ethUSDPrice;
     var mybUSDPrice;
 
-    let LogCallBackUSDEth = await oracleHubInstance.LogFundingCallbackReceived({},{fromBlock:0, toBlock:'latest'});
-    let LogCallBackUSDMyB = await oracleHubInstance.LogBurnCallbackReceived({},{fromBlock:0, toBlock:'latest'});
+    let LogCallBackUSDEth = await oracleHubInstance.LogEthUSDCallbackReceived({},{fromBlock:0, toBlock:'latest'});
+    let LogCallBackUSDMyB = await oracleHubInstance.LogMYBUSDCallbackReceived({},{fromBlock:0, toBlock:'latest'});
 
     assetType = await hfInstance.stringHash('BitcoinATM');
     installerID =  await hfInstance.stringHash('installerID');
@@ -356,7 +339,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
       async function(e,r){
         if(!e){
           console.log('Transfer creator escrow');
-          await assetCreationInstance.newAsset(assetID, amountToBeRaised, operatorPercentage, installerID, assetType, {from:assetCreator});
+          await assetCreationInstance.newAsset(assetID, amountToBeRaised, operatorPercentage, 0, installerID, assetType, {from:assetCreator});
         }});
 
     TransferLogOwned.watch(
@@ -394,19 +377,16 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
           let jsonData = JSON.parse(jsonResult);
           console.log('mybitAmountNeeded; ', jsonData['args']._amountOf);
 
-          let amountMyBRequired = await dbInstance.uintStorage(await hfInstance.stringBytes("assetEscrowRequirement", assetID));
+          let amountMyBRequired = await dbInstance.uintStorage(await hfInstance.stringBytes('lockedForAsset', assetID));
           let myBPrice = await dbInstance.uintStorage(await hfInstance.stringHash('mybUSDPrice'));
           let addressAssigned = await dbInstance.addressStorage(await hfInstance.stringBytes("operatorEscrowed", assetID));
-          let operatorEscrowedAmount = await dbInstance.uintStorage(await hfInstance.stringAddress('operatorAmountEscrowed', assetCreator));
 
           let requiredAmount = parseInt((amountToBeRaised/myBPrice)*100);
           console.log('requiredAmount', requiredAmount);
 
-          assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringAddress('operatorAmountEscrowed', assetCreator))), amountMyBRequired, 'escrow deposited');
           assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringAddress('operatorAmountDeposited', assetCreator))),  Number(tokenEscrowValue), 'escrow locked');
           assert.equal(parseInt(amountMyBRequired), requiredAmount, 'escrow correctly set');
           assert.equal(addressAssigned, assetCreator, 'asset creator assigned to asset');
-          assert.equal(parseInt(operatorEscrowedAmount), requiredAmount, 'operatorEscrowedAmount updated');
         }});
   });
 
@@ -426,7 +406,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
           let ethUSDPriceExpiration = await dbInstance.uintStorage(await hfInstance.stringHash("ethUSDPriceExpiration"));
           //console.log('ethUSDPriceExpiration', parseInt(ethUSDPriceExpiration));
           //console.log('storedUSDValue', storedUSDValue);
-          await fundingHubInstance.fund(assetID, storedUSDValue, {from:access1Account, value:web3.toWei(halfOfUSDValueInEth,'ether')});
+          await fundingHubInstance.fund(assetID, {from:access1Account, value:web3.toWei(halfOfUSDValueInEth,'ether')});
         }});
   });
 
@@ -462,7 +442,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
           let fundingStage = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('fundingStage', assetID)));
           let amountRaised = await dbInstance.uintStorage(await hfInstance.stringBytes('amountRaised', assetID));
           console.log('fundingStage', fundingStage);
-          await fundingHubInstance.fund(assetID, storedUSDValue, {from:access2Account, value:web3.toWei(halfOfUSDValueInEth,'ether')});
+          await fundingHubInstance.fund(assetID, {from:access2Account, value:web3.toWei(halfOfUSDValueInEth,'ether')});
         }})
 
     LogAssetFundedAccess2.watch(
@@ -479,9 +459,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
           myBitPayoutAddressBalance = parseInt(web3.eth.getBalance(myBitPayoutAddress));
           assetEscrowPayoutAddressBalance = parseInt(web3.eth.getBalance(assetEscrowPayoutAddress));
-          stakingBankAddressBalance = parseInt(web3.eth.getBalance(stakingBankInstance.address));
-
-          assert.equal(parseInt(web3.eth.getBalance(stakingBankInstance.address)), 0, 'stakingBankInstance balance == 0');
 
           // FudningHub transition to stage 4 via payout
           await fundingHubInstance.payout(assetID);
@@ -497,19 +474,18 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
           console.log('LogAssetPayout - Triggered');
           let originalAccountStartingBalance = parseInt(web3.toWei(100,'ether'));
           let amountRaised = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('amountRaised', assetID)));
-          let myBitFoundationPercentage = parseInt(await dbInstance.uintStorage(await hfInstance.stringHash('myBitFoundationPercentage')))/100;
-          let stakedTokenPercentage = parseInt(await dbInstance.uintStorage(await hfInstance.stringHash('stakedTokenPercentage')))/100;
-          let installerPercentage = parseInt(await dbInstance.uintStorage(await hfInstance.stringHash('installerPercentage')))/100;
+          let myBitFoundationPercentage = Number(await dbInstance.uintStorage(await hfInstance.stringHash('myBitFoundationPercentage')) / 100);
+          let installerPercentage = Number(await dbInstance.uintStorage(await hfInstance.stringHash('installerPercentage')) / 100);
 
           assert.equal(parseInt(web3.eth.getBalance(myBitPayoutAddress)), Number(myBitPayoutAddressBalance) + Number(amountRaised*myBitFoundationPercentage), 'MyBitFoundation paid');
-          assert.equal(parseInt(web3.eth.getBalance(stakingBankInstance.address)), Number(stakingBankAddressBalance) + Number(amountRaised*stakedTokenPercentage) , 'StakingBank paid'); // Randomly off by 4.... - Number(4)
           assert.equal(parseInt(web3.eth.getBalance(assetEscrowPayoutAddress)), Number(assetEscrowPayoutAddressBalance) + Number(amountRaised*installerPercentage), 'InstallerEscrow paid');
           assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('fundingStage', assetID))), 4, 'Stage set to 4, ready for payments');
 
           let etherAmountToFund = 1;
           var assetCreatorBalanceBefore = Number(web3.eth.getBalance(assetCreator));
           var totalReceivedBalanceBefore = Number(await dbInstance.uintStorage(await hfInstance.stringBytes('totalReceived', assetID)));
-          await assetInstance.receiveIncome(assetID, '', {value:web3.toWei(etherAmountToFund,'ether')});
+          let revenueNote = await hfInstance.stringString('good month', 'installerID'); 
+          await assetInstance.receiveIncome(assetID, revenueNote, {value:web3.toWei(etherAmountToFund,'ether')});
           let totalReceived = await dbInstance.uintStorage(await hfInstance.stringBytes('totalReceived', assetID));
           let managerAmount = web3.toWei(etherAmountToFund,'ether') * await dbInstance.uintStorage(await hfInstance.stringBytes('operatorPercentage', assetID)) / 100;
           assert.equal(managerAmount, web3.toWei(operatorPercentage/100, 'ether'), 'manager calculation correct');
@@ -520,7 +496,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
 
   it('Withdrawal earnings from asset', async () => {
-    let LogIncomeReceived = await assetInstance.LogIncomeReceived({},{fromBlock:0,toBlock:'lates'});
+    let LogIncomeReceived = await assetInstance.LogIncomeReceived({},{fromBlock:0,toBlock:'latest'});
 
     LogIncomeReceived.watch(
       async function(e,r){
@@ -564,7 +540,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   it('Change Funding percentages', async () => {
     await assetCreationInstance.changeFundingPercentages(50, 25, 25, ownerAddr1, {from:ownerAddr2});
     assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.Sha3('myBitFoundationPercentage'))), 50, 'myBitFoundationPercentage updated to 50');
-    assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.Sha3('stakedTokenPercentage'))), 25, 'stakedTokenPercentage updated to 25');
     assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.Sha3('installerPercentage'))), 25, 'installerPercentage updated to 25');
   });
 

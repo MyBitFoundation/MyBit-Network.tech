@@ -71,8 +71,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      await initialVariableInstance.startDapp(myBitPayoutAddress, assetEscrowPayoutAddress);
      //--------------------Asset Creation Variables-----------------
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('myBitFoundationPercentage')), 1, 'myBitFoundationPercentage == 1');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('stakedTokenPercentage')), 2, 'myBitFoundationPercentage == 2');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('installerPercentage')), 97, 'installerPercentage == 97');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('installerPercentage')), 99, 'installerPercentage == 97');
    });
 
     it('Owned deployment ', async () => {
@@ -206,16 +205,4 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.notEqual(transferFromRequire, null, 'require transferFromRequire');
    });
 
-  it('Burn tokens for access', async () => {
-    await tokenBurnInstance.burnTokens(2, {from:account1});
-    let accessLevel = parseInt(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', account1)));
-    let tokensBurned = parseInt(await dbInstance.uintStorage(await hfInstance.stringHash('numberOfTokensBurnt')));
-    let userBalanceAfter = parseInt(await myBitTokenInstance.balanceOf(account1));
-    let contractBalanceAfter = parseInt(await myBitTokenInstance.balanceOf(tokenBurnInstance.address));
-
-    assert.equal(accessLevel, 2, 'access level updated after burn');
-    assert.equal(tokensBurned, 8, 'Tokens burned');
-    assert.equal(userBalanceAfter, Number(transferAmount) - Number(tokensBurned), 'balance updated');
-    assert.equal(contractBalanceAfter, tokensBurned, 'contract has balance');
-  });
  });

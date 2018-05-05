@@ -11,7 +11,6 @@ const MyBitToken = artifacts.require('./MyBitToken.sol');
 const OperatorEscrow = artifacts.require('./OperatorEscrow.sol');
 const OracleHub = artifacts.require('./OracleHub.sol');
 const Owned = artifacts.require("./Owned.sol");
-const StakingBank = artifacts.require('./StakingBank.sol');
 const TokenBurn = artifacts.require('./TokenBurn.sol');
 const TokenFaucet = artifacts.require('./TokenFaucet.sol');
 const UserAccess = artifacts.require('./UserAccess.sol');
@@ -35,7 +34,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let operatorEscrowInstance;
   let oracleHubInstance;
   let ownedInstance;
-  let stakingBankInstance;
   let tokenBurnInstance;
   let tokenFaucetInstance;
   let userAccessInstance;
@@ -81,8 +79,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      await initialVariableInstance.startDapp(myBitPayoutAddress, assetEscrowPayoutAddress);
      //--------------------Asset Creation Variables-----------------
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('myBitFoundationPercentage')), 1, 'myBitFoundationPercentage == 1');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('stakedTokenPercentage')), 2, 'myBitFoundationPercentage == 2');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('installerPercentage')), 97, 'installerPercentage == 97');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('installerPercentage')), 99, 'installerPercentage == 97');
    });
 
    it('MyBitToken contract deployment ', async () => {
@@ -163,18 +160,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', assetInstance.address)), true, 'Asset address == true');
    });
 
-   it('StakingBank contract deployment ', async () => {
-     stakingBankInstance = await StakingBank.new(dbInstance.address);
-
-     //Ensure all variables are set in constructor and passed
-     assert.equal(await stakingBankInstance.database(), await dbInstance.address, 'StakingBank database Address assigned properly');
-
-     await contractManagerInstance.addContract('StakingBank', stakingBankInstance.address, ownerAddr2);
-     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(stakingBankInstance.address))), false, 'Contract manager(StakingBank) to database === false');
-     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'StakingBank')), stakingBankInstance.address, 'StakingBank address correctly stored');
-     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', stakingBankInstance.address)), true, 'StakingBank address == true');
-   });
-
 
    it('funderControlsInstance contract deployment ', async () => {
      funderControlsInstance = await FunderControls.new(dbInstance.address);
@@ -229,9 +214,9 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(await tokenBurnInstance.database(), await dbInstance.address, 'TokenBurn database Address assigned properly');
      assert.equal(await tokenBurnInstance.myBitToken(), await myBitTokenInstance.address, 'TokenBurn myBitToken Address assigned properly');
 
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 2)), 25, 'access level 2 set');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 3)), 75, 'access level 2 set');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 4)), 100, 'access level 2 set');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 1)), 25, 'access level 1 set');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 2)), 75, 'access level 2 set');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 3)), 100, 'access level 3 set');
 
 
      await contractManagerInstance.addContract('TokenBurn', tokenBurnInstance.address, ownerAddr2);

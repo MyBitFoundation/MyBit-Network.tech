@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity 0.4.19;
 
 contract HashFunctions { 
 
@@ -100,6 +100,13 @@ contract HashFunctions {
   pure 
   returns (bytes32) { 
     return keccak256(_contractAddress, _owner, _fnName, _recipient); 
+  }
+
+  function uintUint(uint _paramOne, uint _paramTwo)
+  external
+  pure 
+  returns (bytes32) { 
+    return keccak256(_paramOne, _paramTwo); 
   }
 
   function uintUintUint(uint _paramOne, uint _paramTwo, uint _paramThree)

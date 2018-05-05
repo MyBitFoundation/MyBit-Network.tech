@@ -10,7 +10,6 @@ const MyBitToken = artifacts.require('./MyBitToken.sol');
 const AssetCreation = artifacts.require('./AssetCreation.sol');
 const Asset = artifacts.require('./Asset.sol');
 const FundingHub = artifacts.require('./FundingHub.sol');
-const StakingBank = artifacts.require('./StakingBank.sol');
 const WithdrawalManager = artifacts.require('./WithdrawalManager.sol');
 
 
@@ -108,13 +107,11 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      await initialVariableInstance.startDapp(myBitPayoutAddress, assetEscrowPayoutAddress);
      assert.equal(await dbInstance.addressStorage(await hfInstance.stringHash('MyBitFoundation')), myBitPayoutAddress, 'myBitPayoutAddress');
      assert.equal(await dbInstance.addressStorage(await hfInstance.stringHash('InstallerEscrow')), assetEscrowPayoutAddress, 'assetEscrowPayoutAddress');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('installerPercentage')), 97, 'installerPercentage ');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('installerPercentage')), 99, 'installerPercentage ');
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('myBitFoundationPercentage')), 1, 'myBitFoundationPercentage');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('stakedTokenPercentage')), 2, 'myBitFoundationPercentage');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 2)), 25, 'accessTokenFee 2');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 3)), 75, 'accessTokenFee 3');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 4)), 100, 'accessTokenFee 4');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('operatorEscrowPercentage')), 10, 'operatorEscrowPercentage');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('priceUpdateTimeline')), 1000, 'priceUpdateTimeline');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 1)), 25, 'accessTokenFee 2');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 2)), 75, 'accessTokenFee 3');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 3)), 100, 'accessTokenFee 4');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('priceUpdateTimeline')), 86400, 'priceUpdateTimeline');
    });
  });
