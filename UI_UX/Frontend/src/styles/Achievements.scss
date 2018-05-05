@@ -1,0 +1,78 @@
+.Achievements {
+  display: flex;
+  flex-direction: row;
+  list-style-type: none;
+  padding-top: 70px;
+  padding-bottom: 70px;
+  padding-left: 75px;
+  overflow-y: scroll;
+
+  &__list-item {
+    width: 150px;
+    height: 150px;
+    transform: rotate(45deg);
+    background-image: linear-gradient(85deg, #001358, #125ac4);
+    box-shadow: -14px 16px 50px 0 rgba(112, 112, 112, 0.5);
+    border-style: solid;
+    border-width: 9px;
+    border-image: linear-gradient(#125ac4, #001358) 1;
+
+    &:not(:last-child):after {
+      position: absolute;
+      content: '';
+      height: 10px;
+      width: 86px;
+      background-image: linear-gradient(85deg, #001358, #125ac4);
+    }
+
+    &:nth-child(odd):after {
+      top: -56px;
+      left: 30px;
+      transform: rotate(90deg);
+    }
+
+    &:nth-child(even):after {
+      top: 75px;
+      left: 139px;
+    }
+
+    &:nth-child(odd) {
+      margin-top: 170px;
+    }
+
+    &--wrapper {
+      transform: rotate(-45deg);
+      margin-left: -15px;
+    }
+
+    &--title {
+      display: block;
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      position: relative;
+      top: 20px;
+      &:after {
+        display: block;
+        width: 10px;
+        height: 10px;
+        background-color: #fb3448;
+        content: '';
+        transform: rotate(45deg);
+        position: absolute;
+        left: 40px;
+        top: 35px;
+      }
+    }
+
+    &--description {
+      color: #fff;
+      font-size: 14px;
+      display: block;
+      position: relative;
+      top: 50px;
+    }
+
+  }
+
+}

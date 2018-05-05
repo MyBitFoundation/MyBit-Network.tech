@@ -1,0 +1,314 @@
+[
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "tradeOwnershipUnits",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_functionInitiator",
+        "type": "address"
+      },
+      {
+        "name": "_holdingAddress",
+        "type": "address"
+      }
+    ],
+    "name": "destroy",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "database",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_otherWithdrawal",
+        "type": "bool"
+      }
+    ],
+    "name": "withdraw",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "getAmountOwed",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_note",
+        "type": "bytes32"
+      }
+    ],
+    "name": "receiveIncome",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": true,
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "name": "_database",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "fallback"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "managerAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "assetOperator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "operatorIncome",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "operatorIncomeAfter",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogIncomeReceivedManagerTest",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogownershipUnitsTraded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_locationSent",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_amountSent",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "_caller",
+        "type": "address"
+      }
+    ],
+    "name": "LogDestruction",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_sender",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "_assetID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "LogIncomeReceived",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_funder",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "_timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogInvestmentPaid",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_funder",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_withdrawalAddress",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "_timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogInvestmentPaidToWithdrawalAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_note",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogAssetNote",
+    "type": "event"
+  }
+]

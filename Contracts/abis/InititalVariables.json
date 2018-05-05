@@ -1,0 +1,67 @@
+[
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_myBitFoundation",
+        "type": "address"
+      },
+      {
+        "name": "_installerEscrow",
+        "type": "address"
+      }
+    ],
+    "name": "startDapp",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "database",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "name": "_database",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "_sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_database",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_blockNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogInitialized",
+    "type": "event"
+  }
+]

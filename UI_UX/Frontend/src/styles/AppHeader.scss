@@ -1,0 +1,21 @@
+$headerHeight: 74px;
+
+.AppHeader {
+	height: $headerHeight;
+	background-color: #200344;
+    margin: 0px 0px;
+    color: white;
+
+    .AppHeader_logo {
+        padding: 0 25px;
+        margin: auto 0;
+        height: 47px;
+    }
+
+    .AppHeader_connect{
+    	position: relative;
+    	line-height: $headerHeight;
+    	padding-left: 10px;
+    	height: max-content;
+    }
+}
