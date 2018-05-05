@@ -126,9 +126,6 @@ contract OracleHub is usingOraclize{
    _;
   }
 
-  //------------------------------------------------------------------------------------------------------------------
-  // Veriies that sender is Oraclize
-  //------------------------------------------------------------------------------------------------------------------
   modifier requiresEther() {
     require(msg.value > 0);
     _;
@@ -139,8 +136,8 @@ contract OracleHub is usingOraclize{
   //                                            Events
   //------------------------------------------------------------------------------------------------------------------
 
-  event LogmybUSDQuery( address _from, bytes32 _queryID, uint _timestamp);
-  event LogEthUSDQuery(address _funder, bytes32 _queryID, uint _timestamp);
-  event LogMYBUSDCallbackReceived(bytes32 _queryID, uint _tokenPrice, uint _timestamp);
-  event LogEthUSDCallbackReceived(bytes32 queryID, uint _result, uint _timestamp);
+  event LogmybUSDQuery(address indexed _from, bytes32 indexed _queryID, uint indexed _timestamp);
+  event LogEthUSDQuery(address indexed _funder, bytes32 indexed _queryID, uint indexed _timestamp);
+  event LogBurnCallbackReceived(bytes32 indexed _queryID, uint indexed _tokenPrice, uint indexed _timestamp);
+  event LogFundingCallbackReceived(bytes32 indexed _queryID, uint indexed _result, uint indexed _timestamp);
 }

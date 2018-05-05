@@ -201,7 +201,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
     it('Attempt to mimik oraclize', async () => {
       let bytes32Value = web3.fromAscii('ethereum', 32);
-      let oraclizeImposter = web3.eth.accounts[10]; 
+      let oraclizeImposter = web3.eth.accounts[10];
 
       let isOraclizeModifier = null;
       try {await oracleHubInstance.__callback(bytes32Value, 'test', {from: oraclizeImposter});}
