@@ -1,3 +1,5 @@
+var BigNumber = require('bignumber.js');
+
 const Asset = artifacts.require('./Asset.sol');
 const AssetCreation = artifacts.require('./AssetCreation.sol');
 const ContractManager = artifacts.require("./ContractManager.sol");

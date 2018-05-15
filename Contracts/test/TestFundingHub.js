@@ -1,3 +1,5 @@
+var BigNumber = require('bignumber.js');
+
 /* Contracts  */
 const ContractManager = artifacts.require("./ContractManager.sol");
 const HashFunctions = artifacts.require("./HashFunctions.sol");
@@ -7,7 +9,7 @@ const Owned = artifacts.require("./Owned.sol");
 const Database = artifacts.require("./Database.sol");
 const OperatorEscrow = artifacts.require('./OperatorEscrow.sol');
 const UserAccess = artifacts.require('./UserAccess.sol');
-const MyBitToken = artifacts.require('./MyBitToken.sol');
+const MyBitToken = artifacts.require('./ERC20.sol');
 const AssetCreation = artifacts.require('./AssetCreation.sol');
 const Asset = artifacts.require('./Asset.sol');
 const FundingHub = artifacts.require('./FundingHub.sol');
@@ -118,15 +120,14 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    });
 
    it('MyBitToken contract deployment ', async () => {
-     initialSupply = 281207344012426;
-     myBitTokenInstance = await MyBitToken.new(initialSupply, 'MyBit Token', 8, 'MyB',{from:ownerAddr1});
+     let initialSupply = 18000000000000000 * 10**10;
+     myBitTokenInstance = await MyBitToken.new(initialSupply, 'MyBit', 18, 'MYB');
 
-     assert.equal(await myBitTokenInstance.owner(), web3.eth.accounts[0], 'MyBitToken -  owner assigned');
      assert.equal(await myBitTokenInstance.balanceOf(web3.eth.accounts[0]), initialSupply, 'MyBitToken - Correct initial balance to owner');
      assert.equal(await myBitTokenInstance.totalSupply(), initialSupply, 'MyBitToken - Correct total supply');
-     assert.equal(await myBitTokenInstance.name(), 'MyBit Token', 'MyBitToken - Correct token name');
-     assert.equal(await myBitTokenInstance.symbol(), 'MyB', 'MyBitToken - Correct Token symbol');
-     assert.equal(await myBitTokenInstance.decimals(), 8, 'MyBitToken - Correct decimals');
+     assert.equal(await myBitTokenInstance.name(), 'MyBit', 'MyBitToken - Correct token name');
+     assert.equal(await myBitTokenInstance.symbol(), 'MYB', 'MyBitToken - Correct Token symbol');
+     assert.equal(await myBitTokenInstance.decimals(), 18, 'MyBitToken - Correct decimals');
    });
 
 

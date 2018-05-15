@@ -1,4 +1,5 @@
 var request = require('request');
+var BigNumber = require('bignumber.js');
 
 const options = {
   url: '',

@@ -1,3 +1,5 @@
+var BigNumber = require('bignumber.js');
+
 const ContractManager = artifacts.require("./ContractManager.sol");
 const HashFunctions = artifacts.require("./HashFunctions.sol");
 const InitialVariables = artifacts.require("./InitialVariables.sol");
