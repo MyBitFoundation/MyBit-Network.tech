@@ -273,9 +273,9 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    it('Withdraw income', async () => {
      let userownershipUnits = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1)));
      let amountRaised = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('amountRaised', assetID)));
-     let totalReceived = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('totalReceived', assetID)));
+     let assetIncome = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('assetIncome', assetID)));
      let totalPaidToFunder = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('totalPaidToFunder', assetID, funder1)));
-     let payment = ((totalReceived * userownershipUnits) / amountRaised) - totalPaidToFunder
+     let payment = ((assetIncome * userownershipUnits) / amountRaised) - totalPaidToFunder
 
 
      let withdrawGasEstimate = parseInt(await assetInstance.withdraw.estimateGas(assetID, false, {from:funder1})).toFixed(7) / 10000000;

@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 import './Database.sol';
 
@@ -13,7 +13,7 @@ Database public database;
 //------------------------------------------------------------------------------------------
 // Constructor: Initialize Database 
 //------------------------------------------------------------------------------------------
-function InitialVariables(address _database)
+constructor(address _database)
 public { 
   database = Database(_database);
 }
@@ -36,7 +36,7 @@ external  {
   database.setUint(keccak256("accessTokenFee", uint(3)), uint(100)); 
   // -------------Oracle Variables-------------------------
   database.setUint(keccak256("priceUpdateTimeline"), uint(86400));     // 24hrs  TODO: lower this for alpha This is the length of time an Oracle price is valid for
-  LogInitialized(msg.sender, address(database), block.number);
+  emit LogInitialized(msg.sender, address(database), block.number);
 }
 
 // ------------------------------------------------------------------------------------------------  

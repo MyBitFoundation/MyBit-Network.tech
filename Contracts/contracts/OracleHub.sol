@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 import './oraclizeAPI_05.sol';
 import './Database.sol';
@@ -16,7 +16,7 @@ contract OracleHub is usingOraclize{
   //------------------------------------------------------------------------------------------------------------------
   // Constructor: Initialized database + Oraclize Address Resolver
   //------------------------------------------------------------------------------------------------------------------
-  function OracleHub(address _database)
+  constructor(address _database)
   public {
     database = Database(_database);
     OAR = OraclizeAddrResolverI(0x6f485C8BF6fc43eA212E93BBF8ce046C7f1cb475); // only for localhost
@@ -33,7 +33,7 @@ contract OracleHub is usingOraclize{
   returns (bool) {
     bytes32 queryID = oraclize_query('URL', 'json(https://api.coinmarketcap.com/v1/ticker/ethereum/).0.price_usd');
     database.setBool(queryID, true);
-    LogEthUSDQuery(msg.sender, queryID, now);
+    emit LogEthUSDQuery(msg.sender, queryID, now);
     return true;
   }
 
@@ -47,7 +47,7 @@ contract OracleHub is usingOraclize{
   requiresEther
   returns(bool){
     bytes32 queryID = oraclize_query('nested', '[WolframAlpha]  10 to the power of 3 multiplied by ${[URL] json(https://api.coinmarketcap.com/v1/ticker/mybit-token/).0.price_usd}');
-    LogmybUSDQuery(msg.sender, queryID, now);
+    emit LogmybUSDQuery(msg.sender, queryID, now);
     return true;
   }
 
@@ -75,7 +75,7 @@ contract OracleHub is usingOraclize{
     database.setUint(keccak256("ethUSDPrice"), parseInt(result));
     database.setUint(keccak256("ethUSDPriceExpiration"), (priceTimeline + now));
     database.deleteBool(myid);
-    LogEthUSDCallbackReceived(myid, parseInt(result), now);
+    emit LogEthUSDCallbackReceived(myid, parseInt(result), now);
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -86,7 +86,7 @@ contract OracleHub is usingOraclize{
     uint priceTimeline = database.uintStorage(keccak256("priceUpdateTimeline"));
     database.setUint(keccak256("mybUSDPrice"), parseInt(result));
     database.setUint(keccak256("mybUSDPriceExpiration"), (priceTimeline + now));
-    LogMYBUSDCallbackReceived(myid, parseInt(result), now);
+    emit LogMYBUSDCallbackReceived(myid, parseInt(result), now);
   }
 
 

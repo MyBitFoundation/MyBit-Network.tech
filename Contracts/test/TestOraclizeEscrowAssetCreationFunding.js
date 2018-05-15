@@ -483,14 +483,13 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
           let etherAmountToFund = 1;
           var assetCreatorBalanceBefore = Number(web3.eth.getBalance(assetCreator));
-          var totalReceivedBalanceBefore = Number(await dbInstance.uintStorage(await hfInstance.stringBytes('totalReceived', assetID)));
           let revenueNote = await hfInstance.stringString('good month', 'installerID'); 
           await assetInstance.receiveIncome(assetID, revenueNote, {value:web3.toWei(etherAmountToFund,'ether')});
-          let totalReceived = await dbInstance.uintStorage(await hfInstance.stringBytes('totalReceived', assetID));
+          let assetIncome = await dbInstance.uintStorage(await hfInstance.stringBytes('assetIncome', assetID));
           let managerAmount = web3.toWei(etherAmountToFund,'ether') * await dbInstance.uintStorage(await hfInstance.stringBytes('operatorPercentage', assetID)) / 100;
           assert.equal(managerAmount, web3.toWei(operatorPercentage/100, 'ether'), 'manager calculation correct');
           assert.equal(web3.eth.getBalance(assetCreator), Number(assetCreatorBalanceBefore) + Number(managerAmount), 'Manager assigned correct amount');
-          assert.equal(totalReceived, web3.toWei(etherAmountToFund,'ether') - managerAmount, 'Total recieved assigned correctly');
+          assert.equal(assetIncome, web3.toWei(etherAmountToFund,'ether') - managerAmount, 'Total recieved assigned correctly');
         }});
   });
 
@@ -505,9 +504,9 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
           let ownershipUnits = await dbInstance.uintStorage(await hfInstance.stringBytesAddress("ownershipUnits", assetID, access1Account));
           let totalPaidToFundersBefore = await dbInstance.uintStorage(await hfInstance.stringBytes("totalPaidToFunders", assetID));
           let totalPaidToFunderBefore = await dbInstance.uintStorage(await hfInstance.stringBytesAddress("totalPaidToFunder", assetID, access1Account));
-          let totalReceived = await dbInstance.uintStorage(await hfInstance.stringBytes("totalReceived", assetID));
+          let assetIncome = await dbInstance.uintStorage(await hfInstance.stringBytes("assetIncome", assetID));
           let amountRaised = await dbInstance.uintStorage(await hfInstance.stringBytes('amountRaised', assetID));
-          let payment = ((totalReceived * ownershipUnits) / amountRaised) - totalPaidToFunderBefore;
+          let payment = ((assetIncome * ownershipUnits) / amountRaised) - totalPaidToFunderBefore;
           let balanceOfFunder = web3.eth.getBalance(access1Account);
 
           var withdrawalGasEstimate = parseInt(await assetInstance.withdraw.estimateGas(assetID, false, {from:access2Account})).toFixed(7) / 10000000;

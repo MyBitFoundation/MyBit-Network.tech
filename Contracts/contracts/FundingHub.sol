@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 import './SafeMath.sol';
 import './Database.sol';
@@ -18,7 +18,7 @@ contract FundingHub {
   // Contructor:
   // @Param: The address for the MyBit database
   //------------------------------------------------------------------------------------------------------------------
-  function FundingHub(address _database)
+  constructor(address _database)
   public {
       database = Database(_database);
   }
@@ -44,7 +44,7 @@ contract FundingHub {
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     database.setUint(keccak256("amountRaised", _assetID), amountRaised.add(msg.value));
     database.setUint(keccak256("ownershipUnits", _assetID, msg.sender), ownershipUnits.add(msg.value));
-    LogAssetFunded(msg.sender, msg.value, _assetID);
+    emit LogAssetFunded(msg.sender, msg.value, _assetID);
     return true;
   }
 
@@ -66,7 +66,7 @@ contract FundingHub {
     database.addressStorage(keccak256("MyBitFoundation")).transfer(myBitAmount);             // Must be normal account
     database.addressStorage(keccak256("InstallerEscrow")).transfer(installerAmount);             // Must be normal account
     database.setUint(keccak256("fundingStage", _assetID), uint(4));
-    LogAssetPayout(_assetID, amountRaised, block.number);
+    emit LogAssetPayout(_assetID, amountRaised, block.number);
     return true;
   }
 
@@ -80,7 +80,7 @@ contract FundingHub {
   atStage(_assetID, uint(1))
   returns (bool) {
     database.setUint(keccak256("fundingStage", _assetID), uint(2));
-    LogAssetFundingFailed(_assetID, database.uintStorage(keccak256("amountRaised", _assetID)), block.timestamp);
+    emit LogAssetFundingFailed(_assetID, database.uintStorage(keccak256("amountRaised", _assetID)), block.timestamp);
     return true;
   }
 
@@ -100,7 +100,7 @@ contract FundingHub {
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     database.setUint(keccak256("amountRaised", _assetID), amountRaised.sub(ownershipUnits));
     msg.sender.transfer(ownershipUnits);
-    LogRefund(msg.sender, ownershipUnits, block.timestamp);
+    emit LogRefund(msg.sender, ownershipUnits, block.timestamp);
     return true;
   }
 
@@ -113,7 +113,7 @@ contract FundingHub {
   public {
     require(_functionInitiator != msg.sender);
     require(database.boolStorage(keccak256(this, _functionInitiator, "destroy", keccak256(_holdingAddress))));
-    LogDestruction(_holdingAddress, this.balance, msg.sender);
+    emit LogDestruction(_holdingAddress, this.balance, msg.sender);
     selfdestruct(_holdingAddress);
   }
 
@@ -179,10 +179,10 @@ contract FundingHub {
     uint value2 = database.uintStorage(keccak256("amountToBeRaised", _assetID)).mul(1e18);
     uint value3 = database.uintStorage(keccak256("amountRaised", _assetID));
 
-    fundingLimitModifier(value1, value2, value3);
+    emit fundingLimitModifier(value1, value2, value3);
     if (database.uintStorage(keccak256("amountRaised", _assetID)).mul(currentEthPrice).div(1e18) >= database.uintStorage(keccak256("amountToBeRaised", _assetID))) {
        database.deleteUint(keccak256("amountToBeRaised", _assetID));      // No longer need this variable
-       LogAssetFundingSuccess(_assetID, currentEthPrice, block.timestamp);
+       emit LogAssetFundingSuccess(_assetID, currentEthPrice, block.timestamp);
        database.setUint(keccak256("fundingStage", _assetID), 3);
       }
   }

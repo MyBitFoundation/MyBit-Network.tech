@@ -1,13 +1,6 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 contract HashFunctions { 
-
-
-  function HashFunctions()
-  public
-  {
-
-  }
 
   function getOrderID(bytes _assetID, address _user, uint _amount, uint _price, bool _buyOrder)
   external

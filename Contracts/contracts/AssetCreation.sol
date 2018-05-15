@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 import './Database.sol';
 import './SafeMath.sol';
 
@@ -13,7 +13,7 @@ contract AssetCreation {
   bool private rentrancy_lock = false;    // Prevents re-entrancy attack
   uint public fundingTime = 3000;        // TODO: Number for testing
 
-  function AssetCreation(address _database)
+  constructor(address _database)
   public  {
       database = Database(_database);
   }
@@ -46,8 +46,8 @@ contract AssetCreation {
     database.setAddress(keccak256("assetOperator", _assetID), msg.sender);
     database.setUint(keccak256("fundingDeadline", _assetID), block.timestamp.add(fundingTime));
     database.setUint(keccak256("fundingStage", _assetID), 1);
-    LogAssetInfo(_assetID, _installerID, _amountToBeRaised);
-    LogAssetFundingStarted(msg.sender, _assetID, _assetType);
+    emit LogAssetInfo(_assetID, _installerID, _amountToBeRaised);
+    emit LogAssetFundingStarted(msg.sender, _assetID, _assetType);
     return true;
   }
 
@@ -61,7 +61,7 @@ contract AssetCreation {
     uint lockedAmount = database.uintStorage(keccak256("operatorAmountEscrowed", msg.sender));
     assert (_amountToEscrow <= database.uintStorage(keccak256("operatorAmountDeposited", msg.sender)).sub(lockedAmount));
     database.setUint(keccak256("operatorAmountEscrowed", msg.sender), lockedAmount.add(_amountToEscrow));
-    LogLockAssetEscrow(msg.sender, _assetID, _amountToEscrow);
+    emit LogLockAssetEscrow(msg.sender, _assetID, _amountToEscrow);
     return true;
   }
 
@@ -81,7 +81,7 @@ contract AssetCreation {
     require(database.boolStorage(functionHash));
     database.setBool(functionHash, false);
     database.setUint(keccak256("fundingStage", _assetID), uint(5));   // Asset won't receive income & ownership won't be able to be traded.
-    LogAssetRemoved(msg.sender, _assetID, block.timestamp);
+    emit LogAssetRemoved(msg.sender, _assetID, block.timestamp);
     return true;
   }
 
@@ -95,7 +95,7 @@ contract AssetCreation {
   notZero(_newTimeGivenForFunding)
   returns (bool) {
     fundingTime = _newTimeGivenForFunding;
-    LogFundingTimeChanged(msg.sender, _newTimeGivenForFunding, block.timestamp);
+    emit LogFundingTimeChanged(msg.sender, _newTimeGivenForFunding, block.timestamp);
     return true;
   }
 
@@ -115,7 +115,7 @@ contract AssetCreation {
     database.setBool(functionHash, false);
     database.setUint(keccak256("myBitFoundationPercentage"), _myBitFoundationPercentage);
     database.setUint(keccak256("installerPercentage"), _installerPercentage);
-    LogFundingPercentageChanged(_myBitFoundationPercentage, _installerPercentage);
+    emit LogFundingPercentageChanged(_myBitFoundationPercentage, _installerPercentage);
     return true;
   }
 
@@ -131,7 +131,7 @@ contract AssetCreation {
     bytes32 functionHash = keccak256(this, _functionInitiator, "destroy", keccak256(_holdingAddress));
     require(database.boolStorage(functionHash));
     database.setBool(functionHash, false);
-    LogDestruction(_holdingAddress, this.balance, msg.sender);
+    emit LogDestruction(_holdingAddress, this.balance, msg.sender);
     selfdestruct(_holdingAddress);
   }
 

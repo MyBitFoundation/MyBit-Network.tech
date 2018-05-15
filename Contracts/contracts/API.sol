@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 import './Database.sol';
 
 //-----------------------------------------------------------------------------------------------------------------------
@@ -8,7 +8,7 @@ contract API {
 
   Database public database; 
 
-  function API(address _database)
+  constructor(address _database)
   public { 
     database = Database(_database); 
   }
@@ -71,7 +71,12 @@ contract API {
     return database.addressStorage(keccak256("contract", _name)); 
   }
 
-
+  function contractExists(address _contractAddress)
+  public 
+  view 
+  returns (bool) { 
+    return database.boolStorage(keccak256("contract", _contractAddress));
+  }
 
   //-----------------------------------------------------------------------------------------------------------------------
   //                                                Permissions Information 
@@ -109,11 +114,11 @@ contract API {
   //-----------------------------------------------------------------------------------------------------------------------
 
   // Total amount of income earned by the asset
-  function totalReceived(bytes32 _assetID)
+  function assetIncome(bytes32 _assetID)
   public 
   view
   returns (uint) { 
-    return database.uintStorage(keccak256("totalReceived", _assetID));
+    return database.uintStorage(keccak256("assetIncome", _assetID));
   }
 
   // Amount of income paid to funders
@@ -138,7 +143,7 @@ contract API {
   view
   returns (uint){
     if (ownershipUnits(_assetID, _user) == 0) { return 0; }
-    return ((totalReceived(_assetID) * ownershipUnits(_assetID, _user)) / amountRaised(_assetID)) - totalPaidToFunder(_assetID, _user);
+    return ((assetIncome(_assetID) * ownershipUnits(_assetID, _user)) / amountRaised(_assetID)) - totalPaidToFunder(_assetID, _user);
   }
   
   //-----------------------------------------------------------------------------------------------------------------------

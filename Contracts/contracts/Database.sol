@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 
 // ---------------------------------------------------------------------------------
@@ -25,12 +25,12 @@ contract Database {
     // Constructor: Sets the owners of the platform 
     // Owners must set the contract manager to add more contracts
     // --------------------------------------------------------------------------------------
-    function Database(address _ownerOne, address _ownerTwo, address _ownerThree) 
+    constructor(address _ownerOne, address _ownerTwo, address _ownerThree) 
     public { 
         boolStorage[keccak256("owner", _ownerOne)] = true;
         boolStorage[keccak256("owner", _ownerTwo)] = true;
         boolStorage[keccak256("owner", _ownerThree)] = true;
-        LogInitialized(_ownerOne, _ownerTwo, _ownerThree); 
+        emit LogInitialized(_ownerOne, _ownerTwo, _ownerThree); 
     }
 
     

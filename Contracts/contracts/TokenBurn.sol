@@ -1,5 +1,5 @@
-pragma solidity 0.4.19;
-import './MyBitToken.sol';
+pragma solidity 0.4.23;
+import './ERC20.sol';
 import './Database.sol';
 import './SafeMath.sol';
 
@@ -10,15 +10,15 @@ contract TokenBurn {
   using SafeMath for *;
 
 
-  MyBitToken public myBitToken;
+  ERC20 public myBitToken;
   Database public database;
 
   //------------------------------------------------------------------------------------------------------------------
   // Constructor: Initialize Database and MyBitToken 
   //------------------------------------------------------------------------------------------------------------------
-  function TokenBurn(address _database, address _myBitToken)
+  constructor(address _database, address _myBitToken)
   public {
-    myBitToken = MyBitToken(_myBitToken);
+    myBitToken = ERC20(_myBitToken);
     database = Database(_database);
   }
 
@@ -39,7 +39,7 @@ contract TokenBurn {
     database.setUint(keccak256("userAccess", msg.sender), _accessLevelDesired);
     uint numTokensBurnt = database.uintStorage(keccak256("numberOfTokensBurnt"));
     database.setUint(keccak256("numberOfTokensBurnt"), numTokensBurnt.add(accessCostMyB));
-    LogMyBitBurnt(msg.sender, accessCostMyB, block.timestamp);
+    emit LogMyBitBurnt(msg.sender, accessCostMyB, block.timestamp);
     return true;
   }
 

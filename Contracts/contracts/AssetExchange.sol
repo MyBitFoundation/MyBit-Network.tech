@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 import './Database.sol';
 import './SafeMath.sol';
 import './Asset.sol';
@@ -23,7 +23,7 @@ contract AssetExchange {
   // Constructor 
   // Initialize database for storage
   //------------------------------------------------------------------------------------------------------------------
-  function AssetExchange(address _database)
+  constructor(address _database)
   public {
     database = Database(_database);
   }
@@ -50,7 +50,7 @@ contract AssetExchange {
     require(Asset(database.addressStorage(keccak256("contract", "Asset"))).tradeOwnershipUnits(_assetID, _seller, msg.sender, _amount));
     weiOwed[_seller] = weiOwed[_seller].add(msg.value);
     delete orders[_seller][thisOrder];
-    LogSellOrderCompleted(thisOrder, _assetID, msg.sender);
+    emit LogSellOrderCompleted(thisOrder, _assetID, msg.sender);
     return true;
   }
 
@@ -74,7 +74,7 @@ contract AssetExchange {
     weiDeposited[_buyer] = weiDeposited[_buyer].sub(_amount.mul(_price));
     weiOwed[msg.sender] = weiOwed[msg.sender].add(_amount.mul(_price));
     delete orders[_buyer][thisOrder];
-    LogBuyOrderCompleted(thisOrder, _assetID, msg.sender);
+    emit LogBuyOrderCompleted(thisOrder, _assetID, msg.sender);
     return true;
   }
 
@@ -98,8 +98,8 @@ contract AssetExchange {
     require(!orders[msg.sender][orderID]);
     orders[msg.sender][orderID] = true;
     weiDeposited[msg.sender] = weiDeposited[msg.sender].add(msg.value);
-    LogBuyOrderCreated(orderID, _assetID, msg.sender);
-    LogBuyOrderDetails(orderID, _amount, _price);
+    emit LogBuyOrderCreated(orderID, _assetID, msg.sender);
+    emit LogBuyOrderDetails(orderID, _amount, _price);
     return true;
   }
 
@@ -120,8 +120,8 @@ contract AssetExchange {
   returns (bool) {
     bytes32 orderID = keccak256(_assetID, msg.sender, _amount, _price, false);
     orders[msg.sender][orderID] = true;
-    LogSellOrderCreated(orderID, _assetID, msg.sender);
-    LogSellOrderDetails(orderID, _amount, _price);
+    emit LogSellOrderCreated(orderID, _assetID, msg.sender);
+    emit LogSellOrderDetails(orderID, _amount, _price);
     return true;
   }
 
@@ -170,7 +170,7 @@ contract AssetExchange {
   public {
     require(_functionInitiator != msg.sender);
     require(database.boolStorage(keccak256(this, _functionInitiator, "destroy", keccak256(_holdingAddress))));
-    LogDestruction(_holdingAddress, this.balance, msg.sender);
+    emit LogDestruction(_holdingAddress, this.balance, msg.sender);
     selfdestruct(_holdingAddress);
   }
 

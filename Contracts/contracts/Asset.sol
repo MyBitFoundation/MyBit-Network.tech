@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 import './SafeMath.sol';
 import './Database.sol';
 
@@ -18,14 +18,14 @@ using SafeMath for *;
   // Constructor
   // @Param: Address of the database contract
   //------------------------------------------------------------------------------------------------------------------
-  function Asset(address _database)
+  constructor(address _database)
   public {
     database = Database(_database);
   }
 
   //------------------------------------------------------------------------------------------------------------------
   // Revenue produced by the asset will be sent here
-  // Invariants: Requires Eth is sent with transaction | Asset must be in "live" stage
+  // Invariants: Requires Eth is sent with transaction | Asset must be "live" (stage 4)
   // @Param: The ID of the asset to send to
   // @Param: A note that can be left by the payee
   //------------------------------------------------------------------------------------------------------------------
@@ -35,12 +35,12 @@ using SafeMath for *;
   requiresEther
   atStage(_assetID, 4)
   returns (bool)  {
-    uint totalReceived = database.uintStorage(keccak256("totalReceived", _assetID));
+    uint assetIncome = database.uintStorage(keccak256("assetIncome", _assetID));
     uint managerAmount = msg.value.mul(database.uintStorage(keccak256("operatorPercentage", _assetID))).div(100);
     database.addressStorage(keccak256("assetOperator", _assetID)).transfer(managerAmount);
-    database.setUint(keccak256("totalReceived", _assetID), totalReceived.add(msg.value.sub(managerAmount)));
-    LogIncomeReceived(msg.sender, msg.value, _assetID);
-    LogAssetNote(_note, block.timestamp, _assetID);
+    database.setUint(keccak256("assetIncome", _assetID), assetIncome.add(msg.value.sub(managerAmount)));
+    emit LogIncomeReceived(msg.sender, msg.value, _assetID);
+    emit LogAssetNote(_note, block.timestamp, _assetID);
     return true;
   }
 
@@ -61,20 +61,20 @@ using SafeMath for *;
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     uint totalPaidToFunders = database.uintStorage(keccak256("totalPaidToFunders", _assetID));
     uint totalPaidToFunder = database.uintStorage(keccak256("totalPaidToFunder", _assetID, msg.sender));
-    uint totalReceived = database.uintStorage(keccak256("totalReceived", _assetID));
-    uint payment = (totalReceived.mul(ownershipUnits).div(amountRaised)).sub(totalPaidToFunder);
+    uint assetIncome = database.uintStorage(keccak256("assetIncome", _assetID));
+    uint payment = (assetIncome.mul(ownershipUnits).div(amountRaised)).sub(totalPaidToFunder);
     assert (payment != 0);
-    assert (totalPaidToFunders <= totalReceived);    // Don't let amount paid to funders exceed amount received
+    assert (totalPaidToFunders <= assetIncome);    // Don't let amount paid to funders exceed amount received
     database.setUint(keccak256("totalPaidToFunder", _assetID, msg.sender), totalPaidToFunder.add(payment));
     database.setUint(keccak256("totalPaidToFunders", _assetID), totalPaidToFunders.add(payment));
     if(_otherWithdrawal){
       address withdrawalAddress = database.addressStorage(keccak256("withdrawalAddress", msg.sender));
       withdrawalAddress.transfer(payment);
-      LogInvestmentPaidToWithdrawalAddress(msg.sender, withdrawalAddress, payment, block.timestamp);
+      emit LogInvestmentPaidToWithdrawalAddress(msg.sender, withdrawalAddress, payment, block.timestamp);
     }
     else{
       msg.sender.transfer(payment);
-      LogInvestmentPaid(msg.sender, payment, block.timestamp);
+      emit LogInvestmentPaid(msg.sender, payment, block.timestamp);
     }
     return true;
   }
@@ -92,8 +92,8 @@ using SafeMath for *;
     if (ownershipUnits == 0) { return 0; }
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     uint totalPaidToFunder = database.uintStorage(keccak256("totalPaidToFunder", _assetID, _user));
-    uint totalReceived = database.uintStorage(keccak256("totalReceived", _assetID));
-    return totalReceived.mul(ownershipUnits).div(amountRaised).sub(totalPaidToFunder);
+    uint assetIncome = database.uintStorage(keccak256("assetIncome", _assetID));
+    return assetIncome.mul(ownershipUnits).div(amountRaised).sub(totalPaidToFunder);
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -122,7 +122,7 @@ using SafeMath for *;
     database.setUint(keccak256("totalPaidToFunder", _assetID, _from), paidToFunderFrom.sub(relativePaidOutAmount));
     database.setUint(keccak256("ownershipUnits", _assetID, _from), ownershipUnitsFrom.sub(_amount));
     database.setUint(keccak256("ownershipUnits", _assetID, _to), ownershipUnitsTo.add(_amount));
-    LogownershipUnitsTraded(_assetID, _from, _to, _amount);
+    emit LogownershipUnitsTraded(_assetID, _from, _to, _amount);
     return true;
   }
 
@@ -138,7 +138,7 @@ using SafeMath for *;
     bytes32 functionHash = keccak256(this, _functionInitiator, "destroy", keccak256(_holdingAddress));
     require(database.boolStorage(functionHash));
     database.setBool(functionHash, false);
-    LogDestruction(_holdingAddress, this.balance, msg.sender);
+    emit LogDestruction(_holdingAddress, this.balance, msg.sender);
     selfdestruct(_holdingAddress);
   }
 

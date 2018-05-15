@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 import './Database.sol';
 import './Asset.sol';
@@ -8,7 +8,7 @@ import './FunderControls.sol';
 import './FundingHub.sol';
 import './InitialVariables.sol';
 import './AssetExchange.sol';
-import './MyBitToken.sol';
+import './ERC20.sol';
 import './OperatorEscrow.sol';
 import './OracleHub.sol';
 import './Owned.sol';
@@ -23,7 +23,7 @@ contract  Test {
 
   bytes32 public assetFunded;   // ID of asset funded by this contract
 
-  function Test(address _database) 
+  constructor(address _database) 
   public { 
     database = Database(_database);
   }
@@ -31,7 +31,7 @@ contract  Test {
   function withdrawAndApprove(address _spender, uint _amount) 
   external { 
     TokenFaucet(getAddress("TokenFaucet")).withdraw(_amount);
-    require(MyBitToken(getAddress("MyBitToken")).approve(getAddress("TokenBurn"), _amount));
+    require(ERC20(getAddress("MyBitToken")).approve(getAddress("TokenBurn"), _amount));
   }
 
   function burnAccessTokens(uint _accessLevel)
@@ -56,7 +56,7 @@ contract  Test {
   function deposit()
   payable
   public { 
-    logpayment(msg.sender, msg.value, block.timestamp);
+    emit logpayment(msg.sender, msg.value, block.timestamp);
   }
 
   function getBalance()
