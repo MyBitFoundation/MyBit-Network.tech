@@ -8,12 +8,12 @@ const Owned = artifacts.require("./Owned.sol");
 const Database = artifacts.require("./Database.sol");
 const OperatorEscrow = artifacts.require('./OperatorEscrow.sol');
 const UserAccess = artifacts.require('./UserAccess.sol');
-const MyBitToken = artifacts.require('./MyBitToken.sol');
+const MyBitToken = artifacts.require('./ERC20.sol');
 const AssetCreation = artifacts.require('./AssetCreation.sol');
 const Asset = artifacts.require('./Asset.sol');
 const FundingHub = artifacts.require('./FundingHub.sol');
 const WithdrawalManager = artifacts.require('./WithdrawalManager.sol');
-
+const API = artifacts.require('./API.sol');
 
 contract('Deploying and storing all contracts + validation', async (accounts) => {
   const ownerAddr1 = web3.eth.accounts[0];
@@ -34,6 +34,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
   let contractManagerInstance;
   let hfInstance;
+  let apiInstance; 
   let initialVariableInstance;
   let oracleHubInstance;
   let ownedInstance;

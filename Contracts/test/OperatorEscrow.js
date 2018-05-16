@@ -13,8 +13,8 @@ const MyBitToken = artifacts.require('./ERC20.sol');
 const AssetCreation = artifacts.require('./AssetCreation.sol');
 const Asset = artifacts.require('./Asset.sol');
 const FundingHub = artifacts.require('./FundingHub.sol');
-const AssetExchange = artifacts.require('./AssetExchange.sol');
 const API = artifacts.require('./API.sol');
+
 
 contract('Deploying and storing all contracts + validation', async (accounts) => {
   const ownerAddr1 = web3.eth.accounts[0];
@@ -24,14 +24,18 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   const assetCreator = web3.eth.accounts[3];
   const funder1 = web3.eth.accounts[4];
   const funder2 = web3.eth.accounts[5];
-  const funder3 = web3.eth.accounts[6]; 
-  const funder4 = web3.eth.accounts[7]; 
+
+  // addresses for validation
+  const funderNotApproved = web3.eth.accounts[6];
+  const notEscrowed = web3.eth.accounts[7];
+  const contractMimik = web3.eth.accounts[8];
 
   const myBitPayoutAddress = web3.eth.accounts[8];
-  const assetEscrowPayoutAddress = web3.eth.accounts[9];
+  const assetEscrowPayoutAddress = web3.eth.accounts[6];
 
   let contractManagerInstance;
   let hfInstance;
+  let apiInstance;
   let initialVariableInstance;
   let oracleHubInstance;
   let ownedInstance;
@@ -42,28 +46,23 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let assetCreationInstance;
   let assetInstance;
   let fundingHubInstance;
-  let assetExchangeInstance;
-  let apiInstance;
 
 
   var initialSupply;
-  var escrowAmount;
-
+  var transferAmount;
+  var approvalAmount;
 
   let amountToBeRaised = 500; // USD
   let operatorPercentage = 5;   // 5%
   let assetID;
   let installerID;
   let assetType;
-  let assetPaymentEther = 1;
 
-  let user1ownershipUnitsInitially;
-
+  let amountEscrowedForAsset;
 
   it("Owners should be assigned", async () => {
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);
      hfInstance = await HashFunctions.new();
-     apiInstance = await API.new(dbInstance.address);
 
      // Database Owners assigned properly
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('owner', ownerAddr1)), true, 'Owner 1 assigned properly');
@@ -77,7 +76,11 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
       await dbInstance.setContractManager(contractManagerInstance.address);
       assert.equal(await dbInstance.addressStorage(await hfInstance.stringString("contract", "ContractManager")),contractManagerInstance.address, 'Contract manager address equal');
       assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress("contract", contractManagerInstance.address)), true, 'Contract manager stored true');
+   });
 
+   it('Deploy API', async () => {
+     apiInstance = await API.new(dbInstance.address);
+     assert.equal(await apiInstance.database(), dbInstance.address);
    });
 
    it('Add InitialVariables contract to database via contract manager', async () => {
@@ -140,7 +143,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', userAccessInstance.address)), true, 'UserAccess address == true');
    });
 
-   it('AssetCreation/funding/asset/stakingbank deployment', async () => {
+   it('AssetCreation deployment', async () => {
      assetCreationInstance = await AssetCreation.new(dbInstance.address);
      await contractManagerInstance.addContract('AssetCreation', assetCreationInstance.address, ownerAddr2);
      // Funding Hub contract
@@ -149,9 +152,10 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      // Asset Contract
      assetInstance = await Asset.new(dbInstance.address);
      await contractManagerInstance.addContract('Asset', assetInstance.address, ownerAddr2);
-     // AssetExchange contract
-     assetExchangeInstance = await AssetExchange.new(dbInstance.address);
-     await contractManagerInstance.addContract('AssetExchange', assetExchangeInstance.address, ownerAddr2);
+
+    await contractManagerInstance.addContract('testContract', contractMimik, ownerAddr2);
+    assert.equal(await apiInstance.contractAddress('testContract'), contractMimik, 'testContract set');
+
    });
 
    it('operatorEscrowInstance contract deployment ', async () => {
@@ -162,48 +166,57 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', operatorEscrowInstance.address)), true, 'OperatorEscrow address == true');
    });
 
-   it('Manually Approve users', async () => {
-     await userAccessInstance.approveUser(assetCreator, 3);
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', assetCreator)), 3, 'Access 3 granted');
+   it('Manually Approve user', async () => {
+     await userAccessInstance.approveUser(notEscrowed, 2);
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', notEscrowed)), 2, 'Access 2 granted');
 
-     await userAccessInstance.approveUser(funder1, 3);
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', funder1)), 3, 'Access 3 granted');
+     await userAccessInstance.approveUser(assetCreator, 2);
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', assetCreator)), 2, 'Access 2 granted');
 
-     await userAccessInstance.approveUser(funder2, 3);
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', funder2)), 3, 'Access 3 granted');
+     await userAccessInstance.approveUser(funder1, 2);
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', funder1)), 2, 'Access 2 granted');
 
-     await userAccessInstance.approveUser(funder3, 3);
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', funder1)), 3, 'Access 3 granted');
-
-     await userAccessInstance.approveUser(funder4, 3);
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', funder2)), 3, 'Access 3 granted');
+     await userAccessInstance.approveUser(funder2, 2);
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', funder2)), 2, 'Access 2 granted');
    });
 
    it('Transfer tokens to user', async () => {
-     let balanceOfOwnerBefore = parseInt(await myBitTokenInstance.balanceOf(ownerAddr1));
-     let balanceOfAccess1Before = parseInt(await myBitTokenInstance.balanceOf(assetCreator));
+     let balanceOfOwnerBefore = await myBitTokenInstance.balanceOf(ownerAddr1);
+     let balanceOfAccess1Before = await myBitTokenInstance.balanceOf(assetCreator);
      assert.equal(balanceOfOwnerBefore, initialSupply, 'Owner has full initial supply');
      assert.equal(balanceOfAccess1Before, 0, 'assetCreator has 0 initial supply');
 
-     escrowAmount = 10000 * 10**8;
-     await myBitTokenInstance.transfer(assetCreator, escrowAmount,{from:ownerAddr1}); //transfer tokens for escrow
+     transferAmount = 100000 * 10**18;  // Transfer 100,000 tokens
+     await myBitTokenInstance.transfer(assetCreator, transferAmount,{from:ownerAddr1}); //transfer tokens for escrow
 
-     let balanceOfOwnerAfterTransfer = parseInt(await myBitTokenInstance.balanceOf(ownerAddr1));
-     let balanceOfAccess1AfterTransfer = parseInt(await myBitTokenInstance.balanceOf(assetCreator));
-     assert.equal(balanceOfOwnerAfterTransfer, Number(initialSupply) - Number(escrowAmount), 'Owner has been deducted transfer amount');
-     assert.equal(balanceOfAccess1AfterTransfer, escrowAmount, 'assetCreator has transfer tokens amount');
+     let balanceOfOwnerAfterTransfer = await myBitTokenInstance.balanceOf(ownerAddr1);
+     let balanceOfAccess1AfterTransfer = await myBitTokenInstance.balanceOf(assetCreator);
+     assert.equal(BigNumber(balanceOfOwnerAfterTransfer).eq(BigNumber(initialSupply).minus(transferAmount)),true, 'Owner has been deducted transfer amount');
+     assert.equal(balanceOfAccess1AfterTransfer, transferAmount, 'assetCreator has transfer tokens amount');
    });
 
    it('Approve escrow to transfer', async () => {
-     await myBitTokenInstance.approve(operatorEscrowInstance.address, escrowAmount,{from:assetCreator});
-     let allowance = parseInt(await myBitTokenInstance.allowance(assetCreator, operatorEscrowInstance.address));
-     assert.equal(allowance, escrowAmount, 'Approval granted');
+     approvalAmount = transferAmount / 2;
+     await myBitTokenInstance.approve(operatorEscrowInstance.address, approvalAmount,{from:assetCreator});
+     let allowance = await myBitTokenInstance.allowance(assetCreator, operatorEscrowInstance.address);
+     assert.equal(allowance, approvalAmount, 'Approval granted');
    });
 
    it('Deposit Escrow', async () => {
-      await operatorEscrowInstance.depositEscrow(escrowAmount,{from:assetCreator});
-      let operatorAmountDeposited = await dbInstance.uintStorage(await hfInstance.stringAddress('operatorAmountDeposited', assetCreator));
-      assert.equal(operatorAmountDeposited, escrowAmount, 'Account escrow value updated');
+     // Modifier Check
+     let funderNotApprovedModifier = null;
+     try {await operatorEscrowInstance.depositEscrow(500,{from:funderNotApproved});}
+     catch (error) {funderNotApprovedModifier = error}
+     assert.notEqual(funderNotApprovedModifier, null, 'modifier funderNotApproved');
+     // Require check
+     let depositEscrowRequire = null;
+     try {await operatorEscrowInstance.depositEscrow(BigNumber(approvalAmount).plus(1),{from:assetCreator});}
+     catch (error) {depositEscrowRequire = error}
+
+     assert.notEqual(depositEscrowRequire,null, 'deposit require too many tokens');
+     await operatorEscrowInstance.depositEscrow(approvalAmount,{from:assetCreator});
+     let operatorAmountDeposited = await apiInstance.operatorAmountDeposited(assetCreator);
+     assert.equal(operatorAmountDeposited, approvalAmount, 'Account escrow value updated');
    });
 
    /*
@@ -220,9 +233,9 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
    it('Manually add Eth & MyB USD value', async () => {
      await dbInstance.setUint(await hfInstance.stringHash('mybUSDPrice'), 3000);
-     await dbInstance.setUint(await hfInstance.stringHash('ethUSDPrice'), 600);
+     await dbInstance.setUint(await hfInstance.stringHash('ethUSDPrice'), 380);
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('mybUSDPrice')), 3000, 'mybUSDPrice set correctly');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('ethUSDPrice')), 600, 'ethUSDPrice set correctly');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('ethUSDPrice')), 380, 'ethUSDPrice set correctly');
 
      await dbInstance.setUint(await hfInstance.stringHash('mybUSDPriceExpiration'), 1544015678); //1544015678 - 12 months ahead
      await dbInstance.setUint(await hfInstance.stringHash('ethUSDPriceExpiration'), 1544015678); //1544015678 - 12 months ahead
@@ -235,17 +248,18 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assetType = await hfInstance.stringHash('BitcoinATM');
      installerID =  await hfInstance.stringHash('installerID');
      assetID = await hfInstance.stringHash('TestAsset');
-     assert.notEqual(escrowAmount, 0);
      let mybUSDPrice = await dbInstance.uintStorage(await hfInstance.stringHash("mybUSDPrice"));
-     // Create new asset
+     let escrowAmount = approvalAmount;
      await assetCreationInstance.newAsset(assetID, amountToBeRaised, operatorPercentage, escrowAmount, installerID, assetType, {from:assetCreator});
-     let myBPrice = await dbInstance.uintStorage(await hfInstance.stringHash('mybUSDPrice'));
+
      let addressAssigned = await dbInstance.addressStorage(await hfInstance.stringBytes("assetOperator", assetID));
-     let operatorEscrowedAmount = await dbInstance.uintStorage(await hfInstance.stringBytes('lockedForAsset', assetID));
-     // Check operator variables were set properly
+     amountEscrowedForAsset = await apiInstance.lockedForAsset(assetID);
+
+     console.log(amountEscrowedForAsset);
+     console.log(escrowAmount);
      assert.equal(addressAssigned, assetCreator, 'asset creator assigned to asset');
-     assert.equal(parseInt(operatorEscrowedAmount), escrowAmount, 'operatorEscrowedAmount updated');
-     // Check new asset variables were set properly
+     assert.equal(amountEscrowedForAsset, escrowAmount, 'amountEscrowedForAsset updated');
+
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytes("amountToBeRaised", assetID)), amountToBeRaised,'amountToBeRaised asset set');
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytes("operatorPercentage", assetID)), operatorPercentage, 'operatorPercentage asset set');
      assert.equal(await dbInstance.addressStorage(await hfInstance.stringBytes("assetOperator", assetID)), assetCreator, 'assetOperator asset set');
@@ -255,15 +269,11 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    it('Fund asset', async () => {
      let amountToBeRaised = await dbInstance.uintStorage(await hfInstance.stringBytes("amountToBeRaised", assetID));
      let ethUSDPrice = await dbInstance.uintStorage(await hfInstance.stringHash('ethUSDPrice'));
-     assert.notEqual(ethUSDPrice, 0); 
-     let quarterOfValueInETH = ((amountToBeRaised / ethUSDPrice) / 4);
 
-     await fundingHubInstance.fund(assetID, {from:funder1, value:web3.toWei(quarterOfValueInETH,'ether')});
-     await fundingHubInstance.fund(assetID, {from:funder2, value:web3.toWei(quarterOfValueInETH,'ether')});
-     await fundingHubInstance.fund(assetID, {from:funder3, value:web3.toWei(quarterOfValueInETH,'ether')});
-     await fundingHubInstance.fund(assetID, {from:funder4, value:web3.toWei(quarterOfValueInETH,'ether')});
+     let halfOfUSDValueInEth = ((amountToBeRaised / ethUSDPrice) / 2);
 
-     assert.equal(Number(await apiInstance.amountRaised(assetID)), amountToBeRaised); 
+     await fundingHubInstance.fund(assetID, {from:funder1, value:web3.toWei(halfOfUSDValueInEth,'ether')});
+     await fundingHubInstance.fund(assetID, {from:funder2, value:web3.toWei(halfOfUSDValueInEth,'ether')});
     });
 
     it('Asset transition to stage 4', async () => {
@@ -273,120 +283,105 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
     });
 
    it('Asset recieves funding', async () => {
-     await assetInstance.receiveIncome(assetID, '', {value:web3.toWei(assetPaymentEther,'ether')});
-     let assetIncome = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('assetIncome', assetID)));
-     assert.equal(assetIncome, assetPaymentEther); 
+     let etherAmountToFund = 1;
+     await assetInstance.receiveIncome(assetID, '', {value:web3.toWei(etherAmountToFund,'ether')});
    });
 
+   it('Get Unlocked amount', async () => {
+     let unlockedBalance = await operatorEscrowInstance.getUnlockedBalance(assetCreator);
+     assert.equal(BigNumber(unlockedBalance).eq(BigNumber(approvalAmount).minus(amountEscrowedForAsset)), true, 'correct amount still escrowed');
+    });
 
-   it('Withdraw income', async () => {
-     let userownershipUnits = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1)));
-     let amountRaised = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('amountRaised', assetID)));
-     let totalPaidToFunder = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('totalPaidToFunder', assetID, funder1)));
-     let payment = ((assetIncome * userownershipUnits) / amountRaised) - totalPaidToFunder
+  it('withdrawToken ', async () => {
+    // Modifier Check
+    let funderNotApprovedModifier = null;
+    try {await operatorEscrowInstance.withdrawToken(500,{from:funderNotApproved});}
+    catch (error) {funderNotApprovedModifier = error}
+    assert.notEqual(funderNotApprovedModifier, null, 'modifier funderNotApproved');
 
+    let unlockedBalance = await operatorEscrowInstance.getUnlockedBalance(assetCreator);
+    let contractBalance = await myBitTokenInstance.balanceOf(operatorEscrowInstance.address);
 
-     let withdrawGasEstimate = parseInt(await assetInstance.withdraw.estimateGas(assetID, false, {from:funder1})).toFixed(7) / 10000000;
-     let balanceOfUserBeforeWithdrawal = parseInt(web3.eth.getBalance(funder1));
+    // assert operator
+    let unlockedBalanceTooLittle = null;
+    try {await operatorEscrowInstance.withdrawToken(BigNumber(unlockedBalance).plus(1),{from:assetCreator});}
+    catch (error) {unlockedBalanceTooMuch = error}
+    assert.notEqual(unlockedBalanceTooMuch, null, 'amount too high for unlocked balance');
 
-     let amountOwed = await assetInstance.getAmountOwed(assetID, funder1);
-     assert.equal(amountOwed, payment, 'amount owed correct');
-     await assetInstance.withdraw(assetID, false, {from:funder1});
-     await assetInstance.withdraw(assetID, false, {from:funder2});
+    let depositedBalanceTooLittle = null;
+    try {await operatorEscrowInstance.withdrawToken(BigNumber(depositedAmount).plus(1),{from:assetCreator});}
+    catch (error) {depositedBalanceTooLittle = error}
+    assert.notEqual(depositedBalanceTooLittle, null, 'amount too high for deposited amount');
 
-     let totalPaidToFundersAfter = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('totalPaidToFunders', assetID)));
-     let totalPaidToFunderAfter = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('totalPaidToFunder', assetID, funder1)));
-     let balanceOfUserAfterWithdrawal = parseInt(web3.eth.getBalance(funder1));
-     let shouldBeBalanceAfter = Number(balanceOfUserBeforeWithdrawal) - Number(parseInt(web3.toWei(withdrawGasEstimate,'ether')));
+    //----------------------------------------------------------------------------------------------------------------------------------------------
+    // TODO: complete this when escrow details are finished
+    //----------------------------------------------------------------------------------------------------------------------------------------------
 
-     assert.equal(totalPaidToFunderAfter, payment, 'payment added to total funder paid');
-     assert.equal(totalPaidToFundersAfter, payment*2, 'payment added to total funders paid ');
+    // await operatorEscrowInstance.withdrawToken(unlockedBalance,{from:assetCreator});
+    // let mybBalanceOperator = await myBitTokenInstance.balanceOf(assetCreator);
+    // let escrowBalance = await myBitTokenInstance.balanceOf(operatorEscrowInstance.address);
+    //
+    // let shouldBeBalance = BigNumber(transferAmount).minus(amountEscrowedForAsset);
+    // assert.equal(mybBalanceOperator, shouldBeBalance, 'tokens given back to oeprator after withdrawal');
+    // assert.equal(escrowBalance, amountEscrowedForAsset, 'tokens removed from escrow');
    });
 
-    it('Create sell order - full ownershipUnits, CREATESELLORDER', async () => {
-      assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', funder1)), 3, 'Access 3 granted for exchanges');
-      assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', funder2)), 3, 'Access 3 granted for exchanges');
+   // it('Unlock escrow', async () => {
+   //   // Modifier Check
+   //   let funderNotApprovedModifier = null;
+   //   try {await operatorEscrowInstance.unlockEscrow(assetID,{from:funderNotApproved});}
+   //   catch (error) {funderNotApprovedModifier = error}
+   //   assert.notEqual(funderNotApprovedModifier, null, 'modifier funderNotApproved');
+   //
+   //   // require operator
+   //   let operatorEscrowedRequire = null;
+   //   try {await operatorEscrowInstance.unlockEscrow(assetID,{from:notEscrowed});}
+   //   catch (error) {operatorEscrowedRequire = error}
+   //   assert.notEqual(operatorEscrowedRequire, null, 'not escrowed');
+   //
+   //   let fundingStageBeforeAssert = await dbInstance.uintStorage(await hfInstance.stringBytes("fundingStage", assetID));
+   //
+   //   // funding stage assert
+   //   let fundingStageAssert = null;
+   //   try {
+   //     await dbInstance.setUint(await hfInstance.stringBytes("fundingStage", assetID),1,{from:contractMimik});       // set contract funding to 1
+   //     assert.equal(dbInstance.uintStorage(await hfInstance.stringBytes("fundingStage", assetID)), 1, 'changed to 1');
+   //     await operatorEscrowInstance.unlockEscrow(assetID,{from:assetCreator});}
+   //   catch (error) {fundingStageAssert = error}
+   //   assert.notEqual(fundingStageAssert, null, 'funding stage assert');
+   //
+   //   // update funding stage back to normal
+   //   await dbInstance.setUint(await hfInstance.stringBytes("fundingStage", assetID),fundingStageBeforeAssert,{from:contractMimik});       // set contract funding to to normal
+   //
+   //   await dbInstance.setUint(await hfInstance.stringBytes('fundingStage', assetID), 2);
+   //   let fundingStage = await dbInstance.uintStorage(await hfInstance.stringBytes('fundingStage', assetID));
+   //   assert.equal(fundingStage, 2, 'fundingStage updated to withdraw');
+   //   await operatorEscrowInstance.unlockEscrow(assetID,{from:assetCreator});
+   //   let operatorAmountEscrowed = parseInt(await dbInstance.uintStorage(await hfInstance.stringAddress("operatorAmountEscrowed", assetCreator)));
+   //   let operatorAmountDeposited = parseInt(await dbInstance.uintStorage(await hfInstance.stringAddress("operatorAmountDeposited", assetCreator)));
+   //   assert.equal(operatorAmountEscrowed, 0, 'unlocked funds');
+   //   assert.equal(operatorAmountDeposited, parseInt(amountEscrowedForAsset), 'funds back in deposit - can withdraw');
+   // });
+   //
+   // it('Withdraw funds unlocked', async () => {
+   //   let unlockedBalance = parseInt(await operatorEscrowInstance.getUnlockedBalance(assetCreator));
+   //   let balanceBefore = parseInt(await myBitTokenInstance.balanceOf(assetCreator));
+   //   await operatorEscrowInstance.withdrawToken(unlockedBalance,{from:assetCreator});
+   //   let mybBalanceOperator = parseInt(await myBitTokenInstance.balanceOf(assetCreator));
+   //   let escrowBalance = parseInt(await myBitTokenInstance.balanceOf(operatorEscrowInstance.address));
+   //   assert.equal(mybBalanceOperator, balanceBefore + unlockedBalance, 'tokens given back to oeprator after withdrawal');
+   //   assert.equal(escrowBalance, 0, 'tokens removed from escrow');
+   // });
 
-      let user1ownershipUnits = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1)));
-      await assetExchangeInstance.createSellOrder(assetID, user1ownershipUnits, 1, {from:funder1});
-      let orderID = await hfInstance.getOrderID(assetID, funder1, user1ownershipUnits, 1, false);
-      assert.equal(await assetExchangeInstance.orders(funder1, orderID), true, 'Order Created');
-      assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytesAddress("ownershipUnits", assetID, funder1)), user1ownershipUnits, 'ownershipUnits still exist');
+
+    it('Fallback function', async () => {
+      let err = null
+      try {
+        await operatorEscrowInstance.sendTransaction({from:web3.eth.coinbase,value:web3.toWei(0.1,'ether')});
+      } catch (error) {
+        err = error
+      }
+      assert.ok(err instanceof Error)
     });
 
-    it('Delete sell order - full/half ownershipUnits, DELETEORDER', async () =>{
-      let user1ownershipUnits = await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1));
-      let orderID = await hfInstance.getOrderID(assetID, funder1, user1ownershipUnits, 1, false);
-      await assetExchangeInstance.deleteOrder(assetID, user1ownershipUnits, 1, false,{from:funder1});
-      assert.equal(await assetExchangeInstance.orders(funder1, orderID), false, 'Sell order has been deleted');
-    });
-
-    it('Create sellorder again to purchase, CREATESELLORDER', async () => {
-      let user1ownershipUnits = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1)));
-      user1ownershipUnitsInitially = parseInt(user1ownershipUnits);
-      await assetExchangeInstance.createSellOrder(assetID, user1ownershipUnits, 1, {from:funder1});
-      let orderID = await hfInstance.getOrderID(assetID, funder1, user1ownershipUnits, 1, false);
-      assert.equal(await assetExchangeInstance.orders(funder1, orderID), true, 'Order Created');
-      assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytesAddress("ownershipUnits", assetID, funder1)), user1ownershipUnits,'ownershipUnits still exist');
-    });
-
-    it('Buy Asset - from sell order, BUYASSET', async () =>{
-      let user1ownershipUnits = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1)));
-      let user2ownershipUnits = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder2)));
-
-      let userBalanceBeforeBuy = parseInt(web3.eth.getBalance(funder2));
-      var estimateGasBuyAsset = parseInt(await assetExchangeInstance.buyAsset.estimateGas(assetID, funder1, user1ownershipUnits, 1,{from:funder2,value:user1ownershipUnits})).toFixed(7) / 10000000;
-      let orderID = await hfInstance.getOrderID(assetID, funder1, user1ownershipUnits, 1, false);
-
-      await assetExchangeInstance.buyAsset(assetID, funder1, user1ownershipUnits, 1,{from:funder2,value:user1ownershipUnits});
-
-      assert.equal(parseInt(await assetExchangeInstance.weiOwed(funder1)), user1ownershipUnits, 'Seller can withdraw their owed amount');
-      assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1))), 0, 'ownershipUnits correctly reduced to 0');
-      assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder2))), Number(user1ownershipUnits) + Number(user2ownershipUnits), 'ownershipUnits correctly added funder2');
-      assert.equal(await assetExchangeInstance.orders(funder1, orderID), false,'Sell order deleted');
-
-     let userBalanceAfterBuy = parseInt(web3.eth.getBalance(funder2));
-    // assert.equal(userBalanceAfterBuy, (Number(userBalanceBeforeBuy) - Number(user1ownershipUnits)) - Number(web3.toWei(estimateGasBuyAsset,'ether')), 'User correctly paid for asset');
-    // TODO; Check balance afterwards
-    });
-
-
-    it('Withdraw funds after sale completed WITHDRAW', async () =>{
-      let userBalanceBeforeWithdrawal = parseInt(web3.eth.getBalance(funder1));
-      var estimateGasWithdrawalSale = parseInt(await assetExchangeInstance.withdraw.estimateGas({from:funder1})).toFixed(7) / 10000000;
-      await assetExchangeInstance.withdraw({from:funder1});
-      var shouldBeBalanceAfter = (Number(userBalanceBeforeWithdrawal) + Number(user1ownershipUnitsInitially)) - Number(web3.toWei(estimateGasWithdrawalSale,'ether'));
-      let userBalanceAfterWithdrawal = parseInt(web3.eth.getBalance(funder1));
-    //  assert.equal(userBalanceAfterWithdrawal, shouldBeBalanceAfter, 'User withdrawal payout successful');
-    // TODO; Check balance afterwards
-    });
-
-    it('Create buy order - BUYORDER', async () =>{
-     await assetExchangeInstance.createBuyOrder(assetID, user1ownershipUnitsInitially, 1, {from:funder1, value:user1ownershipUnitsInitially});
-     assert.equal(parseInt(await assetExchangeInstance.weiDeposited(funder1)), user1ownershipUnitsInitially, 'Wei properly deposited');
-
-     let orderID = await hfInstance.getOrderID(assetID, funder1, user1ownershipUnitsInitially, 1, true);
-     assert.equal(await assetExchangeInstance.orders(funder1, orderID), true, 'Order Created');
-    });
-
-   it('Sell Asset - from buy order, SELLASSET', async () =>{
-     let userownershipUnitsBeforeSell = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder2)));
-     let userBalanceBeforeBuy = parseInt(web3.eth.getBalance(funder2));
-     var estimateGasSellAsset = parseInt(await assetExchangeInstance.sellAsset.estimateGas(assetID, funder1, user1ownershipUnitsInitially, 1,{from:funder2})).toFixed(7) / 10000000;
-     let orderID = await hfInstance.getOrderID(assetID, funder1, user1ownershipUnitsInitially, 1, true);
-
-     await assetExchangeInstance.sellAsset(assetID, funder1, user1ownershipUnitsInitially, 1, {from:funder2});
-
-     assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1))), user1ownershipUnitsInitially, 'ownershipUnits correctly updated');
-     assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder2))), Number(userownershipUnitsBeforeSell) - Number(user1ownershipUnitsInitially), 'ownershipUnits correctly deducted');
-
-     assert.equal(parseInt(await assetExchangeInstance.weiOwed(funder2)), user1ownershipUnitsInitially,'Seller can withdraw their owed amount');
-     assert.equal(await assetExchangeInstance.orders(funder1, orderID), false,'Sell order deleted');
-     // TODO; Check balance afterwards
-   });
-
-  it('Destroy asset exchange contract', async () => {
-    await ownedInstance.setFunctionAuthorized(assetExchangeInstance.address, 'destroy', await hfInstance.addressHash(funder2),{from:ownerAddr1});
-    await assetExchangeInstance.destroy(ownerAddr1,funder2,{from:ownerAddr3});
-  });
- });
+});

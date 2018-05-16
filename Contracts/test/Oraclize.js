@@ -19,6 +19,7 @@ const urls  = {
 /* Contracts  */
 const ContractManager = artifacts.require("./ContractManager.sol");
 const HashFunctions = artifacts.require("./HashFunctions.sol");
+const API = artifacts.require("./API.sol");
 const InitialVariables = artifacts.require("./InitialVariables.sol");
 const OracleHub = artifacts.require('./OracleHub.sol');
 const Owned = artifacts.require("./Owned.sol");
@@ -38,6 +39,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
   let contractManagerInstance;
   let hfInstance;
+  let apiInstance;
   let initialVariableInstance;
   let oracleHubInstance;
   let ownedInstance;
@@ -80,6 +82,11 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('owner', ownerAddr3)), true, 'Owner 3 assigned properly');
    });
 
+   it('Deploy API', async () => {
+     apiInstance = await API.new(dbInstance.address);
+     assert.equal(await apiInstance.database(), dbInstance.address);
+   });
+
    it('Assign ContractManager', async () => {
       contractManagerInstance = await ContractManager.new(dbInstance.address);
 
@@ -107,6 +114,10 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      //--------------------Asset Creation Variables-----------------
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('myBitFoundationPercentage')), 1, 'myBitFoundationPercentage == 1');
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('installerPercentage')), 99, 'installerPercentage == 99');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 1)), 25, 'accessTokenFee 2');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 2)), 75, 'accessTokenFee 3');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 3)), 100, 'accessTokenFee 4');
+     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('priceUpdateTimeline')), 86400, 'priceUpdateTimeline');
    });
 
     it('Owned deployment ', async () => {
@@ -130,19 +141,17 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    });
 
   it('Update USD prices', async () => {
-    let eUSDPriceBefore = parseInt(await dbInstance.uintStorage(await hfInstance.stringHash('ethUSDPrice')));
-    let mUSDPriceBefore = parseInt(await dbInstance.uintStorage(await hfInstance.stringHash('ethUSDPrice')));
+    let eUSDPriceBefore = await apiInstance.ethUSDPrice();
+    let mUSDPriceBefore = await apiInstance.mybUSDPrice();
     var ethUSDPriceAfter;
     var mybUSDPriceAfter;
-
-    let ethUSDQueryGasCost = parseInt(await oracleHubInstance.ethUSDQuery.estimateGas({value:web3.toWei(0.1,'ether')}));
 
     let requireEtherModifier = null;
     try {await oracleHubInstance.ethUSDQuery();}
     catch (error) {requireEtherModifier = error}
     assert.notEqual(requireEtherModifier, null, 'modifier requireEtherModifier');
 
-    await oracleHubInstance.ethUSDQuery({value:web3.toWei(0.1,'ether')});
+    await oracleHubInstance.ethUSDQuery({value:web3.toWei(1,'ether')});
 
     let LogEthUSDQuery = await oracleHubInstance.LogEthUSDQuery({},{fromBlock:0, toBlock:'latest'});
     let LogmybUSDQuery = await oracleHubInstance.LogmybUSDQuery({},{fromBlock:0, toBlock:'latest'});
@@ -202,7 +211,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
     it('Attempt to mimik oraclize', async () => {
       let bytes32Value = web3.fromAscii('ethereum', 32);
-      let oraclizeImposter = web3.eth.accounts[10]; 
+      let oraclizeImposter = web3.eth.accounts[10];
 
       let isOraclizeModifier = null;
       try {await oracleHubInstance.__callback(bytes32Value, 'test', {from: oraclizeImposter});}

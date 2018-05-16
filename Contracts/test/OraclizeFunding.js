@@ -2,6 +2,7 @@ var BigNumber = require('bignumber.js');
 
 const Asset = artifacts.require('./Asset.sol');
 const AssetCreation = artifacts.require('./AssetCreation.sol');
+const API = artifacts.require('./API.sol');
 const ContractManager = artifacts.require("./ContractManager.sol");
 const Database = artifacts.require("./Database.sol");
 const FunderControls = artifacts.require('./FunderControls.sol');
@@ -9,7 +10,7 @@ const FundingHub = artifacts.require("./FundingHub.sol");
 const HashFunctions = artifacts.require("./HashFunctions.sol");
 const InitialVariables = artifacts.require("./InitialVariables.sol");
 const AssetExchange = artifacts.require('./AssetExchange.sol');
-const MyBitToken = artifacts.require('./MyBitToken.sol');
+const MyBitToken = artifacts.require('./ERC20.sol');
 const OperatorEscrow = artifacts.require('./OperatorEscrow.sol');
 const OracleHub = artifacts.require('./OracleHub.sol');
 const Owned = artifacts.require("./Owned.sol");
@@ -34,6 +35,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let funderControlsInstance;
   let fundingHubInstance;
   let hfInstance;
+  let apiInstance;
   let initialVariableInstance;
   let AssetExchangeInstance;
   let myBitTokenInstance;
@@ -77,11 +79,14 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
    it('Assign ContractManager', async () => {
       contractManagerInstance = await ContractManager.new(dbInstance.address);
-
       await dbInstance.setContractManager(contractManagerInstance.address);
       assert.equal(await dbInstance.addressStorage(await hfInstance.stringString("contract", "ContractManager")),contractManagerInstance.address, 'Contract manager address equal');
       assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress("contract", contractManagerInstance.address)), true, 'Contract manager stored true');
+   });
 
+   it('Deploy API', async () => {
+     apiInstance = await API.new(dbInstance.address);
+     assert.equal(await apiInstance.database(), dbInstance.address);
    });
 
    it('Add InitialVariables contract to database via contract manager', async () => {
@@ -106,15 +111,14 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    });
 
    it('MyBitToken contract deployment ', async () => {
-     let initialSupply = 281207344012426;
-     myBitTokenInstance = await MyBitToken.new(initialSupply, 'MyBit Token', 8, 'MyB',{from:ownerAddr1});
+     initialSupply = 18000000000000000 * 10**10;
+     myBitTokenInstance = await MyBitToken.new(initialSupply, 'MyBit', 18, 'MYB');
 
-     assert.equal(await myBitTokenInstance.owner(), web3.eth.accounts[0], 'MyBitToken -  owner assigned');
      assert.equal(await myBitTokenInstance.balanceOf(web3.eth.accounts[0]), initialSupply, 'MyBitToken - Correct initial balance to owner');
      assert.equal(await myBitTokenInstance.totalSupply(), initialSupply, 'MyBitToken - Correct total supply');
-     assert.equal(await myBitTokenInstance.name(), 'MyBit Token', 'MyBitToken - Correct token name');
-     assert.equal(await myBitTokenInstance.symbol(), 'MyB', 'MyBitToken - Correct Token symbol');
-     assert.equal(await myBitTokenInstance.decimals(), 8, 'MyBitToken - Correct decimals');
+     assert.equal(await myBitTokenInstance.name(), 'MyBit', 'MyBitToken - Correct token name');
+     assert.equal(await myBitTokenInstance.symbol(), 'MYB', 'MyBitToken - Correct Token symbol');
+     assert.equal(await myBitTokenInstance.decimals(), 18, 'MyBitToken - Correct decimals');
    });
 
 
@@ -268,10 +272,11 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   });
 
   it('Update USD prices', async () => {
-    let eUSDPriceBefore = parseInt(await dbInstance.uintStorage(await hfInstance.stringHash('ethUSDPrice')));
-    let mUSDPriceBefore = parseInt(await dbInstance.uintStorage(await hfInstance.stringHash('ethUSDPrice')));
+    let eUSDPriceBefore = await dbInstance.uintStorage(await hfInstance.stringHash('ethUSDPrice'));
+    let mUSDPriceBefore = await dbInstance.uintStorage(await hfInstance.stringHash('ethUSDPrice'));
 
-    await oracleHubInstance.ethUSDQuery({value:web3.toWei(0.5,'ether')});
+    await oracleHubInstance.mybUSDQuery({value:web3.toWei(0.5, 'ether')});
+    // await oracleHubInstance.ethUSDQuery({value:web3.toWei(0.5,'ether')});
 
     let LogEthUSDQuery = await oracleHubInstance.LogEthUSDQuery({},{fromBlock:0, toBlock:'latest'});
     let LogmybUSDQuery = await oracleHubInstance.LogmybUSDQuery({},{fromBlock:0, toBlock:'latest'});
@@ -485,7 +490,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
           let etherAmountToFund = 1;
           var assetCreatorBalanceBefore = Number(web3.eth.getBalance(assetCreator));
-          let revenueNote = await hfInstance.stringString('good month', 'installerID'); 
+          let revenueNote = await hfInstance.stringString('good month', 'installerID');
           await assetInstance.receiveIncome(assetID, revenueNote, {value:web3.toWei(etherAmountToFund,'ether')});
           let assetIncome = await dbInstance.uintStorage(await hfInstance.stringBytes('assetIncome', assetID));
           let managerAmount = web3.toWei(etherAmountToFund,'ether') * await dbInstance.uintStorage(await hfInstance.stringBytes('operatorPercentage', assetID)) / 100;

@@ -6,8 +6,9 @@ const InitialVariables = artifacts.require("./InitialVariables.sol");
 const Owned = artifacts.require("./Owned.sol");
 const Database = artifacts.require("./Database.sol");
 const UserAccess = artifacts.require('./UserAccess.sol');
-const MyBitToken = artifacts.require('./MyBitToken.sol');
+const MyBitToken = artifacts.require('./ERC20.sol');
 const TokenBurn = artifacts.require('./TokenBurn.sol');
+const API = artifacts.require('./API.sol');
 
 contract('Deploying and storing all contracts + validation', async (accounts) => {
   const ownerAddr1 = web3.eth.accounts[0];
@@ -17,15 +18,17 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   const account1 = web3.eth.accounts[3];
   const account2 = web3.eth.accounts[4];
   const account3 = web3.eth.accounts[5];
+  const contractMimik = web3.eth.accounts[6];
+  const assetCreator = web3.eth.accounts[7];
 
   const myBitPayoutAddress = web3.eth.accounts[8];
   const assetEscrowPayoutAddress = web3.eth.accounts[9];
 
-  const contractMimik = web3.eth.accounts[10];
   const decemberExpire = 1544015678;
 
   let dbInstance;
   let hfInstance;
+  let apiInstance;
   let contractManagerInstance;
   let initialVariableInstance;
   let ownedInstance;
@@ -35,7 +38,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
   let transferAmount;
   let initialSupply;
-  let myBitPrice = 3;  // 10 to the power of 3 * 3 usd == 3000
+  let myBitPrice = 3000;  // 10 to the power of 3 * 3 usd == 3000
 
 
   it("Owners should be assigned", async () => {
@@ -54,7 +57,11 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
       await dbInstance.setContractManager(contractManagerInstance.address);
       assert.equal(await dbInstance.addressStorage(await hfInstance.stringString("contract", "ContractManager")),contractManagerInstance.address, 'Contract manager address equal');
       assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress("contract", contractManagerInstance.address)), true, 'Contract manager stored true');
+   });
 
+   it('Deploy API', async () => {
+     apiInstance = await API.new(dbInstance.address);
+     assert.equal(await apiInstance.database(), dbInstance.address);
    });
 
    it('Add InitialVariables contract to database via contract manager', async () => {
@@ -101,15 +108,14 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
 
    it('MyBitToken contract deployment ', async () => {
-     initialSupply = 281207344012426;
-     myBitTokenInstance = await MyBitToken.new(initialSupply, 'MyBit Token', 8, 'MyB',{from:ownerAddr1});
+     initialSupply = 180000000000000000000000000;
+     myBitTokenInstance = await MyBitToken.new(initialSupply, 'MyBit', 18, 'MYB');
 
-     assert.equal(await myBitTokenInstance.owner(), web3.eth.accounts[0], 'MyBitToken -  owner assigned');
      assert.equal(await myBitTokenInstance.balanceOf(web3.eth.accounts[0]), initialSupply, 'MyBitToken - Correct initial balance to owner');
      assert.equal(await myBitTokenInstance.totalSupply(), initialSupply, 'MyBitToken - Correct total supply');
-     assert.equal(await myBitTokenInstance.name(), 'MyBit Token', 'MyBitToken - Correct token name');
-     assert.equal(await myBitTokenInstance.symbol(), 'MyB', 'MyBitToken - Correct Token symbol');
-     assert.equal(await myBitTokenInstance.decimals(), 8, 'MyBitToken - Correct decimals');
+     assert.equal(await myBitTokenInstance.name(), 'MyBit', 'MyBitToken - Correct token name');
+     assert.equal(await myBitTokenInstance.symbol(), 'MYB', 'MyBitToken - Correct Token symbol');
+     assert.equal(await myBitTokenInstance.decimals(), 18, 'MyBitToken - Correct decimals');
    });
 
    it('TokenBurn deployment ', async () => {
@@ -136,27 +142,25 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      await dbInstance.setUint(await hfInstance.stringHash('mybUSDPriceExpiration'), decemberExpire,{from:contractMimik}); //1544015678 - 12 months ahead
   });
 
-  it('Transfer Tokens to user and approve again', async () => {
-     await userAccessInstance.approveUser(account1, 1);
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', account1)), 1, 'Access 1 manually granted mimiks KYC');
-     let balanceOfOwnerBefore = parseInt(await myBitTokenInstance.balanceOf(ownerAddr1));
-     let balanceOfAccess1Before = parseInt(await myBitTokenInstance.balanceOf(account1));
+   it('Transfer tokens to user', async () => {
+     let balanceOfOwnerBefore = await myBitTokenInstance.balanceOf(ownerAddr1);
+     let balanceOfAccess1Before = await myBitTokenInstance.balanceOf(assetCreator);
      assert.equal(balanceOfOwnerBefore, initialSupply, 'Owner has full initial supply');
-     assert.equal(balanceOfAccess1Before, 0, 'account1 has 0 initial supply');
+     assert.equal(balanceOfAccess1Before, 0, 'assetCreator has 0 initial supply');
 
-     transferAmount = 30004954;
-     await myBitTokenInstance.transfer(account1, transferAmount,{from:ownerAddr1}); //transfer tokens for escrow
+     transferAmount = 100000 * 10**18;  // Transfer 100,000 tokens
+     await myBitTokenInstance.transfer(assetCreator, transferAmount,{from:ownerAddr1}); //transfer tokens for escrow
 
-     let balanceOfOwnerAfterTransfer = parseInt(await myBitTokenInstance.balanceOf(ownerAddr1));
-     let balanceOfAccess1AfterTransfer = parseInt(await myBitTokenInstance.balanceOf(account1));
-     assert.equal(balanceOfOwnerAfterTransfer, Number(initialSupply) - Number(transferAmount), 'Owner has been deducted transfer amount');
+     let balanceOfOwnerAfterTransfer = await myBitTokenInstance.balanceOf(ownerAddr1);
+     let balanceOfAccess1AfterTransfer = await myBitTokenInstance.balanceOf(assetCreator);
+     assert.equal(BigNumber(balanceOfOwnerAfterTransfer).eq(BigNumber(initialSupply).minus(transferAmount)),true, 'Owner has been deducted transfer amount');
      assert.equal(balanceOfAccess1AfterTransfer, transferAmount, 'assetCreator has transfer tokens amount');
    });
 
    it('Approve token burn contract transfer', async () => {
-     approvalAmount = transferAmount - 1000;
+     approvalAmount = transferAmount / 2;
      await myBitTokenInstance.approve(tokenBurnInstance.address, approvalAmount,{from:account1});
-     let allowance = parseInt(await myBitTokenInstance.allowance(account1, tokenBurnInstance.address));
+     let allowance = await myBitTokenInstance.allowance(account1, tokenBurnInstance.address);
      assert.equal(allowance, approvalAmount, 'Approval granted');
    });
 
