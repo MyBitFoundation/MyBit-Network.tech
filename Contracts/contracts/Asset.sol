@@ -138,7 +138,7 @@ using SafeMath for *;
     bytes32 functionHash = keccak256(this, _functionInitiator, "destroy", keccak256(_holdingAddress));
     require(database.boolStorage(functionHash));
     database.setBool(functionHash, false);
-    emit LogDestruction(_holdingAddress, this.balance, msg.sender);
+    emit LogDestruction(_holdingAddress, address(this).balance, msg.sender);
     selfdestruct(_holdingAddress);
   }
 
