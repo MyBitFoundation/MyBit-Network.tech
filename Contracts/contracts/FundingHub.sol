@@ -1,11 +1,11 @@
 pragma solidity 0.4.23;
 
-import './SafeMath.sol';
-import './Database.sol';
+import "./SafeMath.sol";
+import "./Database.sol";
 
 //------------------------------------------------------------------------------------------------------------------
 // This contract is where users can fund assets or receive refunds from failed funding periods. Funding stages are represented by uints.
-// Funding stages: 0: funding hasn't started, 1: currently being funded, 2: funding failed,  3: funding success, 4: asset is live 
+// Funding stages: 0: funding hasn't started, 1: currently being funded, 2: funding failed,  3: funding success, 4: asset is live
 //------------------------------------------------------------------------------------------------------------------
 contract FundingHub {
   using SafeMath for *;
@@ -52,6 +52,7 @@ contract FundingHub {
   // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
   // Invariants: Must be in stage FundingSuccess | MyBitFoundation + AssetEscrow  + BugEscrow addresses are set | Contract is not paused
   // Note: Will fail if addresses + percentages are not set. AmountRaised = WeiRaised + assetOperator ownershipUnits
+  // TODO: Deal with rounding errors
   //------------------------------------------------------------------------------------------------------------------
   function payout(bytes32 _assetID)
   external
@@ -62,7 +63,8 @@ contract FundingHub {
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     uint myBitAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("myBitFoundationPercentage")));
     uint installerAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("installerPercentage")));
-    assert (myBitAmount.add(installerAmount) == amountRaised);       // TODO: for testing
+    uint remainder = amountRaised.sub(myBitAmount.add(installerAmount));
+    assert (remainder < 3);       // TODO: Rounding error shouldn't exceed 2 wei
     database.addressStorage(keccak256("MyBitFoundation")).transfer(myBitAmount);             // Must be normal account
     database.addressStorage(keccak256("InstallerEscrow")).transfer(installerAmount);             // Must be normal account
     database.setUint(keccak256("fundingStage", _assetID), uint(4));
@@ -139,7 +141,7 @@ contract FundingHub {
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Don't let function caller re-enter function before initial transaction finishes 
+  // Don't let function caller re-enter function before initial transaction finishes
   //------------------------------------------------------------------------------------------------------------------
   modifier nonReentrant() {
     require(!rentrancy_lock);
@@ -168,12 +170,12 @@ contract FundingHub {
   // Transitions funding period to success if enough Ether is raised
   // Must be in funding stage 3 (currently being funded).
   // Deletes funding raising variables if current transaction puts it over the goal.
-  // TODO: Remove fundingLimitModifier when done testing 
+  // TODO: Remove fundingLimitModifier when done testing
   //------------------------------------------------------------------------------------------------------------------
   modifier fundingLimit(bytes32 _assetID) {
     require(now <= database.uintStorage(keccak256("fundingDeadline", _assetID)));
     uint currentEthPrice = database.uintStorage(keccak256("ethUSDPrice"));
-    assert (currentEthPrice > 0); 
+    assert (currentEthPrice > 0);
     _;
     uint value1 = database.uintStorage(keccak256("amountRaised", _assetID)).mul(currentEthPrice);
     uint value2 = database.uintStorage(keccak256("amountToBeRaised", _assetID)).mul(1e18);
@@ -186,9 +188,9 @@ contract FundingHub {
        database.setUint(keccak256("fundingStage", _assetID), 3);
       }
   }
-  
+
   //------------------------------------------------------------------------------------------------------------------
-  // Check that the Ether/USD prices have been updated 
+  // Check that the Ether/USD prices have been updated
   //------------------------------------------------------------------------------------------------------------------
   modifier priceUpdated {
     require (now < database.uintStorage(keccak256("ethUSDPriceExpiration")));
@@ -204,7 +206,7 @@ contract FundingHub {
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Requires that the funding deadline has passed 
+  // Requires that the funding deadline has passed
   //------------------------------------------------------------------------------------------------------------------
   modifier fundingPeriodOver(bytes32 _assetID) {
     require(now >= database.uintStorage(keccak256("fundingDeadline", _assetID)));
@@ -221,7 +223,7 @@ contract FundingHub {
 
 
   //------------------------------------------------------------------------------------------------------------------
-  //                                            Events 
+  //                                            Events
   //------------------------------------------------------------------------------------------------------------------
 
   event LogNewFunder(address indexed _funder, bytes32 indexed _assetID, uint indexed _timestamp);

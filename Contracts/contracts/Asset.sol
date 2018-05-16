@@ -4,7 +4,7 @@ import './Database.sol';
 
 //------------------------------------------------------------------------------------------------------------------
 // Asset contract manages all payments, withdrawls and trading of ownershipUnits for live assets
-// All information about assets are stored in Database.sol. 
+// All information about assets are stored in Database.sol.
 //------------------------------------------------------------------------------------------------------------------
 contract Asset {
 using SafeMath for *;
@@ -36,9 +36,9 @@ using SafeMath for *;
   atStage(_assetID, 4)
   returns (bool)  {
     uint assetIncome = database.uintStorage(keccak256("assetIncome", _assetID));
-    uint managerAmount = msg.value.mul(database.uintStorage(keccak256("operatorPercentage", _assetID))).div(100);
-    database.addressStorage(keccak256("assetOperator", _assetID)).transfer(managerAmount);
-    database.setUint(keccak256("assetIncome", _assetID), assetIncome.add(msg.value.sub(managerAmount)));
+    uint operatorIncome = msg.value.getFractionalAmount(database.uintStorage(keccak256("operatorPercentage", _assetID)));
+    database.addressStorage(keccak256("assetOperator", _assetID)).transfer(operatorIncome);
+    database.setUint(keccak256("assetIncome", _assetID), assetIncome.add(msg.value.sub(operatorIncome)));
     emit LogIncomeReceived(msg.sender, msg.value, _assetID);
     emit LogAssetNote(_note, block.timestamp, _assetID);
     return true;
@@ -97,7 +97,7 @@ using SafeMath for *;
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Trades ownershipUnits of an asset to other user.Must trade over relative amount of paidToFunder, 
+  // Trades ownershipUnits of an asset to other user.Must trade over relative amount of paidToFunder,
   // So person buying ownershipUnits will also be recognized as being paid out for those ownershipUnits in the past
   // Invariants: Can only be called by current marketplace contract. User must have enough ownershipUnits to make trade.
   // @Param address selling ownershipUnits
@@ -116,8 +116,8 @@ using SafeMath for *;
     uint ownershipUnitsTo = database.uintStorage(keccak256("ownershipUnits", _assetID, _to));
     uint paidToFunderFrom = database.uintStorage(keccak256("totalPaidToFunder", _assetID, _from));
     uint paidToFunderTo = database.uintStorage(keccak256("totalPaidToFunder", _assetID, _to));
-    uint relativePaidOutAmount = (paidToFunderFrom.mul(_amount)).div(ownershipUnitsFrom);    // TODO: Can round down, letting user withdraw 1 wei 
-    assert(relativePaidOutAmount > 0); 
+    uint relativePaidOutAmount = (paidToFunderFrom.mul(_amount)).div(ownershipUnitsFrom);    // TODO: Can round down, letting user withdraw 1 wei
+    assert(relativePaidOutAmount > 0);
     database.setUint(keccak256("totalPaidToFunder", _assetID, _to), paidToFunderTo.add(relativePaidOutAmount));
     database.setUint(keccak256("totalPaidToFunder", _assetID, _from), paidToFunderFrom.sub(relativePaidOutAmount));
     database.setUint(keccak256("ownershipUnits", _assetID, _from), ownershipUnitsFrom.sub(_amount));
@@ -148,7 +148,7 @@ using SafeMath for *;
 
 
   //------------------------------------------------------------------------------------------------------------------
-  // Prevents contracts from re-entering function before the transaction finishes 
+  // Prevents contracts from re-entering function before the transaction finishes
   //------------------------------------------------------------------------------------------------------------------
   modifier nonReentrant() {
     require(!rentrancy_lock);
@@ -174,7 +174,7 @@ using SafeMath for *;
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Makes sure function won't run when contract has been paused 
+  // Makes sure function won't run when contract has been paused
   //------------------------------------------------------------------------------------------------------------------
   modifier whenNotPaused {
     require(!database.boolStorage(keccak256("pause", this)));
@@ -210,14 +210,14 @@ using SafeMath for *;
   //------------------------------------------------------------------------------------------------------------------
   // Fallback
   //------------------------------------------------------------------------------------------------------------------
-  function () 
+  function ()
   public {
     revert();
   }
 
   //------------------------------------------------------------------------------------------------------------------
   //------------------------------------------------------------------------------------------------------------------
-  //                                     Events 
+  //                                     Events
   //------------------------------------------------------------------------------------------------------------------
   //------------------------------------------------------------------------------------------------------------------
 
