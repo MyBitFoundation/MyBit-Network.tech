@@ -2,138 +2,160 @@ pragma solidity 0.4.23;
 import './Database.sol';
 
 //-----------------------------------------------------------------------------------------------------------------------
-// Standard getters for common variables stored in Database.                                                  
+// Standard getters for common variables stored in Database.
+// Database variables are stored as sha3 hashes of variable name + id's.
 //-----------------------------------------------------------------------------------------------------------------------
-contract API { 
+contract API {
 
-  Database public database; 
+  Database public database;
 
   constructor(address _database)
-  public { 
-    database = Database(_database); 
+  public {
+    database = Database(_database);
   }
 
 
   //-----------------------------------------------------------------------------------------------------------------------
-  //                                                 Initial Variables  
+  //                                                 Initial Variables
   //-----------------------------------------------------------------------------------------------------------------------
 
   function MyBitFoundation()
-  public 
+  public
   view
-  returns (address) { 
+  returns (address) {
     return database.addressStorage(keccak256("MyBitFoundation"));
   }
 
   function InstallerEscrow()
-  public 
+  public
   view
-  returns (address) { 
-    return database.addressStorage(keccak256("InstallerEscrow")); 
+  returns (address) {
+    return database.addressStorage(keccak256("InstallerEscrow"));
   }
 
   function myBitFoundationPercentage()
-  public 
+  public
   view
-  returns (uint) { 
+  returns (uint) {
     return database.uintStorage(keccak256("myBitFoundationPercentage"));
   }
 
   function installerPercentage()
-  public 
-  view 
-  returns (uint) { 
+  public
+  view
+  returns (uint) {
     return database.uintStorage(keccak256("installerPercentage"));
   }
 
   //-----------------------------------------------------------------------------------------------------------------------
-  //                                               Contract State 
+  //                                               Contract State
   //-----------------------------------------------------------------------------------------------------------------------
-  function isPaused(address _contractAddress) 
+  function isPaused(address _contractAddress)
   public
   view
-  returns (bool) { 
-    return database.boolStorage(keccak256("pause", _contractAddress)); 
+  returns (bool) {
+    return database.boolStorage(keccak256("pause", _contractAddress));
   }
 
 
   function deployFinished()
-  public 
-  view 
-  returns (bool) { 
-    return database.boolStorage(keccak256("deployFinished")); 
+  public
+  view
+  returns (bool) {
+    return database.boolStorage(keccak256("deployFinished"));
   }
 
   function contractAddress(string _name)
-  public 
+  public
   view
-  returns (address) { 
-    return database.addressStorage(keccak256("contract", _name)); 
+  returns (address) {
+    return database.addressStorage(keccak256("contract", _name));
   }
 
   function contractExists(address _contractAddress)
-  public 
-  view 
-  returns (bool) { 
+  public
+  view
+  returns (bool) {
     return database.boolStorage(keccak256("contract", _contractAddress));
   }
 
   //-----------------------------------------------------------------------------------------------------------------------
-  //                                                Permissions Information 
+  //                                                Permissions Information
   //-----------------------------------------------------------------------------------------------------------------------
   function userAccess(address _user)
-  public 
+  public
   view
-  returns (uint) { 
-    return database.uintStorage(keccak256("userAccess", _user)); 
+  returns (uint) {
+    return database.uintStorage(keccak256("userAccess", _user));
   }
 
   function isOwner(address _user)
-  public 
+  public
   view
-  returns (bool) { 
-    return database.boolStorage(keccak256("owner", _user)); 
+  returns (bool) {
+    return database.boolStorage(keccak256("owner", _user));
   }
 
   function getFunctionAuthorized(address _contractAddress, address _signer, string _functionName, bytes32 _agreedParameter)
-  public 
-  view 
-  returns (bytes32) { 
-    return keccak256(_contractAddress, _signer, _functionName, _agreedParameter); 
+  public
+  view
+  returns (bytes32) {
+    return keccak256(_contractAddress, _signer, _functionName, _agreedParameter);
   }
 
   function isFunctionAuthorized(bytes32 _functionAuthorizationHash)
-  public 
-  view 
-  returns (bool) { 
-    return database.boolStorage(_functionAuthorizationHash); 
+  public
+  view
+  returns (bool) {
+    return database.boolStorage(_functionAuthorizationHash);
   }
 
   //-----------------------------------------------------------------------------------------------------------------------
-  //                                                  Asset Revenue Information 
+  //                                                  Platform Costs
+  //-----------------------------------------------------------------------------------------------------------------------
+
+  function accessCostMYB(uint _accessLevelDesired)
+  public
+  view
+  returns (uint) {
+    uint mybPrice = mybUSDPrice();
+    uint accessPrice = accessTokenFee(_accessLevelDesired);
+    return (accessPrice * 10**21) / mybPrice;           // Returns # of MYB required (last 18 integers are decimals....will be very large number)
+  }
+
+  // USD cost of different levels of access on the platform (1 = create/fund assets, 2 = staking/TBA, 3 = marketplace)
+  function accessTokenFee(uint _accessLevelDesired)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256("accessTokenFee", _accessLevelDesired));
+  }
+
+  //-----------------------------------------------------------------------------------------------------------------------
+  //                                                  Asset Revenue Information
   //-----------------------------------------------------------------------------------------------------------------------
 
   // Total amount of income earned by the asset
   function assetIncome(bytes32 _assetID)
-  public 
+  public
   view
-  returns (uint) { 
+  returns (uint) {
     return database.uintStorage(keccak256("assetIncome", _assetID));
   }
 
   // Amount of income paid to funders
   function totalPaidToFunders(bytes32 _assetID)
-  public 
+  public
   view
-  returns (uint) { 
-    return database.uintStorage(keccak256("totalPaidToFunders", _assetID)); 
+  returns (uint) {
+    return database.uintStorage(keccak256("totalPaidToFunders", _assetID));
   }
 
-  // Amount of income already paid to the funder 
-  function totalPaidToFunder(bytes32 _assetID, address _funder) 
-  public 
+  // Amount of income already paid to the funder
+  function totalPaidToFunder(bytes32 _assetID, address _funder)
+  public
   view
-  returns (uint) { 
+  returns (uint) {
     return database.uintStorage(keccak256("totalPaidToFunder", _assetID, _funder));
   }
 
@@ -145,130 +167,137 @@ contract API {
     if (ownershipUnits(_assetID, _user) == 0) { return 0; }
     return ((assetIncome(_assetID) * ownershipUnits(_assetID, _user)) / amountRaised(_assetID)) - totalPaidToFunder(_assetID, _user);
   }
-  
+
   //-----------------------------------------------------------------------------------------------------------------------
-  //                                             Funding Information 
+  //                                             Funding Information
   //-----------------------------------------------------------------------------------------------------------------------
   function ownershipUnits(bytes32 _assetID, address _owner)
-  public 
+  public
   view
-  returns (uint) { 
-    return database.uintStorage(keccak256("ownershipUnits", _assetID, _owner)); 
+  returns (uint) {
+    return database.uintStorage(keccak256("ownershipUnits", _assetID, _owner));
   }
 
   function amountRaised(bytes32 _assetID)
-  public 
+  public
   view
-  returns (uint) { 
-    return database.uintStorage(keccak256("amountRaised", _assetID)); 
+  returns (uint) {
+    return database.uintStorage(keccak256("amountRaised", _assetID));
   }
 
   function fundingStage(bytes32 _assetID)
-  public 
+  public
   view
-  returns (uint) { 
+  returns (uint) {
     return database.uintStorage(keccak256("fundingStage", _assetID));
   }
 
   function amountToBeRaised(bytes32 _assetID)
-  public 
+  public
   view
-  returns (uint) { 
-    return database.uintStorage(keccak256("amountToBeRaised", _assetID)); 
+  returns (uint) {
+    return database.uintStorage(keccak256("amountToBeRaised", _assetID));
   }
 
   function fundingDeadline(bytes32 _assetID)
-  public 
+  public
   view
-  returns (uint) { 
-    return database.uintStorage(keccak256("fundingDeadline", _assetID)); 
+  returns (uint) {
+    return database.uintStorage(keccak256("fundingDeadline", _assetID));
   }
 
   //-----------------------------------------------------------------------------------------------------------------------
-  // Operator Information 
+  // Operator Information
   //-----------------------------------------------------------------------------------------------------------------------
+
+  // Indicates which address is in charge of operating this asset. 1 operator per asset
   function assetOperator(bytes32 _assetID)
-  public 
+  public
   view
-  returns (address) { 
+  returns (address) {
     return database.addressStorage(keccak256("assetOperator", _assetID));
   }
 
+  // Percentage of income sent to asset operator
   function operatorPercentage(bytes32 _assetID)
   public
-  view 
-  returns (uint) { 
-    return database.uintStorage(keccak256("operatorPercentage", _assetID)); 
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256("operatorPercentage", _assetID));
   }
 
+  // Amount of MYB locked for this asset
   function lockedForAsset(bytes32 _assetID)
   public
-  view 
-  returns (uint) { 
+  view
+  returns (uint) {
     return database.uintStorage(keccak256("lockedForAsset", _assetID));
   }
 
+  // Total amount of MYB locked by user for all platform assets
   function operatorAmountEscrowed(address _operator)
   public
-  view 
-  returns (uint) { 
-    return database.uintStorage(keccak256("operatorAmountEscrowed", _operator)); 
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256("operatorAmountEscrowed", _operator));
   }
 
+  // Total amount of MYB deposited in the operator escrow contract
+  // NOTE: This MYB is not locked and can be withdrawn at any time
   function operatorAmountDeposited(address _operator)
   public
-  view 
-  returns (uint) { 
-    return database.uintStorage(keccak256("operatorAmountDeposited", _operator)); 
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256("operatorAmountDeposited", _operator));
   }
 
 
   //-----------------------------------------------------------------------------------------------------------------------
-  //                                                 OracleHub 
+  //                                                 OracleHub
   //-----------------------------------------------------------------------------------------------------------------------
 
   function ethUSDPrice()
-  public 
-  view 
-  returns (uint) { 
-    return database.uintStorage(keccak256("ethUSDPrice")); 
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256("ethUSDPrice"));
   }
 
   function mybUSDPrice()
-  public 
-  view 
-  returns (uint) { 
-    return database.uintStorage(keccak256("mybUSDPrice")); 
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256("mybUSDPrice"));
   }
 
   function ethUSDPriceExpiration()
-  public 
-  view 
-  returns (uint) { 
-    return database.uintStorage(keccak256("ethUSDPriceExpiration")); 
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256("ethUSDPriceExpiration"));
   }
 
   function mybUSDPriceExpiration()
-  public 
-  view 
-  returns (uint) { 
-    return database.uintStorage(keccak256("mybUSDPriceExpiration")); 
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256("mybUSDPriceExpiration"));
   }
 
   function ethUSDSecondsRemaining()
-  public 
-  view 
-  returns (uint) { 
-    uint expiration = database.uintStorage(keccak256("ethUSDPriceExpiration")); 
+  public
+  view
+  returns (uint) {
+    uint expiration = database.uintStorage(keccak256("ethUSDPriceExpiration"));
     if (now > expiration) return 0;
     return (expiration - now);
   }
 
   function mybUSDSecondsRemaining()
-  public 
-  view 
-  returns (uint) { 
-    uint expiration = database.uintStorage(keccak256("mybUSDPriceExpiration")); 
+  public
+  view
+  returns (uint) {
+    uint expiration = database.uintStorage(keccak256("mybUSDPriceExpiration"));
     if (now > expiration) return 0;
     return (expiration - now);
   }

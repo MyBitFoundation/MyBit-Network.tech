@@ -23,8 +23,12 @@ const OracleHub = artifacts.require('./OracleHub.sol');
 const Owned = artifacts.require("./Owned.sol");
 const Database = artifacts.require("./Database.sol");
 
+<<<<<<< HEAD:SolcCoverage/test/TestOraclize.js
 
 contract('TestOraclize', async (accounts) => {
+=======
+contract('Deploying and storing all contracts + validation', async (accounts) => {
+>>>>>>> f0a19f6418c8b5a1be2cca107ba7fa8805683278:Contracts/Tests/TestOraclize.js
   const ownerAddr1 = web3.eth.accounts[0];
   const ownerAddr2 = web3.eth.accounts[1];
   const ownerAddr3 = web3.eth.accounts[2];
@@ -136,9 +140,14 @@ contract('TestOraclize', async (accounts) => {
     var ethUSDPriceAfter;
     var mybUSDPriceAfter;
 
-    let ethUSDQueryGasCost = parseInt(await oracleHubInstance.ethUSDQuery.estimateGas());
-    await oracleHubInstance.ethUSDQuery();
-    // 0.01$
+    let ethUSDQueryGasCost = parseInt(await oracleHubInstance.ethUSDQuery.estimateGas({value:web3.toWei(0.1,'ether')}));
+
+    let requireEtherModifier = null;
+    try {await oracleHubInstance.ethUSDQuery();}
+    catch (error) {requireEtherModifier = error}
+    assert.notEqual(requireEtherModifier, null, 'modifier requireEtherModifier');
+
+    await oracleHubInstance.ethUSDQuery({value:web3.toWei(0.1,'ether')});
 
     let LogEthUSDQuery = await oracleHubInstance.LogEthUSDQuery({},{fromBlock:0, toBlock:'latest'});
     let LogmybUSDQuery = await oracleHubInstance.LogmybUSDQuery({},{fromBlock:0, toBlock:'latest'});
@@ -172,6 +181,12 @@ contract('TestOraclize', async (accounts) => {
                 assert.equal(jsonData['args']._result, ethAPIPrice, 'ETH API and oraclize results correct');
                 let storedValue = await dbInstance.uintStorage(await hfInstance.stringHash("ethUSDPrice"));
                 assert.equal(storedValue, ethAPIPrice, 'Stored value ETH USD correctly');
+
+                let requireEtherModifier = null;
+                try {await oracleHubInstance.mybUSDQuery();}
+                catch (error) {requireEtherModifier = error}
+                assert.notEqual(requireEtherModifier, null, 'modifier requireEtherModifier');
+
                 await oracleHubInstance.mybUSDQuery({value:web3.toWei(0.1,'ether')}); //random number for now, first query is free, second is not
                 LogCallBackUSDEth.stopWatching();
               }});
@@ -185,8 +200,20 @@ contract('TestOraclize', async (accounts) => {
                 console.log('_tokenPrice: ' + jsonData['args']._tokenPrice);
                 assert.equal(jsonData['args']._tokenPrice, mybAPIPrice, 'MYB API and oraclize results correct');
                 let storedValue = await dbInstance.uintStorage(await hfInstance.stringHash("mybUSDPrice"));
-                assert.equal(storedValue, mybAPIPrice, 'Stored value ETH USD correctly');
+                assert.equal(storedValue, mybAPIPrice, 'Stored value MyB USD correctly');
                 LogCallBackUSDMyB.stopWatching();
               }});
       });
+
+    it('Attempt to mimik oraclize', async () => {
+      let bytes32Value = web3.fromAscii('ethereum', 32);
+
+      let isOraclizeModifier = null;
+      try {await oracleHubInstance.__callback(bytes32Value, 'test');}
+      catch (error) {isOraclizeModifier = error}
+      assert.notEqual(isOraclizeModifier, null, 'modifier isOraclizeModifier');
+    });
+
+
+
 });

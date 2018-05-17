@@ -52,7 +52,7 @@ contract FundingHub {
   // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
   // Invariants: Must be in stage FundingSuccess | MyBitFoundation + AssetEscrow  + BugEscrow addresses are set | Contract is not paused
   // Note: Will fail if addresses + percentages are not set. AmountRaised = WeiRaised + assetOperator ownershipUnits
-  // TODO: Deal with rounding errors
+  // TODO: Installer gets extra 1-2 wei from rounding error
   //------------------------------------------------------------------------------------------------------------------
   function payout(bytes32 _assetID)
   external
@@ -62,9 +62,7 @@ contract FundingHub {
   returns (bool) {
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     uint myBitAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("myBitFoundationPercentage")));
-    uint installerAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("installerPercentage")));
-    uint remainder = amountRaised.sub(myBitAmount.add(installerAmount));
-    assert (remainder < 3);       // TODO: Rounding error shouldn't exceed 2 wei
+    uint installerAmount = amountRaised.sub(myBitAmount);
     database.addressStorage(keccak256("MyBitFoundation")).transfer(myBitAmount);             // Must be normal account
     database.addressStorage(keccak256("InstallerEscrow")).transfer(installerAmount);             // Must be normal account
     database.setUint(keccak256("fundingStage", _assetID), uint(4));

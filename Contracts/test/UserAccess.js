@@ -150,18 +150,38 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
      transferAmount = 100000 * 10**18;  // Transfer 100,000 tokens
      await myBitTokenInstance.transfer(assetCreator, transferAmount,{from:ownerAddr1}); //transfer tokens for escrow
+     await myBitTokenInstance.transfer(account1, transferAmount, {from:ownerAddr1});
 
      let balanceOfOwnerAfterTransfer = await myBitTokenInstance.balanceOf(ownerAddr1);
      let balanceOfAccess1AfterTransfer = await myBitTokenInstance.balanceOf(assetCreator);
-     assert.equal(BigNumber(balanceOfOwnerAfterTransfer).eq(BigNumber(initialSupply).minus(transferAmount)),true, 'Owner has been deducted transfer amount');
+     assert.equal(BigNumber(balanceOfOwnerAfterTransfer).eq(BigNumber(initialSupply).minus(transferAmount * 2)),true, 'Owner has been deducted transfer amount');
      assert.equal(balanceOfAccess1AfterTransfer, transferAmount, 'assetCreator has transfer tokens amount');
    });
 
    it('Approve token burn contract transfer', async () => {
      approvalAmount = transferAmount / 2;
+     assert.equal(BigNumber(await myBitTokenInstance.balanceOf(account1)).gt(approvalAmount), true);
      await myBitTokenInstance.approve(tokenBurnInstance.address, approvalAmount,{from:account1});
      let allowance = await myBitTokenInstance.allowance(account1, tokenBurnInstance.address);
      assert.equal(allowance, approvalAmount, 'Approval granted');
+   });
+
+   it ('Burn tokens to approve user', async () => {
+     let accessLevelDesired = 2;
+     let amountBeingBurned = await apiInstance.accessCostMYB(accessLevelDesired);
+     assert.equal(BigNumber(amountBeingBurned).lt(approvalAmount), true);
+     assert.equal(await apiInstance.userAccess(account1), 0);
+     let userBalanceBefore = await myBitTokenInstance.balanceOf(account1);
+     let totalSupplyBefore = await myBitTokenInstance.totalSupply();
+     // Burn tokens
+     await tokenBurnInstance.burnTokens(accessLevelDesired, {from:account1});
+     // Assert variables stored properly
+     let userBalanceAfter = BigNumber(userBalanceBefore).minus(amountBeingBurned);
+     let totalSupplyAfter = BigNumber(totalSupplyBefore).minus(amountBeingBurned);
+     assert.equal(BigNumber(await myBitTokenInstance.totalSupply()).eq(totalSupplyAfter), true);
+     assert.equal(BigNumber(await myBitTokenInstance.balanceOf(account1)).eq(userBalanceAfter), true);
+     assert.equal(await apiInstance.userAccess(account1), accessLevelDesired);
+
    });
 
    it('Burn token validation', async () => {

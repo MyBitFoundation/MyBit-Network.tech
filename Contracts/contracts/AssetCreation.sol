@@ -3,7 +3,7 @@ import './Database.sol';
 import './SafeMath.sol';
 
 //----------------------------------------------------------------------------------------------------------------------------------------
-// This contract is where users can initite funding periods for new assets. 
+// This contract is where users can initite funding periods for new assets.
 // Stores asset information in Database. Owners can modify funding variables here.
 //----------------------------------------------------------------------------------------------------------------------------------------
 contract AssetCreation {
@@ -24,7 +24,7 @@ contract AssetCreation {
   // @Param: The amount of USD required for asset to achieve successfull funding
   // @Param: The percentage of revenue the operator will require to run the asset
   // @Param: The amount the operator has decided to escrow
-  // @Param: The ID of the installer of this asset
+  // @Param: The ID of the installer of this asset  (ie. Sha3("ATMInstallersAG"))
   // @Param: The type of asset being created. (ie. Sha3("BitcoinATM"))
   //----------------------------------------------------------------------------------------------------------------------------------------
   function newAsset(bytes32 _assetID, uint _amountToBeRaised, uint _operatorPercentage, uint _amountToEscrow, bytes32 _installerID, bytes32 _assetType)
@@ -37,7 +37,7 @@ contract AssetCreation {
   returns (bool){
     require(database.uintStorage(keccak256("userAccess", msg.sender)) >= uint(1));
     require(database.addressStorage(keccak256("assetOperator", _assetID)) == address(0));    // Check that another user didn't already submit escrow for this asset
-    require(_amountToBeRaised >= uint(100));
+    require(_amountToBeRaised >= uint(100));           // Minimum asset price
     require(database.uintStorage(keccak256("fundingStage", _assetID)) == uint(0));    // This ensures the asset isn't currently live or being funded
     require(_operatorPercentage < uint(100) && _operatorPercentage > uint(0));
     if (_amountToEscrow > 0) { require(lockAssetEscrow(_assetID, _amountToEscrow)); }
@@ -142,7 +142,7 @@ contract AssetCreation {
   //------------------------------------------------------------------------------------------------------------------
 
   //------------------------------------------------------------------------------------------------------------------
-  // Makes sure function won't run when contract has been paused 
+  // Makes sure function won't run when contract has been paused
   //------------------------------------------------------------------------------------------------------------------
   modifier whenNotPaused {
     require(!database.boolStorage(keccak256("pause", this)));
@@ -158,7 +158,7 @@ contract AssetCreation {
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Don't accept null value for uint 
+  // Don't accept null value for uint
   //------------------------------------------------------------------------------------------------------------------
   modifier notZero(uint _uint) {
     require(_uint != 0);
@@ -166,7 +166,7 @@ contract AssetCreation {
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Sender must be a registered owner 
+  // Sender must be a registered owner
   //------------------------------------------------------------------------------------------------------------------
   modifier anyOwner {
     require(database.boolStorage(keccak256("owner", msg.sender)));
