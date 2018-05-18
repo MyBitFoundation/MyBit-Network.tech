@@ -52,7 +52,7 @@ contract AssetCreation {
   }
 
   //----------------------------------------------------------------------------------------------------------------------------------------
-  // This fn locks MyBit tokens to the asset for the length of it's lifecycle
+  // This function locks MyBit tokens to the asset for the length of it's lifecycle
   //----------------------------------------------------------------------------------------------------------------------------------------
   function lockAssetEscrow(bytes32 _assetID, uint _amountToEscrow)
   internal

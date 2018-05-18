@@ -42,7 +42,7 @@ contract OperatorEscrow {
   // Operator can withdraw any escrowed tokens that are no longer needed in escrow here
   // To withdraw the asset must have: Not started funding (stage = 0), Failed Funding (stage = 2), Finished lifecycle (stage = 5))
   // TODO: incremental withdraw of tokens. (get assetIncome vs amountRaised)
-  // TODO: event 
+  // TODO: event
   //------------------------------------------------------------------------------------------------------------------
   function unlockEscrow(bytes32 _assetID)
   external
@@ -51,27 +51,27 @@ contract OperatorEscrow {
     uint amountToUnlock = database.uintStorage(keccak256("lockedForAsset", _assetID));
     assert(amountToUnlock > 0);
     uint fundingStage = database.uintStorage(keccak256("fundingStage", _assetID));
-    if (fundingStage == 0 || fundingStage == 2 || fundingStage == 5){    // is asset finished? 
-      releaseEscrow(_assetID, amountToUnlock); 
+    if (fundingStage == 0 || fundingStage == 2 || fundingStage == 5){    // is asset finished?
+      releaseEscrow(amountToUnlock); 
     }
-    else { 
-      uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID)); 
-      uint assetIncome = database.uintStorage(keccak256("assetIncome", _assetID)); 
+    else {
+      uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
+      uint assetIncome = database.uintStorage(keccak256("assetIncome", _assetID));
       uint percentageROI = database.uintStorage(keccak256(assetIncome, _assetID)).mul(100).div(amountRaised);
-      if (percentageROI >= uint(100)) { releaseEscrow(_assetID, amountToUnlock); }
-      if (percentageROI >= uint(75)) { releaseEscrow(_assetID, (uint(75).mul(amountRaised)).div(uint(100))); }
-      if (percentageROI >= uint(50)) { releaseEscrow(_assetID, (uint(50).mul(amountRaised)).div(uint(100))); }
-      if (percentageROI >= uint(25)) { releaseEscrow(_assetID, (uint(25).mul(amountRaised)).div(uint(100))); }
+      if (percentageROI >= uint(100)) { releaseEscrow(amountToUnlock); }
+      if (percentageROI >= uint(75)) { releaseEscrow((uint(75).mul(amountRaised)).div(uint(100))); }
+      if (percentageROI >= uint(50)) { releaseEscrow((uint(50).mul(amountRaised)).div(uint(100))); }
+      if (percentageROI >= uint(25)) { releaseEscrow((uint(25).mul(amountRaised)).div(uint(100))); }
     }
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Releases escrowed tokens. Only called internally. 
+  // Releases escrowed tokens. Only called internally.
   // TODO: add amount already paid to operator
-  // TODO: reduce lockedForAsset 
-  //------------------------------------------------------------------------------------------------------------------  
-  function releaseEscrow(bytes32 _assetID, uint _amount)
-  internal { 
+  // TODO: reduce lockedForAsset
+  //------------------------------------------------------------------------------------------------------------------
+  function releaseEscrow(uint _amount)
+  internal {
     uint totalEscrowedAmount = database.uintStorage(keccak256("operatorAmountEscrowed", msg.sender));
     uint depositedAmount = database.uintStorage(keccak256("operatorAmountDeposited", msg.sender));
     database.setUint(keccak256("operatorAmountEscrowed", msg.sender), totalEscrowedAmount.sub(_amount));
@@ -80,7 +80,7 @@ contract OperatorEscrow {
 
   //------------------------------------------------------------------------------------------------------------------
   // Operator can withdraw tokens here once they have unlocked them from a previous asset escrow
-  // TODO: event 
+  // TODO: event
   //------------------------------------------------------------------------------------------------------------------
   function withdrawToken(uint _amount)
   external
@@ -103,7 +103,7 @@ contract OperatorEscrow {
     revert();
   }
 
- 
+
   //------------------------------------------------------------------------------------------------------------------
   // Get the amount of tokens that are not currently in escrow
   //------------------------------------------------------------------------------------------------------------------
@@ -130,7 +130,7 @@ contract OperatorEscrow {
 
 
   //------------------------------------------------------------------------------------------------------------------
-  //                                              Events 
+  //                                              Events
   //------------------------------------------------------------------------------------------------------------------
 
   event LogEscrowDeposited(address indexed _from, uint _amount, uint _timestamp);
