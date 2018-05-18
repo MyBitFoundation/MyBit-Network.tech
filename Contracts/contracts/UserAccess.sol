@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 import './Database.sol';
 
@@ -13,7 +13,7 @@ contract UserAccess{
   //------------------------------------------------------------------------------------------------------------------
   // Constructor: Inititalize Database 
   //------------------------------------------------------------------------------------------------------------------
-  function UserAccess(address _database) 
+  constructor(address _database) 
   public  { 
     database = Database(_database);
   }
@@ -32,7 +32,7 @@ contract UserAccess{
   returns (bool) { 
     require(_accessLevel < uint(4) && _accessLevel != uint(0));
     database.setUint(keccak256("userAccess", _newUser), _accessLevel);
-    LogUserApproved(_newUser, _accessLevel, block.timestamp); 
+    emit LogUserApproved(_newUser, _accessLevel, block.timestamp); 
     return true;
   }
 
@@ -46,7 +46,7 @@ contract UserAccess{
   external
   returns (bool) { 
     database.deleteUint(keccak256("userAccess", _user));
-    LogUserRemoved(_user, block.timestamp); 
+    emit LogUserRemoved(_user, block.timestamp); 
     return true;
   }
 
@@ -58,6 +58,7 @@ contract UserAccess{
   external
   returns (bool) { 
     database.setBool(keccak256("kycApproved", msg.sender), true);
+    emit LogKYCApproved(msg.sender, _user, block.timestamp);
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -79,9 +80,7 @@ contract UserAccess{
   //------------------------------------------------------------------------------------------------------------------
   //                                        Events 
   //------------------------------------------------------------------------------------------------------------------
-  event LogBackupAddressSet(address _user, address _backupAddress, uint _blockNumber); 
-  event LogAddressChanged(address _oldAddress, address _newAddress, uint _timestamp); 
   event LogUserApproved(address indexed _user, uint indexed _approvalLevel, uint indexed _timestamp); 
   event LogUserRemoved(address indexed _user, uint indexed _timestamp); 
-
+  event LogKYCApproved(address indexed _owner, address indexed _user, uint indexed _timestamp);
 }

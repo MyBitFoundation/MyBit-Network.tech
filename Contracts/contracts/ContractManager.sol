@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 import "./Database.sol";
 
@@ -9,7 +9,7 @@ contract ContractManager{
   Database public database;
 
   // Set the database contract
-  function ContractManager(address _database)
+  constructor(address _database)
   public
   noEmptyAddress(_database) {
     database = Database(_database);
@@ -43,7 +43,7 @@ contract ContractManager{
     database.setBool(keccak256(this, _functionSigner, "addContract", keccak256(_contractAddress)), false);
     database.setAddress(keccak256("contract", _name), _contractAddress);
     database.setBool(keccak256("contract", _contractAddress), true);
-    LogContractAdded(_contractAddress, _name, block.number);
+    emit LogContractAdded(_contractAddress, _name, block.number);
   }
 
   // ------------------------------------------------------------------------------------------------  
@@ -60,7 +60,7 @@ contract ContractManager{
     require(contractExists(contractToDelete));
     database.deleteBool(keccak256("contract", contractToDelete));
     database.deleteAddress(keccak256("contract", _name));
-    LogContractRemoved(contractToDelete, _name, block.number);
+    emit LogContractRemoved(contractToDelete, _name, block.number);
   }
 
   // ------------------------------------------------------------------------------------------------  
@@ -80,8 +80,8 @@ contract ContractManager{
     database.setAddress(keccak256("contract", _name), _newContractAddress);
     database.setBool(keccak256("contract", _newContractAddress), true);
     database.deleteBool(keccak256("contract", oldAddress));
-    LogContractUpdated(oldAddress, _name, block.number);
-    LogNewContractLocation(_newContractAddress, _name, block.number);
+    emit LogContractUpdated(oldAddress, _name, block.number);
+    emit LogNewContractLocation(_newContractAddress, _name, block.number);
   }
 
   // ------------------------------------------------------------------------------------------------  

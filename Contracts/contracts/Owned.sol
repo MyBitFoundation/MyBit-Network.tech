@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 import './Database.sol';
 
 //------------------------------------------------------------------------------------------------------------------
@@ -11,7 +11,7 @@ contract Owned {
   //------------------------------------------------------------------------------------------------------------------
   // Constructor: Initialize database
   //------------------------------------------------------------------------------------------------------------------
-  function Owned(address _database) 
+  constructor(address _database) 
   noZeroAddress(_database)
   public {
     database = Database(_database);
@@ -34,7 +34,7 @@ contract Owned {
     database.setBool(functionHash, false);         // Reset changeOwner() authorization
     database.deleteBool(keccak256("owner", _oldOwner));      // Remove old owners privileges
     database.setBool(keccak256("owner", _newOwner), true);
-    LogOwnerChanged(_oldOwner, _newOwner, block.timestamp);
+    emit LogOwnerChanged(_oldOwner, _newOwner, block.timestamp);
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ contract Owned {
   returns (bool) { 
     require(bytes(_functionName).length != 0); 
     database.setBool(keccak256(_contractAddress, msg.sender, _functionName, _beneficiary), true);    // Sign the function name + parameter
-    LogFunctionAuthorized(msg.sender, _functionName, _beneficiary); 
+    emit LogFunctionAuthorized(msg.sender, _functionName, _beneficiary); 
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ contract Owned {
   noZeroAddress(_contract)
   public {
     database.setBool(keccak256("pause", _contract), true);
-    Pause(_contract, block.timestamp);
+    emit LogPaused(_contract, block.timestamp);
   }
   
   //------------------------------------------------------------------------------------------------------------------
@@ -71,7 +71,7 @@ contract Owned {
   anyOwner  
   public {
     database.setBool(keccak256("pause", _contract), false);
-    Unpause(_contract, block.timestamp);
+    emit LogUnpaused(_contract, block.timestamp);
   }
 
 
@@ -102,8 +102,8 @@ contract Owned {
   //------------------------------------------------------------------------------------------------------------------
   //                                              Events
   //------------------------------------------------------------------------------------------------------------------
-  event Pause(address _contract, uint _timestamp);
-  event Unpause(address _contract, uint _timestamp);
+  event LogPaused(address _contract, uint _timestamp);
+  event LogUnpaused(address _contract, uint _timestamp);
   event LogOwnerChanged(address indexed _previousOwner, address indexed _newOwner, uint indexed _timestamp);
   event LogFunctionAuthorized(address indexed _owner, string _functionName, bytes32 indexed _beneficiary);
 }

@@ -1,11 +1,11 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
-import './SafeMath.sol';
-import './Database.sol';
+import "./SafeMath.sol";
+import "./Database.sol";
 
 //------------------------------------------------------------------------------------------------------------------
 // This contract is where users can fund assets or receive refunds from failed funding periods. Funding stages are represented by uints.
-// Funding stages: 0: funding hasn't started, 1: currently being funded, 2: funding failed,  3: funding success, 4: asset is live 
+// Funding stages: 0: funding hasn't started, 1: currently being funded, 2: funding failed,  3: funding success, 4: asset is live
 //------------------------------------------------------------------------------------------------------------------
 contract FundingHub {
   using SafeMath for *;
@@ -18,7 +18,7 @@ contract FundingHub {
   // Contructor:
   // @Param: The address for the MyBit database
   //------------------------------------------------------------------------------------------------------------------
-  function FundingHub(address _database)
+  constructor(address _database)
   public {
       database = Database(_database);
   }
@@ -44,7 +44,7 @@ contract FundingHub {
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     database.setUint(keccak256("amountRaised", _assetID), amountRaised.add(msg.value));
     database.setUint(keccak256("ownershipUnits", _assetID, msg.sender), ownershipUnits.add(msg.value));
-    LogAssetFunded(msg.sender, msg.value, _assetID);
+    emit LogAssetFunded(msg.sender, msg.value, _assetID);
     return true;
   }
 
@@ -52,6 +52,7 @@ contract FundingHub {
   // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
   // Invariants: Must be in stage FundingSuccess | MyBitFoundation + AssetEscrow  + BugEscrow addresses are set | Contract is not paused
   // Note: Will fail if addresses + percentages are not set. AmountRaised = WeiRaised + assetOperator ownershipUnits
+  // TODO: Installer gets extra 1-2 wei from rounding error
   //------------------------------------------------------------------------------------------------------------------
   function payout(bytes32 _assetID)
   external
@@ -61,12 +62,11 @@ contract FundingHub {
   returns (bool) {
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     uint myBitAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("myBitFoundationPercentage")));
-    uint installerAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("installerPercentage")));
-    assert (myBitAmount.add(installerAmount) == amountRaised);       // TODO: for testing
+    uint installerAmount = amountRaised.sub(myBitAmount);
     database.addressStorage(keccak256("MyBitFoundation")).transfer(myBitAmount);             // Must be normal account
     database.addressStorage(keccak256("InstallerEscrow")).transfer(installerAmount);             // Must be normal account
     database.setUint(keccak256("fundingStage", _assetID), uint(4));
-    LogAssetPayout(_assetID, amountRaised, block.number);
+    emit LogAssetPayout(_assetID, amountRaised, block.number);
     return true;
   }
 
@@ -80,7 +80,7 @@ contract FundingHub {
   atStage(_assetID, uint(1))
   returns (bool) {
     database.setUint(keccak256("fundingStage", _assetID), uint(2));
-    LogAssetFundingFailed(_assetID, database.uintStorage(keccak256("amountRaised", _assetID)), block.timestamp);
+    emit LogAssetFundingFailed(_assetID, database.uintStorage(keccak256("amountRaised", _assetID)), block.timestamp);
     return true;
   }
 
@@ -100,7 +100,7 @@ contract FundingHub {
     uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
     database.setUint(keccak256("amountRaised", _assetID), amountRaised.sub(ownershipUnits));
     msg.sender.transfer(ownershipUnits);
-    LogRefund(msg.sender, ownershipUnits, block.timestamp);
+    emit LogRefund(msg.sender, ownershipUnits, block.timestamp);
     return true;
   }
 
@@ -113,7 +113,7 @@ contract FundingHub {
   public {
     require(_functionInitiator != msg.sender);
     require(database.boolStorage(keccak256(this, _functionInitiator, "destroy", keccak256(_holdingAddress))));
-    LogDestruction(_holdingAddress, this.balance, msg.sender);
+    emit LogDestruction(_holdingAddress, this.balance, msg.sender);
     selfdestruct(_holdingAddress);
   }
 
@@ -139,7 +139,7 @@ contract FundingHub {
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Don't let function caller re-enter function before initial transaction finishes 
+  // Don't let function caller re-enter function before initial transaction finishes
   //------------------------------------------------------------------------------------------------------------------
   modifier nonReentrant() {
     require(!rentrancy_lock);
@@ -168,27 +168,27 @@ contract FundingHub {
   // Transitions funding period to success if enough Ether is raised
   // Must be in funding stage 3 (currently being funded).
   // Deletes funding raising variables if current transaction puts it over the goal.
-  // TODO: Remove fundingLimitModifier when done testing 
+  // TODO: Remove fundingLimitModifier when done testing
   //------------------------------------------------------------------------------------------------------------------
   modifier fundingLimit(bytes32 _assetID) {
     require(now <= database.uintStorage(keccak256("fundingDeadline", _assetID)));
     uint currentEthPrice = database.uintStorage(keccak256("ethUSDPrice"));
-    assert (currentEthPrice > 0); 
+    assert (currentEthPrice > 0);
     _;
     uint value1 = database.uintStorage(keccak256("amountRaised", _assetID)).mul(currentEthPrice);
     uint value2 = database.uintStorage(keccak256("amountToBeRaised", _assetID)).mul(1e18);
     uint value3 = database.uintStorage(keccak256("amountRaised", _assetID));
 
-    fundingLimitModifier(value1, value2, value3);
+    emit fundingLimitModifier(value1, value2, value3);
     if (database.uintStorage(keccak256("amountRaised", _assetID)).mul(currentEthPrice).div(1e18) >= database.uintStorage(keccak256("amountToBeRaised", _assetID))) {
        database.deleteUint(keccak256("amountToBeRaised", _assetID));      // No longer need this variable
-       LogAssetFundingSuccess(_assetID, currentEthPrice, block.timestamp);
+       emit LogAssetFundingSuccess(_assetID, currentEthPrice, block.timestamp);
        database.setUint(keccak256("fundingStage", _assetID), 3);
       }
   }
-  
+
   //------------------------------------------------------------------------------------------------------------------
-  // Check that the Ether/USD prices have been updated 
+  // Check that the Ether/USD prices have been updated
   //------------------------------------------------------------------------------------------------------------------
   modifier priceUpdated {
     require (now < database.uintStorage(keccak256("ethUSDPriceExpiration")));
@@ -204,7 +204,7 @@ contract FundingHub {
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Requires that the funding deadline has passed 
+  // Requires that the funding deadline has passed
   //------------------------------------------------------------------------------------------------------------------
   modifier fundingPeriodOver(bytes32 _assetID) {
     require(now >= database.uintStorage(keccak256("fundingDeadline", _assetID)));
@@ -221,7 +221,7 @@ contract FundingHub {
 
 
   //------------------------------------------------------------------------------------------------------------------
-  //                                            Events 
+  //                                            Events
   //------------------------------------------------------------------------------------------------------------------
 
   event LogNewFunder(address indexed _funder, bytes32 indexed _assetID, uint indexed _timestamp);
