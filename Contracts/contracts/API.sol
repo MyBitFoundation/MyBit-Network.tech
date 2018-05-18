@@ -4,6 +4,7 @@ import './Database.sol';
 //-----------------------------------------------------------------------------------------------------------------------
 // Standard getters for common variables stored in Database.
 // Database variables are stored as sha3 hashes of variable name + id's.
+// TODO: Add function to get how much more Eth asset needs (USD needed -> ETH price)
 //-----------------------------------------------------------------------------------------------------------------------
 contract API {
 
@@ -143,6 +144,14 @@ contract API {
     return database.uintStorage(keccak256("assetIncome", _assetID));
   }
 
+  // Deprecated after Intimate Alpha (0.2): Moving to 'assetIncome' for Open-Alpha (0.3)
+  function totalReceived(bytes32 _assetID)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256("totalReceived", _assetID));
+  }
+
   // Amount of income paid to funders
   function totalPaidToFunders(bytes32 _assetID)
   public
@@ -159,14 +168,23 @@ contract API {
     return database.uintStorage(keccak256("totalPaidToFunder", _assetID, _funder));
   }
 
-  // Returns the amount of WEI owed to asset owner  AmountOwed = (userIncome - userIncomeAlreadyPaid)
+  // Depracated after Intimate Alpha (0.2): totalReceived == assetIncome for Open-Alpha (0.3)
+  function getAmountOwed(bytes32 _assetID, address _user)
+  public
+  view
+  returns (uint){
+    if (ownershipUnits(_assetID, _user) == 0) { return 0; }
+    return ((totalReceived(_assetID) * ownershipUnits(_assetID, _user)) / amountRaised(_assetID)) - totalPaidToFunder(_assetID, _user);
+  }
+
+  /* // Returns the amount of WEI owed to asset owner  AmountOwed = (userIncome - userIncomeAlreadyPaid)
   function getAmountOwed(bytes32 _assetID, address _user)
   public
   view
   returns (uint){
     if (ownershipUnits(_assetID, _user) == 0) { return 0; }
     return ((assetIncome(_assetID) * ownershipUnits(_assetID, _user)) / amountRaised(_assetID)) - totalPaidToFunder(_assetID, _user);
-  }
+  } */
 
   //-----------------------------------------------------------------------------------------------------------------------
   //                                             Funding Information
