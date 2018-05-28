@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity 0.4.23;
 
 import './Database.sol';
 import './SafeMath.sol';
@@ -10,7 +10,7 @@ Database public database;
 
 
 // Invariantes: Must always have an operator in place
-function FunderControls(address _database)
+constructor(address _database)
 public { 
   database = Database(_database); 
 }

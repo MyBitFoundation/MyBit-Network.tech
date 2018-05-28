@@ -1,13 +1,6 @@
-pragma solidity ^0.4.19;
+pragma solidity 0.4.23;
 
 contract HashFunctions { 
-
-
-  function HashFunctions()
-  public
-  {
-
-  }
 
   function getOrderID(bytes _assetID, address _user, uint _amount, uint _price, bool _buyOrder)
   external
@@ -100,6 +93,13 @@ contract HashFunctions {
   pure 
   returns (bytes32) { 
     return keccak256(_contractAddress, _owner, _fnName, _recipient); 
+  }
+
+  function uintUint(uint _paramOne, uint _paramTwo)
+  external
+  pure 
+  returns (bytes32) { 
+    return keccak256(_paramOne, _paramTwo); 
   }
 
   function uintUintUint(uint _paramOne, uint _paramTwo, uint _paramThree)

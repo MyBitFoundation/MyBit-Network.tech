@@ -1,23 +1,32 @@
-pragma solidity ^0.4.19;
-import './MyBitToken.sol';
+pragma solidity 0.4.23;
+import './ERC20.sol';
 import './Database.sol';
 import './SafeMath.sol';
 
+//------------------------------------------------------------------------------------------------------------------
 // This contract transfers MyBit tokens and holds them forever with no mechanism to transfer them out again.
-// TODO: upgradeable myBitToken
+//------------------------------------------------------------------------------------------------------------------
 contract TokenBurn {
   using SafeMath for *;
 
 
-  MyBitToken public myBitToken;
+  ERC20 public myBitToken;
   Database public database;
 
-  function TokenBurn(address _database, address _myBitToken)
+  //------------------------------------------------------------------------------------------------------------------
+  // Constructor: Initialize Database and MyBitToken
+  //------------------------------------------------------------------------------------------------------------------
+  constructor(address _database, address _myBitToken)
   public {
-    myBitToken = MyBitToken(_myBitToken);
+    myBitToken = ERC20(_myBitToken);
     database = Database(_database);
   }
 
+  //------------------------------------------------------------------------------------------------------------------
+  // Users can gain access to the platform by burning tokens here
+  // Every access level has an associated price in USD. The equivalent value of MyBit must be burnt to gain acccess.
+  // TODO: keep numbers of tokens burnt in storage or events?
+  //------------------------------------------------------------------------------------------------------------------
   function burnTokens(uint _accessLevelDesired)
   external
   whenNotPaused
@@ -25,33 +34,48 @@ contract TokenBurn {
   basicVerification(_accessLevelDesired)
   returns (bool) {
     uint mybPrice = database.uintStorage(keccak256("mybUSDPrice"));
-    uint accessCostMyB = database.uintStorage(keccak256("accessTokenFee", _accessLevelDesired)).mul(10^11).div(mybPrice);
+    uint accessCostMyB = (database.uintStorage(keccak256("accessTokenFee", _accessLevelDesired)).mul(10**21)).div(mybPrice);
     assert (accessCostMyB > uint(0));
-    require(myBitToken.transferFrom(msg.sender, this, accessCostMyB));
+    require(myBitToken.burnFrom(msg.sender, accessCostMyB));
     database.setUint(keccak256("userAccess", msg.sender), _accessLevelDesired);
-    uint numTokensBurnt = database.uintStorage(keccak256("numberOfTokensBurnt"));
-    database.setUint(keccak256("numberOfTokensBurnt"), numTokensBurnt.add(accessCostMyB));
-    LogMyBitBurnt(msg.sender, accessCostMyB, block.timestamp);
+    emit LogMyBitBurnt(msg.sender, accessCostMyB, block.timestamp);
     return true;
   }
 
-  modifier basicVerification(uint _newAccessLevel) { 
+
+  //------------------------------------------------------------------------------------------------------------------
+  //                                              Modifiers
+  //------------------------------------------------------------------------------------------------------------------
+
+  //------------------------------------------------------------------------------------------------------------------
+  // Verifies that desired access level is allowed. No user can downgrade access by burning tokens
+  //------------------------------------------------------------------------------------------------------------------
+  modifier basicVerification(uint _newAccessLevel) {
   uint currentLevel = database.uintStorage(keccak256("userAccess", msg.sender));
   require(currentLevel < _newAccessLevel);       // Dont allow burning to downgrade access level
-  require (_newAccessLevel < 4 && _newAccessLevel > uint(0));      // Must be 1, 2 or 3
-  _; 
+  require (_newAccessLevel < uint(4) && _newAccessLevel > uint(0));      // Must be 1, 2 or 3
+  _;
 }
 
+  //------------------------------------------------------------------------------------------------------------------
+  // Verifies contracts has not been paused
+  //------------------------------------------------------------------------------------------------------------------
   modifier whenNotPaused {
     require(!database.boolStorage(keccak256("pause", this)));
     _;
   }
 
-  modifier priceUpdated { 
+  //------------------------------------------------------------------------------------------------------------------
+  // Verifies that the MyBit/USD price is still valid
+  //------------------------------------------------------------------------------------------------------------------
+  modifier priceUpdated {
     require (now < database.uintStorage(keccak256("mybUSDPriceExpiration")));
     _;
   }
 
+  //------------------------------------------------------------------------------------------------------------------
+  //                                           Events
+  //------------------------------------------------------------------------------------------------------------------
   event LogMyBitBurnt(address _burner, uint _amount, uint _timestamp);
 
 

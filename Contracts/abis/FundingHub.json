@@ -160,11 +160,6 @@
       },
       {
         "indexed": true,
-        "name": "_assetID",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
         "name": "_timestamp",
         "type": "uint256"
       }
@@ -201,6 +196,11 @@
         "indexed": true,
         "name": "_assetID",
         "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "_currentEthPrice",
+        "type": "uint256"
       },
       {
         "indexed": true,
@@ -259,23 +259,6 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "name": "_newEscrowLocation",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "_timestamp",
-        "type": "uint256"
-      }
-    ],
-    "name": "LogAssetEscrowChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": true,
         "name": "_locationSent",
         "type": "address"
@@ -292,6 +275,28 @@
       }
     ],
     "name": "LogDestruction",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "_value1",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "_value2",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "_value3",
+        "type": "uint256"
+      }
+    ],
+    "name": "fundingLimitModifier",
     "type": "event"
   }
 ]

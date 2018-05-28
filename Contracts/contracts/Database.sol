@@ -1,10 +1,16 @@
-pragma solidity ^0.4.19;
+pragma solidity 0.4.23;
 
-// This contract is where all long-term data is stored within the MyBit smart-contract system. 
+
+// ---------------------------------------------------------------------------------
+// This contract holds all long-term data for the MyBit smart-contract systems 
+// All values are stored in mappings using a bytes32 keys. 
+// The bytes32 is derived from keccak256(variableName, uniqueID) => value
+// ---------------------------------------------------------------------------------
 contract Database { 
 
-// ---------------Storage Variables----------------
-
+    // --------------------------------------------------------------------------------------
+    // Storage Variables 
+    // --------------------------------------------------------------------------------------
     mapping(bytes32 => uint) public uintStorage;
     mapping(bytes32 => string) public stringStorage;
     mapping(bytes32 => address) public addressStorage;
@@ -14,27 +20,37 @@ contract Database {
     mapping(bytes32 => int) public intStorage;
 
 
-  // This is the first contract to get deployed. Will store all data + references to other contracts
-  function Database(address _ownerOne, address _ownerTwo, address _ownerThree) 
-  public { 
-    boolStorage[keccak256("owner", _ownerOne)] = true;
-    boolStorage[keccak256("owner", _ownerTwo)] = true;
-    boolStorage[keccak256("owner", _ownerThree)] = true;
-    LogInitialized(_ownerOne, _ownerTwo, _ownerThree); 
-  }
+    
+    // --------------------------------------------------------------------------------------
+    // Constructor: Sets the owners of the platform 
+    // Owners must set the contract manager to add more contracts
+    // --------------------------------------------------------------------------------------
+    constructor(address _ownerOne, address _ownerTwo, address _ownerThree) 
+    public { 
+        boolStorage[keccak256("owner", _ownerOne)] = true;
+        boolStorage[keccak256("owner", _ownerTwo)] = true;
+        boolStorage[keccak256("owner", _ownerThree)] = true;
+        emit LogInitialized(_ownerOne, _ownerTwo, _ownerThree); 
+    }
 
-  // ContractManager will be the only contract that can add/remove contracts on the platform. 
-  // Invariants: ContractManager address must not be null,   ContractManager must not be set, Only owner can call this function.
-  function setContractManager(address _contractManager)
-  external { 
-    require(_contractManager != address(0));
-    require(boolStorage[keccak256("owner", msg.sender)]);
-    require(addressStorage[keccak256("contract", "ContractManager")] == address(0)); 
-    addressStorage[keccak256("contract", "ContractManager")] = _contractManager;
-    boolStorage[keccak256("contract", _contractManager)] = true; 
-  }
+    
+    // --------------------------------------------------------------------------------------
+    // ContractManager will be the only contract that can add/remove contracts on the platform. 
+    // Invariants: ContractManager address must not be null. 
+    // ContractManager must not be set, Only owner can call this function.
+    // --------------------------------------------------------------------------------------    
+    function setContractManager(address _contractManager)
+    external { 
+        require(_contractManager != address(0));
+        require(boolStorage[keccak256("owner", msg.sender)]);
+        require(addressStorage[keccak256("contract", "ContractManager")] == address(0)); 
+        addressStorage[keccak256("contract", "ContractManager")] = _contractManager;
+        boolStorage[keccak256("contract", _contractManager)] = true; 
+    }
 
-    // --------------------Set Functions------------------------
+    // --------------------------------------------------------------------------------------
+    //  Storage functions
+    // --------------------------------------------------------------------------------------
 
     function setAddress(bytes32 _key, address _value) 
     onlyMyBitContract 
@@ -71,7 +87,7 @@ contract Database {
     external {
         boolStorage[_key] = _value;
     }
-    
+
     function setInt(bytes32 _key, int _value) 
     onlyMyBitContract 
     external {
@@ -79,8 +95,10 @@ contract Database {
     }
 
 
-     // -------------- Deletion Functions ------------------
-    
+    // --------------------------------------------------------------------------------------
+    // Deletion functions 
+    // --------------------------------------------------------------------------------------
+
     function deleteAddress(bytes32 _key) 
     onlyMyBitContract 
     external {
@@ -116,7 +134,7 @@ contract Database {
     external {
         delete boolStorage[_key];
     }
-    
+
     function deleteInt(bytes32 _key) 
     onlyMyBitContract 
     external {
@@ -124,13 +142,18 @@ contract Database {
     }
 
 
-    // Caller must be registered as a contract within the MyBit Dapp
+    
+    // --------------------------------------------------------------------------------------
+    // Caller must be registered as a contract within the MyBit Dapp through ContractManager.sol
+    // --------------------------------------------------------------------------------------    
     modifier onlyMyBitContract() {
         require(boolStorage[keccak256("contract", msg.sender)]);
         _;
-
     }
 
+    // --------------------------------------------------------------------------------------
+    // Events
+    // --------------------------------------------------------------------------------------  
     event LogInitialized(address indexed _ownerOne, address indexed _ownerTwo, address indexed _ownerThree); 
 
 }
