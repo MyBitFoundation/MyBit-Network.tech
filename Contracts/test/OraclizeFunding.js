@@ -5,7 +5,6 @@ const AssetCreation = artifacts.require('./AssetCreation.sol');
 const API = artifacts.require('./API.sol');
 const ContractManager = artifacts.require("./ContractManager.sol");
 const Database = artifacts.require("./Database.sol");
-const FunderControls = artifacts.require('./FunderControls.sol');
 const FundingHub = artifacts.require("./FundingHub.sol");
 const HashFunctions = artifacts.require("./HashFunctions.sol");
 const InitialVariables = artifacts.require("./InitialVariables.sol");
@@ -32,7 +31,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let assetCreationInstance;
   let contractManagerInstance;
   let dbInstance;
-  let funderControlsInstance;
   let fundingHubInstance;
   let hfInstance;
   let apiInstance;
@@ -185,14 +183,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(assetInstance.address))), false, 'Contract manager(Asset) to database === false');
      assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'Asset')), assetInstance.address, 'Asset address correctly stored');
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', assetInstance.address)), true, 'Asset address == true');
-   });
-
-   it('funderControlsInstance contract deployment ', async () => {
-     funderControlsInstance = await FunderControls.new(dbInstance.address);
-     await contractManagerInstance.addContract('FunderControls', funderControlsInstance.address, ownerAddr2);
-     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(funderControlsInstance.address))), false, 'Contract manager(ContratManager) to database === false');
-     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'FunderControls')), funderControlsInstance.address, 'FunderControls address correctly stored');
-     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', funderControlsInstance.address)), true, 'FunderControls address == true');
    });
 
    it('operatorEscrowInstance contract deployment ', async () => {
@@ -517,7 +507,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
           let balanceOfFunder = web3.eth.getBalance(access1Account);
 
           var withdrawalGasEstimate = parseInt(await assetInstance.withdraw.estimateGas(assetID, false, {from:access2Account})).toFixed(7) / 10000000;
-          await assetInstance.withdraw(assetID, false, {from:access1Account});
+          await assetInstance.withdraw(assetID, {from:access1Account});
 
           let totalPaidToFunderAfter = await dbInstance.uintStorage(await hfInstance.stringBytesAddress("totalPaidToFunder", assetID, access1Account));
           let totalPaidToFundersAfter = await dbInstance.uintStorage(await hfInstance.stringBytes("totalPaidToFunders", assetID));

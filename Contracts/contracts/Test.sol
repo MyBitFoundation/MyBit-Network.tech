@@ -4,7 +4,6 @@ import './Database.sol';
 import './Asset.sol';
 import './AssetCreation.sol';
 import './ContractManager.sol';
-import './FunderControls.sol';
 import './FundingHub.sol';
 import './InitialVariables.sol';
 import './AssetExchange.sol';
@@ -15,7 +14,6 @@ import './Owned.sol';
 import './TokenBurn.sol';
 import './TokenFaucet.sol';
 import './UserAccess.sol';
-import './WithdrawalManager.sol';
 
 contract  Test {
 
@@ -62,7 +60,7 @@ contract  Test {
   public
   view
   returns (uint) {
-    return this.balance;
+    return address(this).balance;
   }
 
   function getAddress(string _name)

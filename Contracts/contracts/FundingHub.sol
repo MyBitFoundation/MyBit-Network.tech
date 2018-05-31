@@ -113,7 +113,7 @@ contract FundingHub {
   public {
     require(_functionInitiator != msg.sender);
     require(database.boolStorage(keccak256(this, _functionInitiator, "destroy", keccak256(_holdingAddress))));
-    emit LogDestruction(_holdingAddress, this.balance, msg.sender);
+    emit LogDestruction(_holdingAddress, address(this).balance, msg.sender);
     selfdestruct(_holdingAddress);
   }
 

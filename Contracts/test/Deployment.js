@@ -4,7 +4,6 @@ const Asset = artifacts.require('./Asset.sol');
 const AssetCreation = artifacts.require('./AssetCreation.sol');
 const ContractManager = artifacts.require("./ContractManager.sol");
 const Database = artifacts.require("./Database.sol");
-const FunderControls = artifacts.require('./FunderControls.sol');
 const FundingHub = artifacts.require("./FundingHub.sol");
 const HashFunctions = artifacts.require("./HashFunctions.sol");
 const InitialVariables = artifacts.require("./InitialVariables.sol");
@@ -27,7 +26,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let assetCreationInstance;
   let contractManagerInstance;
   let dbInstance;
-  let funderControlsInstance;
   let fundingHubInstance;
   let hfInstance;
   let initialVariableInstance;
@@ -161,14 +159,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', assetInstance.address)), true, 'Asset address == true');
    });
 
-
-   it('funderControlsInstance contract deployment ', async () => {
-     funderControlsInstance = await FunderControls.new(dbInstance.address);
-     await contractManagerInstance.addContract('FunderControls', funderControlsInstance.address, ownerAddr2);
-     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(funderControlsInstance.address))), false, 'Contract manager(ContratManager) to database === false');
-     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'FunderControls')), funderControlsInstance.address, 'FunderControls address correctly stored');
-     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', funderControlsInstance.address)), true, 'FunderControls address == true');
-   });
 
    it('operatorEscrowInstance contract deployment ', async () => {
      operatorEscrowInstance = await OperatorEscrow.new(dbInstance.address, myBitTokenInstance.address);

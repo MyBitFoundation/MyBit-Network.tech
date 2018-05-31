@@ -22,7 +22,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   const ownerAddr3 = web3.eth.accounts[2];
 
   const assetCreator = web3.eth.accounts[3];
-  const secondAssetCreator = web3.eth.accounts[4]; 
+  const secondAssetCreator = web3.eth.accounts[4];
 
   const funder1 = web3.eth.accounts[5];
   const funder2 = web3.eth.accounts[6];
@@ -284,7 +284,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
      let amountOwed = await assetInstance.getAmountOwed(assetID, funder1);
      assert.equal(amountOwed, payment, 'amount owed correct');
-     await assetInstance.withdraw(assetID, false, {from:funder1});
+     await assetInstance.withdraw(assetID, {from:funder1});
 
      let totalPaidToFundersAfter = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('totalPaidToFunders', assetID)));
      let totalPaidToFunderAfter = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('totalPaidToFunder', assetID, funder1)));
@@ -300,7 +300,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      await assetCreationInstance.removeAsset(assetID, ownerAddr1,{from:ownerAddr3});
    });
 
-   it('Create Asset With No Escrow', async () => { 
+   it('Create Asset With No Escrow', async () => {
      let secondAssetCreator = web3.eth.accounts[6];
      let operatorShare = 5;
      assetType = await hfInstance.stringHash('EthereumATM');

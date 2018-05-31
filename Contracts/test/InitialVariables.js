@@ -12,7 +12,6 @@ const MyBitToken = artifacts.require('./ERC20.sol');
 const AssetCreation = artifacts.require('./AssetCreation.sol');
 const Asset = artifacts.require('./Asset.sol');
 const FundingHub = artifacts.require('./FundingHub.sol');
-const WithdrawalManager = artifacts.require('./WithdrawalManager.sol');
 const API = artifacts.require('./API.sol');
 
 contract('Deploying and storing all contracts + validation', async (accounts) => {
@@ -34,7 +33,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
   let contractManagerInstance;
   let hfInstance;
-  let apiInstance; 
+  let apiInstance;
   let initialVariableInstance;
   let oracleHubInstance;
   let ownedInstance;
@@ -46,7 +45,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let assetInstance;
   let fundingHubInstance;
   let stakingBankInstance;
-  let withdrawalManagerInstance;
 
   var initialSupply;
   var transferAmount;

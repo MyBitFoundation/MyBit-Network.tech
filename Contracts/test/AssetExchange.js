@@ -285,24 +285,24 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    });
 
    it('Withdraw income', async () => {
-     let userownershipUnits = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1)));
-     let amountRaised = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('amountRaised', assetID)));
-     let totalPaidToFunder = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('totalPaidToFunder', assetID, funder1)));
+     let userownershipUnits = await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1));
+     let amountRaised = await dbInstance.uintStorage(await hfInstance.stringBytes('amountRaised', assetID));
+     let totalPaidToFunder = await dbInstance.uintStorage(await hfInstance.stringBytesAddress('totalPaidToFunder', assetID, funder1));
      let payment = ((assetIncome * userownershipUnits) / amountRaised) - totalPaidToFunder
 
 
-     let withdrawGasEstimate = parseInt(await assetInstance.withdraw.estimateGas(assetID, false, {from:funder1})).toFixed(7) / 10000000;
-     let balanceOfUserBeforeWithdrawal = parseInt(web3.eth.getBalance(funder1));
+     let withdrawGasEstimate = await assetInstance.withdraw.estimateGas(assetID, {from:funder1}).toFixed(7) / 10000000;
+     let balanceOfUserBeforeWithdrawal = web3.eth.getBalance(funder1);
 
      let amountOwed = await assetInstance.getAmountOwed(assetID, funder1);
      assert.equal(amountOwed, payment, 'amount owed correct');
-     await assetInstance.withdraw(assetID, false, {from:funder1});
-     await assetInstance.withdraw(assetID, false, {from:funder2});
+     await assetInstance.withdraw(assetID, {from:funder1});
+     await assetInstance.withdraw(assetID, {from:funder2});
 
-     let totalPaidToFundersAfter = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('totalPaidToFunders', assetID)));
-     let totalPaidToFunderAfter = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('totalPaidToFunder', assetID, funder1)));
-     let balanceOfUserAfterWithdrawal = parseInt(web3.eth.getBalance(funder1));
-     let shouldBeBalanceAfter = Number(balanceOfUserBeforeWithdrawal) - Number(parseInt(web3.toWei(withdrawGasEstimate,'ether')));
+     let totalPaidToFundersAfter = await dbInstance.uintStorage(await hfInstance.stringBytes('totalPaidToFunders', assetID));
+     let totalPaidToFunderAfter = await dbInstance.uintStorage(await hfInstance.stringBytesAddress('totalPaidToFunder', assetID, funder1));
+     let balanceOfUserAfterWithdrawal = web3.eth.getBalance(funder1);
+     let shouldBeBalanceAfter = balanceOfUserBeforeWithdrawal - web3.toWei(withdrawGasEstimate,'ether');
 
      assert.equal(totalPaidToFunderAfter, payment, 'payment added to total funder paid');
      assert.equal(totalPaidToFundersAfter, payment*2, 'payment added to total funders paid ');
@@ -312,7 +312,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
       assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', funder1)), 3, 'Access 3 granted for exchanges');
       assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', funder2)), 3, 'Access 3 granted for exchanges');
 
-      let user1ownershipUnits = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1)));
+      let user1ownershipUnits = await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1));
       await assetExchangeInstance.createSellOrder(assetID, user1ownershipUnits, 1, {from:funder1});
       let orderID = await hfInstance.getOrderID(assetID, funder1, user1ownershipUnits, 1, false);
       assert.equal(await assetExchangeInstance.orders(funder1, orderID), true, 'Order Created');
@@ -327,8 +327,8 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
     });
 
     it('Create sellorder again to purchase, CREATESELLORDER', async () => {
-      let user1ownershipUnits = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1)));
-      user1ownershipUnitsInitially = parseInt(user1ownershipUnits);
+      let user1ownershipUnits = await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1));
+      user1ownershipUnitsInitially = user1ownershipUnits;
       await assetExchangeInstance.createSellOrder(assetID, user1ownershipUnits, 1, {from:funder1});
       let orderID = await hfInstance.getOrderID(assetID, funder1, user1ownershipUnits, 1, false);
       assert.equal(await assetExchangeInstance.orders(funder1, orderID), true, 'Order Created');
@@ -336,21 +336,21 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
     });
 
     it('Buy Asset - from sell order, BUYASSET', async () =>{
-      let user1ownershipUnits = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1)));
-      let user2ownershipUnits = parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder2)));
+      let user1ownershipUnits = await apiInstance.ownershipUnits(assetID, funder1);
+      let user2ownershipUnits = await apiInstance.ownershipUnits(assetID, funder2);
 
-      let userBalanceBeforeBuy = parseInt(web3.eth.getBalance(funder2));
-      var estimateGasBuyAsset = parseInt(await assetExchangeInstance.buyAsset.estimateGas(assetID, funder1, user1ownershipUnits, 1,{from:funder2,value:user1ownershipUnits})).toFixed(7) / 10000000;
+      let userBalanceBeforeBuy = web3.eth.getBalance(funder2);
+      var estimateGasBuyAsset = await assetExchangeInstance.buyAsset.estimateGas(assetID, funder1, user1ownershipUnits, 1,{from:funder2,value:user1ownershipUnits}).toFixed(7) / 10000000;
       let orderID = await hfInstance.getOrderID(assetID, funder1, user1ownershipUnits, 1, false);
 
       await assetExchangeInstance.buyAsset(assetID, funder1, user1ownershipUnits, 1,{from:funder2,value:user1ownershipUnits});
 
-      assert.equal(parseInt(await assetExchangeInstance.weiOwed(funder1)), user1ownershipUnits, 'Seller can withdraw their owed amount');
-      assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1))), 0, 'ownershipUnits correctly reduced to 0');
-      assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder2))), Number(user1ownershipUnits) + Number(user2ownershipUnits), 'ownershipUnits correctly added funder2');
+      assert.equal(await assetExchangeInstance.weiOwed(funder1), user1ownershipUnits, 'Seller can withdraw their owed amount');
+      assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder1)), 0, 'ownershipUnits correctly reduced to 0');
+      assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits', assetID, funder2)), user1ownershipUnits + user2ownershipUnits, 'ownershipUnits correctly added funder2');
       assert.equal(await assetExchangeInstance.orders(funder1, orderID), false,'Sell order deleted');
 
-     let userBalanceAfterBuy = parseInt(web3.eth.getBalance(funder2));
+     let userBalanceAfterBuy = web3.eth.getBalance(funder2);
     // assert.equal(userBalanceAfterBuy, (Number(userBalanceBeforeBuy) - Number(user1ownershipUnits)) - Number(web3.toWei(estimateGasBuyAsset,'ether')), 'User correctly paid for asset');
     // TODO; Check balance afterwards
     });

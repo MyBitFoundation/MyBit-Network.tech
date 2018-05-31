@@ -99,7 +99,7 @@ contract API {
 
   function getFunctionAuthorized(address _contractAddress, address _signer, string _functionName, bytes32 _agreedParameter)
   public
-  view
+  pure
   returns (bytes32) {
     return keccak256(_contractAddress, _signer, _functionName, _agreedParameter);
   }
@@ -144,7 +144,7 @@ contract API {
     return database.uintStorage(keccak256("assetIncome", _assetID));
   }
 
-  // Deprecated after Intimate Alpha (0.2): Moving to 'assetIncome' for Open-Alpha (0.3)
+  // Deprecated after Intimate Alpha (0.1): Moving to 'assetIncome' for Open-Alpha (0.2)
   function totalReceived(bytes32 _assetID)
   public
   view
@@ -168,7 +168,7 @@ contract API {
     return database.uintStorage(keccak256("totalPaidToFunder", _assetID, _funder));
   }
 
-  // Depracated after Intimate Alpha (0.2): totalReceived == assetIncome for Open-Alpha (0.3)
+  // Depracated after Intimate Alpha (0.1): totalReceived == assetIncome for Open-Alpha (0.2)
   function getAmountOwed(bytes32 _assetID, address _user)
   public
   view

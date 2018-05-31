@@ -45,7 +45,7 @@ contract AssetCreation {
     database.setUint(keccak256("operatorPercentage", _assetID), _operatorPercentage);
     database.setAddress(keccak256("assetOperator", _assetID), msg.sender);
     database.setUint(keccak256("fundingDeadline", _assetID), block.timestamp.add(fundingTime));
-    database.setUint(keccak256("fundingStage", _assetID), 1);
+    database.setUint(keccak256("fundingStage", _assetID), uint(1));
     emit LogAssetInfo(_assetID, _installerID, _amountToBeRaised);
     emit LogAssetFundingStarted(msg.sender, _assetID, _assetType);
     return true;
@@ -111,7 +111,7 @@ contract AssetCreation {
   returns (bool) {
     bytes32 functionHash = keccak256(this, _functionSigner, "changeFundingPercentages", keccak256(_myBitFoundationPercentage, _installerPercentage));
     require(database.boolStorage(functionHash));
-    require(_myBitFoundationPercentage.add(_installerPercentage) == 100);
+    require(_myBitFoundationPercentage.add(_installerPercentage) == uint(100));
     database.setBool(functionHash, false);
     database.setUint(keccak256("myBitFoundationPercentage"), _myBitFoundationPercentage);
     database.setUint(keccak256("installerPercentage"), _installerPercentage);

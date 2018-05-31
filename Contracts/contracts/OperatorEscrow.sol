@@ -8,6 +8,7 @@ import './SafeMath.sol';
 // This contract is where operators can deposit MyBit tokens to be eligable to create an asset on the platform.
 // The escrowed tokens are available to withdraw if the Asset Fails funding or the operator is replaced or the Asset finishes it's lifecycle
 // TODO: Variable names escrowed vs deposited (make clearer)
+// TODO: Make function to switch assetManager 
 //------------------------------------------------------------------------------------------------------------------
 contract OperatorEscrow {
   using SafeMath for *;
@@ -38,11 +39,21 @@ contract OperatorEscrow {
     return true;
   }
 
+  function approveOperatorLending()
+  external
+  returns (bool) {
+
+  }
+
+  function requestOperatorLending()
+  external returns (bool) {
+
+  }
+
   //------------------------------------------------------------------------------------------------------------------
   // Operator can withdraw any escrowed tokens that are no longer needed in escrow here
   // To withdraw the asset must have: Not started funding (stage = 0), Failed Funding (stage = 2), Finished lifecycle (stage = 5))
-  // TODO: incremental withdraw of tokens. (get assetIncome vs amountRaised)
-  // TODO: event
+  // TODO: let staker withdraw tokens for assetmanager in the case that assetmanager didn't put up escrow
   //------------------------------------------------------------------------------------------------------------------
   function unlockEscrow(bytes32 _assetID)
   external
@@ -52,16 +63,16 @@ contract OperatorEscrow {
     assert(amountToUnlock > 0);
     uint fundingStage = database.uintStorage(keccak256("fundingStage", _assetID));
     if (fundingStage == 0 || fundingStage == 2 || fundingStage == 5){    // is asset finished?
-      releaseEscrow(amountToUnlock); 
+      releaseEscrow(amountToUnlock, _assetID);
     }
     else {
       uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
       uint assetIncome = database.uintStorage(keccak256("assetIncome", _assetID));
       uint percentageROI = database.uintStorage(keccak256(assetIncome, _assetID)).mul(100).div(amountRaised);
-      if (percentageROI >= uint(100)) { releaseEscrow(amountToUnlock); }
-      if (percentageROI >= uint(75)) { releaseEscrow((uint(75).mul(amountRaised)).div(uint(100))); }
-      if (percentageROI >= uint(50)) { releaseEscrow((uint(50).mul(amountRaised)).div(uint(100))); }
-      if (percentageROI >= uint(25)) { releaseEscrow((uint(25).mul(amountRaised)).div(uint(100))); }
+      if (percentageROI >= uint(100)) { releaseEscrow(amountToUnlock, _assetID); }
+      if (percentageROI >= uint(75)) { releaseEscrow((uint(75).mul(amountRaised)).div(uint(100)), _assetID); }
+      if (percentageROI >= uint(50)) { releaseEscrow((uint(50).mul(amountRaised)).div(uint(100)), _assetID); }
+      if (percentageROI >= uint(25)) { releaseEscrow((uint(25).mul(amountRaised)).div(uint(100)), _assetID); }
     }
   }
 
@@ -70,10 +81,12 @@ contract OperatorEscrow {
   // TODO: add amount already paid to operator
   // TODO: reduce lockedForAsset
   //------------------------------------------------------------------------------------------------------------------
-  function releaseEscrow(uint _amount)
+  function releaseEscrow(uint _amount, bytes32 _assetID)
   internal {
+    uint amountLockedForAsset = database.uintStorage(keccak256("lockedForAsset", _assetID));
     uint totalEscrowedAmount = database.uintStorage(keccak256("operatorAmountEscrowed", msg.sender));
     uint depositedAmount = database.uintStorage(keccak256("operatorAmountDeposited", msg.sender));
+    database.setUint(keccak256("lockedForAsset", _assetID), amountLockedForAsset.sub(_amount));
     database.setUint(keccak256("operatorAmountEscrowed", msg.sender), totalEscrowedAmount.sub(_amount));
     database.setUint(keccak256("operatorAmountDeposited", msg.sender), depositedAmount.add(totalEscrowedAmount.sub(_amount)));
   }
