@@ -8,7 +8,7 @@ import './FundingHub.sol';
 import './InitialVariables.sol';
 import './AssetExchange.sol';
 import './ERC20.sol';
-import './OperatorEscrow.sol';
+import './AssetManager.sol';
 import './OracleHub.sol';
 import './Owned.sol';
 import './TokenBurn.sol';
@@ -37,9 +37,9 @@ contract  Test {
     require(TokenBurn(getAddress("TokenBurn")).burnTokens(_accessLevel));
   }
 
-  function createAsset(bytes32 _assetID, uint _amountToBeRaised, uint _operatorPercentage, uint _amountToEscrow, bytes32 _installerID, bytes32 _assetType)
+  function createAsset(bytes32 _assetID, uint _amountToBeRaised, uint _managerPercentage, uint _amountToEscrow, bytes32 _installerID, bytes32 _assetType)
   external {
-    AssetCreation(getAddress("AssetCreation")).newAsset(_assetID, _amountToBeRaised, _operatorPercentage, _amountToEscrow, _installerID, _assetType);
+    AssetCreation(getAddress("AssetCreation")).newAsset(_assetID, _amountToBeRaised, _managerPercentage, _amountToEscrow, _installerID, _assetType);
     assetFunded = _assetID;
   }
 

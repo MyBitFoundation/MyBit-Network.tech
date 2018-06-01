@@ -6,7 +6,7 @@ const InitialVariables = artifacts.require("./InitialVariables.sol");
 const OracleHub = artifacts.require('./OracleHub.sol');
 const Owned = artifacts.require("./Owned.sol");
 const Database = artifacts.require("./Database.sol");
-const OperatorEscrow = artifacts.require('./OperatorEscrow.sol');
+const AssetManager = artifacts.require('./AssetManager.sol');
 const UserAccess = artifacts.require('./UserAccess.sol');
 const MyBitToken = artifacts.require('./ERC20.sol');
 const AssetCreation = artifacts.require('./AssetCreation.sol');
@@ -38,7 +38,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let oracleHubInstance;
   let ownedInstance;
   let dbInstance;
-  let operatorEscrowInstance;
+  let assetManagerInstance;
   let userAccessInstance;
   let myBitTokenInstance;
   let assetCreationInstance;
@@ -50,8 +50,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   var transferAmount;
   var approvalAmount;
 
-  let amountToBeRaised = 500; // USD
-  let operatorPercentage = 5;   // 5%
   let assetID;
   let installerID;
   let assetType;

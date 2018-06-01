@@ -225,23 +225,23 @@ contract API {
   }
 
   //-----------------------------------------------------------------------------------------------------------------------
-  // Operator Information
+  // AssetManager Information
   //-----------------------------------------------------------------------------------------------------------------------
 
   // Indicates which address is in charge of operating this asset. 1 operator per asset
-  function assetOperator(bytes32 _assetID)
+  function assetManager(bytes32 _assetID)
   public
   view
   returns (address) {
-    return database.addressStorage(keccak256("assetOperator", _assetID));
+    return database.addressStorage(keccak256("assetManager", _assetID));
   }
 
   // Percentage of income sent to asset operator
-  function operatorPercentage(bytes32 _assetID)
+  function managerPercentage(bytes32 _assetID)
   public
   view
   returns (uint) {
-    return database.uintStorage(keccak256("operatorPercentage", _assetID));
+    return database.uintStorage(keccak256("managerPercentage", _assetID));
   }
 
   // Amount of MYB locked for this asset
@@ -253,20 +253,20 @@ contract API {
   }
 
   // Total amount of MYB locked by user for all platform assets
-  function operatorAmountEscrowed(address _operator)
+  function managerAmountEscrowed(address _manager)
   public
   view
   returns (uint) {
-    return database.uintStorage(keccak256("operatorAmountEscrowed", _operator));
+    return database.uintStorage(keccak256("managerAmountEscrowed", _manager));
   }
 
   // Total amount of MYB deposited in the operator escrow contract
   // NOTE: This MYB is not locked and can be withdrawn at any time
-  function operatorAmountDeposited(address _operator)
+  function managerAmountDeposited(address _manager)
   public
   view
   returns (uint) {
-    return database.uintStorage(keccak256("operatorAmountDeposited", _operator));
+    return database.uintStorage(keccak256("managerAmountDeposited", _manager));
   }
 
 

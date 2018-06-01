@@ -36,9 +36,9 @@ using SafeMath for *;
   atStage(_assetID, 4)
   returns (bool)  {
     uint assetIncome = database.uintStorage(keccak256("assetIncome", _assetID));
-    uint operatorIncome = msg.value.getFractionalAmount(database.uintStorage(keccak256("operatorPercentage", _assetID)));
-    database.addressStorage(keccak256("assetOperator", _assetID)).transfer(operatorIncome);
-    database.setUint(keccak256("assetIncome", _assetID), assetIncome.add(msg.value.sub(operatorIncome)));
+    uint managerIncome = msg.value.getFractionalAmount(database.uintStorage(keccak256("managerPercentage", _assetID)));
+    database.addressStorage(keccak256("assetManager", _assetID)).transfer(managerIncome);
+    database.setUint(keccak256("assetIncome", _assetID), assetIncome.add(msg.value.sub(managerIncome)));
     emit LogIncomeReceived(msg.sender, msg.value, _assetID);
     emit LogAssetNote(_note, block.timestamp, _assetID);
     return true;

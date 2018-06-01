@@ -51,8 +51,8 @@ contract FundingHub {
   //------------------------------------------------------------------------------------------------------------------
   // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
   // Invariants: Must be in stage FundingSuccess | MyBitFoundation + AssetEscrow  + BugEscrow addresses are set | Contract is not paused
-  // Note: Will fail if addresses + percentages are not set. AmountRaised = WeiRaised + assetOperator ownershipUnits
-  // TODO: Installer gets extra 1-2 wei from rounding error
+  // Note: Will fail if addresses + percentages are not set. AmountRaised = WeiRaised = ownershipUnits
+  // TODO: Installer gets extra 1-2 wei from solidity rounding down when faced with fraction
   //------------------------------------------------------------------------------------------------------------------
   function payout(bytes32 _assetID)
   external
