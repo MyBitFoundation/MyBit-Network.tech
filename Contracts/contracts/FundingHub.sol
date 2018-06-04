@@ -161,6 +161,7 @@ contract FundingHub {
   //------------------------------------------------------------------------------------------------------------------
   modifier onlyApproved{
     require(database.uintStorage(keccak256("userAccess", msg.sender)) >= uint(1));
+    require(database.uintStorage(keccak256("userAccessExpiry", msg.sender)) > now);
     _;
   }
 

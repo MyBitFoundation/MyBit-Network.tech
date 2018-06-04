@@ -36,6 +36,7 @@ contract AssetCreation {
   noEmptyBytes(_assetType)
   returns (bool){
     require(database.uintStorage(keccak256("userAccess", msg.sender)) >= uint(1));
+    require(database.uintStorage(keccak256("userAccessExpiry", msg.sender)) > now);
     require(database.addressStorage(keccak256("assetManager", _assetID)) == address(0));    // Check that another user didn't already submit escrow for this asset
     require(_amountToBeRaised >= uint(100));           // Minimum asset price
     require(database.uintStorage(keccak256("fundingStage", _assetID)) == uint(0));    // This ensures the asset isn't currently live or being funded

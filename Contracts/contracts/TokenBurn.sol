@@ -25,7 +25,7 @@ contract TokenBurn {
   //------------------------------------------------------------------------------------------------------------------
   // Users can gain access to the platform by burning tokens here
   // Every access level has an associated price in USD. The equivalent value of MyBit must be burnt to gain acccess.
-  // TODO: keep numbers of tokens burnt in storage or events?
+  // TODO: add receiveApproval option
   //------------------------------------------------------------------------------------------------------------------
   function burnTokens(uint _accessLevelDesired)
   external
@@ -52,7 +52,7 @@ contract TokenBurn {
   //------------------------------------------------------------------------------------------------------------------
   modifier basicVerification(uint _newAccessLevel) {
   uint currentLevel = database.uintStorage(keccak256("userAccess", msg.sender));
-  require(currentLevel < _newAccessLevel);       // Dont allow burning to downgrade access level
+  require(currentLevel < _newAccessLevel || database.uintStorage(keccak256("userAccessExpiry", msg.sender)) < now);       // Dont allow burning to downgrade access level unless access has expired
   require (_newAccessLevel < uint(4) && _newAccessLevel > uint(0));      // Must be 1, 2 or 3
   _;
 }

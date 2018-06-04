@@ -165,6 +165,7 @@ using SafeMath for *;
   //------------------------------------------------------------------------------------------------------------------
   modifier onlyApproved(uint8 _accessLevel) {
     require(database.uintStorage(keccak256("userAccess", msg.sender)) >= _accessLevel);
+    require(database.uintStorage(keccak256("userAccessExpiry", msg.sender)) > now);
     _;
   }
 

@@ -20,7 +20,7 @@ contract AssetExchange {
   bool public reentrancyLock = false;
 
   //------------------------------------------------------------------------------------------------------------------
-  // Constructor 
+  // Constructor
   // Initialize database for storage
   //------------------------------------------------------------------------------------------------------------------
   constructor(address _database)
@@ -32,7 +32,7 @@ contract AssetExchange {
   // Gives Ether sent to initatior of this sellOrder and transfers ownership units of asset to purchaser
   // Note: Check if creator of sell order has enough ownership units left
   // @Param: ID of the asset, which these ownershipUnits belong to
-  // @Param: Address of the user who created SellOrder 
+  // @Param: Address of the user who created SellOrder
   // @Param: Number of ownershipUnits being traded
   // @Param: The WEI cost per unit
   // TODO: log amounts?
@@ -55,9 +55,9 @@ contract AssetExchange {
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Settles an open SellOrder, giving the deposited ether to sender and sender tokens to initiator of BuyOrder 
+  // Settles an open SellOrder, giving the deposited ether to sender and sender tokens to initiator of BuyOrder
   // @Param: ID of the asset, which senders ownershipUnits belong to
-  // @Param: Address of the user who created BuyOrder 
+  // @Param: Address of the user who created BuyOrder
   // @Param: Number of ownershipUnits being sold
   // @Param: The WEI cost per unit
   // TODO: log amounts?
@@ -68,7 +68,7 @@ contract AssetExchange {
   onlyApproved
   whenNotPaused
   returns (bool){
-    bytes32 thisOrder = keccak256(_assetID, _buyer, _amount, _price, true);       // Get order ID 
+    bytes32 thisOrder = keccak256(_assetID, _buyer, _amount, _price, true);       // Get order ID
     require(orders[_buyer][thisOrder]);    // Check order exists
     require(Asset(database.addressStorage(keccak256("contract", "Asset"))).tradeOwnershipUnits(_assetID, msg.sender, _buyer, _amount));
     weiDeposited[_buyer] = weiDeposited[_buyer].sub(_amount.mul(_price));
@@ -79,8 +79,8 @@ contract AssetExchange {
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Create a BuyOrder and leave WEI as a deposit for user that picks up order 
-  // @Param: ID of the asset, which the sender wants to purchase ownershipUnits of 
+  // Create a BuyOrder and leave WEI as a deposit for user that picks up order
+  // @Param: ID of the asset, which the sender wants to purchase ownershipUnits of
   // @Param: Number of ownershipUnits being bought
   // @Param: The WEI cost per unit
   //------------------------------------------------------------------------------------------------------------------
@@ -104,8 +104,8 @@ contract AssetExchange {
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Create a BuyOrder and leave WEI as a deposit for user that picks up order 
-  // @Param: ID of the asset, which sender is trying to sell 
+  // Create a BuyOrder and leave WEI as a deposit for user that picks up order
+  // @Param: ID of the asset, which sender is trying to sell
   // @Param: Number of ownershipUnits being sold
   // @Param: The WEI cost per unit
   // NOTE: This will re-write previous sell orders
@@ -126,11 +126,11 @@ contract AssetExchange {
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Create a BuyOrder and leave WEI as a deposit for user that picks up order 
+  // Create a BuyOrder and leave WEI as a deposit for user that picks up order
   // @Param: ID of the asset
   // @Param: Number of ownershipUnits being sold
   // @Param: The WEI cost per unit
-  // @Param: Is this order a BuyOrder? 
+  // @Param: Is this order a BuyOrder?
   //------------------------------------------------------------------------------------------------------------------
   function deleteOrder(bytes32 _assetID, uint _amount, uint _price, bool _buyOrder)
   external
@@ -152,7 +152,7 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   function withdraw()
   external
-  nonReentrant        
+  nonReentrant
   onlyApproved
   whenNotPaused
   returns (bool){
@@ -217,11 +217,12 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   modifier onlyApproved {
     require(database.uintStorage(keccak256("userAccess", msg.sender)) == uint(3));
+    require(database.uintStorage(keccak256("userAccessExpiry", msg.sender)) > now);
     _;
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Verify contract isn't paused 
+  // Verify contract isn't paused
   //------------------------------------------------------------------------------------------------------------------
   modifier whenNotPaused {
     require(!database.boolStorage(keccak256("pause", this)));
