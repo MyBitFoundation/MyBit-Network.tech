@@ -20,35 +20,32 @@ contract AssetCreation {
 
   //----------------------------------------------------------------------------------------------------------------------------------------
   // This begins the funding period for an asset. If asset is success it will be added to the assets variable here in AssetCreation
-  // @Param: The storage hash created from IPFS. WIll act as the ID for this asset if funding is a success
   // @Param: The amount of USD required for asset to achieve successfull funding
   // @Param: The percentage of revenue the asset manager will require to run the asset
   // @Param: The amount the asset manager has decided to escrow
   // @Param: The ID of the installer of this asset  (ie. Sha3("ATMInstallersAG"))
   // @Param: The type of asset being created. (ie. Sha3("BitcoinATM"))
   //----------------------------------------------------------------------------------------------------------------------------------------
-  function newAsset(bytes32 _assetID, uint _amountToBeRaised, uint _managerPercentage, uint _amountToEscrow, bytes32 _installerID, bytes32 _assetType)
+  function newAsset(uint _amountToBeRaised, uint _managerPercentage, uint _amountToEscrow, bytes32 _installerID, bytes32 _assetType)
   external
   whenNotPaused
-  nonReentrant
-  noEmptyBytes(_assetID)
   noEmptyBytes(_installerID)
   noEmptyBytes(_assetType)
   returns (bool){
     require(database.uintStorage(keccak256("userAccess", msg.sender)) >= uint(1));
     require(database.uintStorage(keccak256("userAccessExpiry", msg.sender)) > now);
-    require(database.addressStorage(keccak256("assetManager", _assetID)) == address(0));    // Check that another user didn't already submit escrow for this asset
+    bytes32 assetID = keccak256(msg.sender, _amountToBeRaised, _managerPercentage, _amountToEscrow, _installerID, _assetType, block.number);
     require(_amountToBeRaised >= uint(100));           // Minimum asset price
-    require(database.uintStorage(keccak256("fundingStage", _assetID)) == uint(0));    // This ensures the asset isn't currently live or being funded
+    require(database.uintStorage(keccak256("fundingStage", assetID)) == uint(0));    // This ensures the asset isn't currently live or being funded
     require(_managerPercentage < uint(100) && _managerPercentage > uint(0));
-    if (_amountToEscrow > 0) { require(lockAssetEscrow(_assetID, _amountToEscrow)); }
-    database.setUint(keccak256("amountToBeRaised", _assetID), _amountToBeRaised);
-    database.setUint(keccak256("managerPercentage", _assetID), _managerPercentage);
-    database.setAddress(keccak256("assetManager", _assetID), msg.sender);
-    database.setUint(keccak256("fundingDeadline", _assetID), block.timestamp.add(fundingTime));
-    database.setUint(keccak256("fundingStage", _assetID), uint(1));
-    emit LogAssetInfo(_assetID, _installerID, _amountToBeRaised);
-    emit LogAssetFundingStarted(msg.sender, _assetID, _assetType);
+    if (_amountToEscrow > 0) { require(lockAssetEscrow(assetID, _amountToEscrow)); }
+    database.setUint(keccak256("amountToBeRaised", assetID), _amountToBeRaised);
+    database.setUint(keccak256("managerPercentage", assetID), _managerPercentage);
+    database.setAddress(keccak256("assetManager", assetID), msg.sender);
+    database.setUint(keccak256("fundingDeadline", assetID), block.timestamp.add(fundingTime));
+    database.setUint(keccak256("fundingStage", assetID), uint(1));       // Allow this asset to receive funding
+    emit LogAssetInfo(assetID, _installerID, _amountToBeRaised);
+    emit LogAssetFundingStarted(msg.sender, assetID, _assetType);
     return true;
   }
 
@@ -58,7 +55,7 @@ contract AssetCreation {
   function lockAssetEscrow(bytes32 _assetID, uint _amountToEscrow)
   internal
   returns (bool) {
-    database.setUint(keccak256("lockedForAsset", _assetID), _amountToEscrow);
+    database.setUint(keccak256("escrowedForAsset", _assetID), _amountToEscrow);
     uint lockedAmount = database.uintStorage(keccak256("managerAmountEscrowed", msg.sender));
     assert (_amountToEscrow <= database.uintStorage(keccak256("managerAmountDeposited", msg.sender)).sub(lockedAmount));
     database.setUint(keccak256("managerAmountEscrowed", msg.sender), lockedAmount.add(_amountToEscrow));

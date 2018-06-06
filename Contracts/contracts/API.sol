@@ -149,7 +149,7 @@ contract API {
   public
   view
   returns (uint) {
-    return database.uintStorage(keccak256("totalReceived", _assetID));
+    return database.uintStorage(keccak256("assetIncome", _assetID));
   }
 
   // Amount of income paid to funders
@@ -168,23 +168,23 @@ contract API {
     return database.uintStorage(keccak256("totalPaidToFunder", _assetID, _funder));
   }
 
-  // Depracated after Intimate Alpha (0.1): totalReceived == assetIncome for Open-Alpha (0.2)
+  /* // Deprecated after Intimate Alpha (0.1): totalReceived == assetIncome for Open-Alpha (0.2)
   function getAmountOwed(bytes32 _assetID, address _user)
   public
   view
   returns (uint){
     if (ownershipUnits(_assetID, _user) == 0) { return 0; }
     return ((totalReceived(_assetID) * ownershipUnits(_assetID, _user)) / amountRaised(_assetID)) - totalPaidToFunder(_assetID, _user);
-  }
+  } */
 
-  /* // Returns the amount of WEI owed to asset owner  AmountOwed = (userIncome - userIncomeAlreadyPaid)
+  // Returns the amount of WEI owed to asset owner  AmountOwed = (userIncome - userIncomeAlreadyPaid)
   function getAmountOwed(bytes32 _assetID, address _user)
   public
   view
   returns (uint){
     if (ownershipUnits(_assetID, _user) == 0) { return 0; }
     return ((assetIncome(_assetID) * ownershipUnits(_assetID, _user)) / amountRaised(_assetID)) - totalPaidToFunder(_assetID, _user);
-  } */
+  }
 
   //-----------------------------------------------------------------------------------------------------------------------
   //                                             Funding Information
@@ -245,11 +245,19 @@ contract API {
   }
 
   // Amount of MYB locked for this asset
+  function escrowedForAsset(bytes32 _assetID)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256("escrowedForAsset", _assetID));
+  }
+
+  // Amount of MYB locked for this asset   (Deprecated: variable now stored as "escrowedForAsset" for release 0.2)
   function lockedForAsset(bytes32 _assetID)
   public
   view
   returns (uint) {
-    return database.uintStorage(keccak256("lockedForAsset", _assetID));
+    return database.uintStorage(keccak256("escrowedForAsset", _assetID));
   }
 
   // Total amount of MYB locked by user for all platform assets

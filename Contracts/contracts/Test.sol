@@ -7,7 +7,7 @@ import './ContractManager.sol';
 import './FundingHub.sol';
 import './InitialVariables.sol';
 import './AssetExchange.sol';
-import './ERC20.sol';
+import './MyBitToken.sol';
 import './AssetManager.sol';
 import './OracleHub.sol';
 import './Owned.sol';
@@ -29,7 +29,7 @@ contract  Test {
   function withdrawAndApprove(uint _amount)
   external {
     TokenFaucet(getAddress("TokenFaucet")).withdraw(_amount);
-    require(ERC20(getAddress("MyBitToken")).approve(getAddress("TokenBurn"), _amount));
+    require(MyBitToken(getAddress("MyBitToken")).approve(getAddress("TokenBurn"), _amount));
   }
 
   function burnAccessTokens(uint _accessLevel)
