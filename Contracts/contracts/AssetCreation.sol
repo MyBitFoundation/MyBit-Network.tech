@@ -26,40 +26,45 @@ contract AssetCreation {
   // @Param: The ID of the installer of this asset  (ie. Sha3("ATMInstallersAG"))
   // @Param: The type of asset being created. (ie. Sha3("BitcoinATM"))
   //----------------------------------------------------------------------------------------------------------------------------------------
-  function newAsset(uint _amountToBeRaised, uint _managerPercentage, uint _amountToEscrow, bytes32 _installerID, bytes32 _assetType)
+  function newAsset(uint _amountToBeRaised, uint _managerPercentage, uint _amountToEscrow, bytes32 _installerID, bytes32 _assetType, uint _blockAtCreation)
   external
   whenNotPaused
   noEmptyBytes(_installerID)
   noEmptyBytes(_assetType)
   returns (bool){
     require(database.uintStorage(keccak256("userAccess", msg.sender)) >= uint(1));
-    require(database.uintStorage(keccak256("userAccessExpiry", msg.sender)) > now);
-    bytes32 assetID = keccak256(msg.sender, _amountToBeRaised, _managerPercentage, _amountToEscrow, _installerID, _assetType, block.number);
-    require(_amountToBeRaised >= uint(100));           // Minimum asset price
-    require(database.uintStorage(keccak256("fundingStage", assetID)) == uint(0));    // This ensures the asset isn't currently live or being funded
+    require(database.uintStorage(keccak256("userAccessExpiration", msg.sender)) > now);
     require(_managerPercentage < uint(100) && _managerPercentage > uint(0));
-    if (_amountToEscrow > 0) { require(lockAssetEscrow(assetID, _amountToEscrow)); }
+    require(_amountToBeRaised >= uint(100));           // Minimum asset price
+    bytes32 assetID = keccak256(msg.sender, _amountToBeRaised, _managerPercentage, _amountToEscrow, _installerID, _assetType, _blockAtCreation);
+    require(database.uintStorage(keccak256("fundingStage", assetID)) == uint(0));    // This ensures the asset isn't currently live or being funded
+    address staker = database.addressStorage(keccak256("assetStaker", assetID));
+    if (staker != address(0)) {
+      assert (database.addressStorage(keccak256("stakingExpiration", assetID)) > now);
+      require(lockAssetEscrow(assetID, _amountToEscrow, staker));
+    }
+    else { require(lockAssetEscrow(assetID, _amountToEscrow, msg.sender)); }
     database.setUint(keccak256("amountToBeRaised", assetID), _amountToBeRaised);
     database.setUint(keccak256("managerPercentage", assetID), _managerPercentage);
     database.setAddress(keccak256("assetManager", assetID), msg.sender);
     database.setUint(keccak256("fundingDeadline", assetID), block.timestamp.add(fundingTime));
     database.setUint(keccak256("fundingStage", assetID), uint(1));       // Allow this asset to receive funding
-    emit LogAssetInfo(assetID, _installerID, _amountToBeRaised);
-    emit LogAssetFundingStarted(msg.sender, assetID, _assetType);
+    emit LogAssetFundingStarted(assetID, _assetType, _installerID);    // assetType and installer ID are already indexed
     return true;
   }
 
   //----------------------------------------------------------------------------------------------------------------------------------------
   // This function locks MyBit tokens to the asset for the length of it's lifecycle
   //----------------------------------------------------------------------------------------------------------------------------------------
-  function lockAssetEscrow(bytes32 _assetID, uint _amountToEscrow)
+  function lockAssetEscrow(bytes32 _assetID, uint _amountToEscrow, address _escrowDepositer)
   internal
   returns (bool) {
+    if (_amountToEscrow == 0) { return true; }
     database.setUint(keccak256("escrowedForAsset", _assetID), _amountToEscrow);
-    uint lockedAmount = database.uintStorage(keccak256("managerAmountEscrowed", msg.sender));
-    assert (_amountToEscrow <= database.uintStorage(keccak256("managerAmountDeposited", msg.sender)).sub(lockedAmount));
-    database.setUint(keccak256("managerAmountEscrowed", msg.sender), lockedAmount.add(_amountToEscrow));
-    emit LogLockAssetEscrow(msg.sender, _assetID, _amountToEscrow);
+    uint escrowedMYB = database.uintStorage(keccak256("escrowedMYB", _escrowDepositer));
+    assert (_amountToEscrow <= database.uintStorage(keccak256("depositedMYB", _escrowDepositer)).sub(_amountToEscrow));
+    database.setUint(keccak256("escrowedMYB", _escrowDepositer), escrowedMYB.add(_amountToEscrow));
+    emit LogLockAssetEscrow(_escrowDepositer, _assetID, _amountToEscrow);
     return true;
   }
 
@@ -186,7 +191,6 @@ contract AssetCreation {
   //------------------------------------------------------------------------------------------------------------------
 
   event LogAssetFundingStarted(address indexed _creator, bytes32 indexed _assetID, bytes32 indexed _assetType);
-  event LogAssetInfo(bytes32 indexed _assetID, bytes32 indexed _installerID, uint indexed _amountToBeRaised);
   event LogLockAssetEscrow(address indexed _from, bytes32 indexed _assetID, uint indexed _amountOf);
   event LogAssetRemoved(address indexed _remover, bytes32 indexed _assetID, uint indexed _timestamp);
   event LogFundingTimeChanged(address _sender, uint _newTimeForFunding, uint _blockTimestamp);

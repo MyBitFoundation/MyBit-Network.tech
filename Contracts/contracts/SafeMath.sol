@@ -49,11 +49,13 @@ library SafeMath {
   // Give the total amount and the percentage as a whole number to get the fractional amount
   // NOTE: parameters must be given as a whole number
   // NOTE: Solidity will round down when faced with a fraction
-  function getFractionalAmount(uint256 _amount, uint256 _percentage) 
-  internal 
-  pure 
+  function getFractionalAmount(uint256 _amount, uint256 _percentage)
+  internal
+  pure
   returns (uint256) {
     return div(mul(_amount, _percentage), 100);
   }
+
+
 
 }

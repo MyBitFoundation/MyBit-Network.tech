@@ -34,8 +34,8 @@ contract AssetManager {
   accessApproved(1)
   returns (bool) {
     require(myBitToken.transferFrom(msg.sender, this, _amount));
-    uint depositedAmount = database.uintStorage(keccak256("managerAmountDeposited", msg.sender));
-    database.setUint(keccak256("managerAmountDeposited", msg.sender), depositedAmount.add(_amount));
+    uint depositedAmount = database.uintStorage(keccak256("depositedMYB", msg.sender));
+    database.setUint(keccak256("depositedMYB", msg.sender), depositedAmount.add(_amount));
     emit LogEscrowDeposited(msg.sender, _amount, now);
     return true;
   }
@@ -49,30 +49,33 @@ contract AssetManager {
   external
   anyOwner
   returns (bool) {
-    require(database.uintStorage(keccak256("userAccess", _newOperator)) >= uint(_accessLevel));
+    require(database.uintStorage(keccak256("userAccess", _newOperator)) >= uint(1));
     require(database.uintStorage(keccak256("userAccessExpiry", _newOperator)) > now);
+
 
   }
 
   //------------------------------------------------------------------------------------------------------------------
   // AssetManager can withdraw any escrowed tokens that are no longer needed in escrow here
-  // To withdraw the asset must have: Not started funding (stage = 0), Failed Funding (stage = 2), Finished lifecycle (stage = 5))
-  // TODO: let staker withdraw tokens for assetmanager in the case that assetmanager didn't put up escrow
+  // Invariant: Must not be in following stages: Failed Funding (stage = 2), Finished lifecycle (stage = 5))
+  // Invariant: If asset has a staker, then the escrow belongs to staker. Otherwise it belongs to AssetManager
   //------------------------------------------------------------------------------------------------------------------
   function unlockEscrow(bytes32 _assetID)
   external
   accessApproved(1) {
-    require(database.addressStorage(keccak256("assetManager", _assetID)) == msg.sender);    // Make sure sender has escrowed tokens for this asset
+    if (database.addressStorage(keccak256("assetStaker", _assetID)) == address(0)) { require(database.addressStorage(keccak256("assetManager", _assetID)) == msg.sender); }
+    else { require(database.addressStorage(keccak256("assetStaker", _assetID)) == msg.sender); }
     uint amountToUnlock = database.uintStorage(keccak256("escrowedForAsset", _assetID));
     assert(amountToUnlock > 0);
     uint fundingStage = database.uintStorage(keccak256("fundingStage", _assetID));
-    if (fundingStage == uint(0) || fundingStage == uint(2) || fundingStage == uint(5)){    // is asset finished?
+    if (fundingStage == uint(2) || fundingStage == uint(5)){    // has asset failed or finished it's lifecycle?
       releaseEscrow(amountToUnlock, _assetID);
     }
     else {
       uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
       uint assetIncome = database.uintStorage(keccak256("assetIncome", _assetID));
       uint percentageROI = database.uintStorage(keccak256(assetIncome, _assetID)).mul(100).div(amountRaised);
+      // TODO: find better algorithm
       if (percentageROI >= uint(100)) { releaseEscrow(amountToUnlock, _assetID); }
       if (percentageROI >= uint(75)) { releaseEscrow((uint(75).mul(amountRaised)).div(uint(100)), _assetID); }
       if (percentageROI >= uint(50)) { releaseEscrow((uint(50).mul(amountRaised)).div(uint(100)), _assetID); }
@@ -87,11 +90,11 @@ contract AssetManager {
   function releaseEscrow(uint _amount, bytes32 _assetID)
   internal {
     uint amountLockedForAsset = database.uintStorage(keccak256("escrowedForAsset", _assetID));
-    uint totalEscrowedAmount = database.uintStorage(keccak256("managerAmountEscrowed", msg.sender));
-    uint depositedAmount = database.uintStorage(keccak256("managerAmountDeposited", msg.sender));
+    uint totalEscrowedAmount = database.uintStorage(keccak256("escrowedMYB", msg.sender));
+    uint depositedAmount = database.uintStorage(keccak256("depositedMYB", msg.sender));
     database.setUint(keccak256("escrowedForAsset", _assetID), amountLockedForAsset.sub(_amount));
-    database.setUint(keccak256("managerAmountEscrowed", msg.sender), totalEscrowedAmount.sub(_amount));
-    database.setUint(keccak256("managerAmountDeposited", msg.sender), depositedAmount.add(totalEscrowedAmount.sub(_amount)));
+    database.setUint(keccak256("escrowedMYB", msg.sender), totalEscrowedAmount.sub(_amount));
+    database.setUint(keccak256("depositedMYB", msg.sender), depositedAmount.add(totalEscrowedAmount.sub(_amount)));
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -104,9 +107,9 @@ contract AssetManager {
   returns (bool){
     uint unlockedBalance = getUnlockedBalance(msg.sender);
     assert (unlockedBalance >= _amount);
-    uint depositedAmount = database.uintStorage(keccak256("managerAmountDeposited", msg.sender));
+    uint depositedAmount = database.uintStorage(keccak256("depositedMYB", msg.sender));
     assert (depositedAmount >= _amount);
-    database.setUint(keccak256("managerAmountDeposited", msg.sender), depositedAmount.sub(_amount));
+    database.setUint(keccak256("depositedMYB", msg.sender), depositedAmount.sub(_amount));
     myBitToken.transfer(msg.sender, _amount);
     return true;
   }
@@ -127,8 +130,8 @@ contract AssetManager {
   public
   view
   returns (uint){
-    uint lockedBalance = database.uintStorage(keccak256("managerAmountEscrowed", _assetManager));
-    return database.uintStorage(keccak256("managerAmountDeposited", _assetManager)).sub(lockedBalance);
+    uint lockedBalance = database.uintStorage(keccak256("escrowedMYB", _assetManager));
+    return database.uintStorage(keccak256("depositedMYB", _assetManager)).sub(lockedBalance);
   }
 
   //------------------------------------------------------------------------------------------------------------------

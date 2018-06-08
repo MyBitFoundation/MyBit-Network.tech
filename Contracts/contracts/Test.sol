@@ -39,7 +39,7 @@ contract  Test {
 
   function createAsset(bytes32 _assetID, uint _amountToBeRaised, uint _managerPercentage, uint _amountToEscrow, bytes32 _installerID, bytes32 _assetType)
   external {
-    AssetCreation(getAddress("AssetCreation")).newAsset(_assetID, _amountToBeRaised, _managerPercentage, _amountToEscrow, _installerID, _assetType);
+    AssetCreation(getAddress("AssetCreation")).newAsset(_amountToBeRaised, _managerPercentage, _amountToEscrow, _installerID, _assetType, block.number);
     assetFunded = _assetID;
   }
 

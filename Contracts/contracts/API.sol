@@ -225,7 +225,7 @@ contract API {
   }
 
   //-----------------------------------------------------------------------------------------------------------------------
-  // AssetManager Information
+  //                                AssetManager and Escrow
   //-----------------------------------------------------------------------------------------------------------------------
 
   // Indicates which address is in charge of operating this asset. 1 operator per asset
@@ -252,6 +252,36 @@ contract API {
     return database.uintStorage(keccak256("escrowedForAsset", _assetID));
   }
 
+  // Total amount of MYB locked by user for all platform assets
+  function escrowedMYB(address _manager)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256("escrowedMYB", _manager));
+  }
+
+  // Total amount of MYB deposited in the operator escrow contract
+  // NOTE: This MYB is not locked and can be withdrawn at any time
+  function depositedMYB(address _manager)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256("depositedMYB", _manager));
+  }
+
+  //-----------------------------------------------------------------------------------------------------------------------
+  //                                          Staking Information
+  //-----------------------------------------------------------------------------------------------------------------------
+
+
+  // Returns address of staker covering the escrow for this asset
+  function assetStaker(bytes32 _assetID)
+  public
+  view
+  returns (address) {
+    return database.addressStorage(keccak256("assetStaker", _assetID));
+  }
+
   // Amount of MYB locked for this asset   (Deprecated: variable now stored as "escrowedForAsset" for release 0.2)
   function lockedForAsset(bytes32 _assetID)
   public
@@ -260,23 +290,21 @@ contract API {
     return database.uintStorage(keccak256("escrowedForAsset", _assetID));
   }
 
-  // Total amount of MYB locked by user for all platform assets
-  function managerAmountEscrowed(address _manager)
+  // Time when the request for
+  function escrowExpiration(bytes32 _assetID)
   public
   view
   returns (uint) {
-    return database.uintStorage(keccak256("managerAmountEscrowed", _manager));
+    return database.uintStorage(keccak256("escrowExpiration", _assetID));
   }
 
-  // Total amount of MYB deposited in the operator escrow contract
-  // NOTE: This MYB is not locked and can be withdrawn at any time
-  function managerAmountDeposited(address _manager)
+  // Time when the request for
+  function stakingExpiration(bytes32 _assetID)
   public
   view
   returns (uint) {
-    return database.uintStorage(keccak256("managerAmountDeposited", _manager));
+    return database.uintStorage(keccak256("stakingExpiration", _assetID));
   }
-
 
   //-----------------------------------------------------------------------------------------------------------------------
   //                                                 OracleHub
