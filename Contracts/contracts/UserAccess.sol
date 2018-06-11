@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity 0.4.24;
 
 import './Database.sol';
 
@@ -32,10 +32,10 @@ contract UserAccess{
   external
   returns (bool) {
     require(_accessLevel < uint(4) && _accessLevel != uint(0));
-    database.setUint(keccak256("userAccess", _newUser), _accessLevel);
+    database.setUint(keccak256(abi.encodePacked("userAccess", _newUser)), _accessLevel);
     uint expiry = now + oneYear;
     assert (expiry > now);   // Check for overflow
-    database.setUint(keccak256("userAccessExpiry", _newUser), expiry);
+    database.setUint(keccak256(abi.encodePacked("userAccessExpiry", _newUser)), expiry);
     emit LogUserApproved(_newUser, _accessLevel, block.timestamp);
     return true;
   }
@@ -49,8 +49,8 @@ contract UserAccess{
   anyOwner
   external
   returns (bool) {
-    database.deleteUint(keccak256("userAccess", _user));
-    database.deleteUint(keccak256("userAccessExpiry", _user));
+    database.deleteUint(keccak256(abi.encodePacked("userAccess", _user)));
+    database.deleteUint(keccak256(abi.encodePacked("userAccessExpiry", _user)));
     emit LogUserRemoved(_user, block.timestamp);
     return true;
   }
@@ -62,7 +62,7 @@ contract UserAccess{
   anyOwner
   external
   returns (bool) {
-    database.setBool(keccak256("kycApproved", msg.sender), true);
+    database.setBool(keccak256(abi.encodePacked("kycApproved", msg.sender)), true);
     emit LogKYCApproved(msg.sender, _user, block.timestamp);
   }
 
@@ -78,14 +78,14 @@ contract UserAccess{
   // Only owners can call these functions
   //------------------------------------------------------------------------------------------------------------------
   modifier anyOwner {
-    require(database.boolStorage(keccak256("owner", msg.sender)));
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
     _;
   }
 
   //------------------------------------------------------------------------------------------------------------------
   //                                        Events
   //------------------------------------------------------------------------------------------------------------------
-  event LogUserApproved(address indexed _user, uint indexed _approvalLevel, uint indexed _timestamp);
-  event LogUserRemoved(address indexed _user, uint indexed _timestamp);
-  event LogKYCApproved(address indexed _owner, address indexed _user, uint indexed _timestamp);
+  event LogUserApproved(address _user, uint _approvalLevel, uint _timestamp);
+  event LogUserRemoved(address _user, uint _timestamp);
+  event LogKYCApproved(address _owner, address _user, uint _timestamp);
 }

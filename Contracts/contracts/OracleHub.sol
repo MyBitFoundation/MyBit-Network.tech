@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity 0.4.24;
 
 import './oraclizeAPI_05.sol';
 import './Database.sol';
@@ -9,7 +9,7 @@ import './SafeMath.sol';
 // Can find price expiration time under keccak256("priceUpdateTimeline") in the Database
 //------------------------------------------------------------------------------------------------------------------
 contract OracleHub is usingOraclize{
-  using SafeMath for *;
+  using SafeMath for uint;
 
   Database public database;
 
@@ -73,9 +73,9 @@ contract OracleHub is usingOraclize{
   //------------------------------------------------------------------------------------------------------------------
   function ethUSDCallback(bytes32 myid, string result)
   internal {
-    uint priceTimeline = database.uintStorage(keccak256("priceUpdateTimeline"));
-    database.setUint(keccak256("ethUSDPrice"), parseInt(result));
-    database.setUint(keccak256("ethUSDPriceExpiration"), (priceTimeline + now));
+    uint priceTimeline = database.uintStorage(keccak256(abi.encodePacked("priceUpdateTimeline")));
+    database.setUint(keccak256(abi.encodePacked("ethUSDPrice")), parseInt(result));
+    database.setUint(keccak256(abi.encodePacked("ethUSDPriceExpiration")), (priceTimeline + now));
     database.deleteBool(myid);
     emit LogEthUSDCallbackReceived(myid, parseInt(result), now);
   }
@@ -85,10 +85,10 @@ contract OracleHub is usingOraclize{
   //------------------------------------------------------------------------------------------------------------------
   function mybUSDCallback(bytes32 myid, string result)
   internal {
-    uint priceTimeline = database.uintStorage(keccak256("priceUpdateTimeline"));
+    uint priceTimeline = database.uintStorage(keccak256(abi.encodePacked("priceUpdateTimeline")));
     uint oldPrice = parseInt(result);
-    database.setUint(keccak256("mybUSDPrice"), oldPrice.div(36));
-    database.setUint(keccak256("mybUSDPriceExpiration"), (priceTimeline + now));
+    database.setUint(keccak256(abi.encodePacked("mybUSDPrice")), oldPrice.div(36));
+    database.setUint(keccak256(abi.encodePacked("mybUSDPriceExpiration")), (priceTimeline + now));
     emit LogMYBUSDCallbackReceived(myid, parseInt(result), now);
   }
 

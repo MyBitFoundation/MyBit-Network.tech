@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity 0.4.24;
 import './MyBitToken.sol';
 import './Database.sol';
 import './SafeMath.sol';
@@ -7,7 +7,7 @@ import './SafeMath.sol';
 // This contract transfers MyBit tokens and holds them forever with no mechanism to transfer them out again.
 //------------------------------------------------------------------------------------------------------------------
 contract TokenBurn {
-  using SafeMath for *;
+  using SafeMath for uint;
 
 
   MyBitToken public myBitToken;
@@ -33,11 +33,11 @@ contract TokenBurn {
   priceUpdated
   basicVerification(_accessLevelDesired)
   returns (bool) {
-    uint mybPrice = database.uintStorage(keccak256("mybUSDPrice"));
-    uint accessCostMyB = (database.uintStorage(keccak256("accessTokenFee", _accessLevelDesired)).mul(10**21)).div(mybPrice);
+    uint mybPrice = database.uintStorage(keccak256(abi.encodePacked("mybUSDPrice")));
+    uint accessCostMyB = (database.uintStorage(keccak256(abi.encodePacked("accessTokenFee", _accessLevelDesired))).mul(10**21)).div(mybPrice);
     assert (accessCostMyB > uint(0));
     require(myBitToken.burnFrom(msg.sender, accessCostMyB));
-    database.setUint(keccak256("userAccess", msg.sender), _accessLevelDesired);
+    database.setUint(keccak256(abi.encodePacked("userAccess", msg.sender)), _accessLevelDesired);
     emit LogMyBitBurnt(msg.sender, accessCostMyB, block.timestamp);
     return true;
   }
@@ -51,8 +51,8 @@ contract TokenBurn {
   // Verifies that desired access level is allowed. No user can downgrade access by burning tokens
   //------------------------------------------------------------------------------------------------------------------
   modifier basicVerification(uint _newAccessLevel) {
-  uint currentLevel = database.uintStorage(keccak256("userAccess", msg.sender));
-  require(currentLevel < _newAccessLevel || database.uintStorage(keccak256("userAccessExpiry", msg.sender)) < now);       // Dont allow burning to downgrade access level unless access has expired
+  uint currentLevel = database.uintStorage(keccak256(abi.encodePacked("userAccess", msg.sender)));
+  require(currentLevel < _newAccessLevel || database.uintStorage(keccak256(abi.encodePacked("userAccessExpiry", msg.sender))) < now);       // Dont allow burning to downgrade access level unless access has expired
   require (_newAccessLevel < uint(4) && _newAccessLevel > uint(0));      // Must be 1, 2 or 3
   _;
 }
@@ -61,7 +61,7 @@ contract TokenBurn {
   // Verifies contracts has not been paused
   //------------------------------------------------------------------------------------------------------------------
   modifier whenNotPaused {
-    require(!database.boolStorage(keccak256("pause", this)));
+    require(!database.boolStorage(keccak256(abi.encodePacked("pause", this))));
     _;
   }
 
@@ -69,7 +69,7 @@ contract TokenBurn {
   // Verifies that the MyBit/USD price is still valid
   //------------------------------------------------------------------------------------------------------------------
   modifier priceUpdated {
-    require (now < database.uintStorage(keccak256("mybUSDPriceExpiration")));
+    require (now < database.uintStorage(keccak256(abi.encodePacked("mybUSDPriceExpiration"))));
     _;
   }
 

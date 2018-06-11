@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity 0.4.24;
 
 import './Database.sol';
 
@@ -22,20 +22,20 @@ public {
 //------------------------------------------------------------------------------------------
 function startDapp(address _myBitFoundation, address _installerEscrow)
 external  {
-  require(database.boolStorage(keccak256("owner", msg.sender)));
+  require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
   require(_myBitFoundation != address(0) && _installerEscrow != address(0));
   // --------------------Set Local Wallets-------------------------
-  database.setAddress(keccak256("MyBitFoundation"), _myBitFoundation);
-  database.setAddress(keccak256("InstallerEscrow"), _installerEscrow);
+  database.setAddress(keccak256(abi.encodePacked("MyBitFoundation")), _myBitFoundation);
+  database.setAddress(keccak256(abi.encodePacked("InstallerEscrow")), _installerEscrow);
   // --------------------Asset Creation Variables-----------------
-  database.setUint(keccak256("myBitFoundationPercentage"), uint(1));
-  database.setUint(keccak256("installerPercentage"), uint(99));
+  database.setUint(keccak256(abi.encodePacked("myBitFoundationPercentage")), uint(1));
+  database.setUint(keccak256(abi.encodePacked("installerPercentage")), uint(99));
   // ---------------------Access Price in USD--------------------------
-  database.setUint(keccak256("accessTokenFee", uint(1)), uint(25));
-  database.setUint(keccak256("accessTokenFee", uint(2)), uint(75));
-  database.setUint(keccak256("accessTokenFee", uint(3)), uint(100));
+  database.setUint(keccak256(abi.encodePacked("accessTokenFee", uint(1))), uint(25));
+  database.setUint(keccak256(abi.encodePacked("accessTokenFee", uint(2))), uint(75));
+  database.setUint(keccak256(abi.encodePacked("accessTokenFee", uint(3))), uint(100));
   // -------------Oracle Variables-------------------------
-  database.setUint(keccak256("priceUpdateTimeline"), uint(86400));     // 24hrs  TODO: lower this for alpha This is the length of time an Oracle price is valid for
+  database.setUint(keccak256(abi.encodePacked("priceUpdateTimeline")), uint(86400));     // Market prices need to be updated every 24 hours
   emit LogInitialized(msg.sender, address(database), block.number);
 }
 
@@ -46,8 +46,8 @@ function changeFoundationAddress(address _signer, string _functionName, address 
 external
 noEmptyAddress(_newAddress)
 anyOwner
-multiSigRequired(_signer, _functionName, keccak256(_newAddress)) {
-  database.setAddress(keccak256("MyBitFoundation"), _newAddress);
+multiSigRequired(_signer, _functionName, keccak256(abi.encodePacked(_newAddress))) {
+  database.setAddress(keccak256(abi.encodePacked("MyBitFoundation")), _newAddress);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -57,8 +57,8 @@ function changeInstallerEscrowAddress(address _signer, string _functionName, add
 external
 noEmptyAddress(_newAddress)
 anyOwner
-multiSigRequired(_signer, _functionName, keccak256(_newAddress)) {
-  database.setAddress(keccak256("InstallerEscrow"), _newAddress);
+multiSigRequired(_signer, _functionName, keccak256(abi.encodePacked(_newAddress))) {
+  database.setAddress(keccak256(abi.encodePacked("InstallerEscrow")), _newAddress);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -67,8 +67,8 @@ multiSigRequired(_signer, _functionName, keccak256(_newAddress)) {
 function changeAccessTokenFee(address _signer, string _functionName, uint _accessLevel, uint _newPrice)
 external
 anyOwner
-multiSigRequired(_signer, _functionName, keccak256(_accessLevel, _newPrice)) {
-  database.setUint(keccak256("accessTokenFee", _accessLevel), _newPrice);
+multiSigRequired(_signer, _functionName, keccak256(abi.encodePacked(_accessLevel, _newPrice))) {
+  database.setUint(keccak256(abi.encodePacked("accessTokenFee", _accessLevel), _newPrice));
 }
 
 
@@ -81,7 +81,7 @@ multiSigRequired(_signer, _functionName, keccak256(_accessLevel, _newPrice)) {
 //  Verify that sender is an owner
 // ------------------------------------------------------------------------------------------------
 modifier anyOwner {
-  require(database.boolStorage(keccak256("owner", msg.sender)));
+  require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
   _;
 }
 
@@ -98,8 +98,8 @@ modifier noEmptyAddress(address _contract) {
 // ------------------------------------------------------------------------------------------------
 modifier multiSigRequired(address _signer, string _functionName, bytes32 _keyParam) {
   require(msg.sender != _signer);
-  require(database.boolStorage(keccak256(this, _signer, _functionName, _keyParam)));
-  database.setBool(keccak256(this, _signer, _functionName, _keyParam), false);
+  require(database.boolStorage(keccak256(abi.encodePacked(this, _signer, _functionName, _keyParam))));
+  database.setBool(keccak256(abi.encodePacked(address(this), _signer, _functionName, _keyParam)), false);
   _;
 }
 

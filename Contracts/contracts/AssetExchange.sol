@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity 0.4.24;
 import './Database.sol';
 import './SafeMath.sol';
 import './Asset.sol';
@@ -44,10 +44,10 @@ contract AssetExchange {
   whenNotPaused
   onlyApproved
   returns (bool){
-    bytes32 thisOrder = keccak256(_assetID, _seller, _amount, _price, false);
+    bytes32 thisOrder = keccak256(abi.encodePacked(_assetID, _seller, _amount, _price, false));
     require(orders[_seller][thisOrder]);
     require(msg.value == (_amount.mul(_price)));
-    require(Asset(database.addressStorage(keccak256("contract", "Asset"))).tradeOwnershipUnits(_assetID, _seller, msg.sender, _amount));
+    require(Asset(database.addressStorage(keccak256(abi.encodePacked("contract", "Asset")))).tradeOwnershipUnits(_assetID, _seller, msg.sender, _amount));
     weiOwed[_seller] = weiOwed[_seller].add(msg.value);
     delete orders[_seller][thisOrder];
     emit LogSellOrderCompleted(thisOrder, _assetID, msg.sender);
@@ -68,9 +68,9 @@ contract AssetExchange {
   onlyApproved
   whenNotPaused
   returns (bool){
-    bytes32 thisOrder = keccak256(_assetID, _buyer, _amount, _price, true);       // Get order ID
+    bytes32 thisOrder = keccak256(abi.encodePacked(_assetID, _buyer, _amount, _price, true));       // Get order ID
     require(orders[_buyer][thisOrder]);    // Check order exists
-    require(Asset(database.addressStorage(keccak256("contract", "Asset"))).tradeOwnershipUnits(_assetID, msg.sender, _buyer, _amount));
+    require(Asset(database.addressStorage(keccak256(abi.encodePacked("contract", "Asset")))).tradeOwnershipUnits(_assetID, msg.sender, _buyer, _amount));
     weiDeposited[_buyer] = weiDeposited[_buyer].sub(_amount.mul(_price));
     weiOwed[msg.sender] = weiOwed[msg.sender].add(_amount.mul(_price));
     delete orders[_buyer][thisOrder];
@@ -94,7 +94,7 @@ contract AssetExchange {
   validAsset(_assetID)
   returns (bool) {
     require(msg.value == _amount.mul(_price));
-    bytes32 orderID = keccak256(_assetID, msg.sender, _amount, _price, true);
+    bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, true));
     require(!orders[msg.sender][orderID]);
     orders[msg.sender][orderID] = true;
     weiDeposited[msg.sender] = weiDeposited[msg.sender].add(msg.value);
@@ -118,7 +118,7 @@ contract AssetExchange {
   validAsset(_assetID)
   hasEnoughOwnership(_assetID, _amount)
   returns (bool) {
-    bytes32 orderID = keccak256(_assetID, msg.sender, _amount, _price, false);
+    bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, false);
     orders[msg.sender][orderID] = true;
     emit LogSellOrderCreated(orderID, _assetID, msg.sender);
     emit LogSellOrderDetails(orderID, _amount, _price);
@@ -137,7 +137,7 @@ contract AssetExchange {
   nonReentrant
   onlyApproved
   returns (bool) {
-    bytes32 orderID = keccak256(_assetID, msg.sender, _amount, _price, _buyOrder);
+    bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, _buyOrder));
     require(orders[msg.sender][orderID]);
     if (_buyOrder) {
       uint returnValue = _amount.mul(_price);
@@ -169,8 +169,8 @@ contract AssetExchange {
   anyOwner
   public {
     require(_functionInitiator != msg.sender);
-    require(database.boolStorage(keccak256(this, _functionInitiator, "destroy", keccak256(_holdingAddress))));
-    emit LogDestruction(_holdingAddress, this.balance, msg.sender);
+    require(database.boolStorage(keccak256(abi.encodePacked(address(this), _functionInitiator, "destroy", keccak256(abi.encodePacked(_holdingAddress))))));
+    emit LogDestruction(_holdingAddress, address(this).balance, msg.sender);
     selfdestruct(_holdingAddress);
   }
 
@@ -192,7 +192,7 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   modifier validAsset(bytes32 _assetID) {
     require (_assetID != bytes32(0));
-    require (database.uintStorage(keccak256("fundingStage", _assetID)) == 4);
+    require (database.uintStorage(keccak256(abi.encodePacked("fundingStage", _assetID))) == uint(4));
     _;
   }
 
@@ -200,7 +200,7 @@ contract AssetExchange {
   // Check if user has enough ownershipUnits to create SellOrder
   //------------------------------------------------------------------------------------------------------------------
   modifier hasEnoughOwnership(bytes32 _assetID, uint _requiredOwnership) {
-    require(database.uintStorage(keccak256("ownershipUnits", _assetID, msg.sender)) >= _requiredOwnership);
+    require(database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender))) >= _requiredOwnership);
     _;
   }
 
@@ -216,8 +216,8 @@ contract AssetExchange {
   // Must have access level of 3 to use marketplace
   //------------------------------------------------------------------------------------------------------------------
   modifier onlyApproved {
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) == uint(3));
-    require(database.uintStorage(keccak256("userAccessExpiry", msg.sender)) > now);
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccess", msg.sender))) == uint(3));
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiry", msg.sender))) > now);
     _;
   }
 
@@ -225,7 +225,7 @@ contract AssetExchange {
   // Verify contract isn't paused
   //------------------------------------------------------------------------------------------------------------------
   modifier whenNotPaused {
-    require(!database.boolStorage(keccak256("pause", this)));
+    require(!database.boolStorage(keccak256(abi.encodePacked("pause", this))));
     _;
   }
 

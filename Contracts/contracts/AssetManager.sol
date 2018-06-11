@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity 0.4.24;
 
 import './Database.sol';
 import './MyBitToken.sol';
@@ -10,7 +10,7 @@ import './SafeMath.sol';
 // TODO: Make function to switch assetManager
 //------------------------------------------------------------------------------------------------------------------
 contract AssetManager {
-  using SafeMath for *;
+  using SafeMath for uint;
 
   MyBitToken public myBitToken;
   Database public database;
@@ -34,9 +34,9 @@ contract AssetManager {
   external
   accessApproved(1)
   returns (bool) {
-    require(myBitToken.transferFrom(msg.sender, this, _amount));
-    uint depositedAmount = database.uintStorage(keccak256("depositedMYB", msg.sender));
-    database.setUint(keccak256("depositedMYB", msg.sender), depositedAmount.add(_amount));
+    require(myBitToken.transferFrom(msg.sender, address(this), _amount));
+    uint depositedAmount = database.uintStorage(keccak256(abi.encodePacked("depositedMYB", msg.sender)));
+    database.setUint(keccak256(abi.encodePacked("depositedMYB", msg.sender)), depositedAmount.add(_amount));
     emit LogEscrowDeposited(msg.sender, _amount, now);
     return true;
   }
@@ -50,11 +50,11 @@ contract AssetManager {
   external
   anyOwner
   returns (bool) {
-    require(database.uintStorage(keccak256("userAccess", _newManager)) >= uint(1));   // Make sure new asset manager is approved
-    require(database.uintStorage(keccak256("userAccessExpiry", _newManager)) > now);
-    address oldAssetManager = database.addressStorage(keccak256("assetManager", _assetID));
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccess", _newManager))) >= uint(1));   // Make sure new asset manager is approved
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiry", _newManager))) > now);
+    address oldAssetManager = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID)));
     require(oldAssetManager != address(0));
-    database.setAddress(keccak256("assetManager", _assetID), _newManager);
+    database.setAddress(keccak256(abi.encodePacked("assetManager", _assetID), _newManager));
     emit LogAssetManagerReplaced(_assetID, oldAssetManager, _newManager);
     return true;
   }
@@ -66,18 +66,18 @@ contract AssetManager {
   function unlockEscrow(bytes32 _assetID)
   external
   accessApproved(1) {
-    if (database.addressStorage(keccak256("assetStaker", _assetID)) == address(0)) { require(database.addressStorage(keccak256("assetManager", _assetID)) == msg.sender); }
-    else { require(database.addressStorage(keccak256("assetStaker", _assetID)) == msg.sender); }
-    uint amountToUnlock = database.uintStorage(keccak256("escrowedForAsset", _assetID));
+    if (database.addressStorage(keccak256(abi.encodePacked("assetStaker", _assetID))) == address(0)) { require(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))) == msg.sender); }
+    else { require(database.addressStorage(keccak256(abi.encodePacked("assetStaker", _assetID))) == msg.sender); }
+    uint amountToUnlock = database.uintStorage(keccak256(abi.encodePacked("escrowedForAsset", _assetID)));
     assert(amountToUnlock > 0);
-    uint fundingStage = database.uintStorage(keccak256("fundingStage", _assetID));
+    uint fundingStage = database.uintStorage(keccak256(abi.encodePacked("fundingStage", _assetID)));
     if (fundingStage == uint(2) || fundingStage == uint(5)){    // has asset failed or finished it's lifecycle?
       releaseEscrow(_assetID, msg.sender, amountToUnlock);     // Unlock all of the escrowed MYB since asset has finished it's lifecycle
     }
     else {
-      uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
-      uint assetIncome = database.uintStorage(keccak256("assetIncome", _assetID));
-      uint percentageROI = database.uintStorage(keccak256(assetIncome, _assetID)).mul(100).div(amountRaised);    // Ratio of  incomeProduced / funding cost  (both in WEI)
+      uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)));
+      uint assetIncome = database.uintStorage(keccak256(abi.encodePacked("assetIncome", _assetID)));
+      uint percentageROI = database.uintStorage(keccak256(abi.encodePacked(assetIncome, _assetID))).mul(100).div(amountRaised);    // Ratio of  incomeProduced / funding cost  (both in WEI)
       // TODO: find better algorithm
       if (percentageROI >= uint(100)) { releaseEscrow(_assetID, msg.sender, amountToUnlock); }
       if (percentageROI >= uint(75)) { releaseEscrow(_assetID, msg.sender, (uint(75).mul(amountRaised)).div(uint(100))); }
@@ -92,12 +92,12 @@ contract AssetManager {
   //------------------------------------------------------------------------------------------------------------------
   function releaseEscrow(bytes32 _assetID, address _user, uint _amount)
   internal {
-    uint amountLockedForAsset = database.uintStorage(keccak256("escrowedForAsset", _assetID));
-    uint totalEscrowedAmount = database.uintStorage(keccak256("escrowedMYB", _user));
-    uint depositedAmount = database.uintStorage(keccak256("depositedMYB", _user));
-    database.setUint(keccak256("escrowedForAsset", _assetID), amountLockedForAsset.sub(_amount));
-    database.setUint(keccak256("escrowedMYB", _user), totalEscrowedAmount.sub(_amount));
-    database.setUint(keccak256("depositedMYB", _user), depositedAmount.add(totalEscrowedAmount.sub(_amount)));
+    uint amountLockedForAsset = database.uintStorage(keccak256(abi.encodePacked("escrowedForAsset", _assetID)));
+    uint totalEscrowedAmount = database.uintStorage(keccak256(abi.encodePacked("escrowedMYB", _user)));
+    uint depositedAmount = database.uintStorage(keccak256(abi.encodePacked("depositedMYB", _user)));
+    database.setUint(keccak256(abi.encodePacked("escrowedForAsset", _assetID)), amountLockedForAsset.sub(_amount));
+    database.setUint(keccak256(abi.encodePacked("escrowedMYB", _user)), totalEscrowedAmount.sub(_amount));
+    database.setUint(keccak256(abi.encodePacked("depositedMYB", _user)), depositedAmount.add(totalEscrowedAmount.sub(_amount)));
     emit LogEscrowUnlocked(_assetID, _user, _amount);
   }
 
@@ -110,9 +110,9 @@ contract AssetManager {
   returns (bool){
     uint unlockedBalance = getUnlockedBalance(msg.sender);
     assert (unlockedBalance >= _amount);
-    uint depositedAmount = database.uintStorage(keccak256("depositedMYB", msg.sender));
+    uint depositedAmount = database.uintStorage(keccak256(abi.encodePacked("depositedMYB", msg.sender)));
     assert (depositedAmount >= _amount);
-    database.setUint(keccak256("depositedMYB", msg.sender), depositedAmount.sub(_amount));
+    database.setUint(keccak256(abi.encodePacked("depositedMYB", msg.sender)), depositedAmount.sub(_amount));
     myBitToken.transfer(msg.sender, _amount);
     emit LogEscrowWithdrawn(msg.sender, _amount);
     return true;
@@ -134,8 +134,8 @@ contract AssetManager {
   public
   view
   returns (uint){
-    uint lockedBalance = database.uintStorage(keccak256("escrowedMYB", _assetManager));
-    return database.uintStorage(keccak256("depositedMYB", _assetManager)).sub(lockedBalance);
+    uint lockedBalance = database.uintStorage(keccak256(abi.encodePacked("escrowedMYB", _assetManager)));
+    return database.uintStorage(keccak256(abi.encodePacked("depositedMYB", _assetManager))).sub(lockedBalance);
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -146,8 +146,8 @@ contract AssetManager {
   // Must have access level greater than or equal to 1
   //------------------------------------------------------------------------------------------------------------------
   modifier accessApproved(uint _accessLevel) {
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= uint(_accessLevel));
-    require(database.uintStorage(keccak256("userAccessExpiry", msg.sender)) > now);
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccess", msg.sender))) >= uint(_accessLevel));
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiry", msg.sender))) > now);
     _;
   }
 
@@ -155,7 +155,7 @@ contract AssetManager {
   // Verify that the sender is a registered owner
   //------------------------------------------------------------------------------------------------------------------
   modifier anyOwner {
-    require(database.boolStorage(keccak256("owner", msg.sender)));
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
     _;
   }
 
@@ -166,5 +166,5 @@ contract AssetManager {
   event LogEscrowUnlocked(bytes32 _assetID, address _user, uint _amount);
   event LogEscrowWithdrawn(address _user, uint _amount);
   event LogAssetManagerReplaced(bytes32 _assetID, address oldAssetManager, address _newManager);
-  event LogEscrowDeposited(address indexed _from, uint _amount, uint _timestamp);
+  event LogEscrowDeposited(address _from, uint _amount, uint _timestamp);
 }

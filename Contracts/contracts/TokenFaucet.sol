@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity 0.4.24;
 
 import './MyBitToken.sol';
 
@@ -11,7 +11,7 @@ contract TokenFaucet {
 
   constructor(address _tokenAddress)
   public  {
-    token = MyBitToken(_tokenAddress); 
+    token = MyBitToken(_tokenAddress);
   }
 
   function deposit(uint _amount)

@@ -67,7 +67,7 @@ contract  Test {
   public
   view
   returns (address) {
-    return database.addressStorage(keccak256("contract", _name));
+    return database.addressStorage(keccak256(abi.encodePacked("contract", _name)));
   }
 
   // Test Re-entrancy here
