@@ -20,14 +20,15 @@ contract AssetManager {
   //------------------------------------------------------------------------------------------------------------------
   // Constructor. Initiate Database and MyBitToken
   //------------------------------------------------------------------------------------------------------------------
-  constructor(address _database, address _tokenAddress)
+  constructor(address _database, address _mybTokenAddress)
   public {
     database = Database(_database);
-    myBitToken = MyBitToken(_tokenAddress);
+    myBitToken = MyBitToken(_mybTokenAddress);
   }
 
   //------------------------------------------------------------------------------------------------------------------
   // Asset manager can deposit MyBit here to be locked for escrow
+  // @Param: The amount of MYB being deposited: No decimals included (ie: 1 MYB == 1 * 10^18)
   //------------------------------------------------------------------------------------------------------------------
   function depositEscrow(uint _amount)
   external
@@ -45,19 +46,21 @@ contract AssetManager {
   // Asset manager can be changed by owner or governance authority here
   // @Param: Address of the replacement operator
   //------------------------------------------------------------------------------------------------------------------
-  function replaceAssetManager(address _newOperator)
+  function replaceAssetManager(address _newManager, bytes32 _assetID)
   external
   anyOwner
   returns (bool) {
-    require(database.uintStorage(keccak256("userAccess", _newOperator)) >= uint(1));
-    require(database.uintStorage(keccak256("userAccessExpiry", _newOperator)) > now);
-
-
+    require(database.uintStorage(keccak256("userAccess", _newManager)) >= uint(1));   // Make sure new asset manager is approved
+    require(database.uintStorage(keccak256("userAccessExpiry", _newManager)) > now);
+    address oldAssetManager = database.addressStorage(keccak256("assetManager", _assetID));
+    require(oldAssetManager != address(0));
+    database.setAddress(keccak256("assetManager", _assetID), _newManager);
+    emit LogAssetManagerReplaced(_assetID, oldAssetManager, _newManager);
+    return true;
   }
 
   //------------------------------------------------------------------------------------------------------------------
   // AssetManager can withdraw any escrowed tokens that are no longer needed in escrow here
-  // Invariant: Must not be in following stages: Failed Funding (stage = 2), Finished lifecycle (stage = 5))
   // Invariant: If asset has a staker, then the escrow belongs to staker. Otherwise it belongs to AssetManager
   //------------------------------------------------------------------------------------------------------------------
   function unlockEscrow(bytes32 _assetID)
@@ -69,37 +72,37 @@ contract AssetManager {
     assert(amountToUnlock > 0);
     uint fundingStage = database.uintStorage(keccak256("fundingStage", _assetID));
     if (fundingStage == uint(2) || fundingStage == uint(5)){    // has asset failed or finished it's lifecycle?
-      releaseEscrow(amountToUnlock, _assetID);
+      releaseEscrow(_assetID, msg.sender, amountToUnlock);     // Unlock all of the escrowed MYB since asset has finished it's lifecycle
     }
     else {
       uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
       uint assetIncome = database.uintStorage(keccak256("assetIncome", _assetID));
-      uint percentageROI = database.uintStorage(keccak256(assetIncome, _assetID)).mul(100).div(amountRaised);
+      uint percentageROI = database.uintStorage(keccak256(assetIncome, _assetID)).mul(100).div(amountRaised);    // Ratio of  incomeProduced / funding cost  (both in WEI)
       // TODO: find better algorithm
-      if (percentageROI >= uint(100)) { releaseEscrow(amountToUnlock, _assetID); }
-      if (percentageROI >= uint(75)) { releaseEscrow((uint(75).mul(amountRaised)).div(uint(100)), _assetID); }
-      if (percentageROI >= uint(50)) { releaseEscrow((uint(50).mul(amountRaised)).div(uint(100)), _assetID); }
-      if (percentageROI >= uint(25)) { releaseEscrow((uint(25).mul(amountRaised)).div(uint(100)), _assetID); }
+      if (percentageROI >= uint(100)) { releaseEscrow(_assetID, msg.sender, amountToUnlock); }
+      if (percentageROI >= uint(75)) { releaseEscrow(_assetID, msg.sender, (uint(75).mul(amountRaised)).div(uint(100))); }
+      if (percentageROI >= uint(50)) { releaseEscrow(_assetID, msg.sender, (uint(50).mul(amountRaised)).div(uint(100))); }
+      if (percentageROI >= uint(25)) { releaseEscrow(_assetID, msg.sender, (uint(25).mul(amountRaised)).div(uint(100))); }
     }
   }
 
   //------------------------------------------------------------------------------------------------------------------
   // Releases escrowed tokens. Only called internally.
-  // TODO: add amount already paid to asset manager
+  // TODO: make sure safemath throws if there is not enough MYB deposited
   //------------------------------------------------------------------------------------------------------------------
-  function releaseEscrow(uint _amount, bytes32 _assetID)
+  function releaseEscrow(bytes32 _assetID, address _user, uint _amount)
   internal {
     uint amountLockedForAsset = database.uintStorage(keccak256("escrowedForAsset", _assetID));
-    uint totalEscrowedAmount = database.uintStorage(keccak256("escrowedMYB", msg.sender));
-    uint depositedAmount = database.uintStorage(keccak256("depositedMYB", msg.sender));
+    uint totalEscrowedAmount = database.uintStorage(keccak256("escrowedMYB", _user));
+    uint depositedAmount = database.uintStorage(keccak256("depositedMYB", _user));
     database.setUint(keccak256("escrowedForAsset", _assetID), amountLockedForAsset.sub(_amount));
-    database.setUint(keccak256("escrowedMYB", msg.sender), totalEscrowedAmount.sub(_amount));
-    database.setUint(keccak256("depositedMYB", msg.sender), depositedAmount.add(totalEscrowedAmount.sub(_amount)));
+    database.setUint(keccak256("escrowedMYB", _user), totalEscrowedAmount.sub(_amount));
+    database.setUint(keccak256("depositedMYB", _user), depositedAmount.add(totalEscrowedAmount.sub(_amount)));
+    emit LogEscrowUnlocked(_assetID, _user, _amount);
   }
 
   //------------------------------------------------------------------------------------------------------------------
   // Asset manager can withdraw tokens here once they have unlocked them from a previous asset escrow
-  // TODO: event
   //------------------------------------------------------------------------------------------------------------------
   function withdraw(uint _amount)
   external
@@ -111,6 +114,7 @@ contract AssetManager {
     assert (depositedAmount >= _amount);
     database.setUint(keccak256("depositedMYB", msg.sender), depositedAmount.sub(_amount));
     myBitToken.transfer(msg.sender, _amount);
+    emit LogEscrowWithdrawn(msg.sender, _amount);
     return true;
   }
 
@@ -159,6 +163,8 @@ contract AssetManager {
   //------------------------------------------------------------------------------------------------------------------
   //                                              Events
   //------------------------------------------------------------------------------------------------------------------
-
+  event LogEscrowUnlocked(bytes32 _assetID, address _user, uint _amount);
+  event LogEscrowWithdrawn(address _user, uint _amount);
+  event LogAssetManagerReplaced(bytes32 _assetID, address oldAssetManager, address _newManager);
   event LogEscrowDeposited(address indexed _from, uint _amount, uint _timestamp);
 }
