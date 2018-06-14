@@ -81,8 +81,8 @@ returns (bool) {
     uint priceExpiration = database.uintStorage(keccak256(abi.encodePacked("priceUpdateTimeline"))) + now;
     emit LogPriceUpdate(database.uintStorage(keccak256(abi.encodePacked("ethUSDPrice"))),database.uintStorage(keccak256(abi.encodePacked("mybUSDPrice")))); 
     database.setUint(keccak256(abi.encodePacked("ethUSDPrice")), _ethPrice);
-    database.setUint(keccak256(abi.encodePacked("priceExpiration")), priceExpiration);
     database.setUint(keccak256(abi.encodePacked("mybUSDPrice")), _mybPrice);
+    database.setUint(keccak256(abi.encodePacked("priceExpiration")), priceExpiration);
     return true; 
 }
 

@@ -7,7 +7,7 @@ import './SafeMath.sol';
 // This contract transfers MyBit tokens and holds them forever with no mechanism to transfer them out again.
 //------------------------------------------------------------------------------------------------------------------
 contract TokenBurn {
-  using SafeMath for uint;
+  using SafeMath for *;
 
 
   MyBitToken public myBitToken;
@@ -39,6 +39,30 @@ contract TokenBurn {
     require(myBitToken.burnFrom(msg.sender, accessCostMyB));
     database.setUint(keccak256(abi.encodePacked("userAccess", msg.sender)), _accessLevelDesired);
     emit LogMyBitBurnt(msg.sender, accessCostMyB);
+    return true;
+  }
+
+  //------------------------------------------------------------------------------------------------------------------
+  // Users can gain access to the platform by burning tokens here.
+  // Every access level has an associated price in USD. The equivalent value of MyBit must be burnt to gain acccess.
+  // Alias for burnTokens(). Can receive calls directly from token contract for better UX 
+  // TODO: Use _data parameter to pass in _accessLevelDesired
+  // TODO: Check verification levels are correct with bytes parameter
+  // address _from, uint256 _amount, address _token, bytes _data
+  //------------------------------------------------------------------------------------------------------------------
+  function receiveApproval(address _from, uint _amount, address _token, bytes _accessLevelDesired)
+  external
+  whenNotPaused
+  priceUpdated
+  returns (bool) {
+    require(_token == address(myBitToken)); 
+    uint accessLevelDesired = _accessLevelDesired.bytesToUint();   // TODO: convert bytes to uint
+    uint mybPrice = database.uintStorage(keccak256(abi.encodePacked("mybUSDPrice")));
+    uint accessCostMyB = (database.uintStorage(keccak256(abi.encodePacked("accessTokenFee", accessLevelDesired))).mul(10**21)).div(mybPrice);
+    assert (accessCostMyB >= _amount);
+    require(myBitToken.burnFrom(_from, accessCostMyB));
+    database.setUint(keccak256(abi.encodePacked("userAccess", _from)), accessLevelDesired);
+    emit LogMyBitBurnt(_from, accessCostMyB);
     return true;
   }
 

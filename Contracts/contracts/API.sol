@@ -324,37 +324,23 @@ contract API {
     return database.uintStorage(keccak256(abi.encodePacked("mybUSDPrice")));
   }
 
-  function ethUSDPriceExpiration()
+  function priceExpiration()
   public
   view
   returns (uint) {
-    return database.uintStorage(keccak256(abi.encodePacked("ethUSDPriceExpiration")));
+    return database.uintStorage(keccak256(abi.encodePacked("priceExpiration")));
   }
 
-  function mybUSDPriceExpiration()
+  // Returns time in seconds until price needs to be updated
+  function priceTimeToExpiration()
   public
   view
   returns (uint) {
-    return database.uintStorage(keccak256(abi.encodePacked("mybUSDPriceExpiration")));
-  }
-
-  function ethUSDSecondsRemaining()
-  public
-  view
-  returns (uint) {
-    uint expiration = database.uintStorage(keccak256(abi.encodePacked("ethUSDPriceExpiration")));
+    uint expiration = database.uintStorage(keccak256(abi.encodePacked("priceExpiration")));
     if (now > expiration) return 0;
     return (expiration - now);
   }
 
-  function mybUSDSecondsRemaining()
-  public
-  view
-  returns (uint) {
-    uint expiration = database.uintStorage(keccak256(abi.encodePacked("mybUSDPriceExpiration")));
-    if (now > expiration) return 0;
-    return (expiration - now);
-  }
 
 function ()
 public {
