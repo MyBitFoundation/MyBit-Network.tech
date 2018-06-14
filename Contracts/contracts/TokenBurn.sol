@@ -69,7 +69,7 @@ contract TokenBurn {
   // Verifies that the MyBit/USD price is still valid
   //------------------------------------------------------------------------------------------------------------------
   modifier priceUpdated {
-    require (now < database.uintStorage(keccak256(abi.encodePacked("mybUSDPriceExpiration"))));
+    require (now < database.uintStorage(keccak256(abi.encodePacked("priceExpiration"))));
     _;
   }
 

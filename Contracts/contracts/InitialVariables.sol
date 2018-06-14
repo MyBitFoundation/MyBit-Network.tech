@@ -71,6 +71,20 @@ multiSigRequired(_signer, _functionName, keccak256(abi.encodePacked(_accessLevel
   database.setUint(keccak256(abi.encodePacked("accessTokenFee", _accessLevel)), _newPrice);
 }
 
+// ------------------------------------------------------------------------------------------------
+//  Set 24hr prices
+// ------------------------------------------------------------------------------------------------
+function setDailyPrices(uint _ethPrice, uint _mybPrice)
+external 
+anyOwner 
+returns (bool) { 
+    uint priceExpiration = database.uintStorage(keccak256(abi.encodePacked("priceUpdateTimeline"))) + now;
+    emit LogPriceUpdate(database.uintStorage(keccak256(abi.encodePacked("ethUSDPrice"))),database.uintStorage(keccak256(abi.encodePacked("mybUSDPrice")))); 
+    database.setUint(keccak256(abi.encodePacked("ethUSDPrice")), _ethPrice);
+    database.setUint(keccak256(abi.encodePacked("priceExpiration")), priceExpiration);
+    database.setUint(keccak256(abi.encodePacked("mybUSDPrice")), _mybPrice);
+    return true; 
+}
 
 
 // ------------------------------------------------------------------------------------------------
@@ -108,5 +122,6 @@ modifier multiSigRequired(address _signer, string _functionName, bytes32 _keyPar
 //                                  Events
 //------------------------------------------------------------------------------------------
 event LogInitialized(address _sender, address _database);
+event LogPriceUpdate(uint _oldETHPrice, uint _oldMYBPrice); 
 
 }

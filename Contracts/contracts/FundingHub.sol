@@ -192,7 +192,7 @@ contract FundingHub {
   // Check that the Ether/USD prices have been updated
   //------------------------------------------------------------------------------------------------------------------
   modifier priceUpdated {
-    require (now < database.uintStorage(keccak256(abi.encodePacked("ethUSDPriceExpiration"))));
+    require (now < database.uintStorage(keccak256(abi.encodePacked("priceExpiration"))));
     _;
   }
 
