@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity 0.4.24;
 
 import './Database.sol';
 import './Asset.sol';
@@ -9,7 +9,6 @@ import './InitialVariables.sol';
 import './AssetExchange.sol';
 import './MyBitToken.sol';
 import './AssetManager.sol';
-import './OracleHub.sol';
 import './Owned.sol';
 import './TokenBurn.sol';
 import './TokenFaucet.sol';

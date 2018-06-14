@@ -8,7 +8,7 @@ contract Staking {
 using SafeMath for uint;
   Database public database;
   MyBitToken public myBitToken;
-  uint public stakingExpiry = 604800;     // One-week
+  uint public stakingExpiry = uint(604800);     // One-week
 
 
   //------------------------------------------------------------------------------------------------------------------
@@ -30,12 +30,12 @@ using SafeMath for uint;
   returns (bool) {
     bytes32 escrowID = keccak256(abi.encodePacked(_requester, _amount, _incomeShare, _managerPercentage, _amountToBeRaised, _assetType, _installerID, _blockAtCreation));
     require(database.uintStorage(keccak256(abi.encodePacked("lendingExpiration", escrowID))) > now);  // Expiry date will be 0 if this is not a valid escrow request
-    require(myBitToken.transferFrom(msg.sender, this, _amount));
+    require(myBitToken.transferFrom(msg.sender, address(this), _amount));
     uint depositedAmount = database.uintStorage(keccak256(abi.encodePacked("depositedMYB", msg.sender)));
     database.deleteUint(keccak256(abi.encodePacked("lendingExpiration", escrowID)));    // Make sure nobody else can stake this request
     database.setAddress(keccak256(abi.encodePacked("assetStaker", escrowID)), msg.sender);
     database.setUint(keccak256(abi.encodePacked("stakerIncomeShare", escrowID)), _incomeShare);
-    database.setUint(keccak256(abi.encodePacked("stakingExpiration", escrowID)), now.add(stakingExpiry));  // TODO: delete when asset is created
+    database.setUint(keccak256(abi.encodePacked("stakingExpiration", escrowID)), stakingExpiry.add(now));  // TODO: delete when asset is created
     database.setUint(keccak256(abi.encodePacked("depositedMYB", msg.sender)), depositedAmount.add(_amount));
     emit LogEscrowStaked(msg.sender, _amount, escrowID);
     return true;
@@ -94,8 +94,8 @@ using SafeMath for uint;
   //                                            Events
   //------------------------------------------------------------------------------------------------------------------
 
-  event LogEscrowRequestedP1(uint indexed _amount, uint indexed _incomeShare, uint indexed _managerPercentage);
-  event LogEscrowRequestedP2(uint indexed _amountToBeRaised, bytes32 indexed _assetType, bytes32 indexed _installerID);
-  event LogEscrowRequester(address indexed _assetManager, uint indexed _timeOfExpiry, uint indexed _blockAtCreation);
-  event LogEscrowStaked(address indexed _staker, uint indexed _amountMYB, bytes32 indexed _escrowID);
+  event LogEscrowRequestedP1(uint _amount, uint _incomeShare, uint _managerPercentage);
+  event LogEscrowRequestedP2(uint _amountToBeRaised, bytes32 _assetType, bytes32 _installerID);
+  event LogEscrowRequester(address indexed _assetManager, uint _timeOfExpiry, uint _blockAtCreation);
+  event LogEscrowStaked(address indexed _staker, uint _amountMYB, bytes32 indexed _escrowID);
 }

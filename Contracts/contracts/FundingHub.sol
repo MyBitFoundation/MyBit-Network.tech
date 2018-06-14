@@ -39,7 +39,7 @@ contract FundingHub {
   returns (bool) {
     uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)));
     if (ownershipUnits == 0) {
-      LogNewFunder(msg.sender, _assetID, block.timestamp);    // Create event to reference list of funders
+      emit LogNewFunder(msg.sender, _assetID);    // Create event to reference list of funders
     }
     uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)));
     database.setUint(keccak256(abi.encodePacked("amountRaised", _assetID)), amountRaised.add(msg.value));
@@ -66,7 +66,7 @@ contract FundingHub {
     database.addressStorage(keccak256(abi.encodePacked("MyBitFoundation"))).transfer(myBitAmount);             // Must be normal account
     database.addressStorage(keccak256(abi.encodePacked("InstallerEscrow"))).transfer(installerAmount);             // Must be normal account
     database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(4));
-    emit LogAssetPayout(_assetID, amountRaised, now);
+    emit LogAssetPayout(_assetID, amountRaised);
     return true;
   }
 
@@ -80,7 +80,7 @@ contract FundingHub {
   atStage(_assetID, uint(1))
   returns (bool) {
     database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(2));
-    emit LogAssetFundingFailed(_assetID, database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID))), block.timestamp);
+    emit LogAssetFundingFailed(_assetID, database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID))));
     return true;
   }
 
@@ -95,12 +95,12 @@ contract FundingHub {
   atStage(_assetID, uint(2))
   returns (bool) {
     uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)));
-    require (ownershipUnits > 0);
+    require (ownershipUnits > uint(0));
     database.deleteUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)));
     uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)));
     database.setUint(keccak256(abi.encodePacked("amountRaised", _assetID)), amountRaised.sub(ownershipUnits));
     msg.sender.transfer(ownershipUnits);
-    emit LogRefund(msg.sender, ownershipUnits, block.timestamp);
+    emit LogRefund(msg.sender, ownershipUnits);
     return true;
   }
 
@@ -174,7 +174,7 @@ contract FundingHub {
   modifier fundingLimit(bytes32 _assetID) {
     require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
     uint currentEthPrice = database.uintStorage(keccak256(abi.encodePacked("ethUSDPrice")));
-    assert (currentEthPrice > 0);
+    assert (currentEthPrice > uint(0));
     _;
     uint value1 = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID))).mul(currentEthPrice);
     uint value2 = database.uintStorage(keccak256(abi.encodePacked("amountToBeRaised", _assetID))).mul(1e18);
@@ -183,8 +183,8 @@ contract FundingHub {
     emit fundingLimitModifier(value1, value2, value3);
     if (database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID))).mul(currentEthPrice).div(1e18) >= database.uintStorage(keccak256(abi.encodePacked("amountToBeRaised", _assetID)))) {
        database.deleteUint(keccak256(abi.encodePacked("amountToBeRaised", _assetID)));      // No longer need this variable
-       database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), 3);
-       emit LogAssetFundingSuccess(_assetID, currentEthPrice, block.timestamp);
+       database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(3));
+       emit LogAssetFundingSuccess(_assetID, currentEthPrice);
       }
   }
 
@@ -225,12 +225,12 @@ contract FundingHub {
   //                                            Events
   //------------------------------------------------------------------------------------------------------------------
 
-  event LogNewFunder(address indexed _funder, bytes32 indexed _assetID, uint _timestamp);
+  event LogNewFunder(address indexed _funder, bytes32 indexed _assetID);
   event LogAssetFunded(address indexed _sender, uint indexed _amount, bytes32 indexed _assetID);
-  event LogAssetFundingFailed(bytes32 indexed _assetID, uint indexed _amountRaised, uint _timestamp);
-  event LogAssetFundingSuccess(bytes32 indexed _assetID, uint indexed _currentEthPrice, uint _timestamp);
-  event LogRefund(address indexed _funder, uint indexed _amount, uint _timestamp);
-  event LogAssetPayout(bytes32 indexed _assetID, uint indexed _amount, uint _timestamp);
+  event LogAssetFundingFailed(bytes32 indexed _assetID, uint indexed _amountRaised);
+  event LogAssetFundingSuccess(bytes32 indexed _assetID, uint indexed _currentEthPrice);
+  event LogRefund(address _funder, uint _amount);
+  event LogAssetPayout(bytes32 indexed _assetID, uint indexed _amount);
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
   event fundingLimitModifier(uint _value1, uint _value2, uint _value3);
 }

@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity 0.4.24;
 import './Database.sol';
 import './SafeMath.sol';
 
@@ -10,8 +10,7 @@ contract AssetCreation {
   using SafeMath for *;
 
   Database public database;
-  bool private rentrancy_lock = false;    // Prevents re-entrancy attack
-  uint public fundingTime = 3000;        // TODO: Number for testing
+  uint public fundingTime = uint(3000);        // TODO: Testing number
 
   constructor(address _database)
   public  {
@@ -32,24 +31,24 @@ contract AssetCreation {
   noEmptyBytes(_installerID)
   noEmptyBytes(_assetType)
   returns (bool){
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= uint(1));
-    require(database.uintStorage(keccak256("userAccessExpiration", msg.sender)) > now);
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccess", msg.sender))) >= uint(1));
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiration", msg.sender))) > now);
     require(_managerPercentage < uint(100) && _managerPercentage > uint(0));
     require(_amountToBeRaised >= uint(100));           // Minimum asset price
-    bytes32 assetID = keccak256(msg.sender, _amountToBeRaised, _managerPercentage, _amountToEscrow, _installerID, _assetType, _blockAtCreation);
-    require(database.uintStorage(keccak256("fundingStage", assetID)) == uint(0));    // This ensures the asset isn't currently live or being funded
-    address staker = database.addressStorage(keccak256("assetStaker", assetID));
+    bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToBeRaised, _managerPercentage, _amountToEscrow, _installerID, _assetType, _blockAtCreation));
+    require(database.uintStorage(keccak256(abi.encodePacked("fundingStage", assetID))) == uint(0));    // This ensures the asset isn't currently live or being funded
+    address staker = database.addressStorage(keccak256(abi.encodePacked("assetStaker", assetID)));
     if (staker != address(0)) {
-      assert (database.addressStorage(keccak256("stakingExpiration", assetID)) > now);
+      assert (database.uintStorage(keccak256(abi.encodePacked("stakingExpiration", assetID))) > now);     // User has 168 hours (1 week) to initiate asset after receiving stake
       require(lockAssetEscrow(assetID, _amountToEscrow, staker));
     }
     else { require(lockAssetEscrow(assetID, _amountToEscrow, msg.sender)); }
-    database.setUint(keccak256("amountToBeRaised", assetID), _amountToBeRaised);
-    database.setUint(keccak256("managerPercentage", assetID), _managerPercentage);
-    database.setAddress(keccak256("assetManager", assetID), msg.sender);
-    database.setUint(keccak256("fundingDeadline", assetID), block.timestamp.add(fundingTime));
-    database.setUint(keccak256("fundingStage", assetID), uint(1));       // Allow this asset to receive funding
-    emit LogAssetFundingStarted(assetID, _assetType, _installerID);    // assetType and installer ID are already indexed
+    database.setUint(keccak256(abi.encodePacked("amountToBeRaised", assetID)), _amountToBeRaised);
+    database.setUint(keccak256(abi.encodePacked("managerPercentage", assetID)), _managerPercentage);
+    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
+    database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), fundingTime.add(now));
+    database.setUint(keccak256(abi.encodePacked("fundingStage", assetID)), uint(1));       // Allow this asset to receive funding
+    emit LogAssetFundingStarted(assetID, _installerID, _assetType);    // assetType and installer ID are already indexed
     return true;
   }
 
@@ -60,10 +59,10 @@ contract AssetCreation {
   internal
   returns (bool) {
     if (_amountToEscrow == 0) { return true; }
-    database.setUint(keccak256("escrowedForAsset", _assetID), _amountToEscrow);
-    uint escrowedMYB = database.uintStorage(keccak256("escrowedMYB", _escrowDepositer));
-    assert (_amountToEscrow <= database.uintStorage(keccak256("depositedMYB", _escrowDepositer)).sub(_amountToEscrow));
-    database.setUint(keccak256("escrowedMYB", _escrowDepositer), escrowedMYB.add(_amountToEscrow));
+    database.setUint(keccak256(abi.encodePacked("escrowedForAsset", _assetID)), _amountToEscrow);
+    uint escrowedMYB = database.uintStorage(keccak256(abi.encodePacked("escrowedMYB", _escrowDepositer)));
+    assert (_amountToEscrow <= database.uintStorage(keccak256(abi.encodePacked("depositedMYB", _escrowDepositer))).sub(_amountToEscrow));
+    database.setUint(keccak256(abi.encodePacked("escrowedMYB", _escrowDepositer)), escrowedMYB.add(_amountToEscrow));
     emit LogLockAssetEscrow(_escrowDepositer, _assetID, _amountToEscrow);
     return true;
   }
@@ -79,12 +78,12 @@ contract AssetCreation {
   whenNotPaused
   returns(bool) {
     require (_functionSigner != msg.sender);
-    require(database.uintStorage(keccak256("fundingStage", _assetID)) > uint(0));
-    bytes32 functionHash = keccak256(this, _functionSigner, "removeAsset", _assetID);
+    require(database.uintStorage(keccak256(abi.encodePacked("fundingStage", _assetID))) > uint(0));
+    bytes32 functionHash = keccak256(abi.encodePacked(address(this), _functionSigner, "removeAsset", _assetID));
     require(database.boolStorage(functionHash));
     database.setBool(functionHash, false);
-    database.setUint(keccak256("fundingStage", _assetID), uint(5));   // Asset won't receive income & ownership won't be able to be traded.
-    emit LogAssetRemoved(msg.sender, _assetID, block.timestamp);
+    database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(5));   // Asset won't receive income & ownership won't be able to be traded.
+    emit LogAssetRemoved(msg.sender, _assetID);
     return true;
   }
 
@@ -98,7 +97,7 @@ contract AssetCreation {
   notZero(_newTimeGivenForFunding)
   returns (bool) {
     fundingTime = _newTimeGivenForFunding;
-    emit LogFundingTimeChanged(msg.sender, _newTimeGivenForFunding, block.timestamp);
+    emit LogFundingTimeChanged(msg.sender, _newTimeGivenForFunding);
     return true;
   }
 
@@ -112,12 +111,12 @@ contract AssetCreation {
   notZero(_myBitFoundationPercentage)
   notZero(_installerPercentage)
   returns (bool) {
-    bytes32 functionHash = keccak256(this, _functionSigner, "changeFundingPercentages", keccak256(_myBitFoundationPercentage, _installerPercentage));
+    bytes32 functionHash = keccak256(abi.encodePacked(address(this), _functionSigner, "changeFundingPercentages", keccak256(abi.encodePacked(_myBitFoundationPercentage, _installerPercentage))));
     require(database.boolStorage(functionHash));
     require(_myBitFoundationPercentage.add(_installerPercentage) == uint(100));
     database.setBool(functionHash, false);
-    database.setUint(keccak256("myBitFoundationPercentage"), _myBitFoundationPercentage);
-    database.setUint(keccak256("installerPercentage"), _installerPercentage);
+    database.setUint(keccak256(abi.encodePacked("myBitFoundationPercentage")), _myBitFoundationPercentage);
+    database.setUint(keccak256(abi.encodePacked("installerPercentage")), _installerPercentage);
     emit LogFundingPercentageChanged(_myBitFoundationPercentage, _installerPercentage);
     return true;
   }
@@ -131,10 +130,10 @@ contract AssetCreation {
   anyOwner
   public {
     require(_functionInitiator != msg.sender);
-    bytes32 functionHash = keccak256(this, _functionInitiator, "destroy", keccak256(_holdingAddress));
+    bytes32 functionHash = keccak256(abi.encodePacked(address(this), _functionInitiator, "destroy", keccak256(abi.encodePacked(_holdingAddress))));
     require(database.boolStorage(functionHash));
     database.setBool(functionHash, false);
-    emit LogDestruction(_holdingAddress, this.balance, msg.sender);
+    emit LogDestruction(_holdingAddress, address(this).balance, msg.sender);
     selfdestruct(_holdingAddress);
   }
 
@@ -148,7 +147,7 @@ contract AssetCreation {
   // Makes sure function won't run when contract has been paused
   //------------------------------------------------------------------------------------------------------------------
   modifier whenNotPaused {
-    require(!database.boolStorage(keccak256("pause", this)));
+    require(!database.boolStorage(keccak256(abi.encodePacked("pause", address(this)))));
     _;
   }
 
@@ -172,28 +171,18 @@ contract AssetCreation {
   // Sender must be a registered owner
   //------------------------------------------------------------------------------------------------------------------
   modifier anyOwner {
-    require(database.boolStorage(keccak256("owner", msg.sender)));
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
     _;
-  }
-
-  //------------------------------------------------------------------------------------------------------------------
-  // Prevents contracts from re-entering function before the transaction finishes
-  //------------------------------------------------------------------------------------------------------------------
-  modifier nonReentrant() {
-    require(!rentrancy_lock);
-    rentrancy_lock = true;
-    _;
-    rentrancy_lock = false;
   }
 
   //------------------------------------------------------------------------------------------------------------------
   //                                            Events
   //------------------------------------------------------------------------------------------------------------------
 
-  event LogAssetFundingStarted(address indexed _creator, bytes32 indexed _assetID, bytes32 indexed _assetType);
-  event LogLockAssetEscrow(address indexed _from, bytes32 indexed _assetID, uint indexed _amountOf);
-  event LogAssetRemoved(address indexed _remover, bytes32 indexed _assetID, uint indexed _timestamp);
-  event LogFundingTimeChanged(address _sender, uint _newTimeForFunding, uint _blockTimestamp);
+  event LogAssetFundingStarted(bytes32 indexed _assetID, bytes32 indexed _installerID, bytes32 indexed _assetType);
+  event LogLockAssetEscrow(address _from, bytes32 _assetID, uint _amountOf);
+  event LogAssetRemoved(address _remover, bytes32 indexed _assetID);
+  event LogFundingTimeChanged(address _sender, uint _newTimeForFunding);
   event LogFundingPercentageChanged(uint _myBitFoundationPercentage, uint _installerPercentage);
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
 }

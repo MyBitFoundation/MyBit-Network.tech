@@ -36,7 +36,7 @@ external  {
   database.setUint(keccak256(abi.encodePacked("accessTokenFee", uint(3))), uint(100));
   // -------------Oracle Variables-------------------------
   database.setUint(keccak256(abi.encodePacked("priceUpdateTimeline")), uint(86400));     // Market prices need to be updated every 24 hours
-  emit LogInitialized(msg.sender, address(database), block.number);
+  emit LogInitialized(msg.sender, address(database));
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ function changeAccessTokenFee(address _signer, string _functionName, uint _acces
 external
 anyOwner
 multiSigRequired(_signer, _functionName, keccak256(abi.encodePacked(_accessLevel, _newPrice))) {
-  database.setUint(keccak256(abi.encodePacked("accessTokenFee", _accessLevel), _newPrice));
+  database.setUint(keccak256(abi.encodePacked("accessTokenFee", _accessLevel)), _newPrice);
 }
 
 
@@ -98,7 +98,7 @@ modifier noEmptyAddress(address _contract) {
 // ------------------------------------------------------------------------------------------------
 modifier multiSigRequired(address _signer, string _functionName, bytes32 _keyParam) {
   require(msg.sender != _signer);
-  require(database.boolStorage(keccak256(abi.encodePacked(this, _signer, _functionName, _keyParam))));
+  require(database.boolStorage(keccak256(abi.encodePacked(address(this), _signer, _functionName, _keyParam))));
   database.setBool(keccak256(abi.encodePacked(address(this), _signer, _functionName, _keyParam)), false);
   _;
 }
@@ -107,6 +107,6 @@ modifier multiSigRequired(address _signer, string _functionName, bytes32 _keyPar
 //------------------------------------------------------------------------------------------
 //                                  Events
 //------------------------------------------------------------------------------------------
-event LogInitialized(address _sender, address _database, uint _blockNumber);
+event LogInitialized(address _sender, address _database);
 
 }

@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity ^0.4.23;
 
 // Standard ERC20 contract with Burning capabilities.
 // https://theethereum.wiki/w/index.php/ERC20_Token_Standard

@@ -9,7 +9,7 @@ import './Asset.sol';
 // InVariants: Users must withdraw available funds from asset before trading
 //------------------------------------------------------------------------------------------------------------------
 contract AssetExchange {
-  using SafeMath for *;
+  using SafeMath for uint;
 
   Database public database;
 
@@ -17,7 +17,7 @@ contract AssetExchange {
 
   mapping (address => uint) public weiDeposited;
   mapping (address => uint) public weiOwed;
-  bool public reentrancyLock = false;
+
 
   //------------------------------------------------------------------------------------------------------------------
   // Constructor
@@ -40,7 +40,6 @@ contract AssetExchange {
   function buyAsset(bytes32 _assetID, address _seller, uint _amount, uint _price)
   external
   payable
-  nonReentrant
   whenNotPaused
   onlyApproved
   returns (bool){
@@ -64,7 +63,6 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   function sellAsset(bytes32 _assetID, address _buyer, uint _amount, uint _price)
   public
-  nonReentrant
   onlyApproved
   whenNotPaused
   returns (bool){
@@ -86,7 +84,6 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   function createBuyOrder(bytes32 _assetID, uint _amount, uint _price)
   external
-  nonReentrant
   onlyApproved
   payable
   requiresEther
@@ -112,13 +109,12 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   function createSellOrder(bytes32 _assetID, uint _amount, uint _price)
   external
-  nonReentrant
   onlyApproved
   aboveZero(_amount, _price)
   validAsset(_assetID)
   hasEnoughOwnership(_assetID, _amount)
   returns (bool) {
-    bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, false);
+    bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, false));
     orders[msg.sender][orderID] = true;
     emit LogSellOrderCreated(orderID, _assetID, msg.sender);
     emit LogSellOrderDetails(orderID, _amount, _price);
@@ -134,7 +130,6 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   function deleteOrder(bytes32 _assetID, uint _amount, uint _price, bool _buyOrder)
   external
-  nonReentrant
   onlyApproved
   returns (bool) {
     bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, _buyOrder));
@@ -152,7 +147,6 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   function withdraw()
   external
-  nonReentrant
   onlyApproved
   whenNotPaused
   returns (bool){
@@ -238,20 +232,10 @@ contract AssetExchange {
   }
 
   //------------------------------------------------------------------------------------------------------------------
-  // Prevents contracts from re-entering function before the transaction finishes
-  //------------------------------------------------------------------------------------------------------------------
-  modifier nonReentrant() {
-    require(!reentrancyLock);
-    reentrancyLock = true;
-    _;
-    reentrancyLock = false;
-  }
-
-  //------------------------------------------------------------------------------------------------------------------
   // Verify that the sender is a registered owner
   //------------------------------------------------------------------------------------------------------------------
   modifier anyOwner {
-    require(database.boolStorage(keccak256("owner", msg.sender)));
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
     _;
   }
 
@@ -262,10 +246,10 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
 
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
-  event LogBuyOrderCreated(bytes32 indexed _orderID, bytes32 indexed _assetID, address indexed _creator);
-  event LogBuyOrderCompleted(bytes32 indexed _orderID, bytes32 indexed _assetAddress, address indexed _purchaser);
-  event LogSellOrderCreated(bytes32 indexed _orderID, bytes32 indexed _assetAddress, address indexed _creator);
-  event LogSellOrderCompleted(bytes32 indexed _orderID, bytes32 indexed _assetAddress, address indexed _purchaser);
+  event LogBuyOrderCreated(bytes32 _orderID, bytes32 indexed _assetID, address indexed _creator);
+  event LogBuyOrderCompleted(bytes32 _orderID, bytes32 indexed _assetAddress, address indexed _purchaser);
+  event LogSellOrderCreated(bytes32 _orderID, bytes32 indexed _assetAddress, address indexed _creator);
+  event LogSellOrderCompleted(bytes32 _orderID, bytes32 indexed _assetAddress, address indexed _purchaser);
   event LogBuyOrderDetails(bytes32 _orderID, uint indexed _amount, uint indexed _price);
   event LogSellOrderDetails(bytes32 orderID, uint indexed _amount, uint indexed _price);
 }

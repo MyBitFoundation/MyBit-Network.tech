@@ -38,7 +38,7 @@ contract TokenBurn {
     assert (accessCostMyB > uint(0));
     require(myBitToken.burnFrom(msg.sender, accessCostMyB));
     database.setUint(keccak256(abi.encodePacked("userAccess", msg.sender)), _accessLevelDesired);
-    emit LogMyBitBurnt(msg.sender, accessCostMyB, block.timestamp);
+    emit LogMyBitBurnt(msg.sender, accessCostMyB);
     return true;
   }
 
@@ -61,7 +61,7 @@ contract TokenBurn {
   // Verifies contracts has not been paused
   //------------------------------------------------------------------------------------------------------------------
   modifier whenNotPaused {
-    require(!database.boolStorage(keccak256(abi.encodePacked("pause", this))));
+    require(!database.boolStorage(keccak256(abi.encodePacked("pause", address(this)))));
     _;
   }
 
@@ -76,7 +76,7 @@ contract TokenBurn {
   //------------------------------------------------------------------------------------------------------------------
   //                                           Events
   //------------------------------------------------------------------------------------------------------------------
-  event LogMyBitBurnt(address _burner, uint _amount, uint _timestamp);
+  event LogMyBitBurnt(address _burner, uint _amount);
 
 
 }

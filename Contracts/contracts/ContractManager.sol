@@ -43,7 +43,7 @@ contract ContractManager{
     database.setBool(keccak256(abi.encodePacked(address(this), _functionSigner, "addContract", keccak256(abi.encodePacked(_contractAddress)))), false);
     database.setAddress(keccak256(abi.encodePacked("contract", _name)), _contractAddress);
     database.setBool(keccak256(abi.encodePacked("contract", _contractAddress)), true);
-    emit LogContractAdded(_contractAddress, _name, now);
+    emit LogContractAdded(_contractAddress, _name);
   }
 
   // ------------------------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ contract ContractManager{
     require(contractExists(contractToDelete));
     database.deleteBool(keccak256(abi.encodePacked("contract", contractToDelete)));
     database.deleteAddress(keccak256(abi.encodePacked("contract", _name)));
-    emit LogContractRemoved(contractToDelete, _name, now);
+    emit LogContractRemoved(contractToDelete, _name);
   }
 
   // ------------------------------------------------------------------------------------------------
@@ -80,8 +80,7 @@ contract ContractManager{
     database.setAddress(keccak256(abi.encodePacked("contract", _name)), _newContractAddress);
     database.setBool(keccak256(abi.encodePacked("contract", _newContractAddress)), true);
     database.deleteBool(keccak256(abi.encodePacked("contract", oldAddress)));
-    emit LogContractUpdated(oldAddress, _name, now);
-    emit LogNewContractLocation(_newContractAddress, _name, now);
+    emit LogContractUpdated(oldAddress, _newContractAddress, _name);
   }
 
   // ------------------------------------------------------------------------------------------------
@@ -119,7 +118,7 @@ contract ContractManager{
   //  Don't accept empty string input
   // ------------------------------------------------------------------------------------------------
   modifier noEmptyString(string _name) {
-    require(bytes(_name).length != 0);
+    require(bytes(_name).length != uint(0));
     _;
   }
 
@@ -137,8 +136,8 @@ contract ContractManager{
   // ------------------------------------------------------------------------------------------------
   //                                    Events
   // ------------------------------------------------------------------------------------------------
-  event LogContractAdded(address _contractAddress, string _name, uint _timestamp);
-  event LogContractRemoved(address contractToDelete, string _name, uint _timestamp);
-  event LogContractUpdated(address oldAddress, string _name, uint _timestamp);
-  event LogNewContractLocation(address _contractAddress, string _name, uint _timestamp);
+  // TODO: Are the strings readable? --> Make bytes32
+  event LogContractAdded(address _contractAddress, string _name);
+  event LogContractRemoved(address _contractToDelete, string _name);
+  event LogContractUpdated(address _oldAddress, address _newAddress, string _name);
 }

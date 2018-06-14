@@ -7,11 +7,9 @@ import './Database.sol';
 // All information about assets are stored in Database.sol.
 //------------------------------------------------------------------------------------------------------------------
 contract Asset {
-using SafeMath for *;
+using SafeMath for uint;
 
   Database public database;
-
-  bool private rentrancy_lock = false;    // Prevents re-entrancy attack
 
 
   //------------------------------------------------------------------------------------------------------------------
@@ -34,14 +32,13 @@ using SafeMath for *;
   external
   payable
   requiresEther
-  atStage(_assetID, 4)
+  atStage(_assetID, uint(4))
   returns (bool)  {
     uint assetIncome = database.uintStorage(keccak256(abi.encodePacked("assetIncome", _assetID)));
     uint managerIncome = msg.value.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("managerPercentage", _assetID))));
     database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))).transfer(managerIncome);
     database.setUint(keccak256(abi.encodePacked("assetIncome", _assetID)), assetIncome.add(msg.value.sub(managerIncome)));
-    emit LogIncomeReceived(msg.sender, msg.value, _assetID);
-    emit LogAssetNote(_note, block.timestamp, _assetID);
+    emit LogIncomeReceived(msg.sender, msg.value, _assetID, _note);
     return true;
   }
 
@@ -53,22 +50,21 @@ using SafeMath for *;
   //------------------------------------------------------------------------------------------------------------------
   function withdraw(bytes32 _assetID)
   external
-  nonReentrant
   whenNotPaused
   returns (bool){
     uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)));
-    require (ownershipUnits > 0);
+    require (ownershipUnits > uint(0));
     uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)));
     uint totalPaidToFunders = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunders", _assetID)));
     uint totalPaidToFunder = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, msg.sender)));
     uint assetIncome = database.uintStorage(keccak256(abi.encodePacked("assetIncome", _assetID)));
     uint payment = (assetIncome.mul(ownershipUnits).div(amountRaised)).sub(totalPaidToFunder);
-    assert (payment != 0);
+    assert (payment != uint(0));
     assert (totalPaidToFunders <= assetIncome);    // Don't let amount paid to funders exceed amount received
     database.setUint(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, msg.sender)), totalPaidToFunder.add(payment));
     database.setUint(keccak256(abi.encodePacked("totalPaidToFunders", _assetID)), totalPaidToFunders.add(payment));
     msg.sender.transfer(payment);
-    emit LogIncomeWithdrawl(msg.sender, payment, block.timestamp);
+    emit LogIncomeWithdrawl(msg.sender, payment);
     return true;
   }
 
@@ -82,7 +78,7 @@ using SafeMath for *;
   view
   returns (uint){
     uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, _user)));
-    if (ownershipUnits == 0) { return 0; }
+    if (ownershipUnits == uint(0)) { return uint(0); }
     uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)));
     uint totalPaidToFunder = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _user)));
     uint assetIncome = database.uintStorage(keccak256(abi.encodePacked("assetIncome", _assetID)));
@@ -96,14 +92,14 @@ using SafeMath for *;
   // @Param address selling ownershipUnits
   // @Param address buying ownershipUnits
   // @Param number of ownershipUnits being traded
+  // TODO: Move as internal fn to DAX??
   //------------------------------------------------------------------------------------------------------------------
   function tradeOwnershipUnits(bytes32 _assetID, address _from, address _to, uint _amount)
   external
-  nonReentrant
   whenNotPaused
   returns (bool) {
     require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("contract", "AssetExchange"))));
-    require(getAmountOwed(_assetID, _from) == 0);
+    require(getAmountOwed(_assetID, _from) == uint(0));
     uint ownershipUnitsFrom = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, _from)));
     require(ownershipUnitsFrom >= _amount);
     uint ownershipUnitsTo = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, _to)));
@@ -111,7 +107,7 @@ using SafeMath for *;
     uint paidToFunderTo = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to)));
     uint paidToAndFrom = paidToFunderFrom.add(paidToFunderTo);
     uint relativePaidOutAmount = (paidToFunderFrom.mul(_amount)).div(ownershipUnitsFrom);    // TODO: Can round down, letting user withdraw 1 wei
-    assert(relativePaidOutAmount > 0);
+    assert(relativePaidOutAmount > uint(0));
     database.setUint(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to)), paidToFunderTo.add(relativePaidOutAmount));
     database.setUint(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _from)), paidToFunderFrom.sub(relativePaidOutAmount));
     assert (paidToAndFrom == (database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to))).add(database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to))))));
@@ -130,7 +126,6 @@ using SafeMath for *;
   anyOwner
   public {
     require(_functionInitiator != msg.sender);
-    bytes32 holdingAddressHash = keccak256(_holdingAddress);
     bytes32 functionHash = keccak256(abi.encodePacked(address(this), _functionInitiator, "destroy", keccak256(abi.encodePacked(_holdingAddress))));
     require(database.boolStorage(functionHash));
     database.setBool(functionHash, false);
@@ -141,17 +136,6 @@ using SafeMath for *;
   //------------------------------------------------------------------------------------------------------------------
   //                                            Modifiers
   //------------------------------------------------------------------------------------------------------------------
-
-
-  //------------------------------------------------------------------------------------------------------------------
-  // Prevents contracts from re-entering function before the transaction finishes
-  //------------------------------------------------------------------------------------------------------------------
-  modifier nonReentrant() {
-    require(!rentrancy_lock);
-    rentrancy_lock = true;
-    _;
-    rentrancy_lock = false;
-  }
 
   //------------------------------------------------------------------------------------------------------------------
   // Checks that the asset is at the proper funding stage
@@ -208,9 +192,8 @@ using SafeMath for *;
   //------------------------------------------------------------------------------------------------------------------
   //------------------------------------------------------------------------------------------------------------------
 
-  event LogownershipUnitsTraded(bytes32 indexed _assetID, address indexed _from, address indexed _to, uint _amount);
+  event LogownershipUnitsTraded(bytes32 _assetID, address _from, address _to, uint _amount);
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
-  event LogIncomeReceived(address indexed _sender, uint indexed _amount, bytes32 indexed _assetID);
-  event LogIncomeWithdrawl(address indexed _funder, uint indexed _amount, uint indexed _timestamp);
-  event LogAssetNote(bytes32 indexed _note, uint indexed _timestamp, bytes32 indexed _assetID);
+  event LogIncomeReceived(address _sender, uint indexed _amount, bytes32 indexed _assetID, bytes32 _note);
+  event LogIncomeWithdrawl(address _funder, uint _amount);
 }

@@ -29,12 +29,12 @@ contract Owned {
   noZeroAddress(_functionSigner)
   external {
     require(msg.sender != _functionSigner);         // Check that this is different owner than the one who authorized
-    bytes32 functionHash = keccak256(abi.encodePacked(this, _functionSigner, "changeOwner", keccak256(abi.encodePacked(_newOwner))));
+    bytes32 functionHash = keccak256(abi.encodePacked(address(this), _functionSigner, "changeOwner", keccak256(abi.encodePacked(_newOwner))));
     require(database.boolStorage(functionHash));   // Check that fuction has been authorized to be called with these parameters
     database.setBool(functionHash, false);         // Reset changeOwner() authorization
     database.deleteBool(keccak256(abi.encodePacked("owner", _oldOwner)));      // Remove old owners privileges
-    database.setBool(keccak256(abi.encodePacked("owner", _newOwner), true));
-    emit LogOwnerChanged(_oldOwner, _newOwner, block.timestamp);
+    database.setBool(keccak256(abi.encodePacked("owner", _newOwner)), true);
+    emit LogOwnerChanged(_oldOwner, _newOwner);
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ contract Owned {
   external
   anyOwner
   returns (bool) {
-    require(bytes(_functionName).length != 0);
+    require(bytes(_functionName).length != uint(0));
     database.setBool(keccak256(abi.encodePacked(_contractAddress, msg.sender, _functionName, _beneficiary)), true);    // Sign the function name + parameter
     emit LogFunctionAuthorized(msg.sender, _functionName, _beneficiary);
   }
@@ -59,8 +59,8 @@ contract Owned {
   anyOwner
   noZeroAddress(_contract)
   public {
-    database.setBool(keccak256(abi.encodePacked("pause", _contract), true));
-    emit LogPaused(_contract, block.timestamp);
+    database.setBool(keccak256(abi.encodePacked("pause", _contract)), true);
+    emit LogPaused(_contract);
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -71,7 +71,7 @@ contract Owned {
   anyOwner
   public {
     database.setBool(keccak256(abi.encodePacked("pause", _contract)), false);
-    emit LogUnpaused(_contract, block.timestamp);
+    emit LogUnpaused(_contract);
   }
 
 
@@ -102,8 +102,8 @@ contract Owned {
   //------------------------------------------------------------------------------------------------------------------
   //                                              Events
   //------------------------------------------------------------------------------------------------------------------
-  event LogPaused(address _contract, uint _timestamp);
-  event LogUnpaused(address _contract, uint _timestamp);
-  event LogOwnerChanged(address indexed _previousOwner, address indexed _newOwner, uint _timestamp);
+  event LogPaused(address _contract);
+  event LogUnpaused(address _contract);
+  event LogOwnerChanged(address indexed _previousOwner, address indexed _newOwner);
   event LogFunctionAuthorized(address indexed _owner, string _functionName, bytes32 indexed _beneficiary);
 }
