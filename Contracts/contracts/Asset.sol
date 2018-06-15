@@ -69,6 +69,36 @@ using SafeMath for uint;
   }
 
   //------------------------------------------------------------------------------------------------------------------
+  // Asset funders can receive their share of the income here
+  // Invariants: Asset must be live. Sender must have ownershipUnits in the asset. There must be income earned.
+  // @Param: The assetID this funder is trying to withdraw from
+  // @Param: Boolean, whether or not the user wants the withdraw to go to an external address
+  //------------------------------------------------------------------------------------------------------------------
+  function batchWithdraw(bytes32[] _assetIDs)
+  external
+  whenNotPaused
+  returns (bool){
+    require(_assetIDs.length < 5); 
+    for (uint i = 0; i < _assetIDs.length; i++){
+      bytes32 assetID = _assetIDs[i];
+      uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", assetID, msg.sender)));
+      require (ownershipUnits > uint(0));
+      uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", assetID)));
+      uint totalPaidToFunders = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunders", assetID)));
+      uint totalPaidToFunder = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", assetID, msg.sender)));
+      uint assetIncome = database.uintStorage(keccak256(abi.encodePacked("assetIncome", assetID)));
+      uint payment = (assetIncome.mul(ownershipUnits).div(amountRaised)).sub(totalPaidToFunder);
+      assert (payment != uint(0));
+      assert (totalPaidToFunders <= assetIncome);    // Don't let amount paid to funders exceed amount received
+      database.setUint(keccak256(abi.encodePacked("totalPaidToFunder", assetID, msg.sender)), totalPaidToFunder.add(payment));
+      database.setUint(keccak256(abi.encodePacked("totalPaidToFunders", assetID)), totalPaidToFunders.add(payment));
+      msg.sender.transfer(payment);
+      emit LogIncomeWithdrawl(msg.sender, payment);
+    }
+    return true;
+  }
+
+  //------------------------------------------------------------------------------------------------------------------
   // Returns the amount of WEI owed to the asset owner
   // @Param: The ID of the asset
   // @Param: The address of the asset owner
