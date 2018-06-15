@@ -34,7 +34,7 @@ contract TokenBurn {
   basicVerification(_accessLevelDesired)
   returns (bool) {
     uint mybPrice = database.uintStorage(keccak256(abi.encodePacked("mybUSDPrice")));
-    uint accessCostMyB = (database.uintStorage(keccak256(abi.encodePacked("accessTokenFee", _accessLevelDesired))).mul(10**21)).div(mybPrice);
+    uint accessCostMyB = database.uintStorage(keccak256(abi.encodePacked("accessTokenFee", _accessLevelDesired))).div(mybPrice);
     assert (accessCostMyB > uint(0));
     require(myBitToken.burnFrom(msg.sender, accessCostMyB));
     database.setUint(keccak256(abi.encodePacked("userAccess", msg.sender)), _accessLevelDesired);
@@ -57,8 +57,11 @@ contract TokenBurn {
   returns (bool) {
     require(_token == address(myBitToken)); 
     uint accessLevelDesired = _accessLevelDesired.bytesToUint();   // TODO: convert bytes to uint
+    uint currentLevel = database.uintStorage(keccak256(abi.encodePacked("userAccess", msg.sender)));
+    require(currentLevel < accessLevelDesired || database.uintStorage(keccak256(abi.encodePacked("userAccessExpiry", msg.sender))) < now);       // Dont allow burning to downgrade access level unless access has expired
+    require (accessLevelDesired < uint(4) && accessLevelDesired > uint(0));      // Must be 1, 2 or 3
     uint mybPrice = database.uintStorage(keccak256(abi.encodePacked("mybUSDPrice")));
-    uint accessCostMyB = (database.uintStorage(keccak256(abi.encodePacked("accessTokenFee", accessLevelDesired))).mul(10**21)).div(mybPrice);
+    uint accessCostMyB = database.uintStorage(keccak256(abi.encodePacked("accessTokenFee", accessLevelDesired))).div(mybPrice);
     assert (accessCostMyB >= _amount);
     require(myBitToken.burnFrom(_from, accessCostMyB));
     database.setUint(keccak256(abi.encodePacked("userAccess", _from)), accessLevelDesired);

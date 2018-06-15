@@ -23,7 +23,8 @@ contract AssetCreation {
   // @Param: The percentage of revenue the asset manager will require to run the asset
   // @Param: The amount the asset manager has decided to escrow
   // @Param: The ID of the installer of this asset  (ie. Sha3("ATMInstallersAG"))
-  // @Param: The type of asset being created. (ie. Sha3("BitcoinATM"))
+  // @Param: The type of asset being created. (ie. Sha3("BitcoinATM")) 
+  // @Param: The block when the escrow request was created. If no escrow request was made, then any unique number will work
   //----------------------------------------------------------------------------------------------------------------------------------------
   function newAsset(uint _amountToBeRaised, uint _managerPercentage, uint _amountToEscrow, bytes32 _installerID, bytes32 _assetType, uint _blockAtCreation)
   external

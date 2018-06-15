@@ -79,6 +79,7 @@ using SafeMath for uint;
   whenNotPaused
   returns (bool){
     require(_assetIDs.length < 5); 
+    uint payment; 
     for (uint i = 0; i < _assetIDs.length; i++){
       bytes32 assetID = _assetIDs[i];
       uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", assetID, msg.sender)));
@@ -87,14 +88,15 @@ using SafeMath for uint;
       uint totalPaidToFunders = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunders", assetID)));
       uint totalPaidToFunder = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", assetID, msg.sender)));
       uint assetIncome = database.uintStorage(keccak256(abi.encodePacked("assetIncome", assetID)));
-      uint payment = (assetIncome.mul(ownershipUnits).div(amountRaised)).sub(totalPaidToFunder);
-      assert (payment != uint(0));
+      uint thisPayment = (assetIncome.mul(ownershipUnits).div(amountRaised)).sub(totalPaidToFunder);
+      assert (thisPayment != uint(0));
       assert (totalPaidToFunders <= assetIncome);    // Don't let amount paid to funders exceed amount received
-      database.setUint(keccak256(abi.encodePacked("totalPaidToFunder", assetID, msg.sender)), totalPaidToFunder.add(payment));
-      database.setUint(keccak256(abi.encodePacked("totalPaidToFunders", assetID)), totalPaidToFunders.add(payment));
-      msg.sender.transfer(payment);
-      emit LogIncomeWithdrawl(msg.sender, payment);
+      database.setUint(keccak256(abi.encodePacked("totalPaidToFunder", assetID, msg.sender)), totalPaidToFunder.add(thisPayment));
+      database.setUint(keccak256(abi.encodePacked("totalPaidToFunders", assetID)), totalPaidToFunders.add(thisPayment));
+      payment = payment.add(thisPayment); 
     }
+    msg.sender.transfer(payment);
+    emit LogIncomeWithdrawl(msg.sender, payment);
     return true;
   }
 
