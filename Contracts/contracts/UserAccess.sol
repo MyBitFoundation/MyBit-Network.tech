@@ -35,7 +35,7 @@ contract UserAccess{
     database.setUint(keccak256(abi.encodePacked("userAccess", _newUser)), _accessLevel);
     uint expiry = now + oneYear;
     assert (expiry > now && expiry > oneYear);   // Check for overflow
-    database.setUint(keccak256(abi.encodePacked("userAccessExpiry", _newUser)), expiry);
+    database.setUint(keccak256(abi.encodePacked("userAccessExpiration", _newUser)), expiry);
     emit LogUserApproved(_newUser, _accessLevel);
     return true;
   }
@@ -51,7 +51,7 @@ contract UserAccess{
   returns (bool) {
     uint accessLevel = database.uintStorage(keccak256(abi.encodePacked("userAccess", _user)));
     database.deleteUint(keccak256(abi.encodePacked("userAccess", _user)));
-    database.deleteUint(keccak256(abi.encodePacked("userAccessExpiry", _user)));
+    database.deleteUint(keccak256(abi.encodePacked("userAccessExpiration", _user)));
     emit LogUserRemoved(_user, accessLevel);
     return true;
   }

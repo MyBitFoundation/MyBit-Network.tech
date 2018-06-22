@@ -211,7 +211,7 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   modifier onlyApproved {
     require(database.uintStorage(keccak256(abi.encodePacked("userAccess", msg.sender))) == uint(3));
-    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiry", msg.sender))) > now);
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiration", msg.sender))) > now);
     _;
   }
 

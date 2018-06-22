@@ -26,7 +26,7 @@ using SafeMath for uint;
   // Invariants: Requires Eth is sent with transaction | Asset must be "live" (stage 4)
   // @Param: The ID of the asset to send to
   // @Param: A note that can be left by the payee
-  // TODO: send to staker if he exists
+  // TODO: don't transfer immediately....add to owed balance
   //------------------------------------------------------------------------------------------------------------------
   function receiveIncome(bytes32 _assetID, bytes32 _note)
   external
@@ -36,6 +36,8 @@ using SafeMath for uint;
   returns (bool)  {
     uint assetIncome = database.uintStorage(keccak256(abi.encodePacked("assetIncome", _assetID)));
     uint managerIncome = msg.value.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("managerPercentage", _assetID))));
+    address staker = database.addressStorage(keccak256(abi.encodePacked("assetStaker", _assetID))); 
+    if (staker )
     database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))).transfer(managerIncome);
     database.setUint(keccak256(abi.encodePacked("assetIncome", _assetID)), assetIncome.add(msg.value.sub(managerIncome)));
     emit LogIncomeReceived(msg.sender, msg.value, _assetID, _note);
@@ -182,7 +184,7 @@ using SafeMath for uint;
   //------------------------------------------------------------------------------------------------------------------
   modifier onlyApproved(uint8 _accessLevel) {
     require(database.uintStorage(keccak256(abi.encodePacked("userAccess", msg.sender))) >= _accessLevel);
-    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiry", msg.sender))) > now);
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiration", msg.sender))) > now);
     _;
   }
 

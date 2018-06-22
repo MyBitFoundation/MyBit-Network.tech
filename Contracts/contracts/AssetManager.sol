@@ -7,7 +7,7 @@ import './SafeMath.sol';
 //------------------------------------------------------------------------------------------------------------------
 // This contract is where asset managers can deposit MyBit tokens to be eligable to create an asset on the platform.
 // The escrowed tokens are available to withdraw if the Asset Fails funding or the asset managers is replaced or the Asset finishes it's lifecycle
-// TODO: Make function to switch assetManager
+// TODO: Add pause mechanism
 //------------------------------------------------------------------------------------------------------------------
 contract AssetManager {
   using SafeMath for uint;
@@ -41,6 +41,26 @@ contract AssetManager {
     return true;
   }
 
+  //------------------ewr------------------------------------------------------------------------------------------------
+  // Asset manager can deposit MyBit here to be locked for escrow
+  // @notice This is alias for depositEscrow. Called directly from token contract. 
+  // @param address _from: The user depositing escrow
+  // @param uint _amount: Amount of MYB being deposited. 
+  // @param address _token: The address of the calling token contract
+  //------------------------------------------------------------------------------------------------------------------
+  function receiveApproval(address _from, uint _amount, address _token, bytes _data)
+  external
+  returns (bool) {
+    require(msg.sender == address(myBitToken)); 
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccess", _from))) >= uint(1));   // Make sure new asset manager is approved
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiration", _from))) > now);
+    require(myBitToken.transferFrom(_from, address(this), _amount));
+    uint depositedAmount = database.uintStorage(keccak256(abi.encodePacked("depositedMYB", _from)));
+    database.setUint(keccak256(abi.encodePacked("depositedMYB", _from)), depositedAmount.add(_amount));
+    emit LogEscrowDeposited(_from, _amount);
+    return true;
+  }
+
 
   //------------------------------------------------------------------------------------------------------------------
   // Asset manager can be changed by owner or governance authority here
@@ -51,7 +71,7 @@ contract AssetManager {
   anyOwner
   returns (bool) {
     require(database.uintStorage(keccak256(abi.encodePacked("userAccess", _newManager))) >= uint(1));   // Make sure new asset manager is approved
-    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiry", _newManager))) > now);
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiration", _newManager))) > now);
     address oldAssetManager = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID)));
     require(oldAssetManager != address(0));
     database.setAddress(keccak256(abi.encodePacked("assetManager", _assetID)), _newManager);
@@ -97,7 +117,7 @@ contract AssetManager {
     uint depositedAmount = database.uintStorage(keccak256(abi.encodePacked("depositedMYB", _user)));
     database.setUint(keccak256(abi.encodePacked("escrowedForAsset", _assetID)), amountLockedForAsset.sub(_amount));
     database.setUint(keccak256(abi.encodePacked("escrowedMYB", _user)), totalEscrowedAmount.sub(_amount));
-    database.setUint(keccak256(abi.encodePacked("depositedMYB", _user)), depositedAmount.add(totalEscrowedAmount.sub(_amount)));
+    database.setUint(keccak256(abi.encodePacked("depositedMYB", _user)), depositedAmount.add(_amount));
     emit LogEscrowUnlocked(_assetID, _user, _amount);
   }
 
@@ -108,10 +128,11 @@ contract AssetManager {
   external
   accessApproved(1)
   returns (bool){
-    uint unlockedBalance = getUnlockedBalance(msg.sender);
-    assert (unlockedBalance >= _amount);
     uint depositedAmount = database.uintStorage(keccak256(abi.encodePacked("depositedMYB", msg.sender)));
     assert (depositedAmount >= _amount);
+    if (database.addressStorage(keccak256(abi.encodePacked("assetStaker", escrowID)), msg.sender)) { 
+      require (database.setUint(keccak256(abi.encodePacked("stakingExpiration", escrowID)), stakingExpiry.add(now)));
+    }
     database.setUint(keccak256(abi.encodePacked("depositedMYB", msg.sender)), depositedAmount.sub(_amount));
     myBitToken.transfer(msg.sender, _amount);
     emit LogEscrowWithdrawn(msg.sender, _amount);
@@ -128,17 +149,6 @@ contract AssetManager {
 
 
   //------------------------------------------------------------------------------------------------------------------
-  // Get the amount of tokens that are not currently in escrow
-  //------------------------------------------------------------------------------------------------------------------
-  function getUnlockedBalance(address _assetManager)
-  public
-  view
-  returns (uint){
-    uint lockedBalance = database.uintStorage(keccak256(abi.encodePacked("escrowedMYB", _assetManager)));
-    return database.uintStorage(keccak256(abi.encodePacked("depositedMYB", _assetManager))).sub(lockedBalance);
-  }
-
-  //------------------------------------------------------------------------------------------------------------------
   //                                            Modifiers
   //------------------------------------------------------------------------------------------------------------------
 
@@ -147,7 +157,7 @@ contract AssetManager {
   //------------------------------------------------------------------------------------------------------------------
   modifier accessApproved(uint _accessLevel) {
     require(database.uintStorage(keccak256(abi.encodePacked("userAccess", msg.sender))) >= uint(_accessLevel));
-    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiry", msg.sender))) > now);
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiration", msg.sender))) > now);
     _;
   }
 

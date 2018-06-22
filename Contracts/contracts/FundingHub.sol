@@ -53,6 +53,7 @@ contract FundingHub {
   // Invariants: Must be in stage FundingSuccess | MyBitFoundation + AssetEscrow  + BugEscrow addresses are set | Contract is not paused
   // Note: Will fail if addresses + percentages are not set. AmountRaised = WeiRaised = ownershipUnits
   // TODO: Installer gets extra 1-2 wei from solidity rounding down when faced with fraction
+  // TODO: Create asset tokens here
   //------------------------------------------------------------------------------------------------------------------
   function payout(bytes32 _assetID)
   external
@@ -161,7 +162,7 @@ contract FundingHub {
   //------------------------------------------------------------------------------------------------------------------
   modifier onlyApproved{
     require(database.uintStorage(keccak256(abi.encodePacked("userAccess", msg.sender))) >= uint(1));
-    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiry", msg.sender))) > now);
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiration", msg.sender))) > now);
     _;
   }
 

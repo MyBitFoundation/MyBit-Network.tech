@@ -189,11 +189,11 @@ contract API {
   //-----------------------------------------------------------------------------------------------------------------------
   //                                             Funding Information
   //-----------------------------------------------------------------------------------------------------------------------
-  function ownershipUnits(bytes32 _assetID, address _owner)
+  function ownershipUnits(bytes32 _assetID, address _user)
   public
   view
   returns (uint) {
-    return database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, _owner)));
+    return database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, _user)));
   }
 
   function amountRaised(bytes32 _assetID)
@@ -304,6 +304,13 @@ contract API {
   view
   returns (uint) {
     return database.uintStorage(keccak256(abi.encodePacked("stakingExpiration", _assetID)));
+  }
+
+  function stakerIncomeShare(bytes32 _assetID)
+  public 
+  view 
+  returns (uint) { 
+    database.uintStorage(keccak256(abi.encodePacked("stakerIncomeShare", _assetID))); 
   }
 
   //-----------------------------------------------------------------------------------------------------------------------
