@@ -4,13 +4,12 @@ const Asset = artifacts.require('./Asset.sol');
 const AssetCreation = artifacts.require('./AssetCreation.sol');
 const ContractManager = artifacts.require("./ContractManager.sol");
 const Database = artifacts.require("./Database.sol");
-const FunderControls = artifacts.require('./FunderControls.sol');
 const FundingHub = artifacts.require("./FundingHub.sol");
 const HashFunctions = artifacts.require("./HashFunctions.sol");
 const InitialVariables = artifacts.require("./InitialVariables.sol");
 const AssetExchange = artifacts.require('./AssetExchange.sol');
 const MyBitToken = artifacts.require('./ERC20.sol');
-const OperatorEscrow = artifacts.require('./OperatorEscrow.sol');
+const AssetManager = artifacts.require('./AssetManager.sol');
 const OracleHub = artifacts.require('./OracleHub.sol');
 const Owned = artifacts.require("./Owned.sol");
 const TokenBurn = artifacts.require('./TokenBurn.sol');
@@ -27,13 +26,12 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let assetCreationInstance;
   let contractManagerInstance;
   let dbInstance;
-  let funderControlsInstance;
   let fundingHubInstance;
   let hfInstance;
   let initialVariableInstance;
   let AssetExchangeInstance;
   let myBitTokenInstance;
-  let operatorEscrowInstance;
+  let assetManagerInstance;
   let oracleHubInstance;
   let ownedInstance;
   let tokenBurnInstance;
@@ -162,20 +160,12 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    });
 
 
-   it('funderControlsInstance contract deployment ', async () => {
-     funderControlsInstance = await FunderControls.new(dbInstance.address);
-     await contractManagerInstance.addContract('FunderControls', funderControlsInstance.address, ownerAddr2);
-     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(funderControlsInstance.address))), false, 'Contract manager(ContratManager) to database === false');
-     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'FunderControls')), funderControlsInstance.address, 'FunderControls address correctly stored');
-     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', funderControlsInstance.address)), true, 'FunderControls address == true');
-   });
-
-   it('operatorEscrowInstance contract deployment ', async () => {
-     operatorEscrowInstance = await OperatorEscrow.new(dbInstance.address, myBitTokenInstance.address);
-     await contractManagerInstance.addContract('OperatorEscrow', operatorEscrowInstance.address, ownerAddr2);
-     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(operatorEscrowInstance.address))), false, 'Contract manager(OperatorEscrow) to database === false');
-     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'OperatorEscrow')), operatorEscrowInstance.address, 'OperatorEscrow address correctly stored');
-     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', operatorEscrowInstance.address)), true, 'OperatorEscrow address == true');
+   it('assetManagerInstance contract deployment ', async () => {
+     assetManagerInstance = await AssetManager.new(dbInstance.address, myBitTokenInstance.address);
+     await contractManagerInstance.addContract('AssetManager', assetManagerInstance.address, ownerAddr2);
+     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(assetManagerInstance.address))), false, 'Contract manager(AssetManager) to database === false');
+     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'AssetManager')), assetManagerInstance.address, 'AssetManager address correctly stored');
+     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', assetManagerInstance.address)), true, 'AssetManager address == true');
    });
 
    it('oracleHubInstance contract deployment ', async () => {
