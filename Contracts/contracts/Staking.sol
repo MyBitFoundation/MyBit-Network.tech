@@ -55,6 +55,7 @@ using SafeMath for uint;
   returns (bool) {
     require(_managerPercentage < uint(100) && _managerPercentage > uint(0));
     require(_amountToBeRaised >= uint(100));           // Minimum asset price
+    require(_incomeShare > 0 && _incomeShare < 100); 
     bytes32 escrowID = keccak256(abi.encodePacked(msg.sender, _amount, _incomeShare, _managerPercentage, _amountToBeRaised, _installerID, _assetType, block.number));
     require(database.uintStorage(keccak256(abi.encodePacked("fundingStage", escrowID))) == uint(0));    // Check that asset doesn't already exist
     require(database.uintStorage(keccak256(abi.encodePacked("escrowExpiration", escrowID))) < now);         // Check that escrow request isn't already out there
@@ -66,22 +67,6 @@ using SafeMath for uint;
     return true;
   }
 
-  //----------------------------------------------------------------------------------------------------------------------------------------
-  // This function locks MyBit tokens to the asset for the length of it's lifecycle
-  //----------------------------------------------------------------------------------------------------------------------------------------
-  function lockAssetEscrow(bytes32 _assetID, uint _amountToEscrow, address _escrowDepositer)
-  internal
-  returns (bool) {
-    if (_amountToEscrow == 0) { return true; }
-    uint escrowedMYB = database.uintStorage(keccak256(abi.encodePacked("escrowedMYB", _escrowDepositer)));
-    uint depositedMYB = database.uintStorage(keccak256(abi.encodePacked("depositedMYB", _escrowDepositer)));
-    // assert (_amountToEscrow <= depositedMYB);    // TODO: Safemath should throw here if this isn't the case
-    database.setUint(keccak256(abi.encodePacked("depositedMYB", _escrowDepositer)), depositedMYB.sub(_amountToEscrow)); 
-    database.setUint(keccak256(abi.encodePacked("escrowedMYB", _escrowDepositer)), escrowedMYB.add(_amountToEscrow));
-    database.setUint(keccak256(abi.encodePacked("escrowedForAsset", _assetID)), _amountToEscrow);
-    emit LogLockAssetEscrow(_escrowDepositer, _assetID, _amountToEscrow);
-    return true;
-  }
 
   //------------------------------------------------------------------------------------------------------------------
   //                                            Modifiers

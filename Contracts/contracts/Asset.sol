@@ -26,7 +26,6 @@ using SafeMath for uint;
   // Invariants: Requires Eth is sent with transaction | Asset must be "live" (stage 4)
   // @Param: The ID of the asset to send to
   // @Param: A note that can be left by the payee
-  // TODO: don't transfer immediately....add to owed balance
   //------------------------------------------------------------------------------------------------------------------
   function receiveIncome(bytes32 _assetID, bytes32 _note)
   external
@@ -35,13 +34,68 @@ using SafeMath for uint;
   atStage(_assetID, uint(4))
   returns (bool)  {
     uint assetIncome = database.uintStorage(keccak256(abi.encodePacked("assetIncome", _assetID)));
-    uint managerIncome = msg.value.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("managerPercentage", _assetID))));
-    address staker = database.addressStorage(keccak256(abi.encodePacked("assetStaker", _assetID))); 
-    if (staker )
-    database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))).transfer(managerIncome);
-    database.setUint(keccak256(abi.encodePacked("assetIncome", _assetID)), assetIncome.add(msg.value.sub(managerIncome)));
+    uint managerShare = msg.value.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("managerPercentage", _assetID))));
+    require(distributeStakingShare(_assetID, managerShare)); 
+    database.setUint(keccak256(abi.encodePacked("assetIncome", _assetID)), assetIncome.add(msg.value.sub(managerShare)));
     emit LogIncomeReceived(msg.sender, msg.value, _assetID, _note);
     return true;
+  }
+
+  //------------------------------------------------------------------------------------------------------------------
+  // Revenue produced by the asset will be sent here
+  // Invariants: Requires Eth is sent with transaction | Asset must be "live" (stage 4)
+  // @Param: The ID of the asset earning income
+  // @Param: The amount of WEI owed to the staker or manager
+  //------------------------------------------------------------------------------------------------------------------
+  function distributeStakingShare(bytes32 _assetID, uint _managerAmount)
+  internal 
+  returns (bool) { 
+    address staker = database.addressStorage(keccak256(abi.encodePacked("assetStaker", _assetID))); 
+    address manager = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))); 
+    if (staker != address(0)){ 
+      uint stakerShare = database.uintStorage(keccak256(abi.encodePacked("stakerIncomeShare", _assetID))); 
+      uint stakerPortion = _managerAmount.mul(stakerShare).div(100); 
+      assert (stakerPortion > 0); 
+      assert (setManagerIncome(_assetID, staker, stakerPortion)); 
+      if (stakerPortion < _managerAmount){ 
+        assert (setManagerIncome(_assetID, manager, _managerAmount.sub(stakerPortion))); 
+      }
+      return true;  
+    }
+    else { 
+      assert (setManagerIncome(_assetID, manager, _managerAmount)); 
+      return true;
+    }
+  }
+
+  //------------------------------------------------------------------------------------------------------------------
+  // Revenue produced by the asset will be sent here
+  // Invariants: Requires Eth is sent with transaction | Asset must be "live" (stage 4)
+  // @Param: The ID of the asset earning income
+  // @Param: The amount of WEI owed to the staker or manager
+  //------------------------------------------------------------------------------------------------------------------
+  function setManagerIncome(bytes32 _assetID, address _manager, uint _managerAmount)
+  internal 
+  returns (bool) { 
+      address manager = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))); 
+      uint managerOwed = database.uintStorage(keccak256(abi.encodePacked("managerIncome", manager))); 
+      database.setUint(keccak256(abi.encodePacked("managerIncome", _manager)), managerOwed.add(_managerAmount)); 
+      return true;
+  }
+
+  //------------------------------------------------------------------------------------------------------------------
+  // Revenue produced by the asset will be sent here
+  // @dev: Requires Eth is sent with transaction | Asset must be "live" (stage 4)
+  // @param: bytes32: The ID of the asset 
+  //------------------------------------------------------------------------------------------------------------------
+  function withdrawManagerIncome(bytes32 _assetID)
+  external
+  atStage(_assetID, uint(4))
+  returns (bool) { 
+    uint owed = database.uintStorage(keccak256(abi.encodePacked("managerIncome", msg.sender))); 
+    require(owed > 0); 
+    database.setUint(keccak256(abi.encodePacked("managerIncome", msg.sender)), 0); 
+    msg.sender.transfer(owed); 
   }
 
   //------------------------------------------------------------------------------------------------------------------
