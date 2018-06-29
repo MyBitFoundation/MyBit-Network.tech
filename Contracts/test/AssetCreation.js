@@ -11,6 +11,7 @@ const AssetManager = artifacts.require('./AssetManager.sol');
 const UserAccess = artifacts.require('./UserAccess.sol');
 const MyBitToken = artifacts.require('./MyBitToken.sol');
 const TokenBurn = artifacts.require('./TokenBurn.sol'); 
+const TokenEscrow = artifacts.require('./TokenEscrow.sol'); 
 const AssetCreation = artifacts.require('./AssetCreation.sol');
 const Asset = artifacts.require('./Asset.sol');
 const FundingHub = artifacts.require('./FundingHub.sol');
@@ -40,6 +41,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let assetManagerInstance;
   let userAccessInstance;
   let myBitTokenInstance;
+  let tokenEscrowInstance; 
   let assetCreationInstance;
   let assetInstance;
   let fundingHubInstance;
@@ -146,12 +148,20 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
    });
 
-   it('AssetManager contract deployment ', async () => {
-     assetManagerInstance = await AssetManager.new(dbInstance.address, myBitTokenInstance.address);
+  it('AssetManager contract deployment ', async () => {
+     assetManagerInstance = await AssetManager.new(dbInstance.address);
      await contractManagerInstance.addContract('AssetManager', assetManagerInstance.address, ownerAddr2);
      assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(assetManagerInstance.address))), false, 'Contract manager(AssetManager) to database === false');
      assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'AssetManager')), assetManagerInstance.address, 'AssetManager address correctly stored');
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', assetManagerInstance.address)), true, 'AssetManager address == true');
+   });
+
+   it('TokenEscrow contract deployment ', async () => {
+     tokenEscrowInstance = await TokenEscrow.new(dbInstance.address, myBitTokenInstance.address);
+     await contractManagerInstance.addContract('TokenEscrow', tokenEscrowInstance.address, ownerAddr2);
+     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(tokenEscrowInstance.address))), false, 'Contract manager(TokenEscrow) to database === false');
+     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'TokenEscrow')), tokenEscrowInstance.address, 'TokenEscrow address correctly stored');
+     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', tokenEscrowInstance.address)), true, 'TokenEscrow address == true');
    });
 
    it('Manually Approve user', async () => {
@@ -188,16 +198,16 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
    it('Approve escrow to transfer', async () => {
      approvalAmount = transferAmount / 2;
-     await myBitTokenInstance.approve(assetManagerInstance.address, approvalAmount,{from:assetCreator});
-     let allowance = await myBitTokenInstance.allowance(assetCreator, assetManagerInstance.address);
+     await myBitTokenInstance.approve(tokenEscrowInstance.address, approvalAmount,{from:assetCreator});
+     let allowance = await myBitTokenInstance.allowance(assetCreator, tokenEscrowInstance.address);
      assert.equal(allowance, approvalAmount, 'Approval granted');
    });
 
    it('Deposit Escrow', async () => {
-      await assetManagerInstance.depositEscrow(approvalAmount,{from:assetCreator});
+      await tokenEscrowInstance.depositEscrow(approvalAmount,{from:assetCreator});
       assert.equal(await api.depositedMYB(assetCreator), approvalAmount); 
-      assert.equal(await myBitTokenInstance.balanceOf(assetManagerInstance.address), approvalAmount);
-      assert.equal(await myBitTokenInstance.allowance(assetCreator, assetManagerInstance.address), 0); 
+      assert.equal(await myBitTokenInstance.balanceOf(tokenEscrowInstance.address), approvalAmount);
+      assert.equal(await myBitTokenInstance.allowance(assetCreator, tokenEscrowInstance.address), 0); 
    });
 
 
@@ -292,7 +302,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
      let withdrawGasEstimate = await assetInstance.withdraw.estimateGas(assetID, {from:funder1});
      let balanceOfUserBeforeWithdrawal = web3.eth.getBalance(funder1);
-     let amountOwed = await assetInstance.getAmountOwed(assetID, funder1);
+     let amountOwed = await api.getAmountOwed(assetID, funder1);
 
      assert.equal(BigNumber(amountOwed).eq(payment), true, 'amount owed correct');
 

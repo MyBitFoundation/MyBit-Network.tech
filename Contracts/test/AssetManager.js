@@ -11,6 +11,7 @@ const AssetManager = artifacts.require('./AssetManager.sol');
 const UserAccess = artifacts.require('./UserAccess.sol');
 const MyBitToken = artifacts.require('./MyBitToken.sol');
 const TokenBurn = artifacts.require('./TokenBurn.sol'); 
+const TokenEscrow = artifacts.require('./TokenEscrow.sol'); 
 const AssetCreation = artifacts.require('./AssetCreation.sol');
 const Asset = artifacts.require('./Asset.sol');
 const FundingHub = artifacts.require('./FundingHub.sol');
@@ -44,6 +45,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let stakingInstance;
   let userAccessInstance;
   let myBitTokenInstance;
+  let tokenEscrowInstance; 
   let assetCreationInstance;
   let assetInstance;
   let fundingHubInstance;
@@ -56,6 +58,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let amountToBeRaised = 500; // USD
   let managerPercentage = 5;   // 5%
   let assetID;
+  let escrowID;
   let installerID;
   let assetType;
 
@@ -153,12 +156,20 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
    });
 
-   it('assetManagerInstance contract deployment ', async () => {
-     assetManagerInstance = await AssetManager.new(dbInstance.address, myBitTokenInstance.address);
+  it('AssetManager contract deployment ', async () => {
+     assetManagerInstance = await AssetManager.new(dbInstance.address);
      await contractManagerInstance.addContract('AssetManager', assetManagerInstance.address, ownerAddr2);
      assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(assetManagerInstance.address))), false, 'Contract manager(AssetManager) to database === false');
      assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'AssetManager')), assetManagerInstance.address, 'AssetManager address correctly stored');
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', assetManagerInstance.address)), true, 'AssetManager address == true');
+   });
+
+   it('TokenEscrow contract deployment ', async () => {
+     tokenEscrowInstance = await TokenEscrow.new(dbInstance.address, myBitTokenInstance.address);
+     await contractManagerInstance.addContract('TokenEscrow', tokenEscrowInstance.address, ownerAddr2);
+     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(tokenEscrowInstance.address))), false, 'Contract manager(TokenEscrow) to database === false');
+     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'TokenEscrow')), tokenEscrowInstance.address, 'TokenEscrow address correctly stored');
+     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', tokenEscrowInstance.address)), true, 'TokenEscrow address == true');
    });
 
    it('Staking deployment', async () => { 
@@ -199,24 +210,24 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
    it('Approve escrow to transfer', async () => {
      approvalAmount = transferAmount / 2;
-     await myBitTokenInstance.approve(assetManagerInstance.address, approvalAmount,{from:assetCreator});
-     let allowance = await myBitTokenInstance.allowance(assetCreator, assetManagerInstance.address);
+     await myBitTokenInstance.approve(tokenEscrowInstance.address, approvalAmount,{from:assetCreator});
+     let allowance = await myBitTokenInstance.allowance(assetCreator, tokenEscrowInstance.address);
      assert.equal(allowance, approvalAmount, 'Approval granted');
    });
 
    it('Deposit Escrow', async () => {
      // Modifier Check
      let funderNotApprovedModifier = null;
-     try {await assetManagerInstance.depositEscrow(500,{from:funderNotApproved});}
+     try {await tokenEscrowInstance.depositEscrow(500,{from:funderNotApproved});}
      catch (error) {funderNotApprovedModifier = error}
      assert.notEqual(funderNotApprovedModifier, null, 'modifier funderNotApproved');
      // Require check
      let depositEscrowRequire = null;
-     try {await assetManagerInstance.depositEscrow(BigNumber(approvalAmount).plus(1),{from:assetCreator});}
+     try {await tokenEscrowInstance.depositEscrow(BigNumber(approvalAmount).plus(1),{from:assetCreator});}
      catch (error) {depositEscrowRequire = error}
 
      assert.notEqual(depositEscrowRequire,null, 'deposit require too many tokens');
-     await assetManagerInstance.depositEscrow(approvalAmount,{from:assetCreator});
+     await tokenEscrowInstance.depositEscrow(approvalAmount,{from:assetCreator});
      let managerAmountDeposited = await api.depositedMYB(assetCreator);
      assert.equal(managerAmountDeposited, approvalAmount, 'Account escrow value updated');
    });
@@ -260,7 +271,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    });
 
     it ("listen for assetID", function (done) {
-      // Create coffee machine asset
       LogAssetFundingStarted.watch(
         async function(e,r){
           if(e){ done(e); }
@@ -320,25 +330,25 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
     // Try to withdraw from non approved user 
     let funderNotApprovedModifier = null;
-    try {await assetManagerInstance.withdrawToken(500,{from:funderNotApproved});}
+    try {await tokenEscrowInstance.withdrawToken(500,{from:funderNotApproved});}
     catch (error) {funderNotApprovedModifier = error}
     assert.notEqual(funderNotApprovedModifier, null, 'modifier funderNotApproved');
 
-    let contractBalance = await myBitTokenInstance.balanceOf(assetManagerInstance.address);
+    let contractBalance = await myBitTokenInstance.balanceOf(tokenEscrowInstance.address);
 
     // Try to withdraw too many tokens. Expect EVM error. 
     let unlockedBalanceTooMuch = null;
-    try {await assetManagerInstance.withdrawToken(BigNumber(escrowedBalance),{from:assetCreator});}
+    try {await tokenEscrowInstance.withdrawToken(BigNumber(escrowedBalance),{from:assetCreator});}
     catch (error) {unlockedBalanceTooMuch = error}
     assert.notEqual(unlockedBalanceTooMuch, null, 'amount too high for unlocked balance');    
 
 
     let withdrawTooEarly; 
-    try { await assetManagerInstance.withdrawToken(escrowedBalance,{from:assetCreator}); } 
+    try { await tokenEscrowInstance.withdrawToken(escrowedBalance,{from:assetCreator}); } 
     catch (error) { withdrawTooEarly = error; }
     assert.notEqual(withdrawTooEarly, null); 
     let tokenBalanceManager = await myBitTokenInstance.balanceOf(assetCreator);
-    let escrowBalance = await myBitTokenInstance.balanceOf(assetManagerInstance.address);
+    let escrowBalance = await myBitTokenInstance.balanceOf(tokenEscrowInstance.address);
 
    });
 
@@ -363,14 +373,14 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    it('Withdraw Deposited MYB', async () => { 
     // Try to withdraw too many tokens. Expect EVM error. 
     let unlockedBalanceTooMuch = null;
-    try {await assetManagerInstance.withdrawToken(BigNumber(amountEscrowedForAsset).plus(1),{from:assetCreator});}
+    try {await tokenEscrowInstance.withdrawToken(BigNumber(amountEscrowedForAsset).plus(1),{from:assetCreator});}
     catch (error) {unlockedBalanceTooMuch = error}
     assert.notEqual(unlockedBalanceTooMuch, null, 'amount too high for unlocked balance');  
 
     // Withdraw all deposited tokens
-    let assetManagerBalanceMYB = await myBitTokenInstance.balanceOf(assetManagerInstance.address); 
+    let assetManagerBalanceMYB = await myBitTokenInstance.balanceOf(tokenEscrowInstance.address); 
     let mybBalanceBefore = await myBitTokenInstance.balanceOf(assetCreator); 
-    await assetManagerInstance.withdraw(amountEscrowedForAsset, {from: assetCreator});
+    await tokenEscrowInstance.withdraw(amountEscrowedForAsset, {from: assetCreator});
 
     console.log(await myBitTokenInstance.balanceOf(assetCreator)); 
     console.log(amountEscrowedForAsset);
@@ -379,15 +389,15 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
     // Try to withdraw a second time 
     let withdrawlAgain = null;
-    try {await assetManagerInstance.withdrawToken(BigNumber(amountEscrowedForAsset),{from:assetCreator});}
+    try {await tokenEscrowInstance.withdrawToken(BigNumber(amountEscrowedForAsset),{from:assetCreator});}
     catch (error) {withdrawlAgain = error}
     assert.notEqual(withdrawlAgain, null, 'amount too high for unlocked balance');  
 
    }); 
 
    it('Request escrow staking', async () => {
-     assetType = await hfInstance.stringHash('BitcoinATM');
-     installerID =  await hfInstance.stringHash('SomeInstaller');
+     assetType = await hfInstance.stringHash('Robot');
+     installerID =  await hfInstance.stringHash('RobotINC');
      managerPercentage = 7; 
      stakingAmount = 10000 * 10**18;   // 10,000 MYB 
      incomeShare = 50; 
@@ -398,49 +408,85 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    });
 
     it ("listen for creation block", function (done) {
-      // Create coffee machine asset
       LogEscrowRequester.watch(
         async function(e,r){
           if(e){ done(e); }
           else {
             console.log('LogAssetFundingStarted event triggered');
             stakingBlockCreation = r.args._blockAtCreation;
-            assetID = r.args._escrowID;          // assetID == escrowID
+            escrowID = r.args._escrowID;          // escrowID == escrowID
             LogAssetFundingStarted.stopWatching();
             done(e);
           }
       });
     });
 
-    it ("Give staker tokens and deposit into assetManagerInstance", async () => { 
+    it ("Give staker tokens and deposit into tokenEscrowInstance", async () => { 
     	await myBitTokenInstance.transfer(staker, stakingAmount); 
     	assert.equal(await myBitTokenInstance.balanceOf(staker), stakingAmount); 
-    	await myBitTokenInstance.approveAndCall(assetManagerInstance.address, stakingAmount, await hfInstance.nullBytes(), {from: staker}); 
+    	await myBitTokenInstance.approveAndCall(tokenEscrowInstance.address, stakingAmount, await hfInstance.nullBytes(), {from: staker}); 
 
     	assert.equal(await api.depositedMYB(staker), stakingAmount); 
-    	assert.equal(await myBitTokenInstance.balanceOf(assetManagerInstance.address), stakingAmount); 
+    	assert.equal(await myBitTokenInstance.balanceOf(tokenEscrowInstance.address), stakingAmount); 
 
     });
 
-    it ("Accept escrow lending conditions", async () => { 
-    	assert.notEqual(await api.escrowExpiration(assetID), 0); 
-    	assert.equal(await api.userAccess(staker), 2); 
-    	await stakingInstance.approveEscrowLending(assetCreator, stakingAmount, incomeShare, managerPercentage, amountToBeRaised, installerID, assetType, stakingBlockCreation, {from: staker}); 
+    it ("Accept escrow lending with wrong parameters", async () => { 
+      let escrowAccepted = null;
+      try { await stakingInstance.approveEscrowLending(assetCreator, stakingAmount, incomeShare + 1, managerPercentage, amountToBeRaised, installerID, assetType, stakingBlockCreation, {from: staker}); }
+      catch (error) {escrowAccepted = error}
+      assert.notEqual(escrowAccepted, null, 'acceptance should fail'); 
+    }); 
 
-    	assert.equal(await api.assetStaker(assetID), staker); 
-      assert.equal(await api.stakerIncomeShare(assetID), incomeShare); 
-    	
+    it ("Accept escrow lending conditions from staker", async () => { 
+    	assert.notEqual(await api.escrowExpiration(escrowID), 0);
+      assert.notEqual(stakingBlockCreation, 0); 
+    	await stakingInstance.approveEscrowLending(assetCreator, stakingAmount, incomeShare, managerPercentage, amountToBeRaised, installerID, assetType, stakingBlockCreation, {from: staker}); 
+      LogEscrowStaked = await stakingInstance.LogEscrowStaked({Block:0, toBlock:'latest'});
+    }); 
+
+    it ("listen for staking event", function (done) {
+      LogEscrowStaked.watch(
+        async function(e,r){
+          if(e){ done(e); }
+          else {
+            console.log('LogEscrowStaked event triggered');
+            assetID = r.args._assetID;
+            assert.equal(r.args._amountMYB, stakingAmount); 
+            assert.equal(await api.assetStaker(assetID), staker); 
+            console.log(await api.stakerIncomeShare(assetID)); 
+            assert.equal(await api.stakerIncomeShare(assetID), incomeShare); 
+            LogEscrowStaked.stopWatching();
+            done(e);
+          }
+      });
+    });
+
+    it ("create asset", async () => { 
+     let amountEscrowDeposited = await api.depositedMYB(staker);
+     let mybUSDPrice = await api.mybUSDPrice();
+     assert.notEqual(stakingAmount, 0);
+     assert.notEqual(managerPercentage); 
+     assert.equal(amountEscrowDeposited, stakingAmount); 
+     await assetCreationInstance.newAsset(amountToBeRaised, managerPercentage, stakingAmount, installerID, assetType, stakingBlockCreation, {from:assetCreator});
     }); 
 
 
-    it('Fallback function', async () => {
-      let err = null
-      try {
-        await assetManagerInstance.sendTransaction({from:web3.eth.coinbase,value:web3.toWei(0.1,'ether')});
-      } catch (error) {
-        err = error
-      }
-      assert.ok(err instanceof Error)
-    });
+    it ("fund and payout asset", async () => { 
+      let amountToBeRaisedUSD = await api.amountToBeRaised(assetID); 
+      let ethUSDPrice = await api.ethUSDPrice();
+
+      let halfOfUSDValueInEth = ((amountToBeRaisedUSD / ethUSDPrice) / 2);
+      console.log("amount of ETHER to send is");
+      console.log(halfOfUSDValueInEth); 
+
+      await fundingHubInstance.fund(assetID, {from:funder1, value:web3.toWei(halfOfUSDValueInEth,'ether')});
+      await fundingHubInstance.fund(assetID, {from:funder2, value:web3.toWei(halfOfUSDValueInEth,'ether')});
+
+      await fundingHubInstance.payout(assetID); 
+      assert.equal(await api.fundingStage(assetID), 4); 
+    }); 
+
+
 
 });
