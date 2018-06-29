@@ -39,10 +39,7 @@ contract AssetCreation {
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToEscrow, _managerPercentage, _amountToBeRaised, _installerID, _assetType, _blockAtCreation));
     require(database.uintStorage(keccak256(abi.encodePacked("fundingStage", assetID))) == uint(0), "AssetID already exists.");    // This ensures the asset isn't currently live or being funded
     address staker = database.addressStorage(keccak256(abi.encodePacked("assetStaker", assetID)));
-    if (staker != address(0)) {
-      assert (database.uintStorage(keccak256(abi.encodePacked("stakingExpiration", assetID))) > now);     // User has 168 hours (1 week) to initiate asset after receiving stake
-      require(lockAssetEscrow(assetID, _amountToEscrow, staker), "Unable to lock escrow. Check enough MYB is deposited");
-    }
+    if (staker != address(0)) { assert (database.uintStorage(keccak256(abi.encodePacked("stakingExpiration", assetID))) > now);  }
     else { require(lockAssetEscrow(assetID, _amountToEscrow, msg.sender), "locking asset escrow failed"); }
     database.setUint(keccak256(abi.encodePacked("amountToBeRaised", assetID)), _amountToBeRaised);
     database.setUint(keccak256(abi.encodePacked("managerPercentage", assetID)), _managerPercentage);
