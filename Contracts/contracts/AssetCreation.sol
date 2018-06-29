@@ -36,7 +36,7 @@ contract AssetCreation {
     require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiration", msg.sender))) > now , "User access has expired");
     require(_managerPercentage < uint(100) && _managerPercentage > uint(0) , "manager percentage is too high or too low");
     require(_amountToBeRaised > uint(100), "amountToBeRaised is too low");           // Minimum asset price
-    bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToBeRaised, _managerPercentage, _amountToEscrow, _installerID, _assetType, _blockAtCreation));
+    bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToEscrow, _managerPercentage, _amountToBeRaised, _installerID, _assetType, _blockAtCreation));
     require(database.uintStorage(keccak256(abi.encodePacked("fundingStage", assetID))) == uint(0), "AssetID already exists.");    // This ensures the asset isn't currently live or being funded
     address staker = database.addressStorage(keccak256(abi.encodePacked("assetStaker", assetID)));
     if (staker != address(0)) {

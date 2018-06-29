@@ -57,9 +57,7 @@ using SafeMath for uint;
       uint stakerPortion = _managerAmount.mul(stakerShare).div(100); 
       assert (stakerPortion > 0); 
       assert (setManagerIncome(_assetID, staker, stakerPortion)); 
-      if (stakerPortion < _managerAmount){ 
-        assert (setManagerIncome(_assetID, manager, _managerAmount.sub(stakerPortion))); 
-      }
+      if (stakerPortion < _managerAmount){ assert (setManagerIncome(_assetID, manager, _managerAmount.sub(stakerPortion)));  }
       return true;  
     }
     else { 
@@ -135,7 +133,7 @@ using SafeMath for uint;
   whenNotPaused
   returns (bool){
     require(_assetIDs.length < 5); 
-    uint payment; 
+    uint payment = 0; 
     for (uint i = 0; i < _assetIDs.length; i++){
       bytes32 assetID = _assetIDs[i];
       uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", assetID, msg.sender)));
@@ -156,54 +154,6 @@ using SafeMath for uint;
     return true;
   }
 
-  //------------------------------------------------------------------------------------------------------------------
-  // Returns the amount of WEI owed to the asset owner
-  // @Param: The ID of the asset
-  // @Param: The address of the asset owner
-  //------------------------------------------------------------------------------------------------------------------
-  function getAmountOwed(bytes32 _assetID, address _user)
-  public
-  view
-  returns (uint){
-    uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, _user)));
-    if (ownershipUnits == uint(0)) { return uint(0); }
-    uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)));
-    uint totalPaidToFunder = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _user)));
-    uint assetIncome = database.uintStorage(keccak256(abi.encodePacked("assetIncome", _assetID)));
-    return assetIncome.mul(ownershipUnits).div(amountRaised).sub(totalPaidToFunder);
-  }
-
-  //------------------------------------------------------------------------------------------------------------------
-  // Trades ownershipUnits of an asset to other user.Must trade over relative amount of paidToFunder,
-  // So person buying ownershipUnits will also be recognized as being paid out for those ownershipUnits in the past
-  // Invariants: Can only be called by current marketplace contract. User must have enough ownershipUnits to make trade.
-  // @Param address selling ownershipUnits
-  // @Param address buying ownershipUnits
-  // @Param number of ownershipUnits being traded
-  // TODO: Move as internal fn to DAX??
-  //------------------------------------------------------------------------------------------------------------------
-  function tradeOwnershipUnits(bytes32 _assetID, address _from, address _to, uint _amount)
-  external
-  whenNotPaused
-  returns (bool) {
-    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("contract", "AssetExchange"))));
-    require(getAmountOwed(_assetID, _from) == uint(0));
-    uint ownershipUnitsFrom = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, _from)));
-    require(ownershipUnitsFrom >= _amount);
-    uint ownershipUnitsTo = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, _to)));
-    uint paidToFunderFrom = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _from)));
-    uint paidToFunderTo = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to)));
-    uint paidToAndFrom = paidToFunderFrom.add(paidToFunderTo);
-    uint relativePaidOutAmount = (paidToFunderFrom.mul(_amount)).div(ownershipUnitsFrom);    // TODO: Can round down, letting user withdraw 1 wei
-    assert(relativePaidOutAmount > uint(0));
-    database.setUint(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to)), paidToFunderTo.add(relativePaidOutAmount));
-    database.setUint(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _from)), paidToFunderFrom.sub(relativePaidOutAmount));
-    assert (paidToAndFrom == (database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to))).add(database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to))))));
-    database.setUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, _from)), ownershipUnitsFrom.sub(_amount));
-    database.setUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, _to)), ownershipUnitsTo.add(_amount));
-    emit LogownershipUnitsTraded(_assetID, _from, _to, _amount);
-    return true;
-  }
 
   //------------------------------------------------------------------------------------------------------------------
   // Must be authorized by 1 of the 3 owners and then can be called by any of the other 2
@@ -280,7 +230,6 @@ using SafeMath for uint;
   //------------------------------------------------------------------------------------------------------------------
   //------------------------------------------------------------------------------------------------------------------
 
-  event LogownershipUnitsTraded(bytes32 _assetID, address _from, address _to, uint _amount);
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
   event LogIncomeReceived(address _sender, uint indexed _amount, bytes32 indexed _assetID, bytes32 _note);
   event LogIncomeWithdrawl(address _funder, uint _amount);

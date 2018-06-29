@@ -1,7 +1,6 @@
 pragma solidity 0.4.24;
 import './Database.sol';
 import './SafeMath.sol';
-import './Asset.sol';
 
 //------------------------------------------------------------------------------------------------------------------
 // Note: Users can only have 1 sell order and 1 buy order for each individual asset
@@ -46,7 +45,7 @@ contract AssetExchange {
     bytes32 thisOrder = keccak256(abi.encodePacked(_assetID, _seller, _amount, _price, false));
     require(orders[_seller][thisOrder]);
     require(msg.value == (_amount.mul(_price)));
-    require(Asset(database.addressStorage(keccak256(abi.encodePacked("contract", "Asset")))).tradeOwnershipUnits(_assetID, _seller, msg.sender, _amount));
+    require(tradeOwnershipUnits(_assetID, _seller, msg.sender, _amount));
     weiOwed[_seller] = weiOwed[_seller].add(msg.value);
     delete orders[_seller][thisOrder];
     emit LogSellOrderCompleted(thisOrder, _assetID, msg.sender);
@@ -68,7 +67,7 @@ contract AssetExchange {
   returns (bool){
     bytes32 thisOrder = keccak256(abi.encodePacked(_assetID, _buyer, _amount, _price, true));       // Get order ID
     require(orders[_buyer][thisOrder]);    // Check order exists
-    require(Asset(database.addressStorage(keccak256(abi.encodePacked("contract", "Asset")))).tradeOwnershipUnits(_assetID, msg.sender, _buyer, _amount));
+    require(tradeOwnershipUnits(_assetID, msg.sender, _buyer, _amount));
     weiDeposited[_buyer] = weiDeposited[_buyer].sub(_amount.mul(_price));
     weiOwed[msg.sender] = weiOwed[msg.sender].add(_amount.mul(_price));
     delete orders[_buyer][thisOrder];
@@ -156,6 +155,36 @@ contract AssetExchange {
     return true;
   }
 
+    //------------------------------------------------------------------------------------------------------------------
+  // Trades ownershipUnits of an asset to other user.Must trade over relative amount of paidToFunder,
+  // So person buying ownershipUnits will also be recognized as being paid out for those ownershipUnits in the past
+  // Invariants: Can only be called by current marketplace contract. User must have enough ownershipUnits to make trade.
+  // @Param address selling ownershipUnits
+  // @Param address buying ownershipUnits
+  // @Param number of ownershipUnits being traded
+  // TODO: Move as internal fn to DAX??
+  //------------------------------------------------------------------------------------------------------------------
+  function tradeOwnershipUnits(bytes32 _assetID, address _from, address _to, uint _amount)
+  internal
+  returns (bool) {
+    require(getAmountOwed(_assetID, _from) == uint(0));
+    uint ownershipUnitsFrom = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, _from)));
+    require(ownershipUnitsFrom >= _amount);
+    uint ownershipUnitsTo = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, _to)));
+    uint paidToFunderFrom = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _from)));
+    uint paidToFunderTo = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to)));
+    uint paidToAndFrom = paidToFunderFrom.add(paidToFunderTo);
+    uint relativePaidOutAmount = (paidToFunderFrom.mul(_amount)).div(ownershipUnitsFrom);    // TODO: Can round down, letting user withdraw 1 wei
+    assert(relativePaidOutAmount > uint(0));
+    database.setUint(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to)), paidToFunderTo.add(relativePaidOutAmount));
+    database.setUint(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _from)), paidToFunderFrom.sub(relativePaidOutAmount));
+    assert (paidToAndFrom == (database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to))).add(database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to))))));
+    database.setUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, _from)), ownershipUnitsFrom.sub(_amount));
+    database.setUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, _to)), ownershipUnitsTo.add(_amount));
+    emit LogownershipUnitsTraded(_assetID, _from, _to, _amount);
+    return true;
+  }
+
   //------------------------------------------------------------------------------------------------------------------
   // Destroys contract and sends WEI to _holdingAddress
   //------------------------------------------------------------------------------------------------------------------
@@ -166,6 +195,24 @@ contract AssetExchange {
     require(database.boolStorage(keccak256(abi.encodePacked(address(this), _functionInitiator, "destroy", keccak256(abi.encodePacked(_holdingAddress))))));
     emit LogDestruction(_holdingAddress, address(this).balance, msg.sender);
     selfdestruct(_holdingAddress);
+  }
+
+
+    //------------------------------------------------------------------------------------------------------------------
+  // Returns the amount of WEI owed to the asset owner
+  // @Param: The ID of the asset
+  // @Param: The address of the asset owner
+  //------------------------------------------------------------------------------------------------------------------
+  function getAmountOwed(bytes32 _assetID, address _user)
+  public
+  view
+  returns (uint){
+    uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, _user)));
+    if (ownershipUnits == uint(0)) { return uint(0); }
+    uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)));
+    uint totalPaidToFunder = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _user)));
+    uint assetIncome = database.uintStorage(keccak256(abi.encodePacked("assetIncome", _assetID)));
+    return assetIncome.mul(ownershipUnits).div(amountRaised).sub(totalPaidToFunder);
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -252,4 +299,5 @@ contract AssetExchange {
   event LogSellOrderCompleted(bytes32 _orderID, bytes32 indexed _assetAddress, address indexed _purchaser);
   event LogBuyOrderDetails(bytes32 _orderID, uint indexed _amount, uint indexed _price);
   event LogSellOrderDetails(bytes32 orderID, uint indexed _amount, uint indexed _price);
+  event LogownershipUnitsTraded(bytes32 _assetID, address _from, address _to, uint _amount);
 }

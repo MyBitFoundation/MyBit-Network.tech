@@ -310,7 +310,7 @@ contract API {
   public 
   view 
   returns (uint) { 
-    database.uintStorage(keccak256(abi.encodePacked("stakerIncomeShare", _assetID))); 
+    return database.uintStorage(keccak256(abi.encodePacked("stakerIncomeShare", _assetID))); 
   }
 
   //-----------------------------------------------------------------------------------------------------------------------

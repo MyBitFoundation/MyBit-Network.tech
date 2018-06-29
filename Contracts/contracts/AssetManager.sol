@@ -28,17 +28,12 @@ using SafeMath for uint;
   function unlockEscrow(bytes32 _assetID)
   external
   accessApproved(1) {
-    if (database.addressStorage(keccak256(abi.encodePacked("assetStaker", _assetID))) == address(0)) { 
-      require(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))) == msg.sender); 
-    }
-    else { 
-      require(database.addressStorage(keccak256(abi.encodePacked("assetStaker", _assetID))) == msg.sender); 
-      require(database.uintStorage(keccak256(abi.encodePacked("stakingExpiration", _assetID))) < now); 
-    }
+    require(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))) == msg.sender || database.addressStorage(keccak256(abi.encodePacked("assetStaker", _assetID))) == msg.sender); 
+    require(database.uintStorage(keccak256(abi.encodePacked("stakingExpiration", _assetID))) < now); 
     uint amountToUnlock = database.uintStorage(keccak256(abi.encodePacked("escrowedForAsset", _assetID)));
     assert(amountToUnlock > uint(0));
     uint fundingStage = database.uintStorage(keccak256(abi.encodePacked("fundingStage", _assetID)));
-    if (fundingStage == uint(2) || fundingStage == uint(5) || fundingStage == uint(0)) {    // has asset failed or finished it's lifecycle?
+    if (fundingStage == uint(2) || fundingStage == uint(5) || fundingStage == uint(0)) { 
       releaseEscrow(_assetID, msg.sender, amountToUnlock);     // Unlock all of the escrowed MYB since asset has finished it's lifecycle
     }
     else {
