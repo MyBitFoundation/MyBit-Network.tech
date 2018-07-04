@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+  pragma solidity 0.4.24;
 import './SafeMath.sol';
 import './Database.sol';
 
@@ -28,8 +28,11 @@ using SafeMath for uint;
   function unlockEscrow(bytes32 _assetID)
   external
   accessApproved(1) {
-    require(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))) == msg.sender || database.addressStorage(keccak256(abi.encodePacked("assetStaker", _assetID))) == msg.sender); 
-    require(database.uintStorage(keccak256(abi.encodePacked("stakingExpiration", _assetID))) < now); 
+    if (database.addressStorage(keccak256(abi.encodePacked("assetStaker", _assetID))) != address(0)) { 
+      require(database.addressStorage(keccak256(abi.encodePacked("assetStaker", _assetID))) == msg.sender);
+      require(database.uintStorage(keccak256(abi.encodePacked("stakingExpiration", _assetID))) < now); 
+    }
+    else { require(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))) == msg.sender); }
     uint amountToUnlock = database.uintStorage(keccak256(abi.encodePacked("escrowedForAsset", _assetID)));
     assert(amountToUnlock > uint(0));
     uint fundingStage = database.uintStorage(keccak256(abi.encodePacked("fundingStage", _assetID)));
@@ -40,11 +43,10 @@ using SafeMath for uint;
       uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)));
       uint assetIncome = database.uintStorage(keccak256(abi.encodePacked("assetIncome", _assetID)));
       uint percentageROI = database.uintStorage(keccak256(abi.encodePacked(assetIncome, _assetID))).mul(uint(100)).div(amountRaised);    // Ratio of  incomeProduced / funding cost  (both in WEI)
-      // TODO: find better algorithm
-      if (percentageROI >= uint(100)) { releaseEscrow(_assetID, msg.sender, amountToUnlock); }
-      if (percentageROI >= uint(75)) { releaseEscrow(_assetID, msg.sender, (uint(75).mul(amountRaised)).div(uint(100))); }
-      if (percentageROI >= uint(50)) { releaseEscrow(_assetID, msg.sender, (uint(50).mul(amountRaised)).div(uint(100))); }
-      if (percentageROI >= uint(25)) { releaseEscrow(_assetID, msg.sender, (uint(25).mul(amountRaised)).div(uint(100))); }
+      if (percentageROI > uint(100)) { releaseEscrow(_assetID, msg.sender, amountToUnlock); }
+      if (percentageROI > uint(75)) { releaseEscrow(_assetID, msg.sender, amountToUnlock.mul(uint(75)).div(uint(100))); }
+      if (percentageROI > uint(50)) { releaseEscrow(_assetID, msg.sender, amountToUnlock.mul(uint(50)).div(uint(100))); }
+      if (percentageROI > uint(25)) { releaseEscrow(_assetID, msg.sender, amountToUnlock.mul(uint(25)).div(uint(100))); }
     }
   }
 
@@ -54,6 +56,7 @@ using SafeMath for uint;
   //------------------------------------------------------------------------------------------------------------------
   function releaseEscrow(bytes32 _assetID, address _user, uint _amount)
   internal {
+    assert (_amount > 0); 
     uint amountLockedForAsset = database.uintStorage(keccak256(abi.encodePacked("escrowedForAsset", _assetID)));
     uint totalEscrowedAmount = database.uintStorage(keccak256(abi.encodePacked("escrowedMYB", _user)));
     uint depositedAmount = database.uintStorage(keccak256(abi.encodePacked("depositedMYB", _user)));

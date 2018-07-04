@@ -75,8 +75,7 @@ using SafeMath for uint;
   function setManagerIncome(bytes32 _assetID, address _manager, uint _managerAmount)
   internal 
   returns (bool) { 
-      address manager = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))); 
-      uint managerOwed = database.uintStorage(keccak256(abi.encodePacked("managerIncome", manager))); 
+      uint managerOwed = database.uintStorage(keccak256(abi.encodePacked("managerIncome", _manager))); 
       database.setUint(keccak256(abi.encodePacked("managerIncome", _manager)), managerOwed.add(_managerAmount)); 
       return true;
   }

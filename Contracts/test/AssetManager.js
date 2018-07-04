@@ -67,6 +67,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let stakingBlockCreation; 
 
   let LogEscrowRequester; 
+  let LogEscrowUnlocked; 
 
   it("Owners should be assigned", async () => {
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);
@@ -400,7 +401,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      installerID =  await hfInstance.stringHash('RobotINC');
      managerPercentage = 7; 
      stakingAmount = 10000 * 10**18;   // 10,000 MYB 
-     incomeShare = 50; 
+     incomeShare = 50;     // Split income 50/50
      amountToBeRaised = 20000; 
      await stakingInstance.requestEscrowLending(stakingAmount, incomeShare, managerPercentage, amountToBeRaised, installerID, assetType, {from:assetCreator});
      amountEscrowedForAsset = amountToBeRaised;
@@ -415,7 +416,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
             console.log('LogAssetFundingStarted event triggered');
             stakingBlockCreation = r.args._blockAtCreation;
             escrowID = r.args._escrowID;          // escrowID == escrowID
-            LogAssetFundingStarted.stopWatching();
+            LogEscrowRequester.stopWatching();
             done(e);
           }
       });
@@ -451,10 +452,14 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
           if(e){ done(e); }
           else {
             console.log('LogEscrowStaked event triggered');
+            console.log("old assetID is " + assetID); 
             assetID = r.args._assetID;
+            stakerAddr = r.args._staker; 
             assert.equal(r.args._amountMYB, stakingAmount); 
             assert.equal(await api.assetStaker(assetID), staker); 
+            console.log("new assetID address  " + assetID); 
             console.log(await api.stakerIncomeShare(assetID)); 
+            console.log(stakerAddr); 
             assert.equal(await api.stakerIncomeShare(assetID), incomeShare); 
             LogEscrowStaked.stopWatching();
             done(e);
@@ -463,29 +468,111 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
     });
 
     it ("create asset", async () => { 
-     let amountEscrowDeposited = await api.depositedMYB(staker);
+     let amountEscrowedMYB = await api.escrowedMYB(staker);
      let mybUSDPrice = await api.mybUSDPrice();
+     let currentTimestamp = await hfInstance.currentTime(); 
      assert.notEqual(stakingAmount, 0);
-     assert.notEqual(managerPercentage); 
-     assert.equal(amountEscrowDeposited, stakingAmount); 
+     assert.equal(staker, await api.assetStaker(assetID)); 
+     assert.equal(amountEscrowedMYB, stakingAmount); 
      await assetCreationInstance.newAsset(amountToBeRaised, managerPercentage, stakingAmount, installerID, assetType, stakingBlockCreation, {from:assetCreator});
+     assert.equal(await api.fundingStage(assetID), 1); 
     }); 
 
 
     it ("fund and payout asset", async () => { 
-      let amountToBeRaisedUSD = await api.amountToBeRaised(assetID); 
       let ethUSDPrice = await api.ethUSDPrice();
+      let halfOfUSDValueInEth = ((amountToBeRaised / ethUSDPrice) / 2);
 
-      let halfOfUSDValueInEth = ((amountToBeRaisedUSD / ethUSDPrice) / 2);
-      console.log("amount of ETHER to send is");
-      console.log(halfOfUSDValueInEth); 
 
       await fundingHubInstance.fund(assetID, {from:funder1, value:web3.toWei(halfOfUSDValueInEth,'ether')});
       await fundingHubInstance.fund(assetID, {from:funder2, value:web3.toWei(halfOfUSDValueInEth,'ether')});
+      await fundingHubInstance.fund(assetID, {from:funder2, value:web3.toWei(halfOfUSDValueInEth,'ether')});
 
+      assert.equal(await api.fundingStage(assetID), 3); 
       await fundingHubInstance.payout(assetID); 
       assert.equal(await api.fundingStage(assetID), 4); 
     }); 
+
+    it ("asset receives income ROI", async () => { 
+      let ethUSDPrice = await api.ethUSDPrice(); 
+      let managerIncomeBefore = await api.managerIncome(assetCreator); 
+      halfROI = (amountToBeRaised / ethUSDPrice) / 2; 
+      halfROIWEI = halfROI * 10**18; 
+      managerAmount = BigNumber(await api.managerPercentage(assetID)).times(halfROIWEI).div(100); 
+      assert.equal(await api.stakerIncomeShare(assetID), 50); 
+
+      await assetInstance.receiveIncome(assetID, await hfInstance.stringHash("July payment"), {value: halfROIWEI}); 
+      managerIncome = BigNumber(await api.managerIncome(assetCreator)).minus(managerIncomeBefore);
+      stakerIncome = await api.managerIncome(staker); 
+      let managerIncomeCheck = BigNumber(managerIncome).plus(stakerIncome); 
+      assert.equal(BigNumber(managerAmount).eq(managerIncomeCheck), true); 
+      assert.equal(BigNumber(managerIncome).eq(stakerIncome), true); 
+
+      assert.equal(BigNumber(await api.assetIncome(assetID)).eq(BigNumber(halfROIWEI).minus(managerAmount)), true); 
+
+    });
+
+    // TODO: Check WEI balances
+    it ("Staker withdraws funds", async () => { 
+      let managerIncome = await api.managerIncome(assetCreator); 
+      let stakerIncome = await api.managerIncome(staker); 
+      assert.notEqual(managerIncome, 0);
+      assert.notEqual(stakerIncome, 0); 
+
+      await assetInstance.withdrawManagerIncome(assetID, {from: assetCreator}); 
+      assert.equal(await api.managerIncome(assetCreator), 0);
+      await assetInstance.withdrawManagerIncome(assetID, {from: staker})
+      assert.equal(await api.managerIncome(stakerIncome), 0); 
+
+    })
+
+    it ("AssetManager tries to withdraw staked tokens", async () => { 
+      let withdrawAttempt = null;
+      try { await assetManagerInstance.unlockEscrow(assetID, {from: assetCreator}); } 
+      catch (error) { withdrawAttempt = error; }
+      assert.notEqual(withdrawAttempt, null); 
+
+    });
+
+    it ("Withdraw MYB escrow tokens up to 25% ROI", async () => { 
+      let escrowedForAsset = await api.escrowedForAsset(assetID);
+      let stakerEscrowedMYB = await api.escrowedMYB(staker); 
+      let assetIncome = await api.assetIncome(assetID); 
+      let amountRaised = await api.amountRaised(assetID); 
+      let percentageROI = BigNumber(assetIncome).times(100).div(amountRaised);
+      assert.equal(BigNumber(escrowedForAsset).eq(stakerEscrowedMYB), true); 
+      let unlockAmount = BigNumber(stakerEscrowedMYB).times(25).div(100); 
+      let expectedEscrowRemaining = BigNumber(escrowedForAsset).minus(unlockAmount); 
+      assert.equal(percentageROI > 25, true); 
+      assert.equal(percentageROI < 50, true); 
+      console.log("staker escrowed MYB " + stakerEscrowedMYB); 
+      await assetManagerInstance.unlockEscrow(assetID, {from: staker}); 
+      let unlockedMYB = await api.depositedMYB(staker); 
+      console.log("expected escrow remaining " + expectedEscrowRemaining); 
+      console.log("amount expected to be unlocked " + unlockAmount); 
+      console.log(await api.escrowedForAsset(assetID)); 
+      console.log(await api.escrowedMYB(staker)); 
+      // assert.equal(unlockedMYB, unlockAmount);
+      // assert.equal(BigNumber(await api.escrowedForAsset(assetID)).eq(await api.escrowedMYB(staker)), true); 
+      // assert.equal(BigNumber(await api.escrowedForAsset(assetID)).eq(expectedEscrowRemaining), true); 
+      // assert.equal(await api.escrowedMYB(staker), expectedEscrowRemaining); 
+      LogEscrowUnlocked = await assetManagerInstance.LogEscrowUnlocked({},{fromBlock:0, toBlock:'latest'});
+    }); 
+
+    it ("listen for assetID", function (done) {
+      LogEscrowUnlocked.watch(
+        async function(e,r){
+          if(e){ done(e); }
+          else {
+            console.log('LogEscrowUnlocked event triggered');
+            let user = r.args._user;
+            let amount = r.args._amount; 
+            console.log("amount unlocked " + amount); 
+            LogEscrowUnlocked.stopWatching();
+            done(e);
+          }
+      });
+    });
 
 
 

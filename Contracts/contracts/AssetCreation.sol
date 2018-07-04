@@ -38,8 +38,12 @@ contract AssetCreation {
     require(_amountToBeRaised > uint(100), "amountToBeRaised is too low");           // Minimum asset price
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToEscrow, _managerPercentage, _amountToBeRaised, _installerID, _assetType, _blockAtCreation));
     require(database.uintStorage(keccak256(abi.encodePacked("fundingStage", assetID))) == uint(0), "AssetID already exists.");    // This ensures the asset isn't currently live or being funded
+    database.setUint(keccak256(abi.encodePacked("fundingStage", assetID)), uint(1));       // Allow this asset to receive funding
     address staker = database.addressStorage(keccak256(abi.encodePacked("assetStaker", assetID)));
-    if (staker != address(0)) { assert (database.uintStorage(keccak256(abi.encodePacked("stakingExpiration", assetID))) > now);  }
+    if (staker != address(0)) { 
+      assert (database.uintStorage(keccak256(abi.encodePacked("stakingExpiration", assetID))) > now); 
+      database.deleteUint(keccak256(abi.encodePacked("stakingExpiration", assetID)));  
+    }
     else { require(lockAssetEscrow(assetID, _amountToEscrow, msg.sender), "locking asset escrow failed"); }
     database.setUint(keccak256(abi.encodePacked("amountToBeRaised", assetID)), _amountToBeRaised);
     database.setUint(keccak256(abi.encodePacked("managerPercentage", assetID)), _managerPercentage);
@@ -59,7 +63,6 @@ contract AssetCreation {
     uint escrowedMYB = database.uintStorage(keccak256(abi.encodePacked("escrowedMYB", _escrowDepositer)));
     uint depositedMYB = database.uintStorage(keccak256(abi.encodePacked("depositedMYB", _escrowDepositer)));
     // assert (_amountToEscrow <= depositedMYB);    // TODO: Safemath should throw here if this isn't the case
-    database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(1));       // Allow this asset to receive funding
     database.setUint(keccak256(abi.encodePacked("depositedMYB", _escrowDepositer)), depositedMYB.sub(_amountToEscrow)); 
     database.setUint(keccak256(abi.encodePacked("escrowedMYB", _escrowDepositer)), escrowedMYB.add(_amountToEscrow));
     database.setUint(keccak256(abi.encodePacked("escrowedForAsset", _assetID)), _amountToEscrow);
