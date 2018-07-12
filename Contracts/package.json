@@ -8,11 +8,14 @@
   },
   "scripts": {
     "compile": "truffle compile",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "migrate": "truffle migrate",
+    "test": "truffle test"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bignumber.js": "^7.2.1",
+    "request": "^2.87.0",
     "solc": "0.4.23",
     "truffle": "^5.0.0-byoc.2"
   }
