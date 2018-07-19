@@ -56,12 +56,12 @@ using SafeMath for uint;
       uint stakerShare = database.uintStorage(keccak256(abi.encodePacked("stakerIncomeShare", _assetID))); 
       uint stakerPortion = _managerAmount.mul(stakerShare).div(100); 
       assert (stakerPortion > 0); 
-      assert (setManagerIncome(_assetID, staker, stakerPortion)); 
-      if (stakerPortion < _managerAmount){ assert (setManagerIncome(_assetID, manager, _managerAmount.sub(stakerPortion)));  }
+      assert (setManagerIncome(staker, stakerPortion)); 
+      if (stakerPortion < _managerAmount){ assert (setManagerIncome(manager, _managerAmount.sub(stakerPortion)));  }
       return true;  
     }
     else { 
-      assert (setManagerIncome(_assetID, manager, _managerAmount)); 
+      assert (setManagerIncome(manager, _managerAmount)); 
       return true;
     }
   }
@@ -72,7 +72,7 @@ using SafeMath for uint;
   // @Param: The ID of the asset earning income
   // @Param: The amount of WEI owed to the staker or manager
   //------------------------------------------------------------------------------------------------------------------
-  function setManagerIncome(bytes32 _assetID, address _manager, uint _managerAmount)
+  function setManagerIncome(address _manager, uint _managerAmount)
   internal 
   returns (bool) { 
       uint managerOwed = database.uintStorage(keccak256(abi.encodePacked("managerIncome", _manager))); 
