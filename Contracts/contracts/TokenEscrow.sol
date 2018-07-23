@@ -40,7 +40,7 @@ contract TokenEscrow {
   }
 
   //------------------ewr------------------------------------------------------------------------------------------------
-  // Asset manager can deposit MyBit here to be locked for escrow
+  // Asset manager can deposit MyBit here to later be locked for escrow
   // @notice This is alias for depositEscrow. Called directly from token contract. 
   // @param address _from: The user depositing escrow
   // @param uint _amount: Amount of MYB being deposited. 

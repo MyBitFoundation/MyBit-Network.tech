@@ -115,14 +115,6 @@ contract API {
   //                                                  Platform Costs
   //-----------------------------------------------------------------------------------------------------------------------
 
-  function accessCostMYB(uint _accessLevelDesired)
-  public
-  view
-  returns (uint) {
-    uint mybPrice = mybUSDPrice();
-    uint accessPrice = accessTokenFee(_accessLevelDesired);
-    return (accessPrice * 10**21) / mybPrice;           // Returns # of MYB required (last 18 integers are decimals....will be very large number)
-  }
 
   // USD cost of different levels of access on the platform (1 = create/fund assets, 2 = staking/TBA, 3 = marketplace)
   function accessTokenFee(uint _accessLevelDesired)
