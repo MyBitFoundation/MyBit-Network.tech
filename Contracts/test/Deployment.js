@@ -1,5 +1,6 @@
 var BigNumber = require('bignumber.js');
 
+const API = artifacts.require('./API.sol'); 
 const Asset = artifacts.require('./Asset.sol');
 const AssetCreation = artifacts.require('./AssetCreation.sol');
 const ContractManager = artifacts.require("./ContractManager.sol");
@@ -10,7 +11,6 @@ const InitialVariables = artifacts.require("./InitialVariables.sol");
 const AssetExchange = artifacts.require('./AssetExchange.sol');
 const MyBitToken = artifacts.require('./ERC20.sol');
 const AssetManager = artifacts.require('./AssetManager.sol');
-const OracleHub = artifacts.require('./OracleHub.sol');
 const Owned = artifacts.require("./Owned.sol");
 const TokenBurn = artifacts.require('./TokenBurn.sol');
 const TokenFaucet = artifacts.require('./TokenFaucet.sol');
@@ -21,7 +21,10 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   const ownerAddr1 = web3.eth.accounts[0];
   const ownerAddr2 = web3.eth.accounts[1];
   const ownerAddr3 = web3.eth.accounts[2];
+  const myBitFoundation = web3.eth.accounts[3];
+  const installerEscrow = web3.eth.accounts[4]; 
 
+  let api;
   let assetInstance;
   let assetCreationInstance;
   let contractManagerInstance;
@@ -32,7 +35,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let AssetExchangeInstance;
   let myBitTokenInstance;
   let assetManagerInstance;
-  let oracleHubInstance;
   let ownedInstance;
   let tokenBurnInstance;
   let tokenFaucetInstance;
@@ -45,6 +47,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   it("Owners should be assigned", async () => {
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);
      hfInstance = await HashFunctions.new();
+     api = await API.new(dbInstance.address); 
 
      // Database Owners assigned properly
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('owner', ownerAddr1)), true, 'Owner 1 assigned properly');
@@ -80,10 +83,17 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      //--------------------Asset Creation Variables-----------------
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('myBitFoundationPercentage')), 1, 'myBitFoundationPercentage == 1');
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('installerPercentage')), 99, 'installerPercentage == 97');
+     // Check that the access fee is set properly
+     console.log(await api.accessTokenFee(1)); 
+     assert.equal(BigNumber(await api.accessTokenFee(1)).eq(BigNumber(25).times(10**21)), true, 'access level 1 set');
+     assert.equal(BigNumber(await api.accessTokenFee(2)).eq(BigNumber(75).times(10**21)), true, 'access level 2 set');
+     assert.equal(BigNumber(await api.accessTokenFee(3)).eq(BigNumber(100).times(10**21)), true, 'access level 3 set');
    });
 
    it('MyBitToken contract deployment ', async () => {
-     let initialSupply = 18000000000000000 * 10**10;
+     let initialSupply = 18 * 10**24;
+     console.log("initial supply");
+     console.log(initialSupply); 
      myBitTokenInstance = await MyBitToken.new(initialSupply, 'MyBit', 18, 'MYB');
 
      assert.equal(await myBitTokenInstance.balanceOf(web3.eth.accounts[0]), initialSupply, 'MyBitToken - Correct initial balance to owner');
@@ -161,20 +171,13 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
 
    it('assetManagerInstance contract deployment ', async () => {
-     assetManagerInstance = await AssetManager.new(dbInstance.address, myBitTokenInstance.address);
+     assetManagerInstance = await AssetManager.new(dbInstance.address);
      await contractManagerInstance.addContract('AssetManager', assetManagerInstance.address, ownerAddr2);
      assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(assetManagerInstance.address))), false, 'Contract manager(AssetManager) to database === false');
      assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'AssetManager')), assetManagerInstance.address, 'AssetManager address correctly stored');
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', assetManagerInstance.address)), true, 'AssetManager address == true');
    });
 
-   it('oracleHubInstance contract deployment ', async () => {
-     oracleHubInstance = await OracleHub.new(dbInstance.address);
-     await contractManagerInstance.addContract('OracleHub', oracleHubInstance.address, ownerAddr2);
-     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(oracleHubInstance.address))), false, 'Contract manager(OracleHub) to database === false');
-     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'OracleHub')), oracleHubInstance.address, 'OracleHub address correctly stored');
-     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', oracleHubInstance.address)), true, 'OracleHub address == true');
-   });
 
    it('tokenFaucetInstance contract deployment ', async () => {
      tokenFaucetInstance = await TokenFaucet.new(myBitTokenInstance.address);
@@ -204,10 +207,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      //Ensure all variables are set in constructor and passed
      assert.equal(await tokenBurnInstance.database(), await dbInstance.address, 'TokenBurn database Address assigned properly');
      assert.equal(await tokenBurnInstance.myBitToken(), await myBitTokenInstance.address, 'TokenBurn myBitToken Address assigned properly');
-
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 1)), 25, 'access level 1 set');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 2)), 75, 'access level 2 set');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 3)), 100, 'access level 3 set');
 
 
      await contractManagerInstance.addContract('TokenBurn', tokenBurnInstance.address, ownerAddr2);

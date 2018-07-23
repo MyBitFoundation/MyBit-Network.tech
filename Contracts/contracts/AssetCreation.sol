@@ -36,12 +36,13 @@ contract AssetCreation {
     require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiration", msg.sender))) > now , "User access has expired");
     require(_managerPercentage < uint(100) && _managerPercentage > uint(0) , "manager percentage is too high or too low");
     require(_amountToBeRaised > uint(100), "amountToBeRaised is too low");           // Minimum asset price
-    bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToBeRaised, _managerPercentage, _amountToEscrow, _installerID, _assetType, _blockAtCreation));
+    bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToEscrow, _managerPercentage, _amountToBeRaised, _installerID, _assetType, _blockAtCreation));
     require(database.uintStorage(keccak256(abi.encodePacked("fundingStage", assetID))) == uint(0), "AssetID already exists.");    // This ensures the asset isn't currently live or being funded
+    database.setUint(keccak256(abi.encodePacked("fundingStage", assetID)), uint(1));       // Allow this asset to receive funding
     address staker = database.addressStorage(keccak256(abi.encodePacked("assetStaker", assetID)));
-    if (staker != address(0)) {
-      assert (database.uintStorage(keccak256(abi.encodePacked("stakingExpiration", assetID))) > now);     // User has 168 hours (1 week) to initiate asset after receiving stake
-      require(lockAssetEscrow(assetID, _amountToEscrow, staker), "Unable to lock escrow. Check enough MYB is deposited");
+    if (staker != address(0)) { 
+      assert (database.uintStorage(keccak256(abi.encodePacked("stakingExpiration", assetID))) > now); 
+      database.deleteUint(keccak256(abi.encodePacked("stakingExpiration", assetID)));  
     }
     else { require(lockAssetEscrow(assetID, _amountToEscrow, msg.sender), "locking asset escrow failed"); }
     database.setUint(keccak256(abi.encodePacked("amountToBeRaised", assetID)), _amountToBeRaised);
@@ -62,7 +63,6 @@ contract AssetCreation {
     uint escrowedMYB = database.uintStorage(keccak256(abi.encodePacked("escrowedMYB", _escrowDepositer)));
     uint depositedMYB = database.uintStorage(keccak256(abi.encodePacked("depositedMYB", _escrowDepositer)));
     // assert (_amountToEscrow <= depositedMYB);    // TODO: Safemath should throw here if this isn't the case
-    database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(1));       // Allow this asset to receive funding
     database.setUint(keccak256(abi.encodePacked("depositedMYB", _escrowDepositer)), depositedMYB.sub(_amountToEscrow)); 
     database.setUint(keccak256(abi.encodePacked("escrowedMYB", _escrowDepositer)), escrowedMYB.add(_amountToEscrow));
     database.setUint(keccak256(abi.encodePacked("escrowedForAsset", _assetID)), _amountToEscrow);

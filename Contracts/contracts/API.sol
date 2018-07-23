@@ -115,14 +115,6 @@ contract API {
   //                                                  Platform Costs
   //-----------------------------------------------------------------------------------------------------------------------
 
-  function accessCostMYB(uint _accessLevelDesired)
-  public
-  view
-  returns (uint) {
-    uint mybPrice = mybUSDPrice();
-    uint accessPrice = accessTokenFee(_accessLevelDesired);
-    return (accessPrice * 10**21) / mybPrice;           // Returns # of MYB required (last 18 integers are decimals....will be very large number)
-  }
 
   // USD cost of different levels of access on the platform (1 = create/fund assets, 2 = staking/TBA, 3 = marketplace)
   function accessTokenFee(uint _accessLevelDesired)
@@ -228,7 +220,7 @@ contract API {
   //                                AssetManager and Escrow
   //-----------------------------------------------------------------------------------------------------------------------
 
-  // Indicates which address is in charge of operating this asset. 1 operator per asset
+  // Indicates which address is in charge of operating this asset. 1 manager per asset
   function assetManager(bytes32 _assetID)
   public
   view
@@ -236,12 +228,20 @@ contract API {
     return database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID)));
   }
 
-  // Percentage of income sent to asset operator
+  // Percentage of income sent to asset manager
   function managerPercentage(bytes32 _assetID)
   public
   view
   returns (uint) {
     return database.uintStorage(keccak256(abi.encodePacked("managerPercentage", _assetID)));
+  }
+
+    // Percentage of income sent to asset manager
+  function managerIncome(address _manager)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256(abi.encodePacked("managerIncome", _manager)));
   }
 
   // Amount of MYB locked for this asset
@@ -260,7 +260,7 @@ contract API {
     return database.uintStorage(keccak256(abi.encodePacked("escrowedMYB", _manager)));
   }
 
-  // Total amount of MYB deposited in the operator escrow contract
+  // Total amount of MYB deposited in the token escrow contract
   // NOTE: This MYB is not locked and can be withdrawn at any time
   function depositedMYB(address _manager)
   public
@@ -310,7 +310,7 @@ contract API {
   public 
   view 
   returns (uint) { 
-    database.uintStorage(keccak256(abi.encodePacked("stakerIncomeShare", _assetID))); 
+    return database.uintStorage(keccak256(abi.encodePacked("stakerIncomeShare", _assetID))); 
   }
 
   //-----------------------------------------------------------------------------------------------------------------------

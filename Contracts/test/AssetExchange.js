@@ -4,7 +4,6 @@ var BigNumber = require('bignumber.js');
 const ContractManager = artifacts.require("./ContractManager.sol");
 const HashFunctions = artifacts.require("./HashFunctions.sol");
 const InitialVariables = artifacts.require("./InitialVariables.sol");
-const OracleHub = artifacts.require('./OracleHub.sol');
 const Owned = artifacts.require("./Owned.sol");
 const Database = artifacts.require("./Database.sol");
 const AssetManager = artifacts.require('./AssetManager.sol');
@@ -33,7 +32,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let contractManagerInstance;
   let hfInstance;
   let initialVariableInstance;
-  let oracleHubInstance;
   let ownedInstance;
   let dbInstance;
   let assetManagerInstance;
@@ -43,7 +41,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let assetInstance;
   let fundingHubInstance;
   let assetExchangeInstance;
-  let apiInstance;
+  let api;
 
 
   var initialSupply;
@@ -59,12 +57,13 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let assetIncome;
 
   let user1ownershipUnitsInitially;
+  let LogAssetFundingSuccess; 
 
 
   it("Owners should be assigned", async () => {
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);
      hfInstance = await HashFunctions.new();
-     apiInstance = await API.new(dbInstance.address);
+     api = await API.new(dbInstance.address);
 
      // Database Owners assigned properly
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('owner', ownerAddr1)), true, 'Owner 1 assigned properly');
@@ -112,13 +111,6 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
       assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', ownedInstance.address)), true, 'Owned address == true');
     });
 
-   it('oracleHubInstance contract deployment ', async () => {
-     oracleHubInstance = await OracleHub.new(dbInstance.address);
-     await contractManagerInstance.addContract('OracleHub', oracleHubInstance.address, ownerAddr2);
-     assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(oracleHubInstance.address))), false, 'Contract manager(OracleHub) to database === false');
-     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'OracleHub')), oracleHubInstance.address, 'OracleHub address correctly stored');
-     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', oracleHubInstance.address)), true, 'OracleHub address == true');
-   });
 
    it('MyBitToken contract deployment ', async () => {
      initialSupply = 180000000000000000000000000;
@@ -156,7 +148,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    });
 
    it('assetManagerInstance contract deployment ', async () => {
-     assetManagerInstance = await AssetManager.new(dbInstance.address, myBitTokenInstance.address);
+     assetManagerInstance = await AssetManager.new(dbInstance.address);
      await contractManagerInstance.addContract('AssetManager', assetManagerInstance.address, ownerAddr2);
      assert.equal(await dbInstance.boolStorage(await hfInstance.getAuthorizeHash(contractManagerInstance.address, ownerAddr2, 'addContract', await hfInstance.addressHash(assetManagerInstance.address))), false, 'Contract manager(AssetManager) to database === false');
      assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'AssetManager')), assetManagerInstance.address);
@@ -180,106 +172,107 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringAddress('userAccess', funder4)), 3, 'Access 3 granted');
    });
 
-   it('Transfer tokens to user', async () => {
-     let balanceOfOwnerBefore = await myBitTokenInstance.balanceOf(ownerAddr1);
-     let balanceOfAccess1Before = await myBitTokenInstance.balanceOf(assetCreator);
-     assert.equal(balanceOfOwnerBefore, initialSupply, 'Owner has full initial supply');
-     assert.equal(balanceOfAccess1Before, 0, 'assetCreator has 0 initial supply');
-
-     transferAmount = 100000 * 10**18;  // Transfer 100,000 tokens
-     await myBitTokenInstance.transfer(assetCreator, transferAmount,{from:ownerAddr1}); //transfer tokens for escrow
-
-     let balanceOfOwnerAfterTransfer = await myBitTokenInstance.balanceOf(ownerAddr1);
-     let balanceOfAccess1AfterTransfer = await myBitTokenInstance.balanceOf(assetCreator);
-     assert.equal(BigNumber(balanceOfOwnerAfterTransfer).eq(BigNumber(initialSupply).minus(transferAmount)),true, 'Owner has been deducted transfer amount');
-     assert.equal(balanceOfAccess1AfterTransfer, transferAmount, 'assetCreator has transfer tokens amount');
-   });
 
 
-   it('Approve escrow to transfer', async () => {
-     escrowAmount = 1000 * 10**18;
-     await myBitTokenInstance.approve(assetManagerInstance.address, escrowAmount,{from:assetCreator});
-     let allowance = await myBitTokenInstance.allowance(assetCreator, assetManagerInstance.address);
-     assert.equal(allowance, escrowAmount, 'Approval granted');
-   });
-
-   it('Deposit Escrow', async () => {
-      await assetManagerInstance.depositEscrow(escrowAmount,{from:assetCreator});
-      let managerAmountDeposited = await dbInstance.uintStorage(await hfInstance.stringAddress('managerAmountDeposited', assetCreator));
-      assert.equal(managerAmountDeposited, escrowAmount, 'Account escrow value updated');
-   });
-
-   /*
-      Setting this manually as oraclizehub has been tested and is fully functional,
-      if we were not to set it manually the test would rely on events and results
-      in unecessary work.  In this test we are testing the asset manager functionality,
-      not that of OraclizeHub which can be seen in; TestOraclize.js .
-   */
    it('Add dummy account as a contract', async () => {
      await contractManagerInstance.addContract('TestContractMimic', ownerAddr1, ownerAddr2);
      assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'TestContractMimic')), ownerAddr1, 'TestContractMimic correctly stored');
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('contract', ownerAddr1)), true, 'ownerAddr1 address == true');
    });
 
-   it('Manually add Eth & MyB USD value', async () => {
-     await dbInstance.setUint(await hfInstance.stringHash('mybUSDPrice'), 3000);
-     await dbInstance.setUint(await hfInstance.stringHash('ethUSDPrice'), 700);
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('mybUSDPrice')), 3000, 'mybUSDPrice set correctly');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('ethUSDPrice')), 700, 'ethUSDPrice set correctly');
+   it('Set ETH and MYB prices in USD', async () => {
+     let ethPrice = 470; 
+     let mybPrice = 98;   // floating point 10^3
+     await initialVariableInstance.setDailyPrices(ethPrice, mybPrice); 
+     // Check values set properly 
+     assert.equal(await api.ethUSDPrice(), ethPrice);
+     assert.equal(await api.mybUSDPrice(), mybPrice); 
 
-     await dbInstance.setUint(await hfInstance.stringHash('mybUSDPriceExpiration'), 1544015678); //1544015678 - 12 months ahead
-     await dbInstance.setUint(await hfInstance.stringHash('ethUSDPriceExpiration'), 1544015678); //1544015678 - 12 months ahead
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('mybUSDPriceExpiration')), 1544015678, 'mybUSDPrice set correctly');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('ethUSDPriceExpiration')), 1544015678, 'ethUSDPrice set correctly');
+     let priceExpiration = await api.priceTimeToExpiration();
+     assert.notEqual(priceExpiration, 0); 
    });
 
 
    it('Create asset', async () => {
      assetType = await hfInstance.stringHash('BitcoinATM');
      installerID =  await hfInstance.stringHash('installerID');
-     assetID = await hfInstance.stringHash('TestAsset');
-     assert.notEqual(escrowAmount, 0);
-     // Create new asset
-     await assetCreationInstance.newAsset(assetID, amountToBeRaised, managerPercentage, escrowAmount, installerID, assetType, {from:assetCreator});
-     let addressAssigned = await dbInstance.addressStorage(await hfInstance.stringBytes("assetManager", assetID));
-     let managerEscrowedAmount = await dbInstance.uintStorage(await hfInstance.stringBytes('lockedForAsset', assetID));
-     // Check asset manager variables were set properly
-     assert.equal(addressAssigned, assetCreator, 'asset creator assigned to asset');
-     assert.equal(managerEscrowedAmount, escrowAmount, 'managerEscrowedAmount updated');
-     // Check new asset variables were set properly
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytes("amountToBeRaised", assetID)), amountToBeRaised,'amountToBeRaised asset set');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytes("managerPercentage", assetID)), managerPercentage, 'managerPercentage asset set');
-     assert.equal(await dbInstance.addressStorage(await hfInstance.stringBytes("assetManager", assetID)), assetCreator, 'assetManager asset set');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytes("fundingStage", assetID)), 1, 'fundingStage asset set');
+     let amountEscrowDeposited = await api.depositedMYB(assetCreator);
+     let mybUSDPrice = await api.mybUSDPrice();
+     assert.notEqual(managerPercentage); 
+     await assetCreationInstance.newAsset(amountToBeRaised, managerPercentage, 0, installerID, assetType, 23, {from:assetCreator});
+     LogAssetFundingStarted = await assetCreationInstance.LogAssetFundingStarted({},{fromBlock:0, toBlock:'latest'});
+   });
+
+  it ("listen for assetID", function (done) {
+    // Create coffee machine asset
+    LogAssetFundingStarted.watch(
+      async function(e,r){
+        if(e){ done(e); }
+        else {
+          console.log('LogAssetFundingStarted event triggered');
+          assetID = r.args._assetID;
+          LogAssetFundingStarted.stopWatching();
+          done(e);
+        }
+    });
+  });
+
+   it("check new asset information was set properly", async () => { 
+     let myBPrice = await api.mybUSDPrice(); 
+     let addressAssigned = await api.assetManager(assetID);
+     let escrowedForAsset = await api.escrowedForAsset(assetID);
+
+     assert.equal(addressAssigned, assetCreator, 'asset creator assigned to asset manager');
+
+     assert.equal(await api.amountToBeRaised(assetID), amountToBeRaised,'amountToBeRaised asset set');
+     assert.equal(await api.managerPercentage(assetID), managerPercentage, 'managerPercentage asset set');
+     assert.equal(await api.fundingStage(assetID), 1, 'fundingStage asset set');
    });
 
    it('Fund asset', async () => {
-     let amountToBeRaised = await dbInstance.uintStorage(await hfInstance.stringBytes("amountToBeRaised", assetID));
+     let amountToBeRaised = await api.amountToBeRaised(assetID);
      let ethUSDPrice = await dbInstance.uintStorage(await hfInstance.stringHash('ethUSDPrice'));
      assert.notEqual(ethUSDPrice, 0);
-     let quarterOfValueInETH = ((amountToBeRaised / ethUSDPrice) / 4);
+     let goalInETH = BigNumber(amountToBeRaised).times(10**18).div(ethUSDPrice); 
+     let quarterOfGoalInWEI = goalInETH.div(4);
+     // assert.equal( (quarterOfGoalInWEI * ethUSDPrice) * 4, amountToBeRaised);    // Check for rounding errors
 
-     await fundingHubInstance.fund(assetID, {from:funder1, value:web3.toWei(quarterOfValueInETH,'ether')});
-     await fundingHubInstance.fund(assetID, {from:funder2, value:web3.toWei(quarterOfValueInETH,'ether')});
-     await fundingHubInstance.fund(assetID, {from:funder3, value:web3.toWei(quarterOfValueInETH,'ether')});
-     await fundingHubInstance.fund(assetID, {from:funder4, value:web3.toWei(quarterOfValueInETH,'ether')});
+     await fundingHubInstance.fund(assetID, {from:funder1, value:quarterOfGoalInWEI});
+     await fundingHubInstance.fund(assetID, {from:funder2, value:quarterOfGoalInWEI});
+     await fundingHubInstance.fund(assetID, {from:funder3, value:quarterOfGoalInWEI});
+     await fundingHubInstance.fund(assetID, {from:funder4, value:quarterOfGoalInWEI});
 
-     assert.equal((await apiInstance.amountRaised(assetID) / 10**18) * ethUSDPrice, amountToBeRaised);
+     LogAssetFundingSuccess = await fundingHubInstance.LogAssetFundingSuccess({},{fromBlock:0, toBlock:'latest'});
     });
 
-    it('Asset transition to stage 4', async () => {
-     assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('fundingStage', assetID))), 3, 'Funding stage == 3');
-     let amountRaised = await apiInstance.amountRaised(assetID);
 
-     assert.equal(amountRaised, (amountRaised * .99) + (amountRaised * .01));
+    it ("listen for funding success", function (done) {
+      // Create coffee machine asset
+      LogAssetFundingSuccess.watch(
+        async function(e,r){
+          if(e){ done(e); }
+          else {
+            console.log('LogAssetFundingSuccess event triggered');
+            let currentEthPrice = r.args._currentEthPrice;
+            let amountRaised = r.args._amountRaised; 
+            assert.equal(await api.fundingStage(assetID), 3, 'Funding stage == 3');
+            assert.equal(await api.amountRaised(assetID), amountRaised); 
+            LogAssetFundingSuccess.stopWatching();
+            done(e);
+          }
+      });
+    });
+
+
+    it('Payout and transition asset to stage 4', async () => {
      await fundingHubInstance.payout(assetID);
-     assert.equal(parseInt(await dbInstance.uintStorage(await hfInstance.stringBytes('fundingStage', assetID))), 4, 'Stage set to 4, ready for payments');
+     assert.equal(await api.fundingStage(assetID), 4, 'Stage set to 4, ready for payments');
     });
 
    it('Asset recieves funding', async () => {
-     assert.equal(await apiInstance.assetIncome(assetID), 0);
+     assert.equal(await api.assetIncome(assetID), 0);
      await assetInstance.receiveIncome(assetID, await hfInstance.nullBytes(), {value:assetRevenuePayments});
-     assetIncome = BigNumber(await apiInstance.assetIncome(assetID));
+     assetIncome = BigNumber(await api.assetIncome(assetID));
      let managerIncome = assetRevenuePayments * (managerPercentage / 100);
      assert.equal(assetIncome.plus(managerIncome), assetRevenuePayments);
    });
@@ -336,8 +329,8 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
     });
 
     it('Buy Asset - from sell order, BUYASSET', async () =>{
-      let user1ownershipUnits = await apiInstance.ownershipUnits(assetID, funder1);
-      let user2ownershipUnits = await apiInstance.ownershipUnits(assetID, funder2);
+      let user1ownershipUnits = await api.ownershipUnits(assetID, funder1);
+      let user2ownershipUnits = await api.ownershipUnits(assetID, funder2);
 
       let userBalanceBeforeBuy = web3.eth.getBalance(funder2);
       var estimateGasBuyAsset = await assetExchangeInstance.buyAsset.estimateGas(assetID, funder1, user1ownershipUnits, 1,{from:funder2,value:user1ownershipUnits}).toFixed(7) / 10000000;

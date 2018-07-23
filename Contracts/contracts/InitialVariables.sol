@@ -33,9 +33,9 @@ external  {
   database.setUint(keccak256(abi.encodePacked("myBitFoundationPercentage")), uint(1));
   database.setUint(keccak256(abi.encodePacked("installerPercentage")), uint(99));
   // ---------------------Access Price in USD--------------------------
-  database.setUint(keccak256(abi.encodePacked("accessTokenFee", uint(1))), uint(25).mul(10**21));    // Add 18 decimals + 10^3 for MYB price 
-  database.setUint(keccak256(abi.encodePacked("accessTokenFee", uint(2))), uint(75).mul(10**21));    // Add 18 decimals + 10^3 for MYB price 
-  database.setUint(keccak256(abi.encodePacked("accessTokenFee", uint(3))), uint(100).mul(10**21));   // Add 18 decimals + 10^3 for MYB price 
+  database.setUint(keccak256(abi.encodePacked("accessTokenFee", uint(1))), uint(25).mul(10**21));    // Add 18 decimals * 10^3 for MYB price 
+  database.setUint(keccak256(abi.encodePacked("accessTokenFee", uint(2))), uint(75).mul(10**21));    // Add 18 decimals * 10^3 for MYB price 
+  database.setUint(keccak256(abi.encodePacked("accessTokenFee", uint(3))), uint(100).mul(10**21));   // Add 18 decimals * 10^3 for MYB price 
   // -------------Oracle Variables-------------------------
   database.setUint(keccak256(abi.encodePacked("priceUpdateTimeline")), uint(86400));     // Market prices need to be updated every 24 hours
   emit LogInitialized(msg.sender, address(database));

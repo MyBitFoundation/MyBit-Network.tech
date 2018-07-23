@@ -30,14 +30,17 @@ using SafeMath for uint;
   external
   accessApproved(uint(2))
   returns (bool) {
+    require(_incomeShare > 0); 
     bytes32 escrowID = keccak256(abi.encodePacked(_requester, _amount, _incomeShare, _managerPercentage, _amountToBeRaised, _installerID, _assetType, _blockAtCreation));
     require(database.uintStorage(keccak256(abi.encodePacked("escrowExpiration", escrowID))) > now);  // Expiry date will be 0 if this is not a valid escrow request
-    require(database.uintStorage(keccak256(abi.encodePacked("depositedMYB", msg.sender))) > _amount);
+    require(database.uintStorage(keccak256(abi.encodePacked("depositedMYB", msg.sender))) >= _amount);
+    bytes32 assetID = keccak256(abi.encodePacked(_requester, _amount, _managerPercentage, _amountToBeRaised, _installerID, _assetType, _blockAtCreation));
+    require(lockAssetEscrow(assetID, _amount, msg.sender)); 
     database.deleteUint(keccak256(abi.encodePacked("escrowExpiration", escrowID)));    // Make sure nobody else can stake this request
-    database.setAddress(keccak256(abi.encodePacked("assetStaker", escrowID)), msg.sender);
-    database.setUint(keccak256(abi.encodePacked("stakerIncomeShare", escrowID)), _incomeShare);
-    database.setUint(keccak256(abi.encodePacked("stakingExpiration", escrowID)), stakingExpiry.add(now));  // TODO: delete when asset is created
-    emit LogEscrowStaked(msg.sender, _amount, escrowID);
+    database.setAddress(keccak256(abi.encodePacked("assetStaker", assetID)), msg.sender);
+    database.setUint(keccak256(abi.encodePacked("stakerIncomeShare", assetID)), _incomeShare);
+    database.setUint(keccak256(abi.encodePacked("stakingExpiration", assetID)), stakingExpiry.add(now));  // TODO: delete when asset is created
+    emit LogEscrowStaked(msg.sender, _amount, assetID);
     return true;
   }
 
@@ -67,7 +70,21 @@ using SafeMath for uint;
     return true;
   }
 
-
+  //----------------------------------------------------------------------------------------------------------------------------------------
+  // This function locks MyBit tokens to the asset for the length of it's lifecycle
+  //----------------------------------------------------------------------------------------------------------------------------------------
+  function lockAssetEscrow(bytes32 _assetID, uint _amountToEscrow, address _escrowDepositer)
+  internal
+  returns (bool) {
+    if (_amountToEscrow == 0) { return true; }
+    uint escrowedMYB = database.uintStorage(keccak256(abi.encodePacked("escrowedMYB", _escrowDepositer)));
+    uint depositedMYB = database.uintStorage(keccak256(abi.encodePacked("depositedMYB", _escrowDepositer)));
+    // assert (_amountToEscrow <= depositedMYB);    // TODO: Safemath should throw here if this isn't the case
+    database.setUint(keccak256(abi.encodePacked("depositedMYB", _escrowDepositer)), depositedMYB.sub(_amountToEscrow)); 
+    database.setUint(keccak256(abi.encodePacked("escrowedMYB", _escrowDepositer)), escrowedMYB.add(_amountToEscrow));
+    database.setUint(keccak256(abi.encodePacked("escrowedForAsset", _assetID)), _amountToEscrow);
+    return true;
+  }
   //------------------------------------------------------------------------------------------------------------------
   //                                            Modifiers
   //------------------------------------------------------------------------------------------------------------------
@@ -98,5 +115,5 @@ using SafeMath for uint;
   event LogEscrowRequestedP1(uint _amount, uint _incomeShare, uint _managerPercentage);
   event LogEscrowRequestedP2(uint _amountToBeRaised, bytes32 _assetType, bytes32 _installerID);
   event LogEscrowRequester(address indexed _assetManager, bytes32 _escrowID, uint _blockAtCreation);
-  event LogEscrowStaked(address indexed _staker, uint _amountMYB, bytes32 indexed _escrowID);
+  event LogEscrowStaked(address indexed _staker, uint _amountMYB, bytes32 indexed _assetID);
 }

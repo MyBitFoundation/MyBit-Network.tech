@@ -40,11 +40,12 @@ contract TokenEscrow {
   }
 
   //------------------ewr------------------------------------------------------------------------------------------------
-  // Asset manager can deposit MyBit here to be locked for escrow
+  // Asset manager can deposit MyBit here to later be locked for escrow
   // @notice This is alias for depositEscrow. Called directly from token contract. 
   // @param address _from: The user depositing escrow
   // @param uint _amount: Amount of MYB being deposited. 
   // @param address _token: The address of the calling token contract
+  // @param bytes _data: An optional data field
   //------------------------------------------------------------------------------------------------------------------
   function receiveApproval(address _from, uint _amount, address _token, bytes _data)
   external
