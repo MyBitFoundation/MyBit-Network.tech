@@ -1,5 +1,6 @@
 var BigNumber = require('bignumber.js');
 
+const API = artifacts.require("./API.sol"); 
 const Database = artifacts.require("./Database.sol");
 const HashFunctions = artifacts.require("./HashFunctions.sol");
 const ContractManager = artifacts.require("./ContractManager.sol");
