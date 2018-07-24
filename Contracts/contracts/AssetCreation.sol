@@ -26,7 +26,7 @@ contract AssetCreation {
   // @Param: The type of asset being created. (ie. Sha3("BitcoinATM")) 
   // @Param: The block when the escrow request was created. If no escrow request was made, then any unique number will work
   //----------------------------------------------------------------------------------------------------------------------------------------
-  function newAsset(uint _amountToBeRaised, uint _managerPercentage, uint _amountToEscrow, bytes32 _installerID, bytes32 _assetType, uint _blockAtCreation)
+  function newAsset(uint _amountToBeRaised, uint _managerPercentage, uint _amountToEscrow, bytes32 _installerID, bytes32 _assetType, uint _blockAtCreation, bytes32 _ipfsHash)
   external
   whenNotPaused
   noEmptyBytes(_installerID)
@@ -49,7 +49,7 @@ contract AssetCreation {
     database.setUint(keccak256(abi.encodePacked("managerPercentage", assetID)), _managerPercentage);
     database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
     database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), fundingTime.add(now));
-    emit LogAssetFundingStarted(assetID, _installerID, _assetType);    // assetType and installer ID are already indexed
+    emit LogAssetFundingStarted(assetID, _installerID, _assetType, _ipfsHash);    // assetType and installer ID are already indexed
     return true;
   }
 
@@ -86,7 +86,7 @@ contract AssetCreation {
     require(database.boolStorage(functionHash));
     database.setBool(functionHash, false);
     database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(5));   // Asset won't receive income & ownership won't be able to be traded.
-    emit LogAssetRemoved(msg.sender, _assetID);
+    emit LogAssetRemoved(_assetID, msg.sender);
     return true;
   }
 
@@ -182,9 +182,9 @@ contract AssetCreation {
   //                                            Events
   //------------------------------------------------------------------------------------------------------------------
 
-  event LogAssetFundingStarted(bytes32 indexed _assetID, bytes32 indexed _installerID, bytes32 indexed _assetType);
+  event LogAssetFundingStarted(bytes32 indexed _assetID, bytes32 indexed _installerID, bytes32 indexed _assetType, bytes32 _ipfsHash);
   event LogLockAssetEscrow(address _from, bytes32 _assetID, uint _amountOf);
-  event LogAssetRemoved(address _remover, bytes32 indexed _assetID);
+  event LogAssetRemoved(bytes32 indexed _assetID, address _remover);
   event LogFundingTimeChanged(address _sender, uint _newTimeForFunding);
   event LogFundingPercentageChanged(uint _myBitFoundationPercentage, uint _installerPercentage);
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
