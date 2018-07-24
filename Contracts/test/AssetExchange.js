@@ -196,10 +196,11 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    it('Create asset', async () => {
      assetType = await hfInstance.stringHash('BitcoinATM');
      installerID =  await hfInstance.stringHash('installerID');
+     let ipfsHash = await hfInstance.stringHash("This is simulating an ipfs storage bucket"); 
      let amountEscrowDeposited = await api.depositedMYB(assetCreator);
      let mybUSDPrice = await api.mybUSDPrice();
      assert.notEqual(managerPercentage); 
-     await assetCreationInstance.newAsset(amountToBeRaised, managerPercentage, 0, installerID, assetType, 23, {from:assetCreator});
+     await assetCreationInstance.newAsset(amountToBeRaised, managerPercentage, 0, installerID, assetType, 23, ipfsHash, {from:assetCreator});
      LogAssetFundingStarted = await assetCreationInstance.LogAssetFundingStarted({},{fromBlock:0, toBlock:'latest'});
    });
 

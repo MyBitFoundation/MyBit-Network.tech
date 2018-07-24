@@ -261,12 +261,13 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    it('Create asset', async () => {
      assetType = await hfInstance.stringHash('BitcoinATM');
      installerID =  await hfInstance.stringHash('installerID');
+     let ipfsHash = await hfInstance.stringHash("This is simulating an ipfs storage bucket"); 
      let amountEscrowDeposited = await api.depositedMYB(assetCreator);
      let mybUSDPrice = await api.mybUSDPrice();
      assert.notEqual(approvalAmount, 0);
      assert.notEqual(managerPercentage); 
      assert.equal(amountEscrowDeposited, approvalAmount); 
-     await assetCreationInstance.newAsset(amountToBeRaised, managerPercentage, approvalAmount, installerID, assetType, 23, {from:assetCreator});
+     await assetCreationInstance.newAsset(amountToBeRaised, managerPercentage, approvalAmount, installerID, assetType, 23, ipfsHash, {from:assetCreator});
      amountEscrowedForAsset = approvalAmount;
      LogAssetFundingStarted = await assetCreationInstance.LogAssetFundingStarted({},{fromBlock:0, toBlock:'latest'});
    });
@@ -471,10 +472,11 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      let amountEscrowedMYB = await api.escrowedMYB(staker);
      let mybUSDPrice = await api.mybUSDPrice();
      let currentTimestamp = await hfInstance.currentTime(); 
+     let ipfsHash = await hfInstance.stringHash("This is simulating an ipfs storage bucket"); 
      assert.notEqual(stakingAmount, 0);
      assert.equal(staker, await api.assetStaker(assetID)); 
      assert.equal(amountEscrowedMYB, stakingAmount); 
-     await assetCreationInstance.newAsset(amountToBeRaised, managerPercentage, stakingAmount, installerID, assetType, stakingBlockCreation, {from:assetCreator});
+     await assetCreationInstance.newAsset(amountToBeRaised, managerPercentage, stakingAmount, installerID, assetType, stakingBlockCreation, ipfsHash, {from:assetCreator});
      assert.equal(await api.fundingStage(assetID), 1); 
     }); 
 
