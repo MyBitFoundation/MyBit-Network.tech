@@ -16,7 +16,7 @@ const FundingHub = artifacts.require('./FundingHub.sol');
 const API = artifacts.require('./API.sol');
 
 
-contract('Deploying and storing all contracts + validation', async (accounts) => {
+contract('FundingHub - Deploying and storing all contracts + validation', async (accounts) => {
   const ownerAddr1 = web3.eth.accounts[0];
   const ownerAddr2 = web3.eth.accounts[1];
   const ownerAddr3 = web3.eth.accounts[2];

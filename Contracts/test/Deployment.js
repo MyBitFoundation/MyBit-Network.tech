@@ -18,7 +18,7 @@ const TokenFaucet = artifacts.require('./TokenFaucet.sol');
 const UserAccess = artifacts.require('./UserAccess.sol');
 
 
-contract('Deploying and storing all contracts + validation', async (accounts) => {
+contract('Deployment - Deploying and storing all contracts + validation', async (accounts) => {
   const ownerAddr1 = web3.eth.accounts[0];
   const ownerAddr2 = web3.eth.accounts[1];
   const ownerAddr3 = web3.eth.accounts[2];
