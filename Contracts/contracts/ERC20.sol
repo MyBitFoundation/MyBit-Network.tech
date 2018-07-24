@@ -1,10 +1,18 @@
-pragma solidity 0.4.23;
-
-// Standard ERC20 contract with Burning capabilities.
-// https://theethereum.wiki/w/index.php/ERC20_Token_Standard
+pragma solidity 0.4.24;
 
 import './SafeMath.sol'; 
 
+// ----------------------------------------------------------------------------
+// Receive approval and then execute function
+// ----------------------------------------------------------------------------
+contract ApproveAndCallFallBack {
+    function receiveApproval(address from, uint tokens, address token, bytes data) public;
+}
+
+// ----------------------------------------------------------------------------
+// ERC Token Standard #20 Interface
+// https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
+// ----------------------------------------------------------------------------
 contract ERC20Interface {
     function totalSupply() public constant returns (uint);
     function balanceOf(address tokenOwner) public constant returns (uint balance);
@@ -15,14 +23,6 @@ contract ERC20Interface {
 
     event Transfer(address indexed from, address indexed to, uint tokens);
     event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
-}
-
-
-// ----------------------------------------------------------------------------
-// Receive approval and then execute function
-// ----------------------------------------------------------------------------
-contract ApproveAndCallFallBack {
-    function receiveApproval(address from, uint tokens, address token, bytes data) public;
 }
 
 
@@ -194,5 +194,4 @@ contract ERC20 is ERC20Interface{
     // ------------------------------------------------------------------------
     event LogBurn(address indexed _burner, uint indexed _amountBurned); 
 }
-
 

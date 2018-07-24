@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity 0.4.24;
 
 import "./SafeMath.sol";
 import "./Database.sol";
@@ -37,22 +37,23 @@ contract FundingHub {
   fundingLimit(_assetID)
   onlyApproved
   returns (bool) {
-    uint ownershipUnits = database.uintStorage(keccak256("ownershipUnits", _assetID, msg.sender));
+    uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)));
     if (ownershipUnits == 0) {
-      LogNewFunder(msg.sender, _assetID, block.timestamp);    // Create event to reference list of funders
+      emit LogNewFunder(msg.sender, _assetID);    // Create event to reference list of funders
     }
-    uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
-    database.setUint(keccak256("amountRaised", _assetID), amountRaised.add(msg.value));
-    database.setUint(keccak256("ownershipUnits", _assetID, msg.sender), ownershipUnits.add(msg.value));
-    emit LogAssetFunded(msg.sender, msg.value, _assetID);
+    uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)));
+    database.setUint(keccak256(abi.encodePacked("amountRaised", _assetID)), amountRaised.add(msg.value));
+    database.setUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)), ownershipUnits.add(msg.value));
+    emit LogAssetFunded(_assetID, msg.sender, msg.value);
     return true;
   }
 
   //------------------------------------------------------------------------------------------------------------------
   // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
   // Invariants: Must be in stage FundingSuccess | MyBitFoundation + AssetEscrow  + BugEscrow addresses are set | Contract is not paused
-  // Note: Will fail if addresses + percentages are not set. AmountRaised = WeiRaised + assetOperator ownershipUnits
-  // TODO: Installer gets extra 1-2 wei from rounding error
+  // Note: Will fail if addresses + percentages are not set. AmountRaised = WeiRaised = ownershipUnits
+  // TODO: Installer gets extra 1-2 wei from solidity rounding down when faced with fraction
+  // TODO: Create asset tokens here
   //------------------------------------------------------------------------------------------------------------------
   function payout(bytes32 _assetID)
   external
@@ -60,13 +61,13 @@ contract FundingHub {
   whenNotPaused
   atStage(_assetID, uint(3))       // Can only get to stage 3 by receiving enough funding within time limit
   returns (bool) {
-    uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
-    uint myBitAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256("myBitFoundationPercentage")));
+    uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)));
+    uint myBitAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("myBitFoundationPercentage"))));
     uint installerAmount = amountRaised.sub(myBitAmount);
-    database.addressStorage(keccak256("MyBitFoundation")).transfer(myBitAmount);             // Must be normal account
-    database.addressStorage(keccak256("InstallerEscrow")).transfer(installerAmount);             // Must be normal account
-    database.setUint(keccak256("fundingStage", _assetID), uint(4));
-    emit LogAssetPayout(_assetID, amountRaised, block.number);
+    database.addressStorage(keccak256(abi.encodePacked("MyBitFoundation"))).transfer(myBitAmount);             // Must be normal account
+    database.addressStorage(keccak256(abi.encodePacked("InstallerEscrow"))).transfer(installerAmount);             // Must be normal account
+    database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(4));
+    emit LogAssetPayout(_assetID, amountRaised);
     return true;
   }
 
@@ -79,8 +80,8 @@ contract FundingHub {
   fundingPeriodOver(_assetID)
   atStage(_assetID, uint(1))
   returns (bool) {
-    database.setUint(keccak256("fundingStage", _assetID), uint(2));
-    emit LogAssetFundingFailed(_assetID, database.uintStorage(keccak256("amountRaised", _assetID)), block.timestamp);
+    database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(2));
+    emit LogAssetFundingFailed(_assetID, database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID))));
     return true;
   }
 
@@ -94,13 +95,13 @@ contract FundingHub {
   whenNotPaused
   atStage(_assetID, uint(2))
   returns (bool) {
-    uint ownershipUnits = database.uintStorage(keccak256("ownershipUnits", _assetID, msg.sender));
-    require (ownershipUnits > 0);
-    database.deleteUint(keccak256("ownershipUnits", _assetID, msg.sender));
-    uint amountRaised = database.uintStorage(keccak256("amountRaised", _assetID));
-    database.setUint(keccak256("amountRaised", _assetID), amountRaised.sub(ownershipUnits));
+    uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)));
+    require (ownershipUnits > uint(0));
+    database.deleteUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)));
+    uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)));
+    database.setUint(keccak256(abi.encodePacked("amountRaised", _assetID)), amountRaised.sub(ownershipUnits));
     msg.sender.transfer(ownershipUnits);
-    emit LogRefund(msg.sender, ownershipUnits, block.timestamp);
+    emit LogRefund(_assetID, msg.sender, ownershipUnits);
     return true;
   }
 
@@ -112,8 +113,8 @@ contract FundingHub {
   anyOwner
   public {
     require(_functionInitiator != msg.sender);
-    require(database.boolStorage(keccak256(this, _functionInitiator, "destroy", keccak256(_holdingAddress))));
-    emit LogDestruction(_holdingAddress, this.balance, msg.sender);
+    require(database.boolStorage(keccak256(abi.encodePacked(address(this), _functionInitiator, "destroy", keccak256(abi.encodePacked(_holdingAddress))))));
+    emit LogDestruction(_holdingAddress, address(this).balance, msg.sender);
     selfdestruct(_holdingAddress);
   }
 
@@ -126,7 +127,7 @@ contract FundingHub {
   // Requires caller is one of the three owners
   //------------------------------------------------------------------------------------------------------------------
   modifier anyOwner {
-    require(database.boolStorage(keccak256("owner", msg.sender)));
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
     _;
   }
 
@@ -134,7 +135,7 @@ contract FundingHub {
   // Requires that the contract is not paused
   //------------------------------------------------------------------------------------------------------------------
   modifier whenNotPaused {
-    require(!database.boolStorage(keccak256("pause", this)));
+    require(!database.boolStorage(keccak256(abi.encodePacked("pause", address(this)))));
     _;
   }
 
@@ -160,7 +161,8 @@ contract FundingHub {
   // Requires user has burnt tokens to access this function
   //------------------------------------------------------------------------------------------------------------------
   modifier onlyApproved{
-    require(database.uintStorage(keccak256("userAccess", msg.sender)) >= uint(1));
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccess", msg.sender))) >= uint(1));
+    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiration", msg.sender))) > now);
     _;
   }
 
@@ -168,22 +170,19 @@ contract FundingHub {
   // Transitions funding period to success if enough Ether is raised
   // Must be in funding stage 3 (currently being funded).
   // Deletes funding raising variables if current transaction puts it over the goal.
-  // TODO: Remove fundingLimitModifier when done testing
+  // TODO: Limit how far over the goal users are allowed to fund?
   //------------------------------------------------------------------------------------------------------------------
   modifier fundingLimit(bytes32 _assetID) {
-    require(now <= database.uintStorage(keccak256("fundingDeadline", _assetID)));
-    uint currentEthPrice = database.uintStorage(keccak256("ethUSDPrice"));
-    assert (currentEthPrice > 0);
+    require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
+    uint currentEthPrice = database.uintStorage(keccak256(abi.encodePacked("ethUSDPrice")));
+    assert (currentEthPrice > uint(0));
     _;
-    uint value1 = database.uintStorage(keccak256("amountRaised", _assetID)).mul(currentEthPrice);
-    uint value2 = database.uintStorage(keccak256("amountToBeRaised", _assetID)).mul(1e18);
-    uint value3 = database.uintStorage(keccak256("amountRaised", _assetID));
-
-    emit fundingLimitModifier(value1, value2, value3);
-    if (database.uintStorage(keccak256("amountRaised", _assetID)).mul(currentEthPrice).div(1e18) >= database.uintStorage(keccak256("amountToBeRaised", _assetID))) {
-       database.deleteUint(keccak256("amountToBeRaised", _assetID));      // No longer need this variable
-       emit LogAssetFundingSuccess(_assetID, currentEthPrice, block.timestamp);
-       database.setUint(keccak256("fundingStage", _assetID), 3);
+    uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID))); 
+    if (amountRaised.mul(currentEthPrice).div(1e18) >= database.uintStorage(keccak256(abi.encodePacked("amountToBeRaised", _assetID)))) {
+       database.deleteUint(keccak256(abi.encodePacked("amountToBeRaised", _assetID)));      // No longer need this variable
+       database.deleteUint(keccak256(abi.encodePacked("fundingDeadline", _assetID)));
+       database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(3));
+       emit LogAssetFundingSuccess(_assetID, currentEthPrice, amountRaised);
       }
   }
 
@@ -191,7 +190,7 @@ contract FundingHub {
   // Check that the Ether/USD prices have been updated
   //------------------------------------------------------------------------------------------------------------------
   modifier priceUpdated {
-    require (now < database.uintStorage(keccak256("ethUSDPriceExpiration")));
+    require (now < database.uintStorage(keccak256(abi.encodePacked("priceExpiration"))));
     _;
   }
 
@@ -199,7 +198,7 @@ contract FundingHub {
   // Requires the funding stage is at a particular stage
   //------------------------------------------------------------------------------------------------------------------
   modifier atStage(bytes32 _assetID, uint _stage) {
-    require(database.uintStorage(keccak256("fundingStage", _assetID)) == _stage);
+    require(database.uintStorage(keccak256(abi.encodePacked("fundingStage", _assetID))) == _stage);
     _;
   }
 
@@ -207,7 +206,7 @@ contract FundingHub {
   // Requires that the funding deadline has passed
   //------------------------------------------------------------------------------------------------------------------
   modifier fundingPeriodOver(bytes32 _assetID) {
-    require(now >= database.uintStorage(keccak256("fundingDeadline", _assetID)));
+    require(now >= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
     _;
   }
 
@@ -224,12 +223,11 @@ contract FundingHub {
   //                                            Events
   //------------------------------------------------------------------------------------------------------------------
 
-  event LogNewFunder(address indexed _funder, bytes32 indexed _assetID, uint indexed _timestamp);
-  event LogAssetFunded(address indexed _sender, uint indexed _amount, bytes32 indexed _assetID);
-  event LogAssetFundingFailed(bytes32 indexed _assetID, uint indexed _amountRaised, uint indexed _timestamp);
-  event LogAssetFundingSuccess(bytes32 indexed _assetID, uint indexed _currentEthPrice, uint indexed _timestamp);
-  event LogRefund(address indexed _funder, uint indexed _amount, uint indexed _timestamp);
-  event LogAssetPayout(bytes32 indexed _assetID, uint indexed _amount, uint indexed _blockNumber);
+  event LogNewFunder(address indexed _funder, bytes32 indexed _assetID);
+  event LogAssetFunded(bytes32 indexed _assetID, address indexed _sender, uint _amount);
+  event LogAssetFundingFailed(bytes32 indexed _assetID, uint _amountRaised);
+  event LogAssetFundingSuccess(bytes32 indexed _assetID, uint _currentEthPrice, uint _amountRaised);
+  event LogRefund(bytes32 indexed _assetID, address indexed _funder, uint _amount);
+  event LogAssetPayout(bytes32 indexed _assetID, uint _amount);
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
-  event fundingLimitModifier(uint _value1, uint _value2, uint _value3);
 }

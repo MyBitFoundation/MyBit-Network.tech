@@ -28,7 +28,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
   let dbInstance;
   let hfInstance;
-  let apiInstance;
+  let api;
   let contractManagerInstance;
   let initialVariableInstance;
   let ownedInstance;
@@ -39,7 +39,11 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let transferAmount;
   let initialSupply;
   let myBitPrice = 3000;  // 10 to the power of 3 * 3 usd == 3000
+  let LogMyBitBurnt; 
 
+  let amountBurnt; 
+  let supplyMYB; 
+  let userBalance; 
 
   it("Owners should be assigned", async () => {
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);
@@ -60,8 +64,8 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    });
 
    it('Deploy API', async () => {
-     apiInstance = await API.new(dbInstance.address);
-     assert.equal(await apiInstance.database(), dbInstance.address);
+     api = await API.new(dbInstance.address);
+     assert.equal(await api.database(), dbInstance.address);
    });
 
    it('Add InitialVariables contract to database via contract manager', async () => {
@@ -142,6 +146,18 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      await dbInstance.setUint(await hfInstance.stringHash('mybUSDPriceExpiration'), decemberExpire,{from:contractMimik}); //1544015678 - 12 months ahead
   });
 
+  it('Set ETH and MYB prices in USD', async () => {
+     let ethPrice = 470; 
+     let mybPrice = 98;   // floating point 10^3
+     await initialVariableInstance.setDailyPrices(ethPrice, mybPrice); 
+     // Check values set properly 
+     assert.equal(await api.ethUSDPrice(), ethPrice);
+     assert.equal(await api.mybUSDPrice(), mybPrice); 
+
+     let priceExpiration = await api.priceTimeToExpiration();
+     assert.notEqual(priceExpiration, 0); 
+   });
+
    it('Transfer tokens to user', async () => {
      let balanceOfOwnerBefore = await myBitTokenInstance.balanceOf(ownerAddr1);
      let balanceOfAccess1Before = await myBitTokenInstance.balanceOf(assetCreator);
@@ -159,8 +175,8 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    });
 
    it('Approve token burn contract transfer', async () => {
-     approvalAmount = transferAmount / 2;
-     assert.equal(BigNumber(await myBitTokenInstance.balanceOf(account1)).gt(approvalAmount), true);
+     approvalAmount = transferAmount;
+     assert.equal(BigNumber(await myBitTokenInstance.balanceOf(account1)).eq(approvalAmount), true);
      await myBitTokenInstance.approve(tokenBurnInstance.address, approvalAmount,{from:account1});
      let allowance = await myBitTokenInstance.allowance(account1, tokenBurnInstance.address);
      assert.equal(allowance, approvalAmount, 'Approval granted');
@@ -168,21 +184,35 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
    it ('Burn tokens to approve user', async () => {
      let accessLevelDesired = 2;
-     let amountBeingBurned = await apiInstance.accessCostMYB(accessLevelDesired);
-     assert.equal(BigNumber(amountBeingBurned).lt(approvalAmount), true);
-     assert.equal(await apiInstance.userAccess(account1), 0);
-     let userBalanceBefore = await myBitTokenInstance.balanceOf(account1);
-     let totalSupplyBefore = await myBitTokenInstance.totalSupply();
+     userBalance = await myBitTokenInstance.balanceOf(account1);
+     supplyMYB = await myBitTokenInstance.totalSupply();
      // Burn tokens
      await tokenBurnInstance.burnTokens(accessLevelDesired, {from:account1});
      // Assert variables stored properly
-     let userBalanceAfter = BigNumber(userBalanceBefore).minus(amountBeingBurned);
-     let totalSupplyAfter = BigNumber(totalSupplyBefore).minus(amountBeingBurned);
-     assert.equal(BigNumber(await myBitTokenInstance.totalSupply()).eq(totalSupplyAfter), true);
-     assert.equal(BigNumber(await myBitTokenInstance.balanceOf(account1)).eq(userBalanceAfter), true);
-     assert.equal(await apiInstance.userAccess(account1), accessLevelDesired);
-
+     LogMyBitBurnt = await tokenBurnInstance.LogMyBitBurnt({},{fromBlock:0, toBlock:'latest'});
    });
+
+   it ("listen for access burn event", function (done) {
+    // Create coffee machine asset
+    LogMyBitBurnt.watch(
+      async function(e,r){
+        if(e){ done(e); }
+        else {
+          console.log('LogMyBitBurnt event triggered');
+          let burner = r.args._burner;
+          let amountBurnt = r.args._amount; 
+          console.log(await myBitTokenInstance.balanceOf(account1)); 
+          console.log(userBalance); 
+          console.log(userBalance - await myBitTokenInstance.balanceOf(account1)); 
+
+
+          assert.equal(BigNumber(userBalance.minus(amountBurnt)).eq(await myBitTokenInstance.balanceOf(account1)), true); 
+          assert.equal(BigNumber(supplyMYB.minus(amountBurnt)).eq(await myBitTokenInstance.totalSupply()), true); 
+          LogMyBitBurnt.stopWatching();
+          done(e);
+        }
+    });
+  });
 
    it('Burn token validation', async () => {
      // Modifier Check
@@ -198,27 +228,28 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
      let priceUpdatedModifier = null;
      try {
-       await dbInstance.setUint(await hfInstance.stringHash('mybUSDPriceExpiration'), 0, {from:contractMimik});
+       // await initialVariableInstance.setDailyPrices(0, 0);
+       await dbInstance.setUint(await hfInstance.stringHash('priceExpiration'), 10, {from:contractMimik});
        await tokenBurnInstance.burnTokens(2, {from:account1});
      }
      catch (error) {priceUpdatedModifier = error}
      assert.notEqual(priceUpdatedModifier, null, 'modifier priceUpdatedModifier');
      // set back to false after test
-     await dbInstance.setUint(await hfInstance.stringHash('mybUSDPriceExpiration'), decemberExpire, {from:contractMimik});
+     await dbInstance.setUint(await hfInstance.stringHash('priceExpiration'), decemberExpire, {from:contractMimik});
 
      let basicverificationModifier = null;
      try {await tokenBurnInstance.burnTokens(7, {from:account1});}
      catch (error) {basicverificationModifier = error}
      assert.notEqual(basicverificationModifier, null, 'modifier basicVerificationModifierCurrentlevel');
 
-     // assert accessCostMyB
-     let accessCostMyBAssert = null;
+     // assert accessTokenFee
+     let accessTokenFeeAssert = null;
      try {
        await dbInstance.setUint(await hfInstance.stringUint('accessTokenFee', 3), 0, {from:contractMimik});
        await tokenBurnInstance.burnTokens(3, {from:account1});
      }
-     catch (error) {accessCostMyBAssert = error}
-     assert.notEqual(accessCostMyBAssert, null, 'assert accessCostMyBAssert');
+     catch (error) {accessTokenFeeAssert = error}
+     assert.notEqual(accessTokenFeeAssert, null, 'assert accessTokenFeeAssert');
      // set back real value
      await dbInstance.setUint(await hfInstance.stringUint('accessTokenFee', 3), 100, {from:contractMimik});
 
