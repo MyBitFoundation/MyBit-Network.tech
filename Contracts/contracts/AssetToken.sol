@@ -27,10 +27,12 @@ contract ERC20Interface {
 
 
 // ------------------------------------------------------------------------
-// Standard ERC20 Token Contract.
+// @notice ERC20 token contract with shared revenue distribution functionality. 
+// Credit goes to Nick Johnson for the dividend token idea 
+// https://medium.com/@weka/dividend-bearing-tokens-on-ethereum-42d01c710657
 // Fixed Supply with burn capabilities
 // ------------------------------------------------------------------------
-contract ERC20 is ERC20Interface{
+contract AssetToken is ERC20Interface{
     using SafeMath for uint; 
 
     // ------------------------------------------------------------------------
@@ -41,25 +43,42 @@ contract ERC20 is ERC20Interface{
     mapping (address => mapping (address => uint)) internal allowed;
 
     // ------------------------------------------------------------------------
-    // Token Information
+    // Asset Token Information
     // ------------------------------------------------------------------------
-    string public name;                   // Full Token name
-    uint8 public decimals;                // How many decimals to show
-    string public symbol;                 // An identifier
+    string public id;                 // An identifier
+
+    // ------------------------------------------------------------------------
+    // Token Income Information
+    // ------------------------------------------------------------------------
+    uint constant scalingFactor = 1e32;
+    uint public assetIncome;
+    uint public incomeCollected;
+    uint public ownershipPerToken;
+
+
+    mapping (address => uint) public incomeClaimed;
+    mapping (address => uint) public lastPointsPerToken;    
 
 
     // ------------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------------
-    constructor(uint _initialAmount, string _tokenName, uint8 _decimalUnits, string _tokenSymbol) 
+    constructor(uint _initialAmount, string _id) 
     public {
-        balances[msg.sender] = _initialAmount;               // Give the creator all initial tokens
         supply = _initialAmount;                        // Update total supply
-        name = _tokenName;                                   // Set the name for display purposes
-        decimals = _decimalUnits;                            // Amount of decimals for display purposes
-        symbol = _tokenSymbol;                               // Set the symbol for display purposes
+        id = _id;                                            // Set the id for reference
         emit Transfer(address(0), msg.sender, _initialAmount);    // Transfer event indicating token creation
     }
+
+    // ------------------------------------------------------------------------
+    // TODO: Save gas for crowdfunding
+    // TODO: After crowdsale users can redeem their ownership units from crowdfunding
+    // ------------------------------------------------------------------------
+    // function redeem()
+    // public 
+    // returns (bool) { 
+    //     return true; 
+    // }
 
 
     // ------------------------------------------------------------------------
@@ -68,6 +87,8 @@ contract ERC20 is ERC20Interface{
     // ------------------------------------------------------------------------
     function transfer(address _to, uint _amount) 
     public 
+    updateIncomeClaimed(msg.sender)
+    updateIncomeClaimed(_to)
     returns (bool success) {
         require(_to != address(0));         // Use burn() function instead
         require(_to != address(this));
@@ -83,6 +104,8 @@ contract ERC20 is ERC20Interface{
     // ------------------------------------------------------------------------
     function transferFrom(address _from, address _to, uint _amount) 
     public 
+    updateIncomeClaimed(_from)
+    updateIncomeClaimed(_to)
     returns (bool success) {
         require(_to != address(0)); 
         require(_to != address(this)); 
@@ -112,41 +135,28 @@ contract ERC20 is ERC20Interface{
     // ------------------------------------------------------------------------
     function approveAndCall(address _spender, uint _amount, bytes _data) 
     public 
+    updateIncomeClaimed(msg.sender)
+    updateIncomeClaimed(_spender)
     returns (bool success) {
         allowed[msg.sender][_spender] = _amount;
         emit Approval(msg.sender, _spender, _amount);
-        ApproveAndCallFallBack(_spender).receiveApproval(msg.sender, _amount, this, _data);
+        ApproveAndCallFallBack(_spender).receiveApproval(msg.sender, _amount, address(this), _data);
         return true;
     }
 
-    // ------------------------------------------------------------------------
-    // Removes senders tokens from supply.
-    // Lowers user balance and totalSupply by _amount
-    // ------------------------------------------------------------------------   
-    function burn(uint _amount) 
-    public 
-    returns (bool success) {
-        balances[msg.sender] = balances[msg.sender].sub(_amount);
-        supply = supply.sub(_amount);
-        emit LogBurn(msg.sender, _amount);
-        emit Transfer(msg.sender, address(0), _amount);
-        return true;
-    }
-
-    // ------------------------------------------------------------------------
-    // An approved sender can burn _amount tokens of user _from
-    // Lowers user balance and supply by _amount 
-    // ------------------------------------------------------------------------    
-    function burnFrom(address _from, uint _amount) 
-    public 
-    returns (bool success) {
-        balances[_from] = balances[_from].sub(_amount);                         // Subtract from the targeted balance
-        allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_amount);             // Subtract from the sender's allowance
-        supply = supply.sub(_amount);                              // Update supply
-        emit LogBurn(_from, _amount);
-        emit Transfer(_from, address(0), _amount);
-        return true;
-    }
+    // // ------------------------------------------------------------------------
+    // // Updates incomeClaimed, sends all wei to the owner
+    // // ------------------------------------------------------------------------
+    // function collectOwedDividends()
+    //   public
+    //   updateIncomeClaimed(msg.sender)
+    //   returns (uint _amount) {
+    //     _amount = incomeClaimed[msg.sender].div(scalingFactor);
+    //     delete incomeClaimed[msg.sender]; 
+    //     incomeCollected = incomeCollected.add(_amount);
+    //     msg.sender.transfer(incomeCollected); 
+    //     emit LogIncomeCollected(now, msg.sender, _amount);
+    // }
 
     // ------------------------------------------------------------------------
     // Returns the number of tokens in circulation
@@ -168,20 +178,60 @@ contract ERC20 is ERC20Interface{
         return balances[_tokenHolder];
     }
 
+
+    // ------------------------------------------------------------------------
+    //                           Constant functions 
+    // ------------------------------------------------------------------------
+
     // ------------------------------------------------------------------------
     // Returns amount of tokens _spender is allowed to transfer or burn
     // ------------------------------------------------------------------------
     function allowance(address _tokenHolder, address _spender) 
     public 
     view 
-    returns (uint remaining) {
+    returns (uint) {
         return allowed[_tokenHolder][_spender];
     }
 
+    // ------------------------------------------------------------------------
+    // Calculates how points _user balance holds
+    // ------------------------------------------------------------------------
+    function getAmountOwed(address _user)
+      private
+      view
+      returns (uint) {
+        uint pointsPerToken = ownershipPerToken.sub(lastPointsPerToken[_user]);
+        return pointsPerToken.mul(balances[_user]);
+    }
 
     // ------------------------------------------------------------------------
-    // Fallback function
-    // Won't accept ETH
+    // Calculates how much wei user is owed. (points + incomeClaimed) / 10**32
+    // ------------------------------------------------------------------------
+    function getOwedDividends(address _user)
+    public
+    constant
+    returns (uint) {
+        return (getAmountOwed(_user).add(incomeClaimed[_user]).div(scalingFactor));
+    }
+
+
+
+    // ------------------------------------------------------------------------
+    //                            Modifiers 
+    // ------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------
+    // Updates the amount owed to user while holding tokenSupply
+    // @dev must be called before transfering tokens
+    // ------------------------------------------------------------------------
+    modifier updateIncomeClaimed(address _user) { 
+        incomeClaimed[_user] += getAmountOwed(_user);
+        lastPointsPerToken[_user] = ownershipPerToken;
+        _; 
+    }
+
+    // ------------------------------------------------------------------------
+    // Fallback function: Reject Ether payments
     // ------------------------------------------------------------------------
     function () 
     public 
@@ -189,9 +239,5 @@ contract ERC20 is ERC20Interface{
         revert();
     }
 
-    // ------------------------------------------------------------------------
-    // Event: Logs the amount of tokens burned and the address of the burner
-    // ------------------------------------------------------------------------
-    event LogBurn(address indexed _burner, uint indexed _amountBurned); 
 }
 

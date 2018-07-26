@@ -10,7 +10,7 @@ contract TokenBurn {
   using SafeMath for *;
 
 
-  ERC20 public myBitToken;
+  MyBitToken public myBitToken;
   Database public database;
 
   //------------------------------------------------------------------------------------------------------------------
@@ -18,7 +18,7 @@ contract TokenBurn {
   //------------------------------------------------------------------------------------------------------------------
   constructor(address _database, address _myBitToken)
   public {
-    myBitToken = ERC20(_myBitToken);
+    myBitToken = MyBitToken(_myBitToken);
     database = Database(_database);
   }
 

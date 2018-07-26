@@ -39,7 +39,7 @@ contract FundingHub {
   returns (bool) {
     uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)));
     if (ownershipUnits == 0) {
-      emit LogNewFunder(msg.sender, _assetID);    // Create event to reference list of funders
+      emit LogNewFunder(_assetID, msg.sender);    // Create event to reference list of funders
     }
     uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)));
     database.setUint(keccak256(abi.encodePacked("amountRaised", _assetID)), amountRaised.add(msg.value));
@@ -223,7 +223,7 @@ contract FundingHub {
   //                                            Events
   //------------------------------------------------------------------------------------------------------------------
 
-  event LogNewFunder(address indexed _funder, bytes32 indexed _assetID);
+  event LogNewFunder(bytes32 indexed _assetID, address indexed _funder);
   event LogAssetFunded(bytes32 indexed _assetID, address indexed _sender, uint _amount);
   event LogAssetFundingFailed(bytes32 indexed _assetID, uint _amountRaised);
   event LogAssetFundingSuccess(bytes32 indexed _assetID, uint _currentEthPrice, uint _amountRaised);
