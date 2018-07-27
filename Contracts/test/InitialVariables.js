@@ -6,13 +6,12 @@ const InitialVariables = artifacts.require("./InitialVariables.sol");
 const OracleHub = artifacts.require('./OracleHub.sol');
 const Owned = artifacts.require("./Owned.sol");
 const Database = artifacts.require("./Database.sol");
-const OperatorEscrow = artifacts.require('./OperatorEscrow.sol');
+const AssetManager = artifacts.require('./AssetManager.sol');
 const UserAccess = artifacts.require('./UserAccess.sol');
 const MyBitToken = artifacts.require('./ERC20.sol');
 const AssetCreation = artifacts.require('./AssetCreation.sol');
 const Asset = artifacts.require('./Asset.sol');
 const FundingHub = artifacts.require('./FundingHub.sol');
-const WithdrawalManager = artifacts.require('./WithdrawalManager.sol');
 const API = artifacts.require('./API.sol');
 
 contract('InitialVarialbles - Deploying and storing all contracts + validation', async (accounts) => {
@@ -34,26 +33,23 @@ contract('InitialVarialbles - Deploying and storing all contracts + validation',
 
   let contractManagerInstance;
   let hfInstance;
-  let apiInstance; 
+  let api;
   let initialVariableInstance;
   let oracleHubInstance;
   let ownedInstance;
   let dbInstance;
-  let operatorEscrowInstance;
+  let assetManagerInstance;
   let userAccessInstance;
   let myBitTokenInstance;
   let assetCreationInstance;
   let assetInstance;
   let fundingHubInstance;
   let stakingBankInstance;
-  let withdrawalManagerInstance;
 
   var initialSupply;
   var transferAmount;
   var approvalAmount;
 
-  let amountToBeRaised = 500; // USD
-  let operatorPercentage = 5;   // 5%
   let assetID;
   let installerID;
   let assetType;
@@ -63,6 +59,7 @@ contract('InitialVarialbles - Deploying and storing all contracts + validation',
   it("Owners should be assigned", async () => {
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);
      hfInstance = await HashFunctions.new();
+     api = await API.new(dbInstance.address); 
 
      // Database Owners assigned properly
      assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress('owner', ownerAddr1)), true, 'Owner 1 assigned properly');
@@ -112,9 +109,9 @@ contract('InitialVarialbles - Deploying and storing all contracts + validation',
      assert.equal(await dbInstance.addressStorage(await hfInstance.stringHash('InstallerEscrow')), assetEscrowPayoutAddress, 'assetEscrowPayoutAddress');
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('installerPercentage')), 99, 'installerPercentage ');
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('myBitFoundationPercentage')), 1, 'myBitFoundationPercentage');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 1)), 25, 'accessTokenFee 2');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 2)), 75, 'accessTokenFee 3');
-     assert.equal(await dbInstance.uintStorage(await hfInstance.stringUint('accessTokenFee', 3)), 100, 'accessTokenFee 4');
+     assert.equal(BigNumber(await api.accessTokenFee(1)).eq(BigNumber(25).times(10**21)), true, 'access level 1 set');
+     assert.equal(BigNumber(await api.accessTokenFee(2)).eq(BigNumber(75).times(10**21)), true, 'access level 2 set');
+     assert.equal(BigNumber(await api.accessTokenFee(3)).eq(BigNumber(100).times(10**21)), true, 'access level 3 set');
      assert.equal(await dbInstance.uintStorage(await hfInstance.stringHash('priceUpdateTimeline')), 86400, 'priceUpdateTimeline');
    });
  });

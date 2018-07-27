@@ -10,7 +10,7 @@ const FundingHub = artifacts.require("./FundingHub.sol");
 const StakingBank = artifacts.require("./StakingBank.sol");
 const AssetExchange = artifacts.require('./AssetExchange.sol');
 const MyBitToken = artifacts.require('./MyBitToken.sol');
-const OperatorEscrow = artifacts.require('./OperatorEscrow.sol');
+const AssetManager = artifacts.require('./AssetManager.sol');
 const OracleHub = artifacts.require('./OracleHub.sol');
 const TokenBurn = artifacts.require('./TokenBurn.sol');
 const TokenFaucet = artifacts.require('./TokenFaucet.sol');
@@ -36,14 +36,14 @@ contract('ContractTest.sol', async (accounts) => {
   let tokenStakingInstance;
   let tokenBurnInstance;
   let ownedInstance;
-  let oracleInstance; 
-  let operatorEscrowInstance;
-  let tokenFaucetInstance; 
-  let apiInstance; 
+  let oracleInstance;
+  let assetManagerInstance;
+  let tokenFaucetInstance;
+  let apiInstance;
   let testInstance;
 
   const myBitFoundation = web3.eth.accounts[7]
-  let installerEscrow; 
+  let installerEscrow;
 
   let oracleQueryCost = 400000000;
 
@@ -57,14 +57,14 @@ contract('ContractTest.sol', async (accounts) => {
 
      // Hash Functions
      hfInstance = await HashFunctions.new();
-     apiInstance = await API.new(dbInstance.address); 
+     apiInstance = await API.new(dbInstance.address);
 
      // Test Contract
      testInstance = await Test.new(dbInstance.address)
      assert.equal(await testInstance.database(), dbInstance.address);
      testInstance.deposit({value: web3.toWei(1, "ether")});
-     assert.equal(Number(await testInstance.getBalance()), web3.toWei(1, "ether")); 
-     installerEscrow = testInstance.address; 
+     assert.equal(Number(await testInstance.getBalance()), web3.toWei(1, "ether"));
+     installerEscrow = testInstance.address;
 
      // ContractManager Contract
      contractManagerInstance = await ContractManager.new(dbInstance.address);
@@ -78,21 +78,21 @@ contract('ContractTest.sol', async (accounts) => {
      // MyBitToken Contract
      myBitTokenInstance = await MyBitToken.new(tokenSupply, 'MyBit Token', tokenDecimals, 'MyB');
      assert.equal(await myBitTokenInstance.owner(), ownerAddr1);
-     ownerBalance = await myBitTokenInstance.balanceOf(ownerAddr1); 
+     ownerBalance = await myBitTokenInstance.balanceOf(ownerAddr1);
      assert.equal(ownerBalance, tokenSupply);
-     await contractManagerInstance.addContract('MyBitToken', myBitTokenInstance.address, ownerAddr2); 
+     await contractManagerInstance.addContract('MyBitToken', myBitTokenInstance.address, ownerAddr2);
 
-     // TokenFaucet Contract 
+     // TokenFaucet Contract
      tokenFaucetInstance = await TokenFaucet.new(myBitTokenInstance.address);
      await contractManagerInstance.addContract('TokenFaucet', tokenFaucetInstance.address, ownerAddr2);
 
-     // OracleHub Contract 
+     // OracleHub Contract
      oracleInstance = await OracleHub.new(dbInstance.address);
      await contractManagerInstance.addContract('OracleHub', oracleInstance.address, ownerAddr2);
 
-     // OperatorEscrowInstance
-     operatorEscrowInstance = await OperatorEscrow.new(dbInstance.address, myBitTokenInstance.address);
-     await contractManagerInstance.addContract('OperatorEscrow', operatorEscrowInstance.address, ownerAddr2);
+     // AssetManager
+     assetManagerInstance = await AssetManager.new(dbInstance.address, myBitTokenInstance.address);
+     await contractManagerInstance.addContract('AssetManager', assetManagerInstance.address, ownerAddr2);
 
      // Owned Contract
      ownedInstance = await Owned.new(dbInstance.address);
@@ -130,25 +130,25 @@ contract('ContractTest.sol', async (accounts) => {
    });
 
 
-  it("Spread Tokens to users", async () => { 
+  it("Spread Tokens to users", async () => {
     let tokenAirdropAmount = 10000 * tokenDecimals;   // 10,000 tokens
-    for (var i = 1; i < web3.eth.accounts.length; i++) { 
+    for (var i = 1; i < web3.eth.accounts.length; i++) {
       await myBitTokenInstance.transfer(web3.eth.accounts[i], tokenAirdropAmount, {from: ownerAddr1});
       assert.equal(await myBitTokenInstance.balanceOf(web3.eth.accounts[i]), tokenAirdropAmount);
     }
   });
 
-  it("Fill TokenFaucet", async () => { 
+  it("Fill TokenFaucet", async () => {
     // Fill TokenFaucet
     let faucetAmount = 100000 * tokenDecimals;   // 100,000 tokens
     await myBitTokenInstance.approve(tokenFaucetInstance.address, faucetAmount);
     assert.equal(await myBitTokenInstance.allowance(ownerAddr1, tokenFaucetInstance.address), faucetAmount);
     await tokenFaucetInstance.deposit(faucetAmount);
-    assert.equal(await myBitTokenInstance.balanceOf(tokenFaucetInstance.address), faucetAmount); 
+    assert.equal(await myBitTokenInstance.balanceOf(tokenFaucetInstance.address), faucetAmount);
     assert.equal(await tokenFaucetInstance.tokensInFaucet(), faucetAmount);
   });
 
-  it("Check that addresses are set", async () => { 
+  it("Check that addresses are set", async () => {
     assert.equal(await testInstance.getAddress("TokenFaucet"), await apiInstance.contractAddress("TokenFaucet"));
     assert.equal(await testInstance.getAddress("TokenBurn"), await apiInstance.contractAddress("TokenBurn"));
     assert.equal(await testInstance.getAddress("MyBitToken"), await apiInstance.contractAddress("MyBitToken"));
@@ -176,10 +176,10 @@ contract('ContractTest.sol', async (accounts) => {
   });
   //---------------------------------------------------------------------------------------------------------------------------
 
-  it("Burn tokens to access platform", async () => { 
+  it("Burn tokens to access platform", async () => {
     let accessLevel = 3;
     let testContractTokens = 20000 * tokenDecimals;
-    await testInstance.withdrawAndApprove(tokenBurnInstance.address, testContractTokens); 
+    await testInstance.withdrawAndApprove(tokenBurnInstance.address, testContractTokens);
     assert.equal(Number(await myBitTokenInstance.allowance(testInstance.address, tokenBurnInstance.address)), testContractTokens);
     assert.equal(Number(await myBitTokenInstance.balanceOf(testInstance.address)), testContractTokens);
     await testInstance.burnAccessTokens(accessLevel);
