@@ -28,7 +28,7 @@ contract ERC20Interface {
 
 // ------------------------------------------------------------------------
 // @notice ERC20 token contract with shared revenue distribution functionality. 
-// Credit goes to Nick Johnson for the dividend token idea 
+// Credit goes to Nick Johnson for the dividend token
 // https://medium.com/@weka/dividend-bearing-tokens-on-ethereum-42d01c710657
 // Fixed Supply with burn capabilities
 // ------------------------------------------------------------------------
@@ -52,12 +52,11 @@ contract AssetToken is ERC20Interface{
     // ------------------------------------------------------------------------
     uint constant scalingFactor = 1e32;
     uint public assetIncome;
-    uint public incomeCollected;
-    uint public ownershipPerToken;
+    uint public valuePerToken;
 
 
     mapping (address => uint) public incomeClaimed;
-    mapping (address => uint) public lastPointsPerToken;    
+    mapping (address => uint) public previousValuePerToken;    
 
 
     // ------------------------------------------------------------------------
@@ -153,8 +152,7 @@ contract AssetToken is ERC20Interface{
     //   returns (uint _amount) {
     //     _amount = incomeClaimed[msg.sender].div(scalingFactor);
     //     delete incomeClaimed[msg.sender]; 
-    //     incomeCollected = incomeCollected.add(_amount);
-    //     msg.sender.transfer(incomeCollected); 
+    //     msg.sender.transfer(_amount); 
     //     emit LogIncomeCollected(now, msg.sender, _amount);
     // }
 
@@ -194,14 +192,14 @@ contract AssetToken is ERC20Interface{
     }
 
     // ------------------------------------------------------------------------
-    // Calculates how points _user balance holds
+    // Calculates how value _user holds
     // ------------------------------------------------------------------------
     function getAmountOwed(address _user)
       private
       view
       returns (uint) {
-        uint pointsPerToken = ownershipPerToken.sub(lastPointsPerToken[_user]);
-        return pointsPerToken.mul(balances[_user]);
+        uint valuePerTokenDifference = valuePerToken.sub(previousValuePerToken[_user]);
+        return valuePerTokenDifference.mul(balances[_user]);
     }
 
     // ------------------------------------------------------------------------
@@ -225,19 +223,43 @@ contract AssetToken is ERC20Interface{
     // @dev must be called before transfering tokens
     // ------------------------------------------------------------------------
     modifier updateIncomeClaimed(address _user) { 
-        incomeClaimed[_user] += getAmountOwed(_user);
-        lastPointsPerToken[_user] = ownershipPerToken;
+        incomeClaimed[_user] = incomeClaimed[_user].add(getAmountOwed(_user));
+        previousValuePerToken[_user] = valuePerToken;
         _; 
+    }
+
+    // ------------------------------------------------------------------------
+    // Fallback function:
+    // TODO: Let each Asset handle income or do it all in AssetBank?? 
+    // ------------------------------------------------------------------------
+    function ()
+      payable
+      requiresEther
+      public {
+        valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
+        assetIncome = assetIncome.add(msg.value);
+        emit LogIncomeReceived(msg.sender, msg.value);
     }
 
     // ------------------------------------------------------------------------
     // Fallback function: Reject Ether payments
     // ------------------------------------------------------------------------
-    function () 
-    public 
-    payable {
-        revert();
+    // function () 
+    // public 
+    // payable {
+    //     revert();
+    // }
+
+    //------------------------------------------------------------------------------------------------------------------
+    // Requires that Ether is sent with the transaction
+    //------------------------------------------------------------------------------------------------------------------
+    modifier requiresEther {
+        require(msg.value > 0);
+        _;
     }
 
+    event LogIncomeReceived(address indexed _sender, uint _paymentAmount);
+
 }
+
 
