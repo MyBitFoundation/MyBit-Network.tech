@@ -37,7 +37,7 @@ using SafeMath for uint;
     uint managerShare = msg.value.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("managerPercentage", _assetID))));
     require(distributeStakingShare(_assetID, managerShare)); 
     database.setUint(keccak256(abi.encodePacked("assetIncome", _assetID)), assetIncome.add(msg.value.sub(managerShare)));
-    emit LogIncomeReceived(msg.sender, msg.value, _assetID, _note);
+    emit LogIncomeReceived(_assetID, msg.sender, msg.value, _note);
     return true;
   }
 
@@ -230,6 +230,6 @@ using SafeMath for uint;
   //------------------------------------------------------------------------------------------------------------------
 
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
-  event LogIncomeReceived(address _sender, uint indexed _amount, bytes32 indexed _assetID, bytes32 _note);
+  event LogIncomeReceived(bytes32 indexed _assetID, address _sender, uint  _amount, bytes32 _note);
   event LogIncomeWithdrawl(address _funder, uint _amount);
 }

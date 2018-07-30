@@ -18,7 +18,7 @@ const API = artifacts.require('./API.sol');
 const Test = artifacts.require('./Test.sol');
 
 
-contract('Test.sol', async (accounts) => {
+contract('ContractTest.sol', async (accounts) => {
   const ownerAddr1 = web3.eth.accounts[0];
   const ownerAddr2 = web3.eth.accounts[1];
   const ownerAddr3 = web3.eth.accounts[2];

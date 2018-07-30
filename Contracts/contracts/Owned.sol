@@ -102,8 +102,8 @@ contract Owned {
   //------------------------------------------------------------------------------------------------------------------
   //                                              Events
   //------------------------------------------------------------------------------------------------------------------
-  event LogPaused(address _contract);
-  event LogUnpaused(address _contract);
+  event LogPaused(address indexed _contract);
+  event LogUnpaused(address indexed _contract);
   event LogOwnerChanged(address indexed _previousOwner, address indexed _newOwner);
   event LogFunctionAuthorized(address indexed _owner, string _functionName, bytes32 indexed _beneficiary);
 }

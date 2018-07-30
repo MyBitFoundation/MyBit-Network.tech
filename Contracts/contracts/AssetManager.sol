@@ -37,7 +37,7 @@ using SafeMath for uint;
     assert(amountToUnlock > uint(0));
     uint fundingStage = database.uintStorage(keccak256(abi.encodePacked("fundingStage", _assetID)));
     if (fundingStage == uint(2) || fundingStage == uint(5) || fundingStage == uint(0)) { 
-      releaseEscrow(_assetID, msg.sender, amountToUnlock);     // Unlock all of the escrowed MYB since asset has finished it's lifecycle
+      releaseEscrow(_assetID, msg.sender, amountToUnlock);     // Unlock all of the escrowed MYB since asset has finished it's lifecycle or failed to get created
     }
     else {
       uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)));
@@ -69,6 +69,7 @@ using SafeMath for uint;
     //------------------------------------------------------------------------------------------------------------------
   // Asset manager can be changed by owner or governance authority here
   // @Param: Address of the replacement operator
+  // TODO: Put this under control of governance mechanisms
   //------------------------------------------------------------------------------------------------------------------
   function replaceAssetManager(address _newManager, bytes32 _assetID)
   external
@@ -105,8 +106,8 @@ using SafeMath for uint;
     _;
   }
 
-  event LogEscrowUnlocked(bytes32 _assetID, address _user, uint _amount);
-  event LogAssetManagerReplaced(bytes32 _assetID, address oldAssetManager, address _newManager);
+  event LogEscrowUnlocked(bytes32 indexed _assetID, address _user, uint _amount);
+  event LogAssetManagerReplaced(bytes32 indexed _assetID, address oldAssetManager, address _newManager);
 
 
 }

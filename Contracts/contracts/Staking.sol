@@ -40,7 +40,7 @@ using SafeMath for uint;
     database.setAddress(keccak256(abi.encodePacked("assetStaker", assetID)), msg.sender);
     database.setUint(keccak256(abi.encodePacked("stakerIncomeShare", assetID)), _incomeShare);
     database.setUint(keccak256(abi.encodePacked("stakingExpiration", assetID)), stakingExpiry.add(now));  // TODO: delete when asset is created
-    emit LogEscrowStaked(msg.sender, _amount, assetID);
+    emit LogEscrowStaked(assetID, msg.sender, _amount);
     return true;
   }
 
@@ -115,5 +115,5 @@ using SafeMath for uint;
   event LogEscrowRequestedP1(uint _amount, uint _incomeShare, uint _managerPercentage);
   event LogEscrowRequestedP2(uint _amountToBeRaised, bytes32 _assetType, bytes32 _installerID);
   event LogEscrowRequester(address indexed _assetManager, bytes32 _escrowID, uint _blockAtCreation);
-  event LogEscrowStaked(address indexed _staker, uint _amountMYB, bytes32 indexed _assetID);
+  event LogEscrowStaked(bytes32 indexed _assetID, address indexed _staker, uint _amountMYB);
 }

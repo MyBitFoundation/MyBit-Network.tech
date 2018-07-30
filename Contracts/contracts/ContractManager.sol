@@ -137,7 +137,7 @@ contract ContractManager{
   //                                    Events
   // ------------------------------------------------------------------------------------------------
   // TODO: Are the strings readable? --> Make bytes32
-  event LogContractAdded(address _contractAddress, string _name);
-  event LogContractRemoved(address _contractToDelete, string _name);
-  event LogContractUpdated(address _oldAddress, address _newAddress, string _name);
+  event LogContractAdded(address indexed _contractAddress, string _name);
+  event LogContractRemoved(address indexed _contractToDelete, string _name);
+  event LogContractUpdated(address indexed _oldAddress, address _newAddress, string _name);
 }
