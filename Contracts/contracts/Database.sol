@@ -43,9 +43,10 @@ contract Database {
     external {
         require(_contractManager != address(0));
         require(boolStorage[keccak256(abi.encodePacked("owner", msg.sender))]);
-        require(addressStorage[keccak256(abi.encodePacked("contract", "ContractManager"))] == address(0));
+        // require(addressStorage[keccak256(abi.encodePacked("contract", "ContractManager"))] == address(0));   TODO: Allow swapping of CM for testing
         addressStorage[keccak256(abi.encodePacked("contract", "ContractManager"))] = _contractManager;
         boolStorage[keccak256(abi.encodePacked("contract", _contractManager))] = true;
+        emit LogContractManager(_contractManager, msg.sender); 
     }
 
     // --------------------------------------------------------------------------------------
@@ -155,5 +156,5 @@ contract Database {
     // Events
     // --------------------------------------------------------------------------------------
     event LogInitialized(address indexed _ownerOne, address indexed _ownerTwo, address indexed _ownerThree);
-
+    event LogContractManager(address indexed _contractManager, address indexed _initiator); 
 }

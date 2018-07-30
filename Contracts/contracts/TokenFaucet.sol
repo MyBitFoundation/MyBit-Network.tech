@@ -8,6 +8,7 @@ contract TokenFaucet {
 
   MyBitToken public token;
   uint public tokensInFaucet;
+  uint public maxAmount = 100000 * 10**18;    // 100,000 MyBitTokens
 
   constructor(address _tokenAddress)
   public  {

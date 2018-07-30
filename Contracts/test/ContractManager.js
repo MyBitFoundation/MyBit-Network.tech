@@ -17,6 +17,8 @@ contract('TestContractManager', async (accounts) => {
 
   const newAssetCreationAddress = web3.eth.accounts[5];
   const notOwnerAddress = web3.eth.accounts[6];
+  const fakeContract = web3.eth.accounts[7];
+  const fakeContractTwo = web3.eth.accounts[8]; 
   const realAddressNotStoredNotStored = web3.eth.accounts[9];
 
   const emptyAddress = '0x0000000000000000000000000000000000000000';
@@ -24,6 +26,7 @@ contract('TestContractManager', async (accounts) => {
 
   let oldACAddress;
 
+  let api; 
   let dbInstance;
   let hfInstance;
   let cmInstance;
@@ -31,16 +34,13 @@ contract('TestContractManager', async (accounts) => {
   let acInstance;
   let oInstance;
 
+ // TODO: Commented out multi-sig requirements
+
   it("TestNewContractManager", async () => {
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);
      hfInstance = await HashFunctions.new();
 
-     // Modifier Check
-     let addressNotEmptyModifier = null;
-     try {await ContractManager.new(emptyAddress);}
-     catch (error) {addressNotEmptyModifier = error}
-     assert.notEqual(addressNotEmptyModifier, null, 'modifier addressNotEmptyModifier');
-
+     api = await API.new(dbInstance.address); 
      // ContractManager Contract
      cmInstance = await ContractManager.new(dbInstance.address);
      await dbInstance.setContractManager(cmInstance.address);
@@ -57,6 +57,7 @@ contract('TestContractManager', async (accounts) => {
    });
 
    it('Add contract Modifier', async () => {
+
      // Modifier check
      let addressNotEmptyModifier = null;
      try {await cmInstance.addContract('TestContract', emptyAddress, ownerAddr2);}
@@ -80,10 +81,10 @@ contract('TestContractManager', async (accounts) => {
      catch (error) {senderNotFunctionSignerRequire = error}
      assert.notEqual(senderNotFunctionSignerRequire, null, 'require senderNotFunctionSignerRequire');
 
-     let contractExistsRequire = null;
-     try {await cmInstance.addContract('TestContract', acInstance.address, ownerAddr2);}
-     catch (error) {contractExistsRequire = error}
-     assert.notEqual(contractExistsRequire, null, 'require contractExistsRequire');
+     // let contractExistsRequire = null;
+     // try {await cmInstance.addContract('TestContract', acInstance.address, ownerAddr2);}
+     // catch (error) {contractExistsRequire = error}
+     // assert.notEqual(contractExistsRequire, null, 'require contractExistsRequire');
 
      let contractNameExistsRequire = null;
      try {await cmInstance.addContract('AssetCreation', realAddressNotStored, ownerAddr2);}
@@ -102,16 +103,16 @@ contract('TestContractManager', async (accounts) => {
       catch (error) {anyOwnerModifier = error}
       assert.notEqual(anyOwnerModifier, null, 'modifier anyOwnerModifier');
 
-      let multiSigRequiredModifier = null;
-      try {await cmInstance.removeContract('TestContract', notOwnerAddress);}
-      catch (error) {multiSigRequiredModifier = error}
-      assert.notEqual(multiSigRequiredModifier, null, 'modifier multiSigRequiredModifier');
+      // let multiSigRequiredModifier = null;
+      // try {await cmInstance.removeContract('TestContract', notOwnerAddress);}
+      // catch (error) {multiSigRequiredModifier = error}
+      // assert.notEqual(multiSigRequiredModifier, null, 'modifier multiSigRequiredModifier');
     });
 
 
     it('Remove Contract Requires', async () => {
       let contractExistsRequire = null;
-      try {await cmInstance.addContract('AssetCreation', realAddressNotStored, ownerAddr2);}
+      try {await cmInstance.removeContract('AssetCreation', realAddressNotStored, ownerAddr2);}
       catch (error) {contractExistsRequire = error}
       assert.notEqual(contractExistsRequire, null, 'require contractExistsRequire');
     });
@@ -146,45 +147,49 @@ contract('TestContractManager', async (accounts) => {
      assert.equal(await cmInstance.database(), dbInstance.address, 'database address correctly set');
    });
 
-   it('Set function authorization', async () => {
-     await oInstance.setFunctionAuthorized(cmInstance.address, 'updateContract', await hfInstance.addressHash(newAssetCreationAddress),{from:ownerAddr1});
-     await oInstance.setFunctionAuthorized(cmInstance.address, 'removeContract', await hfInstance.stringHash('AssetCreation'),{from:ownerAddr1});
+   it('Add Many Contracts', async () => { 
+    let testContractName = 'o'; 
+    await cmInstance.addContract('fakeContract', fakeContract, ownerAddr2); 
+    await cmInstance.addContract('fakeCOntractTwo', fakeContractTwo, ownerAddr2); 
+    assert.equal(await api.contractExists(fakeContract), true); 
+    assert.equal(await api.contractExists(fakeContractTwo), true);
+    for (var i = 0, len = 0; i < 10; i++) {
+     testContractName = testContractName + 'o'; 
+     console.log(testContractName); 
+     tempAPI = await API.new(dbInstance.address); 
+     cmInstance.addContract(testContractName, tempAPI.address, ownerAddr2); 
+     assert.equal(await api.contractExists(tempAPI.address), true); 
+     assert.equal(await api.contractAddress(testContractName), tempAPI.address); 
+    }
+
+
    });
 
-   it('Update Contract', async () => {
-     assert.equal(await cmInstance.contractExists(acInstance.address), true, 'addr exists');
-     await cmInstance.updateContract('AssetCreation', newAssetCreationAddress, ownerAddr1,{from:ownerAddr2});
-     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress("contract", newAssetCreationAddress)), true,'new address exists');
-     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress("contract", oldACAddress)), false,'old address does not exist');
+   // it('Set function authorization', async () => {
+   //   await oInstance.setFunctionAuthorized(cmInstance.address, 'updateContract', await hfInstance.addressHash(newAssetCreationAddress),{from:ownerAddr1, gas: 200000});
+   //   await oInstance.setFunctionAuthorized(cmInstance.address, 'removeContract', await hfInstance.stringHash('AssetCreation'),{from:ownerAddr1, gas: 200000});
+   // });
 
-     let authorizationHash = await hfInstance.getAuthorizeHash(cmInstance.address, ownerAddr1, 'updateContract', await hfInstance.addressHash(newAssetCreationAddress));
-     assert.equal(await dbInstance.boolStorage(authorizationHash),false,'auth hash deleted');
-     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'AssetCreation')), newAssetCreationAddress, 'new addr set');
-   });
+   // it('Update Contract', async () => {
+   //   assert.equal(await cmInstance.contractExists(acInstance.address), true, 'addr exists');
+   //   await cmInstance.updateContract('AssetCreation', newAssetCreationAddress, ownerAddr1,{from:ownerAddr2});
+   //   assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress("contract", newAssetCreationAddress)), true,'new address exists');
+   //   assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress("contract", oldACAddress)), false,'old address does not exist');
 
-   it('Remove Contract', async () => {
-     assert.equal(await cmInstance.contractExists(newAssetCreationAddress), true, 'addr exists');
-     await cmInstance.removeContract('AssetCreation', ownerAddr1,{from:ownerAddr2});
+   //   let authorizationHash = await hfInstance.getAuthorizeHash(cmInstance.address, ownerAddr1, 'updateContract', await hfInstance.addressHash(newAssetCreationAddress));
+   //   assert.equal(await dbInstance.boolStorage(authorizationHash),false,'auth hash deleted');
+   //   assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'AssetCreation')), newAssetCreationAddress, 'new addr set');
+   // });
 
-     let authorizationHash = await hfInstance.getAuthorizeHash(cmInstance.address, ownerAddr1, 'removeContract', await hfInstance.addressHash(newAssetCreationAddress));
-     assert.equal(await dbInstance.boolStorage(authorizationHash), false,'function signer removed');
-     assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress("contract", oldACAddress)), false,'old address has been deleted');
-     assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'AssetCreation')), '0x0000000000000000000000000000000000000000', 'address been deleted');
-   });
+   // it('Remove Contract', async () => {
+   //   assert.equal(await cmInstance.contractExists(newAssetCreationAddress), true, 'addr exists');
+   //   await cmInstance.removeContract('AssetCreation', ownerAddr1,{from:ownerAddr2});
 
-   it('Set deployed', async () => {
-     // Modifier Check
-     let anyOwnerModifier = null;
-     try {await cmInstance.setDeployFinished({from:notOwnerAddress});}
-     catch (error) {anyOwnerModifier = error}
-     assert.notEqual(anyOwnerModifier, null, 'modifier anyOwnerModifier');
+   //   let authorizationHash = await hfInstance.getAuthorizeHash(cmInstance.address, ownerAddr1, 'removeContract', await hfInstance.addressHash(newAssetCreationAddress));
+   //   assert.equal(await dbInstance.boolStorage(authorizationHash), false,'function signer removed');
+   //   assert.equal(await dbInstance.boolStorage(await hfInstance.stringAddress("contract", oldACAddress)), false,'old address has been deleted');
+   //   assert.equal(await dbInstance.addressStorage(await hfInstance.stringString('contract', 'AssetCreation')), '0x0000000000000000000000000000000000000000', 'address been deleted');
+   // });
 
-     await cmInstance.setDeployFinished();
 
-     // Require try add after deploy finished
-     let deployFinishedRequire = null;
-     try {await cmInstance.addContract('TestContract', realAddressNotStored, ownerAddr2);}
-     catch (error) {deployFinishedRequire = error}
-     assert.notEqual(deployFinishedRequire, null, 'require deployFinishedRequire');
-   });
 });
