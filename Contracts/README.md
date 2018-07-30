@@ -38,6 +38,10 @@ The MyBit platform requires users to burn MyBit tokens to interact with the smar
 # Dependencies 
 * bignumber.js   `npm install bignumber.js`
 
+# AssetTypes 
+Assets are currently represented by the sha3 hash of supported asset types. 
+* BitcoinATM = sha3('BitcoinATM') = 0x5d8e833f4fba61d80762218946d01c0ccff5329a41b33ce0e6b839cd892f96ac
+
 
 # Current MyBit Contracts:
 
