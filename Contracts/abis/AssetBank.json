@@ -3,23 +3,11 @@
     "constant": false,
     "inputs": [
       {
-        "name": "_assetID",
-        "type": "bytes32"
-      },
-      {
-        "name": "_from",
-        "type": "address"
-      },
-      {
-        "name": "_to",
-        "type": "address"
-      },
-      {
-        "name": "_amount",
-        "type": "uint256"
+        "name": "_assetIDs",
+        "type": "bytes32[]"
       }
     ],
-    "name": "tradeOwnershipUnits",
+    "name": "batchWithdraw",
     "outputs": [
       {
         "name": "",
@@ -68,10 +56,6 @@
       {
         "name": "_assetID",
         "type": "bytes32"
-      },
-      {
-        "name": "_otherWithdrawal",
-        "type": "bool"
       }
     ],
     "name": "withdraw",
@@ -86,26 +70,22 @@
     "type": "function"
   },
   {
-    "constant": true,
+    "constant": false,
     "inputs": [
       {
         "name": "_assetID",
         "type": "bytes32"
-      },
-      {
-        "name": "_user",
-        "type": "address"
       }
     ],
-    "name": "getAmountOwed",
+    "name": "withdrawManagerIncome",
     "outputs": [
       {
         "name": "",
-        "type": "uint256"
+        "type": "bool"
       }
     ],
     "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -151,60 +131,6 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "name": "managerAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "assetOperator",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "operatorIncome",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "operatorIncomeAfter",
-        "type": "uint256"
-      }
-    ],
-    "name": "LogIncomeReceivedManagerTest",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "_assetID",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "name": "_from",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "name": "_to",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "_timestamp",
-        "type": "uint256"
-      }
-    ],
-    "name": "LogownershipUnitsTraded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": true,
         "name": "_locationSent",
         "type": "address"
@@ -228,17 +154,22 @@
     "inputs": [
       {
         "indexed": true,
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
         "name": "_sender",
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "name": "_amount",
         "type": "uint256"
       },
       {
-        "indexed": true,
-        "name": "_assetID",
+        "indexed": false,
+        "name": "_note",
         "type": "bytes32"
       }
     ],
@@ -249,66 +180,17 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": false,
         "name": "_funder",
         "type": "address"
-      },
-      {
-        "indexed": true,
-        "name": "_amount",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "_timestamp",
-        "type": "uint256"
-      }
-    ],
-    "name": "LogInvestmentPaid",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "_funder",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "name": "_withdrawalAddress",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "name": "_amount",
-        "type": "uint256"
       },
       {
         "indexed": false,
-        "name": "_timestamp",
+        "name": "_amount",
         "type": "uint256"
       }
     ],
-    "name": "LogInvestmentPaidToWithdrawalAddress",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "_note",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "name": "_timestamp",
-        "type": "uint256"
-      }
-    ],
-    "name": "LogAssetNote",
+    "name": "LogIncomeWithdrawl",
     "type": "event"
   }
 ]

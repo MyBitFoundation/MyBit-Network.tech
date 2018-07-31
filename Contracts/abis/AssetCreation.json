@@ -30,6 +30,49 @@
     "constant": false,
     "inputs": [
       {
+        "name": "_amountToBeRaised",
+        "type": "uint256"
+      },
+      {
+        "name": "_managerPercentage",
+        "type": "uint256"
+      },
+      {
+        "name": "_amountToEscrow",
+        "type": "uint256"
+      },
+      {
+        "name": "_installerID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_assetType",
+        "type": "bytes32"
+      },
+      {
+        "name": "_blockAtCreation",
+        "type": "uint256"
+      },
+      {
+        "name": "_ipfsHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "newAsset",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
         "name": "_functionInitiator",
         "type": "address"
       },
@@ -56,45 +99,6 @@
     ],
     "payable": false,
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_assetID",
-        "type": "bytes32"
-      },
-      {
-        "name": "_amountToBeRaised",
-        "type": "uint256"
-      },
-      {
-        "name": "_operatorPercentage",
-        "type": "uint256"
-      },
-      {
-        "name": "_amountToEscrow",
-        "type": "uint256"
-      },
-      {
-        "name": "_installerID",
-        "type": "bytes32"
-      },
-      {
-        "name": "_assetType",
-        "type": "bytes32"
-      }
-    ],
-    "name": "newAsset",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -169,28 +173,6 @@
     "inputs": [
       {
         "indexed": true,
-        "name": "_creator",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "name": "_assetID",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "name": "_assetType",
-        "type": "bytes32"
-      }
-    ],
-    "name": "LogAssetFundingStarted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
         "name": "_assetID",
         "type": "bytes32"
       },
@@ -201,28 +183,33 @@
       },
       {
         "indexed": true,
-        "name": "_amountToBeRaised",
-        "type": "uint256"
+        "name": "_assetType",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "_ipfsHash",
+        "type": "bytes32"
       }
     ],
-    "name": "LogAssetInfo",
+    "name": "LogAssetFundingStarted",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": false,
         "name": "_from",
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "name": "_assetID",
         "type": "bytes32"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "name": "_amountOf",
         "type": "uint256"
       }
@@ -235,18 +222,13 @@
     "inputs": [
       {
         "indexed": true,
-        "name": "_remover",
-        "type": "address"
-      },
-      {
-        "indexed": true,
         "name": "_assetID",
         "type": "bytes32"
       },
       {
-        "indexed": true,
-        "name": "_timestamp",
-        "type": "uint256"
+        "indexed": false,
+        "name": "_remover",
+        "type": "address"
       }
     ],
     "name": "LogAssetRemoved",
@@ -263,11 +245,6 @@
       {
         "indexed": false,
         "name": "_newTimeForFunding",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "_blockTimestamp",
         "type": "uint256"
       }
     ],

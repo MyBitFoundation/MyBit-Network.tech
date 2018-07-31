@@ -1,19 +1,5 @@
 [
   {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "withdraw",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "constant": true,
     "inputs": [],
     "name": "tokensInFaucet",
@@ -31,11 +17,55 @@
     "constant": false,
     "inputs": [
       {
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "name": "_data",
+        "type": "bytes"
+      }
+    ],
+    "name": "receiveApproval",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
         "name": "_amount",
         "type": "uint256"
       }
     ],
     "name": "deposit",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "name": "_pass",
+        "type": "string"
+      }
+    ],
+    "name": "withdraw",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -60,6 +90,10 @@
       {
         "name": "_tokenAddress",
         "type": "address"
+      },
+      {
+        "name": "_accessPass",
+        "type": "bytes32"
       }
     ],
     "payable": false,

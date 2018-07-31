@@ -2,39 +2,6 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "myBitToken",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_accessLevelDesired",
-        "type": "uint256"
-      }
-    ],
-    "name": "burnTokens",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
     "name": "database",
     "outputs": [
       {
@@ -50,23 +17,29 @@
     "constant": false,
     "inputs": [
       {
-        "name": "_from",
-        "type": "address"
-      },
-      {
-        "name": "_amount",
-        "type": "uint256"
-      },
-      {
-        "name": "_token",
-        "type": "address"
-      },
-      {
-        "name": "_accessLevelDesired",
-        "type": "bytes"
+        "name": "_assetID",
+        "type": "bytes32"
       }
     ],
-    "name": "receiveApproval",
+    "name": "unlockEscrow",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_newManager",
+        "type": "address"
+      },
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "replaceAssetManager",
     "outputs": [
       {
         "name": "",
@@ -82,10 +55,6 @@
       {
         "name": "_database",
         "type": "address"
-      },
-      {
-        "name": "_myBitToken",
-        "type": "address"
       }
     ],
     "payable": false,
@@ -96,8 +65,13 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
         "indexed": false,
-        "name": "_burner",
+        "name": "_user",
         "type": "address"
       },
       {
@@ -106,7 +80,29 @@
         "type": "uint256"
       }
     ],
-    "name": "LogMyBitBurnt",
+    "name": "LogEscrowUnlocked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "oldAssetManager",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_newManager",
+        "type": "address"
+      }
+    ],
+    "name": "LogAssetManagerReplaced",
     "type": "event"
   }
 ]

@@ -17,11 +17,11 @@
     "constant": false,
     "inputs": [
       {
-        "name": "_accessLevelDesired",
+        "name": "_amount",
         "type": "uint256"
       }
     ],
-    "name": "burnTokens",
+    "name": "withdraw",
     "outputs": [
       {
         "name": "",
@@ -47,6 +47,20 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "stakingExpiry",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
       {
@@ -62,11 +76,30 @@
         "type": "address"
       },
       {
-        "name": "_accessLevelDesired",
+        "name": "_data",
         "type": "bytes"
       }
     ],
     "name": "receiveApproval",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "depositEscrow",
     "outputs": [
       {
         "name": "",
@@ -84,7 +117,7 @@
         "type": "address"
       },
       {
-        "name": "_myBitToken",
+        "name": "_mybTokenAddress",
         "type": "address"
       }
     ],
@@ -93,11 +126,16 @@
     "type": "constructor"
   },
   {
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "fallback"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
         "indexed": false,
-        "name": "_burner",
+        "name": "_user",
         "type": "address"
       },
       {
@@ -106,7 +144,24 @@
         "type": "uint256"
       }
     ],
-    "name": "LogMyBitBurnt",
+    "name": "LogEscrowWithdrawn",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogEscrowDeposited",
     "type": "event"
   }
 ]

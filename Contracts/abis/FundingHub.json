@@ -128,18 +128,13 @@
     "inputs": [
       {
         "indexed": true,
-        "name": "_funder",
-        "type": "address"
-      },
-      {
-        "indexed": true,
         "name": "_assetID",
         "type": "bytes32"
       },
       {
         "indexed": true,
-        "name": "_timestamp",
-        "type": "uint256"
+        "name": "_funder",
+        "type": "address"
       }
     ],
     "name": "LogNewFunder",
@@ -150,17 +145,17 @@
     "inputs": [
       {
         "indexed": true,
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
         "name": "_sender",
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "name": "_amount",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "_timestamp",
         "type": "uint256"
       }
     ],
@@ -176,13 +171,8 @@
         "type": "bytes32"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "name": "_amountRaised",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "_timestamp",
         "type": "uint256"
       }
     ],
@@ -198,13 +188,13 @@
         "type": "bytes32"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "name": "_currentEthPrice",
         "type": "uint256"
       },
       {
-        "indexed": true,
-        "name": "_timestamp",
+        "indexed": false,
+        "name": "_amountRaised",
         "type": "uint256"
       }
     ],
@@ -216,17 +206,17 @@
     "inputs": [
       {
         "indexed": true,
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
         "name": "_funder",
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "name": "_amount",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "_timestamp",
         "type": "uint256"
       }
     ],
@@ -242,13 +232,8 @@
         "type": "bytes32"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "name": "_amount",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "_blockNumber",
         "type": "uint256"
       }
     ],
@@ -275,28 +260,6 @@
       }
     ],
     "name": "LogDestruction",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "_value1",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "_value2",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "_value3",
-        "type": "uint256"
-      }
-    ],
-    "name": "fundingLimitModifier",
     "type": "event"
   }
 ]

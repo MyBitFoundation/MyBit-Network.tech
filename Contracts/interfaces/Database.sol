@@ -54,31 +54,31 @@ interface Database {
     // ----------------Variable Getters---------------------
 
     function uintStorage(bytes32 _key)
-    public 
+    external 
     returns (uint);
 
     function stringStorage(bytes32 _key)
-    public 
+    external 
     returns (string);
 
     function addressStorage(bytes32 _key)
-    public 
+    external 
     returns (address);
 
     function bytesStorage(bytes32 _key)
-    public 
+    external 
     returns (bytes); 
 
     function bytes32Storage(bytes32 _key)
-    public 
+    external 
     returns (bytes32);
 
     function boolStorage(bytes32 _key)
-    public
+    external
     returns (bool);
 
     function intStorage(bytes32 _key)
-    public 
+    external 
     returns (bool); 
 }
 

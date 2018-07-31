@@ -95,15 +95,6 @@
     "type": "function"
   },
   {
-    "constant": false,
-    "inputs": [],
-    "name": "setDeployFinished",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "name": "_database",
@@ -118,7 +109,7 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": true,
         "name": "_contractAddress",
         "type": "address"
       },
@@ -126,11 +117,6 @@
         "indexed": false,
         "name": "_name",
         "type": "string"
-      },
-      {
-        "indexed": false,
-        "name": "_blockNumber",
-        "type": "uint256"
       }
     ],
     "name": "LogContractAdded",
@@ -140,19 +126,14 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "name": "contractToDelete",
+        "indexed": true,
+        "name": "_contractToDelete",
         "type": "address"
       },
       {
         "indexed": false,
         "name": "_name",
         "type": "string"
-      },
-      {
-        "indexed": false,
-        "name": "_blockNumber",
-        "type": "uint256"
       }
     ],
     "name": "LogContractRemoved",
@@ -162,44 +143,22 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "name": "_oldAddress",
+        "type": "address"
+      },
+      {
         "indexed": false,
-        "name": "oldAddress",
+        "name": "_newAddress",
         "type": "address"
       },
       {
         "indexed": false,
         "name": "_name",
         "type": "string"
-      },
-      {
-        "indexed": false,
-        "name": "_blockNumber",
-        "type": "uint256"
       }
     ],
     "name": "LogContractUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "_contractAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "_name",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "name": "_blockNumber",
-        "type": "uint256"
-      }
-    ],
-    "name": "LogNewContractLocation",
     "type": "event"
   }
 ]
