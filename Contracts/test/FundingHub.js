@@ -266,11 +266,17 @@ contract('FundingHub - Deploying and storing all contracts + validation', async 
      let amountToBeRaised = await dbInstance.uintStorage(await hfInstance.stringBytes("amountToBeRaised", assetID));
      let ethUSDPrice = await dbInstance.uintStorage(await hfInstance.stringHash('ethUSDPrice'));
 
-     // Modifier Checks
+   }); 
+
+   it('Try funding without sending any WEI', async () => { 
+        // Modifier Checks
      let requiresEtherModifier = null;
      try {await fundingHubInstance.fund(assetID, {from:funder1});}
      catch (error) {requiresEtherModifier = error}
      assert.notEqual(requiresEtherModifier, null, 'modifier requiresEtherModifier');
+   });
+
+   it('Try funding while contract is paused', async () => {  
 
      await dbInstance.setBool(await hfInstance.stringAddress('pause', fundingHubInstance.address), true,{from:contractMimik});
      let requiresNotPaused = null;
@@ -278,7 +284,9 @@ contract('FundingHub - Deploying and storing all contracts + validation', async 
      catch (error) {requiresNotPaused = error}
      assert.notEqual(requiresNotPaused, null, 'modifier requiresNotPaused');
      await dbInstance.setBool(await hfInstance.stringAddress('pause', fundingHubInstance.address), false,{from:contractMimik});
+   }); 
 
+   it(' Try funding when asset is in wrong funding stage', async () => { 
      await dbInstance.setUint(await hfInstance.stringBytes('fundingStage', assetID), 0, {from:contractMimik});
      let requiresAtStageModifier = null;
      try {await fundingHubInstance.fund(assetID, {from:funder1, value:web3.toWei(0.5,'ether')});}
@@ -315,13 +323,15 @@ contract('FundingHub - Deploying and storing all contracts + validation', async 
      await fundingHubInstance.fund(assetID, {from:funder1, value:web3.toWei(0.25,'ether')});
     });
 
-    it('Initiate refund to allow refunds', async () => {
+    it('try to initiate refund before funding period is over', async () => { 
       // Modifier Check
       let requiresFundingPeriodOverModifier = null;
       try {await fundingHubInstance.initiateRefund(assetID);}
       catch (error) {requiresFundingPeriodOverModifier = error}
       assert.notEqual(requiresFundingPeriodOverModifier, null, 'modifier requiresFundingPeriodOverModifier');
+    });
 
+    it('Initiate refund to allow refunds', async () => {
       await dbInstance.setUint(await hfInstance.stringBytes('fundingStage', assetID), 0, {from:contractMimik});
       let requiresAtStageModifier = null;
       try {await fundingHubInstance.initiateRefund(assetID);}
@@ -336,7 +346,7 @@ contract('FundingHub - Deploying and storing all contracts + validation', async 
       assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytes('fundingStage', assetID)), 2, 'Funding stage == 2');
     });
 
-    it('refund', async () => {
+    it('try refund while paused', async () => {
       // Modifier Check
       await dbInstance.setBool(await hfInstance.stringAddress('pause', fundingHubInstance.address), true,{from:contractMimik});
       let requiresNotPaused = null;
@@ -345,15 +355,19 @@ contract('FundingHub - Deploying and storing all contracts + validation', async 
       assert.notEqual(requiresNotPaused, null, 'modifier requiresNotPaused');
       await dbInstance.setBool(await hfInstance.stringAddress('pause', fundingHubInstance.address), false,{from:contractMimik});
 
+    }); 
+
+    it('try refund on uninitialized asset', async () => { 
       await dbInstance.setUint(await hfInstance.stringBytes('fundingStage', assetID), 0, {from:contractMimik});
       let requiresAtStageModifier = null;
       try {await fundingHubInstance.refund(assetID, {from:funder1});}
       catch (error) {requiresAtStageModifier = error}
       assert.notEqual(requiresAtStageModifier, null, 'modifier requiresAtStageModifier');
       await dbInstance.setUint(await hfInstance.stringBytes('fundingStage', assetID), 2, {from:contractMimik});
+    }); 
 
-      let userBalanceBefore = parseInt(web3.eth.getBalance(funder1));
-      var refundGasEstimate = parseInt(await fundingHubInstance.refund.estimateGas(assetID, {from:funder1})).toFixed(7) / 10000000;
+    it('try refund without any ownership units', async () => { 
+      let userBalanceBefore = web3.eth.getBalance(funder1);
       let sharesBefore = await dbInstance.uintStorage(await hfInstance.stringBytesAddress('ownershipUnits',assetID,funder1));
 
       // Require check
@@ -363,13 +377,16 @@ contract('FundingHub - Deploying and storing all contracts + validation', async 
       catch (error) {ownershipUnitsGreaterThanZeroRequire = error}
       assert.notEqual(ownershipUnitsGreaterThanZeroRequire, null, 'require ownershipUnitsGreaterThanZeroRequire');
       await dbInstance.setUint(await hfInstance.stringBytesAddress("ownershipUnits", assetID, funder1), sharesBefore, {from:contractMimik});
+    }); 
 
+    it('successfully get refund', async () => { 
+      let funderOneBalance = web3.eth.getBalance(funder1); 
+      let funderOneOwnershipUnits = await api.ownershipUnits(assetID, funder1); 
+      // Call refund
       await fundingHubInstance.refund(assetID, {from:funder1});
-      assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytesAddress('shares',assetID,funder1)),0,'shares deleted');
-      assert.equal(await dbInstance.uintStorage(await hfInstance.stringBytes('amountRaised',assetID)),0,'amountRaised reduced');
-
-      let shouldBeBalanceAfter = (userBalanceBefore - parseInt(web3.toWei(refundGasEstimate,'ether'))) + parseInt(web3.toWei(0.5,'ether'));
-      //assert.equal(parseInt(web3.eth.getBalance(funder1)), shouldBeBalanceAfter, 'refund successful');
+      assert.equal(await api.ownershipUnits(assetID, funder1), 0, 'shares deleted');
+      assert.equal(web3.eth.getBalance(funder1), funderOneBalance + funderOneOwnershipUnits); 
+      assert.equal(await api.amountRaised(assetID) ,0,'amountRaised reduced');
     });
 
     it('destroy', async () =>{

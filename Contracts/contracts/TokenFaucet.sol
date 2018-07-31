@@ -17,12 +17,12 @@ contract TokenFaucet {
   }
 
   // For owner to deposit tokens easier
-  function receiveApproval(receiveApproval(address _from, uint _amount, address _token, bytes _data)
+  function receiveApproval(address _from, uint _amount, address _token, bytes _data)
   external {
-    require(_token == msg.sender && _token == address(myBitToken));
-    require(token.transferFrom(msg.sender, this, _amount));
+    require(_token == msg.sender && _token == address(token));
+    require(token.transferFrom(_from, this, _amount));
     tokensInFaucet += _amount;
-    emit TokenDeposit(msg.sender, _amount, block.number);
+    emit TokenDeposit(_from, _amount, block.number);
   }
 
   function deposit(uint _amount)
@@ -36,7 +36,7 @@ contract TokenFaucet {
   function withdraw(uint _amount, string _pass)
   external {
     require (tokensInFaucet >= _amount);
-    require (keccak256(_pass) == accessPass); 
+    require (keccak256(abi.encodePacked(_pass)) == accessPass); 
     tokensInFaucet -= _amount;
     token.transfer(msg.sender, _amount);
     emit TokenWithdraw(msg.sender, _amount, block.number);

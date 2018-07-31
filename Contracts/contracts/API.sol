@@ -58,14 +58,6 @@ contract API {
     return database.boolStorage(keccak256(abi.encodePacked("pause", _contractAddress)));
   }
 
-
-  function deployFinished()
-  public
-  view
-  returns (bool) {
-    return database.boolStorage(keccak256(abi.encodePacked("deployFinished")));
-  }
-
   function contractAddress(string _name)
   public
   view
