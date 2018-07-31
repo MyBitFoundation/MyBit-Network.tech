@@ -75,6 +75,20 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "oneYear",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "name": "_database",
@@ -95,56 +109,7 @@
       },
       {
         "indexed": false,
-        "name": "_backupAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "_blockNumber",
-        "type": "uint256"
-      }
-    ],
-    "name": "LogBackupAddressSet",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "_oldAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "_newAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "_timestamp",
-        "type": "uint256"
-      }
-    ],
-    "name": "LogAddressChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "_user",
-        "type": "address"
-      },
-      {
-        "indexed": true,
         "name": "_approvalLevel",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "_timestamp",
         "type": "uint256"
       }
     ],
@@ -161,11 +126,28 @@
       },
       {
         "indexed": true,
-        "name": "_timestamp",
+        "name": "_accessLevel",
         "type": "uint256"
       }
     ],
     "name": "LogUserRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "LogKYCApproved",
     "type": "event"
   }
 ]

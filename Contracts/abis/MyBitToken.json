@@ -10,6 +10,7 @@
       }
     ],
     "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -20,7 +21,7 @@
         "type": "address"
       },
       {
-        "name": "_value",
+        "name": "_amount",
         "type": "uint256"
       }
     ],
@@ -32,6 +33,7 @@
       }
     ],
     "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -40,11 +42,12 @@
     "name": "totalSupply",
     "outputs": [
       {
-        "name": "",
+        "name": "tokenSupply",
         "type": "uint256"
       }
     ],
     "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -59,7 +62,7 @@
         "type": "address"
       },
       {
-        "name": "_value",
+        "name": "_amount",
         "type": "uint256"
       }
     ],
@@ -71,6 +74,7 @@
       }
     ],
     "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -84,67 +88,68 @@
       }
     ],
     "payable": false,
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "standard",
-    "outputs": [
-      {
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "payable": false,
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "balanceOf",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "constant": false,
     "inputs": [
       {
-        "name": "target",
-        "type": "address"
-      },
-      {
-        "name": "mintedAmount",
+        "name": "_amount",
         "type": "uint256"
       }
     ],
-    "name": "mintToken",
-    "outputs": [],
+    "name": "burn",
+    "outputs": [
+      {
+        "name": "success",
+        "type": "bool"
+      }
+    ],
     "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "owner",
-    "outputs": [
+    "inputs": [
       {
-        "name": "",
+        "name": "_tokenHolder",
         "type": "address"
       }
     ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "name": "balance",
+        "type": "uint256"
+      }
+    ],
     "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "burnFrom",
+    "outputs": [
+      {
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -158,19 +163,7 @@
       }
     ],
     "payable": false,
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "newOwner",
-        "type": "address"
-      }
-    ],
-    "name": "changeOwner",
-    "outputs": [],
-    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -181,13 +174,19 @@
         "type": "address"
       },
       {
-        "name": "_value",
+        "name": "_amount",
         "type": "uint256"
       }
     ],
     "name": "transfer",
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "success",
+        "type": "bool"
+      }
+    ],
     "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -198,11 +197,11 @@
         "type": "address"
       },
       {
-        "name": "_value",
+        "name": "_amount",
         "type": "uint256"
       },
       {
-        "name": "_extraData",
+        "name": "_data",
         "type": "bytes"
       }
     ],
@@ -214,54 +213,76 @@
       }
     ],
     "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "constant": true,
     "inputs": [
       {
-        "name": "",
+        "name": "_tokenHolder",
         "type": "address"
       },
       {
-        "name": "",
+        "name": "_spender",
         "type": "address"
       }
     ],
     "name": "allowance",
     "outputs": [
       {
-        "name": "",
+        "name": "remaining",
         "type": "uint256"
       }
     ],
     "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
       {
-        "name": "initialSupply",
+        "name": "_initialAmount",
         "type": "uint256"
       },
       {
-        "name": "tokenName",
+        "name": "_tokenName",
         "type": "string"
       },
       {
-        "name": "decimalUnits",
+        "name": "_decimalUnits",
         "type": "uint8"
       },
       {
-        "name": "tokenSymbol",
+        "name": "_tokenSymbol",
         "type": "string"
       }
     ],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "constructor"
   },
   {
-    "payable": false,
+    "payable": true,
+    "stateMutability": "payable",
     "type": "fallback"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_burner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_amountBurned",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogBurn",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -278,11 +299,33 @@
       },
       {
         "indexed": false,
-        "name": "value",
+        "name": "tokens",
         "type": "uint256"
       }
     ],
     "name": "Transfer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "tokenOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "tokens",
+        "type": "uint256"
+      }
+    ],
+    "name": "Approval",
     "type": "event"
   }
 ]

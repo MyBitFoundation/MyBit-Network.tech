@@ -6,7 +6,7 @@ import './Database.sol';
 // Asset contract manages all payments, withdrawls and trading of ownershipUnits for live assets
 // All information about assets are stored in Database.sol.
 //------------------------------------------------------------------------------------------------------------------
-contract Asset {
+contract AssetBank {
 using SafeMath for uint;
 
   Database public database;

@@ -14,6 +14,7 @@ import './TokenBurn.sol';
 import './TokenFaucet.sol';
 import './UserAccess.sol';
 
+// TODO: Test Re-entrancy and overflows
 contract  Test {
 
   Database public database;
@@ -25,11 +26,7 @@ contract  Test {
     database = Database(_database);
   }
 
-  function withdrawAndApprove(uint _amount)
-  external {
-    TokenFaucet(getAddress("TokenFaucet")).withdraw(_amount);
-    require(MyBitToken(getAddress("MyBitToken")).approve(getAddress("TokenBurn"), _amount));
-  }
+
 
   function burnAccessTokens(uint _accessLevel)
   external {
