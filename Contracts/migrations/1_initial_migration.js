@@ -19,15 +19,15 @@ const UserAccess = artifacts.require('./UserAccess.sol');
 module.exports = function(deployer, network) {
   // deployer.deploy(Migrations);
   console.log(network); 
-  deployer.deploy(Database).then(function() { 
-    deployer.deploy(ContractManager, Database.address);
-    deployer.deploy(API, Database.address); 
+  // deployer.deploy(Database, ).then(function() { 
+  //   deployer.deploy(ContractManager, Database.address);
+  //   deployer.deploy(API, Database.address); 
   //   deployer.deploy(MyBitToken, Database.address).then(function() { 
   //   deployer.deploy(TokenFaucet, MyBitToken.address); 
   //   deployer.deploy(TokenBurn, Database.address); 
   //   deployer.deploy(API, Database.address); 
   // }); 
 
-  });
+  // });
 
 };

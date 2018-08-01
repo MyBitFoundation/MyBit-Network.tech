@@ -179,8 +179,6 @@
       _;
       uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID))); 
       if (amountRaised.mul(currentEthPrice).div(1e18) >= database.uintStorage(keccak256(abi.encodePacked("amountToBeRaised", _assetID)))) {
-         database.deleteUint(keccak256(abi.encodePacked("amountToBeRaised", _assetID)));      // No longer need this variable
-         database.deleteUint(keccak256(abi.encodePacked("fundingDeadline", _assetID)));
          database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(3));
          emit LogAssetFundingSuccess(_assetID, currentEthPrice, amountRaised);
         }
