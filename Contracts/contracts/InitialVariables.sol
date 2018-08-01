@@ -48,8 +48,10 @@ function changeFoundationAddress(address _signer, string _functionName, address 
 external
 noEmptyAddress(_newAddress)
 anyOwner
-multiSigRequired(_signer, _functionName, keccak256(abi.encodePacked(_newAddress))) {
+multiSigRequired(_signer, _functionName, keccak256(abi.encodePacked(_newAddress))) 
+returns (bool) {
   database.setAddress(keccak256(abi.encodePacked("MyBitFoundation")), _newAddress);
+  return true; 
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -59,8 +61,10 @@ function changeInstallerEscrowAddress(address _signer, string _functionName, add
 external
 noEmptyAddress(_newAddress)
 anyOwner
-multiSigRequired(_signer, _functionName, keccak256(abi.encodePacked(_newAddress))) {
+multiSigRequired(_signer, _functionName, keccak256(abi.encodePacked(_newAddress))) 
+returns (bool) {
   database.setAddress(keccak256(abi.encodePacked("InstallerEscrow")), _newAddress);
+  return true; 
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -68,9 +72,11 @@ multiSigRequired(_signer, _functionName, keccak256(abi.encodePacked(_newAddress)
 // ------------------------------------------------------------------------------------------------
 function changeAccessTokenFee(address _signer, string _functionName, uint _accessLevel, uint _newPrice)
 external
-anyOwner
-multiSigRequired(_signer, _functionName, keccak256(abi.encodePacked(_accessLevel, _newPrice))) {
+anyOwner 
+multiSigRequired(_signer, _functionName, keccak256(abi.encodePacked(_accessLevel, _newPrice))) 
+returns (bool) {
   database.setUint(keccak256(abi.encodePacked("accessTokenFee", _accessLevel)), _newPrice);
+  return true;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -86,6 +92,15 @@ returns (bool) {
     database.setUint(keccak256(abi.encodePacked("mybUSDPrice")), _mybPrice);
     database.setUint(keccak256(abi.encodePacked("priceExpiration")), priceExpiration);
     return true; 
+}
+
+function changePriceUpdateTimeline(uint _newPriceExpiration)
+external
+anyOwner
+returns (bool) { 
+    database.setUint(keccak256(abi.encodePacked("priceUpdateTimeline")), _newPriceExpiration);
+    return true;
+
 }
 
 

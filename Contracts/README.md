@@ -2,27 +2,17 @@
 The contracts are created to be upgradeable as they save all long-term data in Database.sol. As development continues and contracts change, we will use the upgrading protocol written in ContractManager.sol. For this reason the current address + abi of the contracts will be changing throughout the Alpha.
 
 # Getting Started
-MyBit is currently testing it's contracts on the Ropsten testnet. You can find the currently deployed contracts in the "RopstenAddress" folder. To be able to interact with the contracts you will need the contract abi which can be found in the folder "abis".
+MyBit is currently testing it's contracts on the Ropsten testnet. You can find the currently deployed contracts in the "RopstenAddress" folder. 
 
-# Access
-The MyBit platform requires users to burn MyBit tokens to interact with the smart-contracts. For the time being there are 3 stages of access.
-
-* 1.) Ability to fund and create assets ($25)
-* 2.) Staking ($75)
-* 3.) Trade on marketplace ($100)
-
-> Note: Stages accumulate so burning tokens for stage 2 gives you access to stage 1. Burning tokens for stage 3 also gets you access to stage 2 and 1
+# Live test-net contracts 
+* [InitialVariables](https://ropsten.etherscan.io/address/0x53fa423780e55a2bf53d89132157ef4ff8e7ac56#code)
+* [UserAccess](https://ropsten.etherscan.io/address/0xb14c50bb7530c71e14f28498bad1f65d10b5b3a9#code)
+* [API](https://ropsten.etherscan.io/address/0x139ebd700b089f51a9dd90c0403e5326b1426f3b#code)
 
 # Usage
+* First go to the MYB Faucet and get at least 1,000 MYB tokens  (token has 18 decimal places so 1.0 MYB = 1000000000000000000)
+* To fund/create assets, you must burn tokens in TokenBurn.sol by calling approveAndCall in MyBitToken.sol, with the TokenBurn contract as the spender
 
-
-* First go to the MyBit Faucet and get at least 1,000 MYB tokens  (token has 18 decimal places so in actuality 1 MYB = 1000000000000000000)
-
-* To fund/create assets, you must burn tokens in TokenBurn.sol
-
-* Before funding or burning tokens the current price of Ether or MyBit must be resolved in OracleHub.
-
-* Make sure you are approving TokenBurn + OperatorEscrow to transfer tokens before calling them.
 
 # Testing 
 * In the terminal run `ganache-cli`  (use -a flag to specify number of accounts ie. -a 20) 
@@ -31,17 +21,20 @@ The MyBit platform requires users to burn MyBit tokens to interact with the smar
 * NOTE: Make sure bignumber.js is installed.  `npm install bignumber.js`
 
 # Compiling 
-* In the terminal run `ganache-cli` 
+* In the terminal run `ganache-cli`  
 * In another terminal navigate to /Contracts 
 * run `truffle compile` 
 
 # Dependencies 
 * bignumber.js   `npm install bignumber.js`
+* solidity-docgen  `npm install solidity-docgen`
 
 # AssetTypes 
 Assets are currently represented by the sha3 hash of supported asset types. 
 * BitcoinATM = sha3('BitcoinATM') = 0x5d8e833f4fba61d80762218946d01c0ccff5329a41b33ce0e6b839cd892f96ac
 
+# Installer ID's
+* BitcoinAtmInstaller = sha3("BitcoinAtmInstaller") = 0xd7efceade817d524ae896c95d6ec0ae99cf55d164e0e2fc2e89a588d70e2eee7
 
 # Current MyBit Contracts:
 
@@ -72,36 +65,3 @@ Asset.sol deals with the functionality of successfully funded assets. This contr
 ## AssetExchange
 AssetExchange.sol creates and settles all buy and sell orders for all live assets on the MyBit platform. Users can create 1 buy & 1 sell order per asset on the platform at their desired price. Once the order is picked up, the Marketplace contract calls the Asset contract and the shares are then transferred to the new owner. The Asset contract will only allow shares to be transferred when called by the Marketplace contract.  
 
-## OracleHub
-OracleHub.sol is where users can update the current USD prices. To fund assets or burn tokens, the database must know about the latest Ether to USD prices or MyBit to USD prices. This price will be required to be updated every x seconds.
-
-# Deploying
-> Set 3 owners when deploying Database. Any one of these owners will be authorized to deploy the rest of the contracts. All contracts that are deployed must be added to the database through ContractManager.
-
-## Order of deployment:
-
-* MyBitToken(For Testing...if deployed need the address)
-
-* Database: args=(ownerOne.address, ownerTwo.address, ownerThree.address)
-
-* ContractManager: args=(database.address)
-
-* InitialVariables: args=(database.address)
-
-* Call StartDapp() to initialize crucial variables for later contracts
-
-* Owned: args=(database.address)
-
-* UserAccess: args=(database.address)
-
-* AssetCreation: args=(database.address)
-
-* FundingHub: args=(database.address)
-
-* Asset: args=(database.address)
-
-* AssetExchange: args=(database.address)
-
-* TokenBurn: args=(MyBitToken.address, database.address)
-
-* Send sha3("DeployFinished") to ContractManager to secure further contract additions
