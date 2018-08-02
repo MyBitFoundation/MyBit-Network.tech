@@ -410,5 +410,22 @@
     ],
     "name": "LogInitialized",
     "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_contractManager",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_initiator",
+        "type": "address"
+      }
+    ],
+    "name": "LogContractManager",
+    "type": "event"
   }
 ]

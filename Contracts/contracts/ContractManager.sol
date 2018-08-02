@@ -4,6 +4,7 @@ import "./Database.sol";
 
 // ------------------------------------------------------------------------------------------------
 // This contract determines which contracts are allowed to make changes to the database contract.
+// TODO: multi-sigs are disabled for alpha testing
 // ------------------------------------------------------------------------------------------------
 contract ContractManager{
   Database public database;
@@ -15,15 +16,6 @@ contract ContractManager{
     database = Database(_database);
   }
 
-  // ------------------------------------------------------------------------------------------------
-  // Call this once finished deploying initial contracts.
-  // This initiates multi-sig requirement to add new contracts
-  // ------------------------------------------------------------------------------------------------
-  function setDeployFinished()
-  external
-  anyOwner {
-    database.setBool(keccak256(abi.encodePacked("deployFinished")), true);
-  }
 
   // ------------------------------------------------------------------------------------------------
   // This function adds new contracts to the platform. Giving them write access to Database.sol
@@ -35,12 +27,10 @@ contract ContractManager{
   external
   noEmptyAddress(_contractAddress)
   noEmptyString(_name)
+  // multiSigRequired(_functionSigner, "addContract", keccak256(abi.encodePacked(_name)))
   anyOwner {
-    require(msg.sender != _functionSigner);
-    require(database.boolStorage(keccak256(abi.encodePacked(address(this), _functionSigner, "addContract", keccak256(abi.encodePacked(_contractAddress))))) || database.boolStorage(keccak256(abi.encodePacked("deployFinished"))) == false);
     require(!contractExists(_contractAddress));
-    require(database.addressStorage(keccak256(abi.encodePacked("contract", _name))) == address(0));
-    database.setBool(keccak256(abi.encodePacked(address(this), _functionSigner, "addContract", keccak256(abi.encodePacked(_contractAddress)))), false);
+    require(database.addressStorage(keccak256(abi.encodePacked("contract", _name))) == address(0));   // Deny duplicate contract names
     database.setAddress(keccak256(abi.encodePacked("contract", _name)), _contractAddress);
     database.setBool(keccak256(abi.encodePacked("contract", _contractAddress)), true);
     emit LogContractAdded(_contractAddress, _name);
@@ -54,7 +44,7 @@ contract ContractManager{
   function removeContract(string _name, address _functionSigner)
   external
   noEmptyString(_name)
-  multiSigRequired(_functionSigner, "removeContract", keccak256(abi.encodePacked(_name)))
+  // multiSigRequired(_functionSigner, "removeContract", keccak256(abi.encodePacked(_name)))
   anyOwner {
     address contractToDelete = database.addressStorage(keccak256(abi.encodePacked("contract", _name)));
     require(contractExists(contractToDelete));
@@ -73,7 +63,7 @@ contract ContractManager{
   function updateContract(string _name, address _newContractAddress, address _functionSigner)
   external
   noEmptyAddress(_newContractAddress)
-  multiSigRequired(_functionSigner, "updateContract", keccak256(abi.encodePacked(_newContractAddress)))
+  // multiSigRequired(_functionSigner, "updateContract", keccak256(abi.encodePacked(_newContractAddress)))
   anyOwner {
     address oldAddress = database.addressStorage(keccak256(abi.encodePacked("contract", _name)));
     require (contractExists(oldAddress));

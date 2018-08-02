@@ -31,6 +31,7 @@ contract AssetCreation {
   whenNotPaused
   noEmptyBytes(_installerID)
   noEmptyBytes(_assetType)
+  noEmptyBytes(_ipfsHash)
   returns (bool){
     require(database.uintStorage(keccak256(abi.encodePacked("userAccess", msg.sender))) >= uint(1), "user does not have high enough access level");
     require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiration", msg.sender))) > now , "User access has expired");

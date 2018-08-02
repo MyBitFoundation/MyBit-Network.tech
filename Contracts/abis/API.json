@@ -3,29 +3,6 @@
     "constant": true,
     "inputs": [
       {
-        "name": "_owner",
-        "type": "address"
-      },
-      {
-        "name": "_assetID",
-        "type": "bytes32"
-      }
-    ],
-    "name": "ownershipUnits",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
         "name": "_assetID",
         "type": "bytes32"
       }
@@ -45,19 +22,15 @@
     "constant": true,
     "inputs": [
       {
-        "name": "_funder",
-        "type": "address"
-      },
-      {
         "name": "_assetID",
         "type": "bytes32"
       }
     ],
-    "name": "totalPaidToFunder",
+    "name": "assetManager",
     "outputs": [
       {
         "name": "",
-        "type": "uint256"
+        "type": "address"
       }
     ],
     "payable": false,
@@ -87,25 +60,6 @@
     "constant": true,
     "inputs": [
       {
-        "name": "_operator",
-        "type": "address"
-      }
-    ],
-    "name": "operatorAmountEscrowed",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
         "name": "_functionAuthorizationHash",
         "type": "bytes32"
       }
@@ -115,25 +69,6 @@
       {
         "name": "",
         "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "_assetID",
-        "type": "bytes32"
-      }
-    ],
-    "name": "operatorPercentage",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
       }
     ],
     "payable": false,
@@ -175,17 +110,12 @@
   },
   {
     "constant": true,
-    "inputs": [
-      {
-        "name": "_assetID",
-        "type": "bytes32"
-      }
-    ],
-    "name": "assetOperator",
+    "inputs": [],
+    "name": "priceTimeToExpiration",
     "outputs": [
       {
         "name": "",
-        "type": "address"
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -194,8 +124,36 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "ethUSDSecondsRemaining",
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "ownershipUnits",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "managerPercentage",
     "outputs": [
       {
         "name": "",
@@ -265,13 +223,8 @@
   },
   {
     "constant": true,
-    "inputs": [
-      {
-        "name": "_operator",
-        "type": "address"
-      }
-    ],
-    "name": "operatorAmountDeposited",
+    "inputs": [],
+    "name": "priceUpdateTimeline",
     "outputs": [
       {
         "name": "",
@@ -286,27 +239,15 @@
     "constant": true,
     "inputs": [
       {
-        "name": "_contractAddress",
+        "name": "_manager",
         "type": "address"
-      },
-      {
-        "name": "_signer",
-        "type": "address"
-      },
-      {
-        "name": "_functionName",
-        "type": "string"
-      },
-      {
-        "name": "_agreedParameter",
-        "type": "bytes32"
       }
     ],
-    "name": "getFunctionAuthorized",
+    "name": "depositedMYB",
     "outputs": [
       {
         "name": "",
-        "type": "bytes32"
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -317,6 +258,25 @@
     "constant": true,
     "inputs": [],
     "name": "ethUSDPrice",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "stakingExpiration",
     "outputs": [
       {
         "name": "",
@@ -343,8 +303,82 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "mybUSDSecondsRemaining",
+    "inputs": [
+      {
+        "name": "_contractAddress",
+        "type": "address"
+      },
+      {
+        "name": "_signer",
+        "type": "address"
+      },
+      {
+        "name": "_functionName",
+        "type": "string"
+      },
+      {
+        "name": "_agreedParameter",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getFunctionAuthorizationHash",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_contractAddress",
+        "type": "address"
+      }
+    ],
+    "name": "contractExists",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "escrowedForAsset",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_manager",
+        "type": "address"
+      }
+    ],
+    "name": "escrowedMYB",
     "outputs": [
       {
         "name": "",
@@ -363,6 +397,20 @@
       {
         "name": "",
         "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "priceExpiration",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -397,6 +445,29 @@
       }
     ],
     "name": "userAccess",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_funder",
+        "type": "address"
+      }
+    ],
+    "name": "totalPaidToFunder",
     "outputs": [
       {
         "name": "",
@@ -456,8 +527,93 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "ethUSDPriceExpiration",
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "assetStaker",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_manager",
+        "type": "address"
+      }
+    ],
+    "name": "managerIncome",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "getAmountOwed",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "stakerIncomeShare",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_accessLevelDesired",
+        "type": "uint256"
+      }
+    ],
+    "name": "accessTokenFee",
     "outputs": [
       {
         "name": "",
@@ -490,20 +646,6 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "deployFinished",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
     "name": "myBitFoundationPercentage",
     "outputs": [
       {
@@ -517,8 +659,32 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "mybUSDPriceExpiration",
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "assetIncome",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_assetID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "escrowExpiration",
     "outputs": [
       {
         "name": "",

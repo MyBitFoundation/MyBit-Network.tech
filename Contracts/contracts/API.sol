@@ -58,14 +58,6 @@ contract API {
     return database.boolStorage(keccak256(abi.encodePacked("pause", _contractAddress)));
   }
 
-
-  function deployFinished()
-  public
-  view
-  returns (bool) {
-    return database.boolStorage(keccak256(abi.encodePacked("deployFinished")));
-  }
-
   function contractAddress(string _name)
   public
   view
@@ -97,7 +89,7 @@ contract API {
     return database.boolStorage(keccak256(abi.encodePacked("owner", _user)));
   }
 
-  function getFunctionAuthorized(address _contractAddress, address _signer, string _functionName, bytes32 _agreedParameter)
+  function getFunctionAuthorizationHash(address _contractAddress, address _signer, string _functionName, bytes32 _agreedParameter)
   public
   pure
   returns (bytes32) {
@@ -331,6 +323,7 @@ contract API {
     return database.uintStorage(keccak256(abi.encodePacked("mybUSDPrice")));
   }
 
+  // The unix-timestamp when ETH and MYB prices need to be updated
   function priceExpiration()
   public
   view
@@ -348,6 +341,13 @@ contract API {
     return (expiration - now);
   }
 
+  // The number of seconds each ETH & MYB price update is valid for (initialVariables.sol)
+  function priceUpdateTimeline()
+  public 
+  view 
+  returns (uint) { 
+    return database.uintStorage(keccak256(abi.encodePacked("priceUpdateTimeline"))); 
+  }
 
 function ()
 public {
