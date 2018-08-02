@@ -5,9 +5,13 @@ The contracts are created to be upgradeable as they save all long-term data in D
 MyBit is currently testing it's contracts on the Ropsten testnet. You can find the currently deployed contracts in the "RopstenAddress" folder. 
 
 # Live test-net contracts 
-* [InitialVariables](https://ropsten.etherscan.io/address/0x53fa423780e55a2bf53d89132157ef4ff8e7ac56#code)
+* [InitialVariables](https://ropsten.etherscan.io/address/0x9e6606dedcf9d4960f8652abe2d624a048231841#code)
 * [UserAccess](https://ropsten.etherscan.io/address/0xb14c50bb7530c71e14f28498bad1f65d10b5b3a9#code)
 * [API](https://ropsten.etherscan.io/address/0x139ebd700b089f51a9dd90c0403e5326b1426f3b#code)
+* [AssetCreation](https://ropsten.etherscan.io/address/0xb00bb34e0b0e60e5a7b59908aa4a368f50686635#code)
+* [FundingHub](https://ropsten.etherscan.io/address/0xfc2cb1a08ac82852a7fd20c763fa31dd819d7812)
+* [MyBitToken](https://ropsten.etherscan.io/address/0xbb07c8c6e7cd15e2e6f944a5c2cac056c5476151#code)
+* [TokenFaucet](https://ropsten.etherscan.io/address/0x66652784bd48b69d9f20c9046b67150351023707#code)
 
 # Usage
 * First go to the MYB Faucet and get at least 1,000 MYB tokens  (token has 18 decimal places so 1.0 MYB = 1000000000000000000)
