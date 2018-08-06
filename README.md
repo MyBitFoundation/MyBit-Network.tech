@@ -23,27 +23,27 @@ The DAX is where users can trade ownership units for all successfully funded ass
 * [AssetCreation](https://ropsten.etherscan.io/address/0xb00bb34e0b0e60e5a7b59908aa4a368f50686635#code)
 * [FundingHub](https://ropsten.etherscan.io/address/0xfc2cb1a08ac82852a7fd20c763fa31dd819d7812)
 * [MyBitToken](https://ropsten.etherscan.io/address/0xbb07c8c6e7cd15e2e6f944a5c2cac056c5476151#code)
-* [TokenFaucet](https://ropsten.etherscan.io/address/0x66652784bd48b69d9f20c9046b67150351023707#code)
+* [TokenFaucet](https://ropsten.etherscan.io/address/0x8742272c58f6fe0c2943eba9399c04cbd5342ab2#writeContract)
 
 # AssetTypes 
 Supported assets are currently represented by sha3 hashes, found in the event logs of AssetCreation.sol
 
-* Bitcoin ATM's = sha3('bitcoinatm') = 0x89c2e778df1760738073f345cda4cc7882d91c5930ecfbb6c7169ebb424d798c
-* Crypto Mining = sha3('cryptomining') = 0xdb0e7348e98d09c7fee772dfbd40a3baf8c3c68e5b3137d912470a75e4409102
-* Real Estate (storage) = sha3('realestatestorage') = 0x3db94d6c20a671cba945a7cc9a028d6d0b922c7025155176bf68249f594760e4
-* Real Estate (co-working) = sha3('realestatecoworking') = 0x4dc6f247c02006ecc1c1303c3b4027a2726157fe0c74fa6be8abac47441b4400
-* Charging Station = sha3('chargingstation') = 0x2eaf4e91d546a4160da92a8e56bae0a9bd9927ab4abc890f488cd6dd47eec457
-* Drone Delivery = sha3('dronedelivery') = 0xd22de9fd8ac68be8ad044b599b3fe8021403e76249978682ec3100b97c4c910e
-* Autonomous Vehicles = sha3('autonomousvehicles') = 0x1028440d22921555aeed9d53d5fc00d19e1c07505c5e3956f97d5f8737973ae7
-* Solar Energy = sha3('solarenergy') = 0xe18b450ce32d6b1b19ce094e853360cfcae676ecce9634dd56fd16f1a9d6b5c3
-* Wind Energy = sha3('windenergy') = 0x0c37b1a99407cbe04e8fb40b28135bd4edea794d690074d65925a414788b232d
-* Masternodes = sha3('masternodes') = 0xd188a5c31ca91a2f13f0a014bb75cf93fe02008ba9fcf4ed842a449680c57849
-* Vending Machines = sha3('vendingmachines') = 0x9edaf5f9488a0a63a528f4d7a0dfb8b73061089f7a0069b0fcb545ffcc666cfb
-* Other = sha3('other') = 0x26b60b6bee32c2d284da42d089b795640a977077a3c25b246fe0448f42ce4ec0
+* Bitcoin ATM's = `sha3('bitcoinatm')` = `0x89c2e778df1760738073f345cda4cc7882d91c5930ecfbb6c7169ebb424d798c`
+* Crypto Mining = `sha3('cryptomining')` = `0xdb0e7348e98d09c7fee772dfbd40a3baf8c3c68e5b3137d912470a75e4409102`
+* Real Estate (storage) = `sha3('realestatestorage')` = `0x3db94d6c20a671cba945a7cc9a028d6d0b922c7025155176bf68249f594760e4`
+* Real Estate (co-working) = `sha3('realestatecoworking')` = `0x4dc6f247c02006ecc1c1303c3b4027a2726157fe0c74fa6be8abac47441b4400`
+* Charging Station = `sha3('chargingstation')` = `x2eaf4e91d546a4160da92a8e56bae0a9bd9927ab4abc890f488cd6dd47eec457`
+* Drone Delivery = `sha3('dronedelivery')` = `0xd22de9fd8ac68be8ad044b599b3fe8021403e76249978682ec3100b97c4c910e`
+* Autonomous Vehicles = `sha3('autonomousvehicles')` = `0x1028440d22921555aeed9d53d5fc00d19e1c07505c5e3956f97d5f8737973ae7`
+* Solar Energy = `sha3('solarenergy')` = `0xe18b450ce32d6b1b19ce094e853360cfcae676ecce9634dd56fd16f1a9d6b5c3`
+* Wind Energy = `sha3('windenergy')` = `0x0c37b1a99407cbe04e8fb40b28135bd4edea794d690074d65925a414788b232d`
+* Masternodes = `sha3('masternodes')` = `0xd188a5c31ca91a2f13f0a014bb75cf93fe02008ba9fcf4ed842a449680c57849`
+* Vending Machines = `sha3('vendingmachines')` = `0x9edaf5f9488a0a63a528f4d7a0dfb8b73061089f7a0069b0fcb545ffcc666cfb`
+* Other = `sha3('other')` = `0x26b60b6bee32c2d284da42d089b795640a977077a3c25b246fe0448f42ce4ec0`
 
 # Installer ID's
-* Bitcoin Atm Installer = sha3("bitcoinatminstaller") = 0xa8df8257a08a2624d6f44a6dd6169f83c991ea22b10cfbc395502f53fa8222bf
-* Crypto Mining Installer = sha3('cryptomininginstaller') = 0x15304e9e243a1990e938a8e4eb852bdaea3e7b930acb441e942af5c6a1482c3f
-* Real Estate Installer (storage) = sha3('realestatestorage') = 0x3db94d6c20a671cba945a7cc9a028d6d0b922c7025155176bf68249f594760e4
+* Bitcoin Atm Installer = `sha3("bitcoinatminstaller")` = `0xa8df8257a08a2624d6f44a6dd6169f83c991ea22b10cfbc395502f53fa8222bf`
+* Crypto Mining Installer = `sha3('cryptomininginstaller')` = `0x15304e9e243a1990e938a8e4eb852bdaea3e7b930acb441e942af5c6a1482c3f`
+* Real Estate Installer (storage) = `sha3('realestatestorage')` = `0x3db94d6c20a671cba945a7cc9a028d6d0b922c7025155176bf68249f594760e4`
 
 :pencil2:  All contracts are written in Solidity.
