@@ -57,6 +57,8 @@ contract('FundingHub - Deploying and storing all contracts + validation', async 
   let assetType;
 
   let amountMyBRequired;
+  let ethUSDPrice; 
+  let myBPrice; 
 
   it("Owners should be assigned", async () => {
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);

@@ -18,10 +18,10 @@ contract TokenEscrow {
   //------------------------------------------------------------------------------------------------------------------
   // Constructor. Initiate Database and MyBitToken
   //------------------------------------------------------------------------------------------------------------------
-  constructor(address _database)
+  constructor(address _database, address _mybittoken)
   public {
     database = Database(_database);
-    myBitToken = MyBitToken(database.boolStorage(keccak256(abi.encodePacked("contract", "MyBitToken"))));
+    myBitToken = MyBitToken(_mybittoken);
   }
 
   //------------------------------------------------------------------------------------------------------------------

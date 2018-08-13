@@ -35,7 +35,7 @@
     atStage(_assetID, uint(1))
     priceUpdated
     fundingLimit(_assetID)
-    onlyApproved
+    // onlyApproved   TODO: uncomment when inner-alpha done
     returns (bool) {
       uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)));
       if (ownershipUnits == 0) {

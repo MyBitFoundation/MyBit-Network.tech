@@ -33,8 +33,9 @@ contract AssetCreation {
   noEmptyBytes(_assetType)
   noEmptyBytes(_ipfsHash)
   returns (bool){
-    require(database.uintStorage(keccak256(abi.encodePacked("userAccess", msg.sender))) >= uint(1), "user does not have high enough access level");
-    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiration", msg.sender))) > now , "User access has expired");
+    // TODO: uncomment when inner-alpha done 
+    // require(database.uintStorage(keccak256(abi.encodePacked("userAccess", msg.sender))) >= uint(1), "user does not have high enough access level");
+    // require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiration", msg.sender))) > now , "User access has expired");
     require(_managerPercentage < uint(100) && _managerPercentage > uint(0) , "manager percentage is too high or too low");
     require(_amountToBeRaised > uint(100), "amountToBeRaised is too low");           // Minimum asset price
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToEscrow, _managerPercentage, _amountToBeRaised, _installerID, _assetType, _blockAtCreation));

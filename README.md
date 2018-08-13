@@ -33,8 +33,8 @@ Example contracts put together the above componenets into working contract syste
 * [InitialVariables](https://ropsten.etherscan.io/address/0x9e6606dedcf9d4960f8652abe2d624a048231841#code)
 * [UserAccess](https://ropsten.etherscan.io/address/0xb14c50bb7530c71e14f28498bad1f65d10b5b3a9#code)
 * [API](https://ropsten.etherscan.io/address/0x139ebd700b089f51a9dd90c0403e5326b1426f3b#code)
-* [AssetCreation](https://ropsten.etherscan.io/address/0xb00bb34e0b0e60e5a7b59908aa4a368f50686635#code)
-* [FundingHub](https://ropsten.etherscan.io/address/0xfc2cb1a08ac82852a7fd20c763fa31dd819d7812)
+* [AssetCreation](https://ropsten.etherscan.io/address/0x011d426358f1982e327648506d3fdae01d054297#code)
+* [FundingHub](https://ropsten.etherscan.io/address/0xb94bd7c5ca000beeff27db7cebb9c03749901f19#code)
 * [MyBitToken](https://ropsten.etherscan.io/address/0xbb07c8c6e7cd15e2e6f944a5c2cac056c5476151#code)
 * [TokenFaucet](https://ropsten.etherscan.io/address/0x8742272c58f6fe0c2943eba9399c04cbd5342ab2#writeContract)
 
