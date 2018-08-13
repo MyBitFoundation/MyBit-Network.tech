@@ -1,27 +1,40 @@
-# MyBit Platform
 
-## Overview
-The MyBit platform is built to allow the decentralized crowd-funding of assets and distribution of revenue to users of the platform. The contracts are built to automate the distribution of asset revenue to funders and operators of assets.
+# MyBit-SDK 
+The contracts in the MyBit-SDK are built to be used to create and distribution income from virtual assets represented by ERC tokens. Using contract inheritance the contracts can be combined in different ways to modify the crowdfunding and re-distribution details. 
 
-## Upgradeability
-Upgradeability is accomplished through the interaction of a database contract and a manager contract. The database contract holds all expensive long-term data, and the contract manager contract, controls who has write-access to the database. The database operates by storing the sha3 hashes of variable names with associated ID's and user addresses. Since the database contract is not upgradeable it is written to store any data type under a simple key 32 bytes in length.  Contracts: [Database.sol, ContractManager.sol]
+## Contract Categories
 
-## Access
-The user access contracts handle all authority measures on the platform. Owners can approve users for KYC, remove users, pause the platform or sign important function calls. The platform is currently written to have 3 owners who must have a consensus for any critical functions to be called. Using this consensus agreement removes the risk involved in having one Ethereum wallet gain control over the whole platform.
-By burning MyBit tokens, users can achieve the following access levels: 1 = Funding and Creating assets, 2 = Staking, 3 = Decentralized Exchange . Contracts: [UserAccess.sol, Owned.sol]
+### Authorization 
+Authorization is where owner privileges and user access levels contracts are stored. Add these to your Dapp to restrict access based on roles. Users can choose to have multi-sig permissions for particular functions or contracts. 
 
-## Assets
-The contracts involved in asset life-cycles are broken down into 3 main periods: creation period, funding period and distributing period. The creation period is where operators can escrow MyBit tokens before starting a funding period to increase incentive not to abandon the asset. The funding period is where users can send in ETH to a newly created asset, which buys them ownership units in that asset (1 wei contributed = 1 ownership unit). If the asset successfully meets it's funding target this contract distributes the Ether to the manufacturer and the MyBit foundation. If the funding period is a failure, users can withdraw their Ether and asset managers can retrieve their escrowed MYB. The distribution period deals with receiving and distributing income produced by assets, as well as managing users ownership units, which may be traded on the Asset Exchange. Contracts: [AssetCreation.sol, FundingHub.sol, Asset.sol, OperatorEscrow.sol]
+### Crowdsale 
+In the crowdsale folder you can find all the contracts involved with funding new assets and generating new ERC tokens to represent shares of the asset resulting from a crowdsale. 
 
-## Decentralized Asset Exchange (DAX)
-The DAX is where users can trade ownership units for all successfully funded assets on the MyBit platform. Once the order is filled, the DAX contract calls the Asset contract and the shares are then transferred to the new owner. Contracts: [AssetExchange.sol, Asset.sol]
+### Distribution 
+The distribution folder is where asset tokens can be traded and distributed. New assets not requiring a crowdsale can be created using these contracts. 
+
+### Ecosystem 
+Ecosystem contracts involve adding ID's, functions and other standards that help contracts communicate to other contracts in the ecosystem to allow particular functionality or avoid funds from being sent to the wrong addresses. 
+
+### Math 
+Math contracts are helper libraries for performing arithmetic without worrying about overflows and underflows. 
+
+### Tokens 
+Token contracts are used to represent assets. Tokens representing assets can be burnable, mintable, fixed-supply, and can distribute income to holders. 
+
+### Upgradeable 
+Upgradeable contracts allow users to have upgradeable contracts. The owners can decide to update contracts without losing the valuable data storage. 
+
+### Example  
+Example contracts put together the above componenets into working contract systems that can create and distribute income from virtual assets. 
+
 
 # Live test-net contracts 
 * [InitialVariables](https://ropsten.etherscan.io/address/0x9e6606dedcf9d4960f8652abe2d624a048231841#code)
 * [UserAccess](https://ropsten.etherscan.io/address/0xb14c50bb7530c71e14f28498bad1f65d10b5b3a9#code)
 * [API](https://ropsten.etherscan.io/address/0x139ebd700b089f51a9dd90c0403e5326b1426f3b#code)
-* [AssetCreation](https://ropsten.etherscan.io/address/0xb00bb34e0b0e60e5a7b59908aa4a368f50686635#code)
-* [FundingHub](https://ropsten.etherscan.io/address/0xfc2cb1a08ac82852a7fd20c763fa31dd819d7812)
+* [AssetCreation](https://ropsten.etherscan.io/address/0x011d426358f1982e327648506d3fdae01d054297#code)
+* [FundingHub](https://ropsten.etherscan.io/address/0xb94bd7c5ca000beeff27db7cebb9c03749901f19#code)
 * [MyBitToken](https://ropsten.etherscan.io/address/0xbb07c8c6e7cd15e2e6f944a5c2cac056c5476151#code)
 * [TokenFaucet](https://ropsten.etherscan.io/address/0x8742272c58f6fe0c2943eba9399c04cbd5342ab2#writeContract)
 
@@ -41,9 +54,5 @@ Supported assets are currently represented by sha3 hashes, found in the event lo
 * Vending Machines = `sha3('vendingmachines')` = `0x9edaf5f9488a0a63a528f4d7a0dfb8b73061089f7a0069b0fcb545ffcc666cfb`
 * Other = `sha3('other')` = `0x26b60b6bee32c2d284da42d089b795640a977077a3c25b246fe0448f42ce4ec0`
 
-# Installer ID's
-* Bitcoin Atm Installer = `sha3("bitcoinatminstaller")` = `0xa8df8257a08a2624d6f44a6dd6169f83c991ea22b10cfbc395502f53fa8222bf`
-* Crypto Mining Installer = `sha3('cryptomininginstaller')` = `0x15304e9e243a1990e938a8e4eb852bdaea3e7b930acb441e942af5c6a1482c3f`
-* Real Estate Installer (storage) = `sha3('realestatestorage')` = `0x3db94d6c20a671cba945a7cc9a028d6d0b922c7025155176bf68249f594760e4`
 
 :pencil2:  All contracts are written in Solidity.
