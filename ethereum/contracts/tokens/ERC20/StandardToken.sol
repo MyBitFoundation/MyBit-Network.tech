@@ -14,27 +14,12 @@ import "../../math/SafeMath.sol";
 contract StandardToken is ERC20 {
   using SafeMath for uint256;
 
-  mapping(address => uint256) balances;
+  mapping(address => uint256) internal balances;
 
   mapping (address => mapping (address => uint256)) internal allowed;
 
-  uint256 totalSupply_;
+  uint256 internal totalSupply_;
 
-  /**
-  * @dev Total number of tokens in existence
-  */
-  function totalSupply() public view returns (uint256) {
-    return totalSupply_;
-  }
-
-  /**
-  * @dev Gets the balance of the specified address.
-  * @param _owner The address to query the the balance of.
-  * @return An uint256 representing the amount owned by the passed address.
-  */
-  function balanceOf(address _owner) public view returns (uint256) {
-    return balances[_owner];
-  }
 
   /**
    * @dev Function to check the amount of tokens that an owner allowed to a spender.
@@ -42,14 +27,10 @@ contract StandardToken is ERC20 {
    * @param _spender address The address which will spend the funds.
    * @return A uint256 specifying the amount of tokens still available for the spender.
    */
-  function allowance(
-    address _owner,
-    address _spender
-   )
-    public
-    view
-    returns (uint256)
-  {
+  function allowance(address _owner, address _spender)
+  public
+  view
+  returns (uint256) {
     return allowed[_owner][_spender];
   }
 
@@ -61,7 +42,6 @@ contract StandardToken is ERC20 {
   function transfer(address _to, uint256 _value) public returns (bool) {
     require(_value <= balances[msg.sender]);
     require(_to != address(0));
-
     balances[msg.sender] = balances[msg.sender].sub(_value);
     balances[_to] = balances[_to].add(_value);
     emit Transfer(msg.sender, _to, _value);
@@ -89,18 +69,12 @@ contract StandardToken is ERC20 {
    * @param _to address The address which you want to transfer to
    * @param _value uint256 the amount of tokens to be transferred
    */
-  function transferFrom(
-    address _from,
-    address _to,
-    uint256 _value
-  )
-    public
-    returns (bool)
-  {
+  function transferFrom(address _from, address _to, uint256 _value)
+  public
+  returns (bool) {
     require(_value <= balances[_from]);
     require(_value <= allowed[_from][msg.sender]);
     require(_to != address(0));
-
     balances[_from] = balances[_from].sub(_value);
     balances[_to] = balances[_to].add(_value);
     allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
@@ -139,21 +113,36 @@ contract StandardToken is ERC20 {
    * @param _spender The address which will spend the funds.
    * @param _subtractedValue The amount of tokens to decrease the allowance by.
    */
-  function decreaseApproval(
-    address _spender,
-    uint256 _subtractedValue
-  )
-    public
-    returns (bool)
-  {
+  function decreaseApproval(address _spender, uint256 _subtractedValue)
+  public
+  returns (bool) {
     uint256 oldValue = allowed[msg.sender][_spender];
     if (_subtractedValue >= oldValue) {
       allowed[msg.sender][_spender] = 0;
-    } else {
+    } 
+    else {
       allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
     }
     emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
     return true;
   }
+
+
+  /**
+  * @dev Total number of tokens in existence
+  */
+  function totalSupply() public view returns (uint256) {
+    return totalSupply_;
+  }
+
+  /**
+  * @dev Gets the balance of the specified address.
+  * @param _owner The address to query the the balance of.
+  * @return An uint256 representing the amount owned by the passed address.
+  */
+  function balanceOf(address _owner) public view returns (uint256) {
+    return balances[_owner];
+  }
+
 
 }

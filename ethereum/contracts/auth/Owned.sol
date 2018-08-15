@@ -1,21 +1,23 @@
 pragma solidity 0.4.24;
-import './Database.sol';
 
 //------------------------------------------------------------------------------------------------------------------
-// This contract handles owner authorization, freezing and access to critical functions
+// This contract handles owner authorization. 
 //------------------------------------------------------------------------------------------------------------------
 contract Owned {
 
   Database public database;
 
+  address public owner; 
+  address public pendingOwner; 
+
   //------------------------------------------------------------------------------------------------------------------
-  // Constructor: Initialize database
+  // @notice Constructor: Makes msg.sender the owner 
   //------------------------------------------------------------------------------------------------------------------
-  constructor(address _database)
-  noZeroAddress(_database)
+  constructor()
   public {
-    database = Database(_database);
+    owner = msg.sender; 
   }
+
 
   //------------------------------------------------------------------------------------------------------------------
   // This function requires 2 of 3 owners to sign off on. Will replace one owner for another.
@@ -51,30 +53,6 @@ contract Owned {
     database.setBool(functionAuthHash, true);    // Sign the function name + parameter
     emit LogFunctionAuthorized(msg.sender, _functionName, _beneficiary, functionAuthHash);
   }
-
-  //------------------------------------------------------------------------------------------------------------------
-  // This will pause all critical activity for the supplied address
-  // @Param: The address of the contract which is to be paused\
-  //------------------------------------------------------------------------------------------------------------------
-  function pause(address _contract)
-  anyOwner
-  noZeroAddress(_contract)
-  public {
-    database.setBool(keccak256(abi.encodePacked("pause", _contract)), true);
-    emit LogPaused(_contract);
-  }
-
-  //------------------------------------------------------------------------------------------------------------------
-  // This will unpause all critical activity for the supplied address
-  // @Param: The address of the contract which is to be unpaused
-  //------------------------------------------------------------------------------------------------------------------
-  function unpause(address _contract)
-  anyOwner
-  public {
-    database.setBool(keccak256(abi.encodePacked("pause", _contract)), false);
-    emit LogUnpaused(_contract);
-  }
-
 
 
 

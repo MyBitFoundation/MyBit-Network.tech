@@ -1,7 +1,8 @@
 pragma solidity 0.4.24;
 import './AssetFunding.sol';
 import './SafeMath.sol';
-import './AssetToken.sol'; 
+
+import '../tokens/ERC20/CappedToken.sol'; 
 
 //----------------------------------------------------------------------------------------------------------------------------------------
 // This contract is where users can initite funding periods for new assets.
@@ -11,9 +12,8 @@ contract AssetCreation {
   using SafeMath for *;
 
   AssetFunding public assetFunding; 
-  AssetToken public assetToken; 
+  CappedToken public assetToken; 
 
-  uint public fundingTime = uint(6000);        // TODO: Testing number: 10 minutes
   uint public minimumAssetValueUSD; 
 
 
@@ -26,71 +26,32 @@ contract AssetCreation {
 
   //----------------------------------------------------------------------------------------------------------------------------------------
   // This begins the funding period for an asset. If asset is success it will be added to the assets variable here in AssetCreation
-  // @Param: The amount of USD required for asset to achieve successfull funding
-  // @Param: The percentage of revenue the asset manager will require to run the asset
-  // @Param: The amount the asset manager has decided to escrow
+  // @param: The amount to be raised for asset to be live. (WEI)
+  // @param: How long the crowdsale lasts for in seconds
   //----------------------------------------------------------------------------------------------------------------------------------------
-  function newAsset(uint _amountToRaise)
+  function newAsset(uint _amountToRaise, uint _crowdsaleLength)
   external
+  notZero(_amountToRaise)
+  notZero(_crowdsaleLength)
   returns (bool){
     require(_amountToRaise > minimumAssetValueUSD);           // Minimum asset price
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, block.number));  
-    AssetToken newToken = AssetToken.new(address(assetFunding), assetID); 
-    assetFunding.startFundingPeriod(assetID, address(newToken), msg.sender, _amountToRaise)
+    CappedToken newToken = assetToken.new(address(assetFunding), assetID); 
+    assetFunding.startFundingPeriod(assetID, address(newToken), msg.sender, _amountToRaise, _crowdsaleLength)
     return true;
   }
 
   //----------------------------------------------------------------------------------------------------------------------------------------
   // This removes asset functionality by setting it to an invalid stage. Must leave variables as users may need to withdrawl income.
   // Other owner must have approved the function to be called in Owned.sol (authorizeFunction())
+  // TODO: Make this a token extension
   //----------------------------------------------------------------------------------------------------------------------------------------
   function removeAsset(bytes32 _assetID, address _functionSigner)
   external
-  anyOwner
+  onlyOwner
   noEmptyBytes(_assetID)
-  whenNotPaused
   returns(bool) {
-    require (_functionSigner != msg.sender);
-    require(database.uintStorage(keccak256(abi.encodePacked("fundingStage", _assetID))) > uint(0));
-    bytes32 functionHash = keccak256(abi.encodePacked(address(this), _functionSigner, "removeAsset", _assetID));
-    require(database.boolStorage(functionHash));
-    database.setBool(functionHash, false);
-    database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(5));   // Asset won't receive income & ownership won't be able to be traded.
-    emit LogAssetRemoved(_assetID, msg.sender);
-    return true;
-  }
 
-  //----------------------------------------------------------------------------------------------------------------------------------------
-  // Change the default funding time for new assets
-  // Invariants: Only owner[0] can call  |  new funding time is not 0
-  //----------------------------------------------------------------------------------------------------------------------------------------
-  function changeFundingTime(uint _newTimeGivenForFunding)
-  external
-  anyOwner
-  notZero(_newTimeGivenForFunding)
-  returns (bool) {
-    fundingTime = _newTimeGivenForFunding;
-    emit LogFundingTimeChanged(msg.sender, _newTimeGivenForFunding);
-    return true;
-  }
-
-  //----------------------------------------------------------------------------------------------------------------------------------------
-  // Changes the platform fees received from funded assets
-  // Requires multi-sig verification. With sha3() of the agreed percentages as the beneficiary parameter
-  //----------------------------------------------------------------------------------------------------------------------------------------
-  function changeFundingPercentages(uint _myBitFoundationPercentage, uint _installerPercentage, address _functionSigner)
-  external
-  anyOwner
-  notZero(_myBitFoundationPercentage)
-  notZero(_installerPercentage)
-  returns (bool) {
-    bytes32 functionHash = keccak256(abi.encodePacked(address(this), _functionSigner, "changeFundingPercentages", keccak256(abi.encodePacked(_myBitFoundationPercentage, _installerPercentage))));
-    require(database.boolStorage(functionHash));
-    require(_myBitFoundationPercentage.add(_installerPercentage) == uint(100));
-    database.setBool(functionHash, false);
-    database.setUint(keccak256(abi.encodePacked("myBitFoundationPercentage")), _myBitFoundationPercentage);
-    database.setUint(keccak256(abi.encodePacked("installerPercentage")), _installerPercentage);
-    emit LogFundingPercentageChanged(_myBitFoundationPercentage, _installerPercentage);
     return true;
   }
 
@@ -100,7 +61,7 @@ contract AssetCreation {
   // Invariants: Must be 1 of 3 owners. Cannot be called by same owner who authorized the function to be called.
   //----------------------------------------------------------------------------------------------------------------------------------------
   function destroy(address _functionInitiator, address _holdingAddress)
-  anyOwner
+  onlyOwner
   public {
     require(_functionInitiator != msg.sender);
     bytes32 functionHash = keccak256(abi.encodePacked(address(this), _functionInitiator, "destroy", keccak256(abi.encodePacked(_holdingAddress))));
@@ -143,7 +104,7 @@ contract AssetCreation {
   //------------------------------------------------------------------------------------------------------------------
   // Sender must be a registered owner
   //------------------------------------------------------------------------------------------------------------------
-  modifier anyOwner {
+  modifier onlyOwner {
     require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
     _;
   }
