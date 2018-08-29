@@ -1,22 +1,23 @@
 pragma solidity 0.4.24;
 
-import './Database.sol';
+
 
 //------------------------------------------------------------------------------------------------------------------
-// This contract controls users access to the MyBit platform. TokenBurn will call this contract to add new users, once MyBit tokens have been burnt
-// There are 3 levels of access on the platform. First is basic access (creating/funding assets), Second is ability to stake, Third is ability to trade assets
+// @title A contract for granting and revoking access levels to different users 
+// @notice Made for platforms that have hierarchical access restrictions
 //------------------------------------------------------------------------------------------------------------------
-contract UserAccess{
+contract AccessHierarchy {
 
-  Database public database;
-  uint public oneYear = uint(31536000);    // 365 days in seconds
+  Database public database; 
+
+  mapping (address => uint) public accessLevel;    // TODO: make bytes4
 
   //------------------------------------------------------------------------------------------------------------------
   // Constructor: Inititalize Database
   //------------------------------------------------------------------------------------------------------------------
   constructor(address _database)
-  public  {
-    database = Database(_database);
+  public  {  
+    database = Database(_database); 
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -27,7 +28,7 @@ contract UserAccess{
   // TODO: owner requirement is removed for alpha testing
   //------------------------------------------------------------------------------------------------------------------
   function approveUser(address _newUser, uint _accessLevel)
-  // anyOwner
+  onlyOwner
   noEmptyAddress(_newUser)
   external
   returns (bool) {
@@ -46,7 +47,7 @@ contract UserAccess{
   // @Param: User to be removed
   //------------------------------------------------------------------------------------------------------------------
   function removeUser(address _user)
-  anyOwner
+  onlyOwner
   external
   returns (bool) {
     uint accessLevel = database.uintStorage(keccak256(abi.encodePacked("userAccess", _user)));
@@ -60,7 +61,7 @@ contract UserAccess{
   // Owner can approve KYC for user
   //------------------------------------------------------------------------------------------------------------------
   function approveKYC(address _user)
-  anyOwner
+  onlyOwner
   external
   returns (bool) {
     database.setBool(keccak256(abi.encodePacked("kycApproved", msg.sender)), true);
@@ -75,13 +76,6 @@ contract UserAccess{
     _;
   }
 
-  //------------------------------------------------------------------------------------------------------------------
-  // Only owners can call these functions
-  //------------------------------------------------------------------------------------------------------------------
-  modifier anyOwner {
-    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
-    _;
-  }
 
   //------------------------------------------------------------------------------------------------------------------
   //                                        Events

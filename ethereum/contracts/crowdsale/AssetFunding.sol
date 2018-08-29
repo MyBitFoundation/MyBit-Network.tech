@@ -3,6 +3,9 @@
   import "./SafeMath.sol";
   import "./AssetCreation.sol"; 
 
+  import "../tokens/ERC20/CappedToken";          
+  // import "../tokens/ERC20/MintableToken";     
+
 
   //------------------------------------------------------------------------------------------------------------------
   // This contract is where users can fund assets or receive refunds from failed funding periods. Funding stages are represented by uints.
@@ -11,10 +14,10 @@
   contract AssetFunding {
     using SafeMath for *;
 
+    // Asset structs are temporary data structures to fascilitate the crowdsale
     struct Asset { 
       address tokenAddress; 
       uint amountToRaise;    
-      uint supplyRaised;      // amount of wei raised == supplyRaised
       uint8 fundingStage; 
     }
 
@@ -55,14 +58,12 @@
     requiresEther
     atStage(_assetID, uint(1))
     fundingLimit(_assetID)
-    onlyApproved
     returns (bool) {
       Asset thisAsset = assets[_assetID]; 
       if (ownershipUnits == 0) {
         emit LogNewFunder(_assetID, msg.sender);    // Create event to reference list of funders
       }
-
-      database.setUint(keccak256(abi.encodePacked("amountRaised", _assetID)), amountRaised.add(msg.value));
+      CappedToken(thisAsset.tokenAddress).mint();
       database.setUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)), ownershipUnits.add(msg.value));
       emit LogAssetFunded(_assetID, msg.sender, msg.value);
       return true;
@@ -160,14 +161,6 @@
     //------------------------------------------------------------------------------------------------------------------
     modifier fundingLimit(bytes32 _assetID) {
       require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
-      uint currentEthPrice = database.uintStorage(keccak256(abi.encodePacked("ethUSDPrice")));
-      assert (currentEthPrice > uint(0));
-      _;
-      uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID))); 
-      if (amountRaised.mul(currentEthPrice).div(1e18) >= database.uintStorage(keccak256(abi.encodePacked("amountToBeRaised", _assetID)))) {
-         database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(3));
-         emit LogAssetFundingSuccess(_assetID, currentEthPrice, amountRaised);
-        }
     }
 
     //------------------------------------------------------------------------------------------------------------------
