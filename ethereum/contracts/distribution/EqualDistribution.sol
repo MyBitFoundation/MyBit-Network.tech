@@ -1,36 +1,33 @@
 pragma solidity ^0.4.24;
 
-import '../math/SafeMath.sol';
+import '../SafeMath.sol';
 import '../interfaces/PullPayment.sol';
 
+// @title A contract made to equally distribute payments amongs a list of beneficiaries
+// @author Kyle Dewhurst, MyBit Foundation
 // @notice This contract allows someone to leave ETH for a beneficiary
 // @notice assumes each beneficiary receives equal amount
-// TODO: Test for rounding errors. 
-// TODO: Test array vs mapping storage costs
+// TODO: Test for rounding errors
 contract EqualDistribution {
   using SafeMath for uint;
 
-
-  address public operator;  
   address[] public beneficiaries;             // List of chosen beneficiaries
-
 
   uint public totalReleased;               // Total WEI so far released to beneficiaries
 
   mapping (address => uint) public amountRedeemed;    // Amount of WEI this address has already withdrawn from contract
 
 
-  // @notice constructor. Sets the operator, beneficiaries and where the income to be distributed is coming from
+  // @notice constructor. Sets the beneficiaries and where the income to be distributed is coming from
   // @param (address) _beneficiary = The ETH address of who is to receive the income. Could be a distribution contract.
-  // @param (address) _pullPayment =
   constructor(address[] _beneficiaries)
-  public
-  payable {
-    operator = msg.sender;
+  public{
     beneficiaries = _beneficiaries;
   }
 
   // @notice allows beneficiaries to withdraw from contracts at different locations to be re-distributed here
+  // @dev can call withdraw() on any address if there are no parameters required. Fallback function will be triggered
+  // @param (address) _contractAddress = The address to call withdraw() on.
   function getFunds(address _contractAddress)
   external
   returns (bool) {
@@ -38,22 +35,24 @@ contract EqualDistribution {
     return true;
   }
 
-  // @notice beneficiaries can withdraw income here
+  // @notice beneficiaries can withdraw their share of the income here
   function withdraw()
-  external 
-  returns (bool) { 
-    uint amount = ((address(this).balance.add(totalReleased)).div(beneficiaries.length)).sub(amountRedeemed[msg.sender]); 
-    amountRedeemed[msg.sender] = amountRedeemed[msg.sender].add(amount); 
-    totalReleased = totalReleased.add(amount); 
-    msg.sender.transfer(amount); 
-    return true; 
+  external
+  returns (bool) {
+    uint amount = ((address(this).balance.add(totalReleased)).div(beneficiaries.length)).sub(amountRedeemed[msg.sender]);
+    amountRedeemed[msg.sender] = amountRedeemed[msg.sender].add(amount);
+    totalReleased = totalReleased.add(amount);
+    msg.sender.transfer(amount);
+    emit LogWithdraw(msg.sender, amount);
+    return true;
   }
 
   // @notice fallback function. Accepts Ether and updates income balance
-  function () 
-  payable { 
-    emit LogPayment(msg.sender, msg.value);  
-  }   
+  function ()
+  public
+  payable {
+    emit LogPayment(msg.sender, msg.value);
+  }
 
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,5 +75,6 @@ contract EqualDistribution {
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   event LogPayment(address _sender, uint _amount);
+  event LogWithdraw(address _beneficiary, uint _amount);
 
 }

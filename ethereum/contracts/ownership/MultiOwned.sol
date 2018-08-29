@@ -1,49 +1,37 @@
 pragma solidity 0.4.24;
 
-//------------------------------------------------------------------------------------------------------------------
-// This contract handles owner authorization. 
-//------------------------------------------------------------------------------------------------------------------
-contract Owned {
+// @title A contract which allows for multi-sig ownership 
+// @notice Two owners are required to agree on a function to be called 
+// @author Kyle Dewhurst, MyBit Foundation 
+contract Ownership {
 
-  Database public database;
+  mapping (address => bool) public owner;  
+  mapping (bytes32 => bool) public functionAuthorized; 
 
-  address public owner; 
-  address public pendingOwner; 
 
-  //------------------------------------------------------------------------------------------------------------------
+
   // @notice Constructor: Makes msg.sender the owner 
-  //------------------------------------------------------------------------------------------------------------------
   constructor()
   public {
     owner = msg.sender; 
   }
 
 
-  //------------------------------------------------------------------------------------------------------------------
-  // This function requires 2 of 3 owners to sign off on. Will replace one owner for another.
-  // @Param: The address of the new owner address
-  // @Param: The index of the new owner
-  // @Param: The address of the first signer, who has approved the calling of this function
-  //------------------------------------------------------------------------------------------------------------------
-  function changeOwner(address _newOwner, address _oldOwner, address _functionSigner)
-  anyOwner
-  noZeroAddress(_newOwner)
-  noZeroAddress(_functionSigner)
-  external {
-    require(msg.sender != _functionSigner);         // Check that this is different owner than the one who authorized
-    bytes32 functionHash = keccak256(abi.encodePacked(address(this), _functionSigner, "changeOwner", keccak256(abi.encodePacked(_newOwner))));
-    require(database.boolStorage(functionHash));   // Check that fuction has been authorized to be called with these parameters
-    database.setBool(functionHash, false);         // Reset changeOwner() authorization
-    database.deleteBool(keccak256(abi.encodePacked("owner", _oldOwner)));      // Remove old owners privileges
-    database.setBool(keccak256(abi.encodePacked("owner", _newOwner)), true);
-    emit LogOwnerChanged(_oldOwner, _newOwner);
+  function addOwner()
+  external 
+  anyOwner { 
+
   }
 
-  //------------------------------------------------------------------------------------------------------------------
+  function removeOwner()
+  external 
+  anyOwner { 
+
+  }
+
   // This function authorizes other owners to call critical functions such as selfdestruct or changeOwner() or add/remove contracts in ContractManager.
   // The critical functions often involve having a critical address change. If address is not critical any agreed address will work
   // Note: beneficiary is used in case an attacker gains control of one owner wallet, the other owner would need to also agree on the critical parameter which is in the format keccak256(criticalParameter)
-  //------------------------------------------------------------------------------------------------------------------
   function setFunctionAuthorized(address _contractAddress, string _functionName, bytes32 _beneficiary)
   external
   anyOwner
@@ -81,8 +69,6 @@ contract Owned {
   //------------------------------------------------------------------------------------------------------------------
   //                                              Events
   //------------------------------------------------------------------------------------------------------------------
-  event LogPaused(address indexed _contract);
-  event LogUnpaused(address indexed _contract);
   event LogOwnerChanged(address indexed _previousOwner, address indexed _newOwner);
   event LogFunctionAuthorized(address indexed _owner, string indexed _functionName, bytes32 indexed _beneficiary, bytes32 _authHash);
 }

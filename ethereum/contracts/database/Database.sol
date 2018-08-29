@@ -3,9 +3,9 @@ pragma solidity 0.4.24;
 
 // ---------------------------------------------------------------------------------
 // @title A shared storage contract for platform contracts to store and retrieve data
-// @notice This contract holds all long-term data for the MyBit smart-contract systems
+// @notice This contract holds all long-term data for smart-contract systems
 // @dev The bytes32 hashes are derived from keccak256(variableName, uniqueID) => value 
-// TODO: Have upgradeable database and non-upgradeable (hardcode allowed)
+// @dec Can enable upgradeable contracts by setting a contract manager
 // ---------------------------------------------------------------------------------
 contract Database {
 
@@ -26,10 +26,11 @@ contract Database {
     // @notice Constructor: Sets the owners of the platform
     // @dev Owners must set the contract manager to add more contracts
     // --------------------------------------------------------------------------------------
-    constructor(address _owner, bool _upgradeable)
+    constructor(address[] _owners, bool _upgradeable)
     public {
         boolStorage[keccak256(abi.encodePacked("owner", _owner))] = true;
-        if (_upgradeable) { boolStorage[keccak256("upgradeable")] = true; }
+        if (_upgradeable) 
+            boolStorage[keccak256("upgradeable")] = true; 
         emit LogInitialized(_owner, _upgradeable);
     }
 
@@ -38,7 +39,7 @@ contract Database {
     // @notice ContractManager will be the only contract that can add/remove contracts on the platform.
     // @param (address) _contractManager is the contract which can upgrade/remove contracts to platform
     // --------------------------------------------------------------------------------------
-    function setContractManager(address _contractManager)
+    function enableContractManagement(address _contractManager)
     external {
         require(boolStorage[keccak256("upgradeable")]); 
         require(_contractManager != address(0));

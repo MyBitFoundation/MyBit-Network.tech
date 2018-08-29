@@ -6,15 +6,19 @@ pragma solidity 0.4.24;
 // @title A contract for granting and revoking access levels to different users 
 // @notice Made for platforms that have hierarchical access restrictions
 //------------------------------------------------------------------------------------------------------------------
-contract AccessHierarchy is Owned {
+contract AccessHierarchy {
+
+  Database public database; 
 
   mapping (address => uint) public accessLevel;    // TODO: make bytes4
 
   //------------------------------------------------------------------------------------------------------------------
   // Constructor: Inititalize Database
   //------------------------------------------------------------------------------------------------------------------
-  constructor()
-  public  {  }
+  constructor(address _database)
+  public  {  
+    database = Database(_database); 
+  }
 
   //------------------------------------------------------------------------------------------------------------------
   // Owner can manually grant access to a user here. WIll be used for KYC approval
