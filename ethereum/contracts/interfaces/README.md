@@ -1,11 +1,11 @@
 
 # Interfaces
-The contracts in the MyBit-SDK are built to be used to create and distribution income from virtual assets represented by ERC tokens. Using contract inheritance the contracts can be combined in different ways to modify the crowdfunding and re-distribution details.
+Contract interfaces set out the basic functionality that other contracts must adhere to.
 
 ## Contract Categories
 
 ### AssetFunding.sol
-Provides the functions used to fund assets with Ether or ERC-20 Tokens
+Provides the functions used to fund assets with Ether or ERC-20 Tokens.
 
 ### Database.sol
 Functions used for getting and setting values in the database contract.
