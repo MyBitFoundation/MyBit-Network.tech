@@ -1,0 +1,172 @@
+[
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_contract",
+        "type": "address"
+      }
+    ],
+    "name": "unpause",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "database",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_contract",
+        "type": "address"
+      }
+    ],
+    "name": "pause",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_contractAddress",
+        "type": "address"
+      },
+      {
+        "name": "_functionName",
+        "type": "string"
+      },
+      {
+        "name": "_beneficiary",
+        "type": "bytes32"
+      }
+    ],
+    "name": "setFunctionAuthorized",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_newOwner",
+        "type": "address"
+      },
+      {
+        "name": "_oldOwner",
+        "type": "address"
+      },
+      {
+        "name": "_functionSigner",
+        "type": "address"
+      }
+    ],
+    "name": "changeOwner",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "name": "_database",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_contract",
+        "type": "address"
+      }
+    ],
+    "name": "LogPaused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_contract",
+        "type": "address"
+      }
+    ],
+    "name": "LogUnpaused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "LogOwnerChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_functionName",
+        "type": "string"
+      },
+      {
+        "indexed": true,
+        "name": "_beneficiary",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "_authHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "LogFunctionAuthorized",
+    "type": "event"
+  }
+]
