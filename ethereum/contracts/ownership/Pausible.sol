@@ -1,6 +1,5 @@
 pragma solidity 0.4.24;
 
-
 contract Pausible { 
 
   mapping (address => bool) public paused; 

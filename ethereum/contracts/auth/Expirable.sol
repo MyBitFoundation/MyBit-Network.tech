@@ -1,5 +1,6 @@
 pragma solidity 0.4.24;
 
+
 import '../math/SafeMath.sol'; 
 
 // @title A contract extension that gives an expiration date to user access
@@ -51,4 +52,5 @@ contract Expirable is AccessHierarchy {
   }
 
   event LogExpirationLengthChanged(uint _oldExpirationLength, uint _newExpirationLength); 
+
 }
