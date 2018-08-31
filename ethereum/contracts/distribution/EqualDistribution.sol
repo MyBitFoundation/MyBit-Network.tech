@@ -35,6 +35,13 @@ contract EqualDistribution {
     return true;
   }
 
+  function getManagerFunds(address _contractAddress, bytes32 _assetID)
+  external
+  returns (bool) {
+    require(PullPayment(_contractAddress).withdrawManagerIncome(_assetID));
+    return true;
+  }
+
   // @notice beneficiaries can withdraw their share of the income here
   function withdraw()
   external
