@@ -1,7 +1,6 @@
 pragma solidity 0.4.24;
 
-
-contract Pausible is Owned { 
+contract Pausible { 
 
   mapping (address => bool) public paused; 
 
