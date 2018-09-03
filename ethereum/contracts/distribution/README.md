@@ -5,7 +5,10 @@ This is where asset tokens can be traded and distributed. New assets not requiri
 ## Contract Categories
 
 ### AssetExchange.sol
-Core contract for MyDEX. Enables the trading of asset tokens on the MyBit platform.
+Core contract for MyDAX. Enables the trading of asset tokens on the MyBit platform.
+
+### AssetRegistry.sol?
+All registered mybit assets and tokens available for exchange? Same as 0x's TokenRegistry.sol
 
 ### DividendToken.sol
 Contract for tokens that represent ownership in an asset. Ether (and ERC-20 tokens?) sent to token address is distributed as dividends to all token holders.
