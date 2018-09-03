@@ -16,31 +16,17 @@ contract MintableToken is StandardToken, Ownable {
   bool public mintingFinished = false;
 
 
-  modifier canMint() {
-    require(!mintingFinished);
-    _;
-  }
-
-  modifier hasMintPermission() {
-    require(msg.sender == owner);
-    _;
-  }
-
   /**
    * @dev Function to mint tokens
    * @param _to The address that will receive the minted tokens.
    * @param _amount The amount of tokens to mint.
    * @return A boolean that indicates if the operation was successful.
    */
-  function mint(
-    address _to,
-    uint256 _amount
-  )
-    public
-    hasMintPermission
-    canMint
-    returns (bool)
-  {
+  function mint(address _to, uint256 _amount)
+  public
+  hasMintPermission
+  canMint
+  returns (bool) {
     totalSupply_ = totalSupply_.add(_amount);
     balances[_to] = balances[_to].add(_amount);
     emit Mint(_to, _amount);
@@ -57,4 +43,17 @@ contract MintableToken is StandardToken, Ownable {
     emit MintFinished();
     return true;
   }
+
+  // @notice modifier: Requires that minting hasn't finished
+  modifier canMint() {
+    require(!mintingFinished);
+    _;
+  }
+
+  // @notice only certified minter can call
+  modifier hasMintPermission() {
+    require(msg.sender == owner);
+    _;
+  }
+
 }
