@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 import "./Owned.sol";
 
-contract Claimable is Owned {
+contract Claimable is SingleOwned {
 
   Database public database; 
 

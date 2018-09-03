@@ -1,15 +1,15 @@
 pragma solidity 0.4.24;
 
 
-import '../math/SafeMath.sol'; 
+import '../math/SafeMath.sol';
+import './AccessHierarchy.sol'; 
 
 // @title A contract extension that gives an expiration date to user access
 // @author Kyle Dewhurst, MyBit Foundation
 contract Expirable is AccessHierarchy {
   using SafeMath for uint;  
 
-  uint public expirationLength = uint256(31557600);    // The default number of seconds until access expires
-
+  uint public expirationLength = uint256(31557600);    // 365 days
 
   //------------------------------------------------------------------------------------------------------------------
   // @notice Owner can manually grant access to a user here. WIll be used for KYC approval

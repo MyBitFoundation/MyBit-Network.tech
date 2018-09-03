@@ -3,7 +3,7 @@ pragma solidity 0.4.24;
 // @title A contract which allows for multi-sig ownership 
 // @notice Two owners are required to agree on a function to be called 
 // @author Kyle Dewhurst, MyBit Foundation 
-contract Ownership {
+contract MultiOwned {
 
   mapping (address => bool) public owner;  
   mapping (bytes32 => bool) public functionAuthorized; 

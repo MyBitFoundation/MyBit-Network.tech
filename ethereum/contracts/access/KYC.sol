@@ -1,5 +1,6 @@
 pragma solidity 0.4.24;
 
+import './AccessHierarchy.sol'; 
 
 // @title A contract that manages KYC approval
 // @notice KYC can be granted or revoked here
