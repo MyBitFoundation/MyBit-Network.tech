@@ -2,7 +2,12 @@ pragma solidity 0.4.24;
 
 contract Pausible { 
 
-  mapping (address => bool) public paused; 
+  Database public database;
+
+  constructor(address _database)
+  public { 
+    database = Database(_database); 
+  }
 
   //------------------------------------------------------------------------------------------------------------------
   // This will pause all critical activity for the supplied address
@@ -10,9 +15,8 @@ contract Pausible {
   //------------------------------------------------------------------------------------------------------------------
   function pause(address _contract)
   anyOwner
-  noZeroAddress(_contract)
   public {
-    paused[_contract] = true; 
+    database.setBool(keccak256(abi.encodePacked("paused", _contract)), true); 
     emit LogPaused(_contract, msg.sender);
   }
 
@@ -23,7 +27,7 @@ contract Pausible {
   function unpause(address _contract)
   anyOwner
   public {
-    delete paused[_contract];
+    database.deleteBool(keccak256(abi.encodePacked("paused", _contract))); 
     emit LogUnpaused(_contract, msg.sender);
   }
 
