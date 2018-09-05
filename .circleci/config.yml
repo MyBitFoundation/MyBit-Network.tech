@@ -1,0 +1,19 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: circleci/node:9.6.1
+    steps:
+        - checkout
+        - run: yarn
+        - run:
+            name: testrpc
+            command: yarn blockchain
+            background: true
+        - run: yarn test
+        - run: yarn coverage
+        
+notify:
+  webhooks:
+    - url: https://coveralls.io/webhook?repo_token=$COVERALLS_REPO_TOKEN
