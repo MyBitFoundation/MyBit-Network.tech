@@ -2,16 +2,7 @@
 The contracts in the MyBit-SDK are built to be used to create and distribution income from virtual assets represented by ERC tokens. Using contract inheritance the contracts can be combined in different ways to modify the crowdfunding and re-distribution details. 
 
 
-## Roles 
 
-#### Investor 
-The investor is any user that holds asset tokens through participating in an asset crowdsale. 
-
-#### AssetManager 
-The Asset Manager is a user that initiates a crowdfunding period for an asset. After the funding period the Asset Manager is in charge of handling real world operations between the asset manufacturer and the investors. The role of the asset manager varies depending on the type of asset, but generally they hold responsibility for making sure the asset operates properly if the conditions allow it. 
-
-#### Manufacturer
-The manufacturer is the producer of the asset. They are in charge of receiving the crowdfunding funds and producing, delivering and installing the asset. 
 
 ## Contract Categories
 
