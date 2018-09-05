@@ -2,6 +2,7 @@ pragma solidity 0.4.24;
 
 import '../../math/SafeMath.sol';
 import '../interfaces/ERC20.sol';
+import './MintableToken.sol';
 
 // @notice Receive approval and then execute function
 contract ApproveAndCallFallBack {
@@ -11,7 +12,7 @@ contract ApproveAndCallFallBack {
 // @title ERC20 token contract with shared revenue distribution functionality.
 // @notice This token contract can receive payments in the fallback function and token owners receive their share when transferring tokens.
 // Credit goes to Nick Johnson for the dividend token https://medium.com/@weka/dividend-bearing-tokens-on-ethereum-42d01c710657
-contract DividendToken is ERC20 {
+contract DividendToken is MintableToken{
     using SafeMath for uint;
 
     // @notice Token supply, balances and allowance
@@ -32,7 +33,8 @@ contract DividendToken is ERC20 {
 
 
     // @notice constructor: initialized
-    constructor(string _tokenURI, uint _totalSupply)
+    constructor(string _tokenURI, uint _totalSupply, address _creator, address _database)
+    MintableToken(_creator, _database)
     public {
         supply = _totalSupply;                        // Update total supply
         tokenURI = _tokenURI;                           // Set the id for reference

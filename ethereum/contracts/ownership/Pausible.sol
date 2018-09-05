@@ -1,6 +1,9 @@
 pragma solidity 0.4.24;
 
 import './MultiOwned.sol';
+import '../database/Database.sol';
+
+contract Pausible is MultiOwned{
 
   Database public database;
 
@@ -31,6 +34,14 @@ import './MultiOwned.sol';
     emit LogUnpaused(_contract, msg.sender);
   }
 
+  //------------------------------------------------------------------------------------------------------------------
+  // Requires that contract has not been paused
+  //------------------------------------------------------------------------------------------------------------------
+  modifier whenNotPaused(address _contract) {
+    require(!database.boolStorage(keccak256(abi.encodePacked("paused", _contract))));
+    _;
+  }
+
   modifier noZeroAddress(address _address){
     require(_address != address(0));
     _;
@@ -40,8 +51,5 @@ import './MultiOwned.sol';
 
   event LogPaused(address indexed _contract, address _owner);
   event LogUnpaused(address indexed _contract, address _owner);
-
-
-
 
 }

@@ -1,14 +1,14 @@
 pragma solidity 0.4.24;
 
-Database public database;
-
 import '../database/Database.sol';
+
 // @title A contract for managing a single platform owner
 // @dev Single owned platforms store owner as an address
 contract SingleOwned {
 
-  constructor(address _database, address _owner)
-  public {
+  Database public database;
+
+  constructor(address _database, address _owner) public {
     database = Database(_database);
     database.setAddress(keccak256(abi.encodePacked("owner")),  _owner);
   }
