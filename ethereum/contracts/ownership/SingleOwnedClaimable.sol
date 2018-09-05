@@ -1,8 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "./Owned.sol";
 
-contract Claimable is SingleOwned {
+contract SingleOwnedClaimable {
 
   Database public database; 
 
@@ -23,7 +22,8 @@ contract Claimable is SingleOwned {
   public 
   onlyPendingOwner {
     emit OwnershipTransferred(owner, pendingOwner);
-    owner = pendingOwner;
+    database.setAddress(keccak256(abi.encodePacked("owner")), msg.sender); 
+    databse.deleteAddress(keccak256(abi.encodePacked("pendingOwner", msg.sender))); 
     pendingOwner = address(0);
   }
 

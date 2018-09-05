@@ -1,32 +1,33 @@
+<p align="center">
+  <a href="https://mybit.io/">
+    <img alt="MyBit Logo" src="https://files.mybit.io/mybit-icon-28x28.png" width="50">
+  </a>
+</p>
+
+
 
 # MyBit-Network: Contract SDK
-The contracts in the SDK are built to be used to create and distribution income from virtual assets represented by ERC tokens. Using contract inheritance the contracts can be combined in different ways to modify the crowdfunding and re-distribution details. 
 
-## Contract Categories
+A software development kit for the automated machine economy.
 
-### Authorization 
-Authorization is where owner privileges and user access levels contracts are stored. Add these to your Dapp to restrict access based on roles. Users can choose to have multi-sig permissions for particular functions or contracts. 
+The SDK's contain a local blockchain and smart-contracts for developers to run and deploy dapps that allow for the funding and distribution of virtual assets represented by ERC tokens on the Ethereum blockchain. The contracts can be combined in different ways to customize the crowdfunding and re-distribution details, or plug into a local MyBitChain to test already operating assets. 
 
-### Crowdsale 
-In the crowdsale folder you can find all the contracts involved with funding new assets and generating new ERC tokens to represent shares of the asset resulting from a crowdsale. 
+## Getting Started
 
-### Distribution 
-The distribution folder is where asset tokens can be traded and distributed. New assets not requiring a crowdsale can be created using these contracts. 
+## Roles 
 
-### Ecosystem 
-Ecosystem contracts involve adding ID's, functions and other standards that help contracts communicate to other contracts in the ecosystem to allow particular functionality or avoid funds from being sent to the wrong addresses. 
+#### Investor 
+The investor is any user that holds asset tokens through participating in an asset crowdsale or by means of purchasing on an exchange.
 
-### Math 
-Math contracts are helper libraries for performing arithmetic without worrying about overflows and underflows. 
+#### Broker 
+The Asset Manager is a user that initiates a crowdfunding period for an asset. After the funding period the Asset Manager is in charge of handling real world operations between the asset manufacturer and the investors. The role of the asset manager varies depending on the type of asset, but generally they hold responsibility for making sure the asset operates properly if the conditions allow it. 
 
-### Tokens 
-Token contracts are used to represent assets. Tokens representing assets can be burnable, mintable, fixed-supply, and can distribute income to holders. 
+#### Manufacturer
+The manufacturer is the producer of the asset. They are in charge of receiving the crowdfunding funds and producing, delivering and installing the asset. 
 
-### Upgradeable 
-Upgradeable contracts allow users to have upgradeable contracts. The owners can decide to update contracts without losing the valuable data storage. 
 
-### Example  
-Example contracts put together the above componenets into working contract systems that can create and distribute income from virtual assets. 
+:pencil2:  All contracts are written in Solidity.
+
 
 
 # Live test-net contracts 
@@ -38,21 +39,7 @@ Example contracts put together the above componenets into working contract syste
 * [MyBitToken](https://ropsten.etherscan.io/address/0xbb07c8c6e7cd15e2e6f944a5c2cac056c5476151#code)
 * [TokenFaucet](https://ropsten.etherscan.io/address/0x8742272c58f6fe0c2943eba9399c04cbd5342ab2#writeContract)
 
-# AssetTypes 
-Supported assets are currently represented by sha3 hashes, found in the event logs of AssetCreation.sol
 
-* Bitcoin ATM's = `sha3('bitcoinatm')` = `0x89c2e778df1760738073f345cda4cc7882d91c5930ecfbb6c7169ebb424d798c`
-* Crypto Mining = `sha3('cryptomining')` = `0xdb0e7348e98d09c7fee772dfbd40a3baf8c3c68e5b3137d912470a75e4409102`
-* Real Estate (storage) = `sha3('realestatestorage')` = `0x3db94d6c20a671cba945a7cc9a028d6d0b922c7025155176bf68249f594760e4`
-* Real Estate (co-working) = `sha3('realestatecoworking')` = `0x4dc6f247c02006ecc1c1303c3b4027a2726157fe0c74fa6be8abac47441b4400`
-* Charging Station = `sha3('chargingstation')` = `x2eaf4e91d546a4160da92a8e56bae0a9bd9927ab4abc890f488cd6dd47eec457`
-* Drone Delivery = `sha3('dronedelivery')` = `0xd22de9fd8ac68be8ad044b599b3fe8021403e76249978682ec3100b97c4c910e`
-* Autonomous Vehicles = `sha3('autonomousvehicles')` = `0x1028440d22921555aeed9d53d5fc00d19e1c07505c5e3956f97d5f8737973ae7`
-* Solar Energy = `sha3('solarenergy')` = `0xe18b450ce32d6b1b19ce094e853360cfcae676ecce9634dd56fd16f1a9d6b5c3`
-* Wind Energy = `sha3('windenergy')` = `0x0c37b1a99407cbe04e8fb40b28135bd4edea794d690074d65925a414788b232d`
-* Masternodes = `sha3('masternodes')` = `0xd188a5c31ca91a2f13f0a014bb75cf93fe02008ba9fcf4ed842a449680c57849`
-* Vending Machines = `sha3('vendingmachines')` = `0x9edaf5f9488a0a63a528f4d7a0dfb8b73061089f7a0069b0fcb545ffcc666cfb`
-* Other = `sha3('other')` = `0x26b60b6bee32c2d284da42d089b795640a977077a3c25b246fe0448f42ce4ec0`
-
-
-:pencil2:  All contracts are written in Solidity.
+<p align="center">
+MyBit Platform™ CHE-177.186.963<br/>
+</p>
