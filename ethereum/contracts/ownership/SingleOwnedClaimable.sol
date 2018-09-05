@@ -1,18 +1,22 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 
 contract SingleOwnedClaimable {
 
   Database public database; 
 
+  constructor(address _database)
+  public {
+    database = Database(_database); 
+  }
+
   //------------------------------------------------------------------------------------------------------------------
   // @notice Transfer ownership to to a new owner
   //------------------------------------------------------------------------------------------------------------------
   function transferOwnership(address _newOwner) 
   public 
-  onlyOwner
-  noZeroAddress(_newOwner) {
-    database.setAddress(keccak256(abi.encodePacked("pendingOwner",)) msg.sender))));
+  onlyOwner {
+    database.setAddress(keccak256(abi.encodePacked("pendingOwner")), msg.sender);
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -21,10 +25,10 @@ contract SingleOwnedClaimable {
   function claimOwnership() 
   public 
   onlyPendingOwner {
-    emit OwnershipTransferred(owner, pendingOwner);
+    address pendingOwner = database.addressStorage(keccak256(abi.encodePacked("pendingOwner"))); 
     database.setAddress(keccak256(abi.encodePacked("owner")), msg.sender); 
-    databse.deleteAddress(keccak256(abi.encodePacked("pendingOwner", msg.sender))); 
-    pendingOwner = address(0);
+    database.deleteAddress(keccak256(abi.encodePacked("pendingOwner", msg.sender))); 
+    emit OwnershipTransferred(owner, pendingOwner);
   }
 
 

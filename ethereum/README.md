@@ -16,9 +16,6 @@ The database folder contains all contracts that abstract storage away from the l
 ### Distribution 
 The distribution folder is where payments can be sent to be distributed amongst users. The users can setup a distribution agreement between themselves, which allows platforms to send payments to a single address. 
 
-### Ecosystem 
-Ecosystem contracts involve adding ID's, functions and other standards that help contracts communicate to other contracts in the ecosystem to allow particular functionality or avoid funds from being sent to the wrong addresses. 
-
 ### Escrow 
 Escrow contracts are where users can deposit ETH or tokens until a specified contract sends permission to remove the escrow. The escrows can be used as insurance against negligence. 
 

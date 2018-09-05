@@ -10,34 +10,28 @@ import "../../ownership/Ownable.sol";
  * Based on code by TokenMarketNet: https://github.com/TokenMarketNet/ico/blob/master/contracts/MintableToken.sol
  */
 contract MintableToken is DividendToken {
-  event Mint(address indexed to, uint256 amount);
-  event MintFinished();
 
   bool public mintingFinished = false;
 
 
-  /**
-   * @dev Function to mint tokens
-   * @param _to The address that will receive the minted tokens.
-   * @param _amount The amount of tokens to mint.
-   * @return A boolean that indicates if the operation was successful.
-   */
+
+  // @dev Function to mint tokens
+  // @param _to The address that will receive the minted tokens.
+  // @param _amount The amount of tokens to mint.
   function mint(address _to, uint256 _amount)
   public
   hasMintPermission
   canMint
   returns (bool) {
-    totalSupply_ = totalSupply_.add(_amount);
+    supply = supply.add(_amount);
     balances[_to] = balances[_to].add(_amount);
     emit Mint(_to, _amount);
     emit Transfer(address(0), _to, _amount);
     return true;
   }
 
-  /**
-   * @dev Function to stop minting new tokens.
-   * @return True if the operation was successful.
-   */
+
+  // @dev Function to stop minting new tokens.
   function finishMinting() 
   public 
   onlyOwner 
@@ -60,4 +54,7 @@ contract MintableToken is DividendToken {
     _;
   }
 
+
+  event Mint(address indexed to, uint256 amount);
+  event MintFinished();
 }

@@ -1,33 +1,33 @@
   pragma solidity 0.4.24;
 
   import "./SafeMath.sol";
-  import "./AssetCreation.sol"; 
-
-  import "../tokens/ERC20/CappedToken";          
-  // import "../tokens/ERC20/MintableToken";     
+  import "./AssetCreation.sol";
+  import "../interfaces/AssetFunding";
+  import "../tokens/ERC20/CappedToken";
+  // import "../tokens/ERC20/MintableToken";
 
 
   //------------------------------------------------------------------------------------------------------------------
   // This contract is where users can fund assets or receive refunds from failed funding periods. Funding stages are represented by uints.
   // Funding stages: 0: funding hasn't started, 1: currently being funded, 2: funding failed,  3: funding success, 4: asset is live
   //------------------------------------------------------------------------------------------------------------------
-  contract AssetFunding {
+  contract AssetFundingERC20 is AssetFunding{
     using SafeMath for *;
 
     // Asset structs are temporary data structures to fascilitate the crowdsale
-    struct Asset { 
-      address tokenAddress; 
-      uint amountToRaise;    
-      uint8 fundingStage; 
+    struct Asset {
+      address tokenAddress;
+      uint amountToRaise;
+      uint8 fundingStage;
     }
 
     AssetCreation public assetCreation;
 
-    mapping (bytes32 => Asset) public assets; 
+    mapping (bytes32 => Asset) public assets;
 
 
     //------------------------------------------------------------------------------------------------------------------
-    // @notice This contract 
+    // @notice This contract
     // @param: The address for the AssetCreation contract
     //------------------------------------------------------------------------------------------------------------------
     constructor(address _assetCreation)
@@ -36,16 +36,16 @@
     }
 
     function startFundingPeriod(bytes32 _assetID, address _assetToken, address _creator, uint _amountToRaise)
-    external 
-    returns (bool) { 
-      bytes32 assetID = keccak256(abi.encodePacked(_creator, _amountToRaise, block.number)); 
-      Asset thisAsset = assets[_assetID]; 
-      assert(_assetID == assetID); 
+    external
+    returns (bool) {
+      bytes32 assetID = keccak256(abi.encodePacked(_creator, _amountToRaise, block.number));
+      Asset thisAsset = assets[_assetID];
+      assert(_assetID == assetID);
       assert(thisAsset.fundingStage == uint8(0));
-      thisAsset.tokenAddress = _assetToken; 
-      thisAsset.amountToRaise = _amountToRaise; 
-      thisAsset.fundingStage = uint8(1); 
-      return true; 
+      thisAsset.tokenAddress = _assetToken;
+      thisAsset.amountToRaise = _amountToRaise;
+      thisAsset.fundingStage = uint8(1);
+      return true;
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -59,7 +59,7 @@
     atStage(_assetID, uint(1))
     fundingLimit(_assetID)
     returns (bool) {
-      Asset thisAsset = assets[_assetID]; 
+      Asset thisAsset = assets[_assetID];
       if (ownershipUnits == 0) {
         emit LogNewFunder(_assetID, msg.sender);    // Create event to reference list of funders
       }
