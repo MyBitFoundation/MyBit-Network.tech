@@ -12,16 +12,3 @@ Contract for funding an asset when the funds used are ERC-20 tokens such as MyBi
 
 ### AssetFundingETH.sol
 Contract for funding an asset when the funds used are Ether.
-
-### AssetToken.sol?
-Contract for tokens that represent ownership in an asset. Ether sent to token address is distributed as dividends to all token holders.
-
-### Capped.sol
-
-### Finalizable.sol
-
-### FixedSupply.sol
-
-### Redeemable.sol
-
-### Refundable.sol

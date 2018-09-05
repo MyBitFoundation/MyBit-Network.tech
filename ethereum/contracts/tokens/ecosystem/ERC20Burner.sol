@@ -9,7 +9,7 @@ import './BurnableERC20.sol';
 contract ERC20Burner {
 
   BurnableERC20 public token;  // The instance of the ERC20 burner contract
-  address public owner;           // Owner can add or remove authorized contracts 
+
 
   mapping (address => bool) public authorizedBurner;    // A mapping showing which addresses are allowed to call the burn function
 
@@ -26,8 +26,8 @@ contract ERC20Burner {
   // @param (uint) _amount = the amount of tokens to be burnt (must include decimal places)
   function burn(address _tokenHolder, uint _amount)
   external
+  onlyAuthorizedBurner(msg.sender)
   returns (bool) {
-    require(authorizedBurner[msg.sender]);
     require(token.allowance(_tokenHolder, address(this)) >= _amount); 
     require(token.burnFrom(_tokenHolder, _amount));
     emit LogMYBBurned(_tokenHolder, msg.sender, _amount);
@@ -40,8 +40,8 @@ contract ERC20Burner {
   external
   onlyOwner
   returns (bool) {
-    require(!authorizedBurner[_burningContract]);
-    authorizedBurner[_burningContract] = true;
+    require(!database.boolStorage(keccak256(abi.encodePacked("authorizedBurner", _burningContract))));
+    database.setBool(keccak256(abi.encodePacked("authorizedBurner", _burningContract)), true); 
     emit LogBurnerAuthorized(msg.sender, _burningContract);
     return true;
   }
@@ -50,17 +50,18 @@ contract ERC20Burner {
   // @param the address of the mybit dapp contract
   function removeBurner(address _burningContract)
   external
+  onlyAuthorizedBurner(_burningContract)
   onlyOwner
   returns (bool) {
-    require(authorizedBurner[_burningContract]);
-    delete authorizedBurner[_burningContract];
+    database.deleteBool(keccak256(abi.encodePacked("authorizedBurner", _burningContract))); 
     emit LogBurnerRemoved(msg.sender, _burningContract); 
     return true;
   }
 
   // @notice fallback function. Rejects all ether 
   function ()
-  external { 
+  external 
+  payable { 
     revert(); 
   }
 
@@ -69,8 +70,14 @@ contract ERC20Burner {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // @notice reverts if msg.sender isn't the owner
-  modifier onlyOwner {
-    require(msg.sender == owner);
+  modifier onlyOwner { 
+    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("owner", msg.sender))));
+    _; 
+  }
+
+  // @notice reverts if address isn't authorized to burn MYB 
+  modifier onlyAuthorizedBurner(address _burner) { 
+    require(database.boolStorage(keccak256(abi.encodePacked("authorizedBurner", _burner))));
     _;
   }
 

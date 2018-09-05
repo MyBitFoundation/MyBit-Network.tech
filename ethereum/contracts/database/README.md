@@ -4,6 +4,9 @@ Contract related to the storing of data on the blockchain. All essential data fo
 
 ## Contract Categories
 
+### ContractManager.sol
+Contract Manager controls which contracts have access to the database. This prevents contracts and users without permission from overwriting or deleting data from the database.
+
 ### Database.sol
 Contract stores data variables as uniques hashes in 7 mappings for each data type: uint, string, address, bytes, bytes32, bool, and int
 
