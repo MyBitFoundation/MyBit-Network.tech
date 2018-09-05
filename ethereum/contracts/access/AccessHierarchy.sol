@@ -1,10 +1,9 @@
 pragma solidity 0.4.24;
 
 
-
 // @title A contract for granting and revoking access levels to different users 
 // @author Kyle Dewhurst, MyBit Foundation
-// @notice Made for platforms that have hierarchical access restrictions
+// @notice Made for platforms that require hierarchical access restrictions
 contract AccessHierarchy {
 
   Database public database; 
@@ -20,7 +19,7 @@ contract AccessHierarchy {
   // @param Address of new user.
   // @param The level of access granted by owner/burningcontract
   function approveUser(address _newUser, uint _accessLevel)
-  onlyOwner
+  onlyPlatform
   noEmptyAddress(_newUser)
   public
   returns (bool) {
@@ -65,6 +64,11 @@ contract AccessHierarchy {
     _; 
   }
 
+  // @notice only contracts on the platform can call.
+  modifier onlyPlatform { 
+    require(database.boolStorage(keccak256(abi.encodePacked("contract", msg.sender)))); 
+    _; 
+  }
 
   //------------------------------------------------------------------------------------------------------------------
   //                                        Events

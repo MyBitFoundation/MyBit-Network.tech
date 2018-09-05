@@ -3,48 +3,33 @@
   import "./SafeMath.sol";
   import "./AssetCreation.sol"; 
 
-  import "../tokens/ERC20/CappedToken";          
-  // import "../tokens/ERC20/MintableToken";     
+  import "../tokens/ERC20/DividendToken.sol";         // Change to Mintable or Burnable if needed
+     
+
+  // @title An asset crowdsale contract. 
+  // @notice creates a dividend token to represent the newly created asset.
+  contract Crowdsale {
+    using SafeMath for uint256;
+
+    Database public database; 
 
 
-  //------------------------------------------------------------------------------------------------------------------
-  // This contract is where users can fund assets or receive refunds from failed funding periods. Funding stages are represented by uints.
-  // Funding stages: 0: funding hasn't started, 1: currently being funded, 2: funding failed,  3: funding success, 4: asset is live
-  //------------------------------------------------------------------------------------------------------------------
-  contract AssetFunding {
-    using SafeMath for *;
-
-    // Asset structs are temporary data structures to fascilitate the crowdsale
-    struct Asset { 
-      address tokenAddress; 
-      uint amountToRaise;    
-      uint8 fundingStage; 
-    }
-
-    AssetCreation public assetCreation;
-
-    mapping (bytes32 => Asset) public assets; 
-
-
-    //------------------------------------------------------------------------------------------------------------------
-    // @notice This contract 
-    // @param: The address for the AssetCreation contract
-    //------------------------------------------------------------------------------------------------------------------
-    constructor(address _assetCreation)
+    // @notice Constructor: Initiates the database 
+    // @param: The address for the database contract
+    constructor(address _database)
     public {
-        assetCreation = AssetCreation(_assetCreation);
+        database = Database(_database); 
     }
 
-    function startFundingPeriod(bytes32 _assetID, address _assetToken, address _creator, uint _amountToRaise)
+
+    function startFundingPeriod(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise)
     external 
     returns (bool) { 
-      bytes32 assetID = keccak256(abi.encodePacked(_creator, _amountToRaise, block.number)); 
-      Asset thisAsset = assets[_assetID]; 
-      assert(_assetID == assetID); 
-      assert(thisAsset.fundingStage == uint8(0));
-      thisAsset.tokenAddress = _assetToken; 
-      thisAsset.amountToRaise = _amountToRaise; 
-      thisAsset.fundingStage = uint8(1); 
+      bytes32 assetID = keccak256(abi.encodePacked(_creator, _amountToRaise, _assetURI)); 
+      require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0); 
+      DividendToken newAsset = new DividendToken(_assetURI, _amountToRaise);   // Gives this contract all new asset tokens 
+      database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
+      database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));  
       return true; 
     }
 
@@ -52,19 +37,22 @@
     // Users can send Ether here to fund asset if funding goal hasn't been reached and the funding period isn't over.
     // Invariants: Requires Eth be sent with transaction |  Must be in funding stage. Must be under goal | Must have KYC approved. | contract is not paused
     //------------------------------------------------------------------------------------------------------------------
-    function fund(bytes32 _assetID)
+    function fundAsset(bytes32 _assetID)
     external
     payable
     requiresEther
-    atStage(_assetID, uint(1))
-    fundingLimit(_assetID)
+    beforeDeadline(_assetID)
     returns (bool) {
-      Asset thisAsset = assets[_assetID]; 
-      if (ownershipUnits == 0) {
-        emit LogNewFunder(_assetID, msg.sender);    // Create event to reference list of funders
+      DividendToken thisToken = DividedToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))));
+      uint tokensRemaining = thisToken.balanceOf(address(this));
+      if (msg.value >= thisToken.balanceOf(address(this))) {
+        require(thisToken.transfer(msg.sender, tokensRemaining));   // Send remaining asset tokens 
+        require(payout(_assetID, thisToken.supply()));          // 1 token = 1 wei
+        msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI
       }
-      CappedToken(thisAsset.tokenAddress).mint();
-      database.setUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)), ownershipUnits.add(msg.value));
+      else { 
+        require(thisToken.transfer(msg.sender, msg.value));    // TODO: Add multiplier depending on desired price per token
+      }
       emit LogAssetFunded(_assetID, msg.sender, msg.value);
       return true;
     }
@@ -73,20 +61,15 @@
     // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
     // Invariants: Must be in stage FundingSuccess | MyBitFoundation + AssetEscrow  + BugEscrow addresses are set | Contract is not paused
     // Note: Will fail if addresses + percentages are not set. AmountRaised = WeiRaised = ownershipUnits
-    // TODO: Installer gets extra 1-2 wei from solidity rounding down when faced with fraction
-    // TODO: Create asset tokens here
     //------------------------------------------------------------------------------------------------------------------
-    function payout(bytes32 _assetID)
-    external
+    function payout(bytes32 _assetID, uint _amount)
+    internal
     whenNotPaused
     atStage(_assetID, uint(3))       // Can only get to stage 3 by receiving enough funding within time limit
     returns (bool) {
-      uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)));
-      uint myBitAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("myBitFoundationPercentage"))));
-      uint installerAmount = amountRaised.sub(myBitAmount);
-      database.addressStorage(keccak256(abi.encodePacked("MyBitFoundation"))).transfer(myBitAmount);             // Must be normal account
-      database.addressStorage(keccak256(abi.encodePacked("InstallerEscrow"))).transfer(installerAmount);             // Must be normal account
-      database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(4));
+      address distributionContract = database.addressStorage(keccak256(abi.encodePacked("contract", "PlatformDistribution")));
+      assert (distributionContract != address(0));  
+      distributionContract.transfer()
       emit LogAssetPayout(_assetID, amountRaised);
       return true;
     }
@@ -154,13 +137,10 @@
 
 
     //------------------------------------------------------------------------------------------------------------------
-    // Transitions funding period to success if enough Ether is raised
-    // Must be in funding stage 3 (currently being funded).
-    // Deletes funding raising variables if current transaction puts it over the goal.
-    // TODO: Limit how far over the goal users are allowed to fund?
+    // @notice reverts if the funding deadline has already past
     //------------------------------------------------------------------------------------------------------------------
-    modifier fundingLimit(bytes32 _assetID) {
-      require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
+    modifier beforeDeadline(bytes32 _assetID) {
+      require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID
     }
 
     //------------------------------------------------------------------------------------------------------------------
