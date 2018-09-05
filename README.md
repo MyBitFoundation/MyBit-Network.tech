@@ -1,6 +1,6 @@
 
-# MyBit-SDK 
-The contracts in the MyBit-SDK are built to be used to create and distribution income from virtual assets represented by ERC tokens. Using contract inheritance the contracts can be combined in different ways to modify the crowdfunding and re-distribution details. 
+# MyBit-Network: Contract SDK
+The contracts in the SDK are built to be used to create and distribution income from virtual assets represented by ERC tokens. Using contract inheritance the contracts can be combined in different ways to modify the crowdfunding and re-distribution details. 
 
 ## Contract Categories
 

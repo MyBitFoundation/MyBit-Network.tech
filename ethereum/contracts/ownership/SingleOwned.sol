@@ -1,7 +1,5 @@
 pragma solidity ^0.4.24;
 
-import "./Owned.sol";
-
 
 // @dev Single owned platforms store owner as an address
 contract SingleOwned is Owned {
