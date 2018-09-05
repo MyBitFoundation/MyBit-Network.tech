@@ -1,8 +1,10 @@
 pragma solidity 0.4.24;
 
-contract Pausible { 
+import './MultiOwned.sol';
 
-  mapping (address => bool) public paused; 
+contract Pausible is MultiOwned{
+
+  mapping (address => bool) public paused;
 
   //------------------------------------------------------------------------------------------------------------------
   // This will pause all critical activity for the supplied address
@@ -12,7 +14,7 @@ contract Pausible {
   anyOwner
   noZeroAddress(_contract)
   public {
-    paused[_contract] = true; 
+    paused[_contract] = true;
     emit LogPaused(_contract, msg.sender);
   }
 
@@ -25,6 +27,11 @@ contract Pausible {
   public {
     delete paused[_contract];
     emit LogUnpaused(_contract, msg.sender);
+  }
+
+  modifier noZeroAddress(address _address){
+    require(_address != address(0));
+    _;
   }
 
 

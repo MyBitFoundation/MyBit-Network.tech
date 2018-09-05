@@ -1,14 +1,17 @@
-contract Events { 
+pragma solidity ^0.4.24;
 
+import './Database.sol';
 
-  // @dev This will emit the event from the Event contract 
+contract Events {
+  Database public database;
+  // @dev This will emit the event from the Event contract
   function numberStored(address _sender, uint _number)
-  external 
-  onlyApprovedContract { 
-      emit LogFavoriteNumberAdded(_sender, _number); 
+  external
+  onlyApprovedContract {
+      emit LogFavoriteNumberAdded(_sender, _number);
   }
 
-  event LogFavoriteNumberAdded(address indexed _sender, uint _number); 
+  event LogFavoriteNumberAdded(address indexed _sender, uint _number);
 
 
   // --------------------------------------------------------------------------------------

@@ -1,31 +1,30 @@
 pragma solidity 0.4.24;
 
-// @title A contract which allows for multi-sig ownership 
-// @notice Two owners are required to agree on a function to be called 
-// @author Kyle Dewhurst, MyBit Foundation 
+import '../database/Database.sol';
+// @title A contract which allows for multi-sig ownership
+// @notice Two owners are required to agree on a function to be called
+// @author Kyle Dewhurst, MyBit Foundation
 contract MultiOwned {
+  Database public database;
+  mapping (address => bool) public owner;
+  mapping (bytes32 => bool) public functionAuthorized;
 
-  mapping (address => bool) public owner;  
-  mapping (bytes32 => bool) public functionAuthorized; 
-
-
-
-  // @notice Constructor: Makes msg.sender the owner 
+  // @notice Constructor: Makes msg.sender the owner
   constructor()
   public {
-    owner = msg.sender; 
+    owner[msg.sender] = true;
   }
 
 
   function addOwner()
-  external 
-  anyOwner { 
+  external
+  anyOwner {
 
   }
 
   function removeOwner()
-  external 
-  anyOwner { 
+  external
+  anyOwner {
 
   }
 
@@ -37,7 +36,7 @@ contract MultiOwned {
   anyOwner
   returns (bool) {
     require(bytes(_functionName).length != uint(0));
-    bytes32 functionAuthHash = keccak256(abi.encodePacked(_contractAddress, msg.sender, _functionName, _beneficiary)); 
+    bytes32 functionAuthHash = keccak256(abi.encodePacked(_contractAddress, msg.sender, _functionName, _beneficiary));
     database.setBool(functionAuthHash, true);    // Sign the function name + parameter
     emit LogFunctionAuthorized(msg.sender, _functionName, _beneficiary, functionAuthHash);
   }
@@ -50,7 +49,7 @@ contract MultiOwned {
 
 
   //------------------------------------------------------------------------------------------------------------------
-  // Verifies sthat sender is an owners
+  // Verifies that sender is an owners
   //------------------------------------------------------------------------------------------------------------------
   modifier anyOwner {
     require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));

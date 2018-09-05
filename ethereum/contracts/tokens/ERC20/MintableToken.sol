@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "./StandardToken.sol";
-import "../../ownership/Ownable.sol";
+import "./DividendToken.sol";
+import "../../ownership/SingleOwned.sol";
 
 
 /**
@@ -9,7 +9,7 @@ import "../../ownership/Ownable.sol";
  * @dev Simple ERC20 Token example, with mintable token creation
  * Based on code by TokenMarketNet: https://github.com/TokenMarketNet/ico/blob/master/contracts/MintableToken.sol
  */
-contract MintableToken is DividendToken {
+contract MintableToken is DividendToken, SingleOwned {
   event Mint(address indexed to, uint256 amount);
   event MintFinished();
 
@@ -27,7 +27,7 @@ contract MintableToken is DividendToken {
   hasMintPermission
   canMint
   returns (bool) {
-    totalSupply_ = totalSupply_.add(_amount);
+    supply = supply.add(_amount);
     balances[_to] = balances[_to].add(_amount);
     emit Mint(_to, _amount);
     emit Transfer(address(0), _to, _amount);
@@ -38,10 +38,10 @@ contract MintableToken is DividendToken {
    * @dev Function to stop minting new tokens.
    * @return True if the operation was successful.
    */
-  function finishMinting() 
-  public 
-  onlyOwner 
-  canMint 
+  function finishMinting()
+  public
+  onlyOwner
+  canMint
   returns (bool) {
     mintingFinished = true;
     emit MintFinished();

@@ -1,19 +1,19 @@
 pragma solidity 0.4.24;
 
+import '../database/Database.sol';
 
-
-// @title A contract for granting and revoking access levels to different users 
+// @title A contract for granting and revoking access levels to different users
 // @author Kyle Dewhurst, MyBit Foundation
 // @notice Made for platforms that have hierarchical access restrictions
 contract AccessHierarchy {
 
-  Database public database; 
-  uint8 public upperAccessLevel; 
+  Database public database;
+  uint8 public upperAccessLevel;
 
   // @notice Constructor: Inititalize Database
   constructor(address _database)
-  public  {  
-    database = Database(_database); 
+  public  {
+    database = Database(_database);
   }
 
   // @notice Owner can manually grant access to a user here. WIll be used for KYC approval
@@ -30,7 +30,7 @@ contract AccessHierarchy {
     return true;
   }
 
-  // @notice Owner can remove access for users 
+  // @notice Owner can remove access for users
   // @param User to be removed
   function removeUser(address _user)
   onlyOwner
@@ -43,13 +43,13 @@ contract AccessHierarchy {
   }
 
 
-  // @notice Owner can set the upper bound on access levels 
+  // @notice Owner can set the upper bound on access levels
   // @param (uint8) _newUpperLimit = The highest access level on the platform
-  function setUpperAccessLevel(uint8 _newUpperLimit) 
-  public 
+  function setUpperAccessLevel(uint8 _newUpperLimit)
+  public
   onlyOwner {
-    require(_newUpperLimit > uint8(0)); 
-    upperAccessLevel = _newUpperLimit; 
+    require(_newUpperLimit > uint8(0));
+    upperAccessLevel = _newUpperLimit;
   }
 
 
@@ -59,10 +59,10 @@ contract AccessHierarchy {
     _;
   }
 
-  // @notice Deny all callers except owner 
-  modifier onlyOwner { 
+  // @notice Deny all callers except owner
+  modifier onlyOwner {
     require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("owner", msg.sender))));
-    _; 
+    _;
   }
 
 

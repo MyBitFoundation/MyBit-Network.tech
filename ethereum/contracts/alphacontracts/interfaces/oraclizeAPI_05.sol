@@ -124,11 +124,11 @@ contract usingOraclize {
     function __callback(bytes32 myid, string result) public {
         __callback(myid, result, new bytes(0));
     }
-    
-    // function __callback(bytes32 myid, string result, bytes proof) public {
-    //   return;
-    //   myid; result; proof; // Silence compiler warnings
-    // }
+
+    function __callback(bytes32 myid, string result, bytes proof) public {
+       return;
+       myid; result; proof; // Silence compiler warnings
+    }
 
     function oraclize_getPrice(string datasource) oraclizeAPI internal returns (uint){
         return oraclize.getPrice(datasource);
@@ -759,14 +759,14 @@ contract usingOraclize {
     function oraclize_getNetworkName() internal view returns (string) {
         return oraclize_network_name;
     }
-    
+
     function oraclize_randomDS_setCommitment(bytes32 queryId, bytes32 commitment) internal {
         oraclize_randomDS_args[queryId] = commitment;
     }
 
     mapping(bytes32=>bytes32) oraclize_randomDS_args;
     mapping(bytes32=>bool) oraclize_randomDS_sessionKeysHashVerified;
-
+/**
     function verifySig(bytes32 tosignh, bytes dersig, bytes pubkey) internal returns (bool){
         bool sigok;
         address signer;
@@ -794,8 +794,7 @@ contract usingOraclize {
             return (address(keccak256(pubkey)) == signer);
         }
     }
-
+*/
 
 }
 // </ORACLIZE_API>
-
