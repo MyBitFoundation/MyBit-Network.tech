@@ -30,6 +30,7 @@
       DividendToken newAsset = new DividendToken(_assetURI, _amountToRaise);   // Gives this contract all new asset tokens 
       database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
       database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));  
+      database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender); 
       return true; 
     }
 
