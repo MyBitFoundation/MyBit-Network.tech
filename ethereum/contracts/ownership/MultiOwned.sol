@@ -5,22 +5,16 @@ pragma solidity 0.4.24;
 // @author Kyle Dewhurst, MyBit Foundation 
 contract MultiOwned {
 
-  mapping (address => bool) public owner;  
+
   mapping (bytes32 => bool) public functionAuthorized; 
+  mapping (bytes32 => uint8) public quorumNeeded; 
 
+  uint public quorumLevel; 
 
-
-  // @notice Constructor: Makes msg.sender the owner 
-  constructor()
-  public {
-    owner = msg.sender; 
-  }
-
-
-  function addOwner()
+  function addOwner(address _newOwner)
   external 
   anyOwner { 
-
+    database.setBool(keccak256(abi.encodePacked("owner", _newOwner)), true); 
   }
 
   function removeOwner()
@@ -29,20 +23,17 @@ contract MultiOwned {
 
   }
 
-  // This function authorizes other owners to call critical functions such as selfdestruct or changeOwner() or add/remove contracts in ContractManager.
-  // The critical functions often involve having a critical address change. If address is not critical any agreed address will work
-  // Note: beneficiary is used in case an attacker gains control of one owner wallet, the other owner would need to also agree on the critical parameter which is in the format keccak256(criticalParameter)
-  function setFunctionAuthorized(address _contractAddress, string _functionName, bytes32 _beneficiary)
-  external
-  anyOwner
-  returns (bool) {
-    require(bytes(_functionName).length != uint(0));
-    bytes32 functionAuthHash = keccak256(abi.encodePacked(_contractAddress, msg.sender, _functionName, _beneficiary)); 
-    database.setBool(functionAuthHash, true);    // Sign the function name + parameter
-    emit LogFunctionAuthorized(msg.sender, _functionName, _beneficiary, functionAuthHash);
+  function signForFunctionCall(bytes4 _methodID)
+  external 
+  anyOwner { 
+
   }
 
+  function callAuthorizedFunction(bytes4 _methodID)
+  external 
+  anyOwner { 
 
+  }
 
   //------------------------------------------------------------------------------------------------------------------
   //                                                Modifiers
