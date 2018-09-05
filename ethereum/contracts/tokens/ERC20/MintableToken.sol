@@ -9,7 +9,7 @@ import "../../ownership/Ownable.sol";
  * @dev Simple ERC20 Token example, with mintable token creation
  * Based on code by TokenMarketNet: https://github.com/TokenMarketNet/ico/blob/master/contracts/MintableToken.sol
  */
-contract MintableToken is StandardToken, Ownable {
+contract MintableToken is DividendToken {
   event Mint(address indexed to, uint256 amount);
   event MintFinished();
 
@@ -38,7 +38,11 @@ contract MintableToken is StandardToken, Ownable {
    * @dev Function to stop minting new tokens.
    * @return True if the operation was successful.
    */
-  function finishMinting() public onlyOwner canMint returns (bool) {
+  function finishMinting() 
+  public 
+  onlyOwner 
+  canMint 
+  returns (bool) {
     mintingFinished = true;
     emit MintFinished();
     return true;
@@ -52,7 +56,7 @@ contract MintableToken is StandardToken, Ownable {
 
   // @notice only certified minter can call
   modifier hasMintPermission() {
-    require(msg.sender == owner);
+    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("assetOwner", msg.sender))));
     _;
   }
 

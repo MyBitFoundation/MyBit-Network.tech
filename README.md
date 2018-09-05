@@ -1,12 +1,15 @@
 <p align="center">
   <a href="https://mybit.io/">
-    <img alt="MyBit Logo" src="https://files.mybit.io/mybit-icon-28x28.png" width="150">
+    <img alt="MyBit Logo" src="https://files.mybit.io/mybit-icon-28x28.png" width="50">
   </a>
 </p>
 
 
 
 # MyBit-Network: Contract SDK
+
+A software development kit for the automated machine economy.
+
 The SDK's contain a local blockchain and smart-contracts for developers to run and deploy dapps that allow for the funding and distribution of virtual assets represented by ERC tokens on the Ethereum blockchain. The contracts can be combined in different ways to customize the crowdfunding and re-distribution details, or plug into a local MyBitChain to test already operating assets. 
 
 ## Getting Started
@@ -14,7 +17,7 @@ The SDK's contain a local blockchain and smart-contracts for developers to run a
 ## Roles 
 
 #### Investor 
-The investor is any user that holds asset tokens through participating in an asset crowdsale. 
+The investor is any user that holds asset tokens through participating in an asset crowdsale or by means of purchasing on an exchange.
 
 #### Broker 
 The Asset Manager is a user that initiates a crowdfunding period for an asset. After the funding period the Asset Manager is in charge of handling real world operations between the asset manufacturer and the investors. The role of the asset manager varies depending on the type of asset, but generally they hold responsibility for making sure the asset operates properly if the conditions allow it. 

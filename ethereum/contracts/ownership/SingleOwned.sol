@@ -1,16 +1,20 @@
 pragma solidity ^0.4.24;
 
-
+// @title A contract for managing a single platform owner
 // @dev Single owned platforms store owner as an address
-contract SingleOwned is Owned {
+contract SingleOwned {
+
+  constructor(address _owner)
+  public { 
+    database.setAddress(keccak256(abi.encodePacked("owner")),  _owner); 
+  }
 
   //------------------------------------------------------------------------------------------------------------------
   // @notice Transfer ownership to to a new owner
   //------------------------------------------------------------------------------------------------------------------
   function transferOwnership(address _newOwner) 
   public 
-  onlyOwner
-  noZeroAddress(_newOwner) {
+  onlyOwner {
     database.setAddress(keccak256(abi.encodePacked("owner")),  _newOwner);
     OwnershipTransferred(msg.sender, _newOwner); 
   }
