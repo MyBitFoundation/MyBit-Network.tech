@@ -7,7 +7,7 @@ import './SafeMath.sol';
 // Stores asset information in Database. Owners can modify funding variables here.
 //----------------------------------------------------------------------------------------------------------------------------------------
 contract AssetCreation {
-  using SafeMath for *;
+  using SafeMath for uint;
 
   Database public database;
   uint public fundingTime = uint(3000);        // TODO: Testing number

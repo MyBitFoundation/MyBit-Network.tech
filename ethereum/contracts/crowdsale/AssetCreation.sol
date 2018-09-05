@@ -85,7 +85,7 @@ contract AssetCreation {
     database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);    
     // TODO: Create token supply 
     emit LogAssetFundingStarted(assetID, _manufacturerID, _assetType, _ipfsHash);    // assetType and manufacturer ID are already indexed
-    return true;
+    return true;  
   }
 
 
