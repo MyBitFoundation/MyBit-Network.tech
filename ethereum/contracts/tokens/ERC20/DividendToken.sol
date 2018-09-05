@@ -19,8 +19,7 @@ contract DividendToken is ERC20 {
     mapping (address => uint) internal balances;
     mapping (address => mapping (address => uint)) internal allowed;
 
-    // @notice Asset Token Information
-    string public tokenURI;                 // An identifier...TODO: use tokenURI standard
+    string public tokenURI;                 // A refernce to a URI containing further token information
 
     // @notice Token Income Information
     uint constant scalingFactor = 1e32;

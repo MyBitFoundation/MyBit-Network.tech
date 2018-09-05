@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 import '../ERC20/BurnableToken.sol';
 import '../../database/Database.sol';
 
-/// @title A contract for burning MYB tokens as usage fee for dapps
+/// @title A contract for burning ERC20 tokens as usage fee for dapps
 /// @author Kyle Dewhurst, MyBit Foundation
 /// @notice Allows Dapps to call this contract to burn ERC20 tokens as a usage fee
 /// @dev This contract does not accept tokens. It only burns tokens from users wallets when approved to do so
@@ -34,8 +34,8 @@ contract ERC20Burner {
     return true;
   }
 
-  // @notice owner can authorize a contract to burn MyBit here
-  // @param the address of the mybit dapp contract
+  // @notice owner can authorize a contract to burn tokens here
+  // @param the address of the dapp contract
   function authorizeBurner(address _burningContract)
   external
   onlyOwner
@@ -46,8 +46,8 @@ contract ERC20Burner {
     return true;
   }
 
-  // @notice owner can revoke a contracts authorization to burn MyBit here
-  // @param the address of the mybit dapp contract
+  // @notice owner can revoke a contracts authorization to burn tokens here
+  // @param the address of the dapp contract
   function removeBurner(address _burningContract)
   external
   onlyAuthorizedBurner(_burningContract)
@@ -80,6 +80,10 @@ contract ERC20Burner {
     require(database.boolStorage(keccak256(abi.encodePacked("authorizedBurner", _burner))));
     _;
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                            Events
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   event LogMYBBurned(address indexed _tokenHolder, address indexed _burningContract, uint _amount);
   event LogBurnerAuthorized(address _owner, address _burningContract);

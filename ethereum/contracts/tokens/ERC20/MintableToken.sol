@@ -16,12 +16,10 @@ contract MintableToken is DividendToken, SingleOwned {
   bool public mintingFinished = false;
 
 
-  /**
-   * @dev Function to mint tokens
-   * @param _to The address that will receive the minted tokens.
-   * @param _amount The amount of tokens to mint.
-   * @return A boolean that indicates if the operation was successful.
-   */
+
+  // @dev Function to mint tokens
+  // @param _to The address that will receive the minted tokens.
+  // @param _amount The amount of tokens to mint.
   function mint(address _to, uint256 _amount)
   public
   hasMintPermission
@@ -34,10 +32,8 @@ contract MintableToken is DividendToken, SingleOwned {
     return true;
   }
 
-  /**
-   * @dev Function to stop minting new tokens.
-   * @return True if the operation was successful.
-   */
+
+  // @dev Function to stop minting new tokens.
   function finishMinting()
   public
   onlyOwner
@@ -60,4 +56,7 @@ contract MintableToken is DividendToken, SingleOwned {
     _;
   }
 
+
+  event Mint(address indexed to, uint256 amount);
+  event MintFinished();
 }

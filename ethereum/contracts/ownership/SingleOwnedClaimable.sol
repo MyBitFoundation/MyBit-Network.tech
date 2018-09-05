@@ -1,10 +1,15 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 import '../database/Database.sol';
 
 contract SingleOwnedClaimable {
 
   Database public database;
+
+  constructor(address _database)
+  public {
+    database = Database(_database);
+  }
 
   //------------------------------------------------------------------------------------------------------------------
   // @notice Transfer ownership to to a new owner

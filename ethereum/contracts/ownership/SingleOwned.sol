@@ -1,27 +1,29 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
+
+Database public database;
 
 import '../database/Database.sol';
 // @title A contract for managing a single platform owner
 // @dev Single owned platforms store owner as an address
 contract SingleOwned {
 
-  Database public database;
-
-  constructor(address _owner)
+  constructor(address _database, address _owner)
   public {
-    database.setAddress(keccak256(abi.encodePacked("owner")), _owner);
+    database = Database(_database);
+    database.setAddress(keccak256(abi.encodePacked("owner")),  _owner);
   }
 
   //------------------------------------------------------------------------------------------------------------------
   // @notice Transfer ownership to to a new owner
   //------------------------------------------------------------------------------------------------------------------
-  function transferOwnership(address _newOwner)
+  function changeOwner(address _newOwner)
   public
   onlyOwner {
     database.setAddress(keccak256(abi.encodePacked("owner")), _newOwner);
     emit OwnershipTransferred(msg.sender, _newOwner);
   }
 
+  // @notice reverts if caller is not the owner
   modifier onlyOwner() {
     require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("owner", msg.sender))));
     _;

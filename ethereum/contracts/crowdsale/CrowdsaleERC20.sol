@@ -1,16 +1,17 @@
   pragma solidity 0.4.24;
 
+  import "./SafeMath.sol";
   import "./AssetCreation.sol";
-  import "../interfaces/AssetFunding.sol";
-  import "../ownership/Pausible.sol";
-  import "../math/SafeMath.sol";
+  import "../interfaces/AssetFunding";
+  import "../tokens/ERC20/CappedToken";
+  // import "../tokens/ERC20/MintableToken";
 
 
   //------------------------------------------------------------------------------------------------------------------
   // This contract is where users can fund assets or receive refunds from failed funding periods. Funding stages are represented by uints.
   // Funding stages: 0: funding hasn't started, 1: currently being funded, 2: funding failed,  3: funding success, 4: asset is live
   //------------------------------------------------------------------------------------------------------------------
-  contract AssetFundingEth is AssetFunding, Pausible{
+  contract AssetFundingERC20 is AssetFunding{
     using SafeMath for *;
 
     // Asset structs are temporary data structures to fascilitate the crowdsale
@@ -24,8 +25,6 @@
 
     mapping (bytes32 => Asset) public assets;
 
-    // @dev counter to allow mutex lock with only one SSTORE operation
-    uint256 private guardCounter = 1;
 
     //------------------------------------------------------------------------------------------------------------------
     // @notice This contract
@@ -40,16 +39,12 @@
     external
     returns (bool) {
       bytes32 assetID = keccak256(abi.encodePacked(_creator, _amountToRaise, block.number));
+      Asset thisAsset = assets[_assetID];
       assert(_assetID == assetID);
-      assert(assets[_assetID].fundingStage == uint8(0));
-      assets[_assetID].tokenAddress = _assetToken;
-      assets[_assetID].amountToRaise = _amountToRaise;
-      assets[_assetID].fundingStage = uint8(1);
-      //------------------------------------- --------------------------------------------------------
-      // @dev: All tokens must be minted here !!!
-
-
-      //----------------------------------------------------------------------------------------------
+      assert(thisAsset.fundingStage == uint8(0));
+      thisAsset.tokenAddress = _assetToken;
+      thisAsset.amountToRaise = _amountToRaise;
+      thisAsset.fundingStage = uint8(1);
       return true;
     }
 
@@ -64,11 +59,12 @@
     atStage(_assetID, uint(1))
     fundingLimit(_assetID)
     returns (bool) {
-      if (database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender))) == 0) {
+      Asset thisAsset = assets[_assetID];
+      if (ownershipUnits == 0) {
         emit LogNewFunder(_assetID, msg.sender);    // Create event to reference list of funders
       }
-      //CappedToken(thisAsset.tokenAddress).mint();
-      database.setUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)), database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender))).add(msg.value));
+      CappedToken(thisAsset.tokenAddress).mint();
+      database.setUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)), ownershipUnits.add(msg.value));
       emit LogAssetFunded(_assetID, msg.sender, msg.value);
       return true;
     }
@@ -165,7 +161,6 @@
     //------------------------------------------------------------------------------------------------------------------
     modifier fundingLimit(bytes32 _assetID) {
       require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
-      _;
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -190,24 +185,6 @@
     modifier fundingPeriodOver(bytes32 _assetID) {
       require(now >= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
       _;
-    }
-
-    //------------------------------------------------------------------------------------------------------------------
-    // Requires that contract has not been paused
-    //------------------------------------------------------------------------------------------------------------------
-    modifier whenNotPaused() {
-      require(!paused[address(this)]);
-      _;
-    }
-
-    //------------------------------------------------------------------------------------------------------------------
-    // Prevent reentry attacks
-    //------------------------------------------------------------------------------------------------------------------
-    modifier nonReentrant() {
-      guardCounter += 1;
-      uint256 localCounter = guardCounter;
-      _;
-      require(localCounter == guardCounter);
     }
 
     //------------------------------------------------------------------------------------------------------------------
