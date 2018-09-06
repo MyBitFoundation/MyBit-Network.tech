@@ -1,37 +1,40 @@
-  pragma solidity 0.4.24;
+  pragma solidity ^0.4.24;
 
-  import "./SafeMath.sol";
-  import "./AssetCreation.sol"; 
-
+  import "./AssetCreation.sol";
+  import "../interfaces/Crowdsale.sol";
+  import "../ownership/Pausible.sol";
+  import "../math/SafeMath.sol";
   import "../tokens/ERC20/DividendToken.sol";         // Change to Mintable or Burnable if needed
-     
 
-  // @title An asset crowdsale contract. 
+
+  // @title An asset crowdsale contract.
   // @notice creates a dividend token to represent the newly created asset.
-  contract Crowdsale {
+  contract CrowdsaleEther is Crowdsale, Pausible{
     using SafeMath for uint256;
 
-    Database public database; 
+    Database public database;
 
+    // @dev counter to allow mutex lock with only one SSTORE operation
+    uint256 private guardCounter = 1;
 
-    // @notice Constructor: Initiates the database 
+    // @notice Constructor: Initiates the database
     // @param: The address for the database contract
     constructor(address _database)
     public {
-        database = Database(_database); 
+        database = Database(_database);
     }
 
 
     function startFundingPeriod(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise)
-    external 
-    returns (bool) { 
-      bytes32 assetID = keccak256(abi.encodePacked(_creator, _amountToRaise, _assetURI)); 
-      require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0); 
-      DividendToken newAsset = new DividendToken(_assetURI, _amountToRaise);   // Gives this contract all new asset tokens 
+    external
+    returns (bool) {
+      bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _assetURI));
+      require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
+      DividendToken newAsset = new DividendToken(_assetURI, _amountToRaise, address(this), address(database));   // Gives this contract all new asset tokens
       database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
-      database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));  
-      database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender); 
-      return true; 
+      database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));
+      database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
+      return true;
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -44,14 +47,14 @@
     requiresEther
     beforeDeadline(_assetID)
     returns (bool) {
-      DividendToken thisToken = DividedToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))));
+      DividendToken thisToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
       uint tokensRemaining = thisToken.balanceOf(address(this));
       if (msg.value >= thisToken.balanceOf(address(this))) {
-        require(thisToken.transfer(msg.sender, tokensRemaining));   // Send remaining asset tokens 
+        require(thisToken.transfer(msg.sender, tokensRemaining));   // Send remaining asset tokens
         require(payout(_assetID, thisToken.supply()));          // 1 token = 1 wei
         msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI
       }
-      else { 
+      else {
         require(thisToken.transfer(msg.sender, msg.value));    // TODO: Add multiplier depending on desired price per token
       }
       emit LogAssetFunded(_assetID, msg.sender, msg.value);
@@ -65,13 +68,13 @@
     //------------------------------------------------------------------------------------------------------------------
     function payout(bytes32 _assetID, uint _amount)
     internal
-    whenNotPaused
+    whenNotPaused(address(this))
     atStage(_assetID, uint(3))       // Can only get to stage 3 by receiving enough funding within time limit
     returns (bool) {
       address distributionContract = database.addressStorage(keccak256(abi.encodePacked("contract", "PlatformDistribution")));
-      assert (distributionContract != address(0));  
-      distributionContract.transfer()
-      emit LogAssetPayout(_assetID, amountRaised);
+      assert (distributionContract != address(0));
+      distributionContract.transfer(_amount);
+      emit LogAssetPayout(_assetID, _amount);
       return true;
     }
 
@@ -83,7 +86,7 @@
     function refund(bytes32 _assetID)
     external
     nonReentrant
-    whenNotPaused
+    whenNotPaused(address(this))
     atStage(_assetID, uint(2))
     returns (bool) {
       uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)));
@@ -128,7 +131,8 @@
     // @notice reverts if the funding deadline has already past
     //------------------------------------------------------------------------------------------------------------------
     modifier beforeDeadline(bytes32 _assetID) {
-      require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID
+      require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
+      _;
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -153,6 +157,16 @@
     modifier fundingPeriodOver(bytes32 _assetID) {
       require(now >= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
       _;
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    // Prevent reentry attacks
+    //------------------------------------------------------------------------------------------------------------------
+    modifier nonReentrant() {
+      guardCounter += 1;
+      uint256 localCounter = guardCounter;
+      _;
+      require(localCounter == guardCounter);
     }
 
     //------------------------------------------------------------------------------------------------------------------

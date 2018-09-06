@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "./ERC20.sol";
+import "../interfaces/ERC20.sol";
 import "../../math/SafeMath.sol";
 
 
@@ -119,7 +119,7 @@ contract StandardToken is ERC20 {
     uint256 oldValue = allowed[msg.sender][_spender];
     if (_subtractedValue >= oldValue) {
       allowed[msg.sender][_spender] = 0;
-    } 
+    }
     else {
       allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
     }

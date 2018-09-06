@@ -1,37 +1,39 @@
 pragma solidity 0.4.24;
 
-// @title A contract which allows for multi-sig ownership 
-// @notice Two owners are required to agree on a function to be called 
-// @author Kyle Dewhurst, MyBit Foundation 
+import '../database/Database.sol';
+// @title A contract which allows for multi-sig ownership
+// @notice Two owners are required to agree on a function to be called
+// @author Kyle Dewhurst, MyBit Foundation
 contract MultiOwned {
+  Database public database;
 
 
-  mapping (bytes32 => bool) public functionAuthorized; 
-  mapping (bytes32 => uint8) public quorumNeeded; 
+  mapping (bytes32 => bool) public functionAuthorized;
+  mapping (bytes32 => uint8) public quorumNeeded;
 
-  uint public quorumLevel; 
+  uint public quorumLevel;
 
   function addOwner(address _newOwner)
-  external 
-  anyOwner { 
-    database.setBool(keccak256(abi.encodePacked("owner", _newOwner)), true); 
+  external
+  anyOwner {
+    database.setBool(keccak256(abi.encodePacked("owner", _newOwner)), true);
   }
 
   function removeOwner()
-  external 
-  anyOwner { 
+  external
+  anyOwner {
 
   }
 
   function signForFunctionCall(bytes4 _methodID)
-  external 
-  anyOwner { 
+  external
+  anyOwner {
 
   }
 
   function callAuthorizedFunction(bytes4 _methodID)
-  external 
-  anyOwner { 
+  external
+  anyOwner {
 
   }
 
@@ -41,7 +43,7 @@ contract MultiOwned {
 
 
   //------------------------------------------------------------------------------------------------------------------
-  // Verifies sthat sender is an owners
+  // Verifies that sender is an owners
   //------------------------------------------------------------------------------------------------------------------
   modifier anyOwner {
     require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));

@@ -4,7 +4,7 @@ pragma solidity 0.4.24;
 // ---------------------------------------------------------------------------------
 // @title A shared storage contract for platform contracts to store and retrieve data
 // @notice This contract holds all long-term data for smart-contract systems
-// @dev The bytes32 hashes are derived from keccak256(variableName, uniqueID) => value 
+// @dev The bytes32 hashes are derived from keccak256(variableName, uniqueID) => value
 // @dec Can enable upgradeable contracts by setting a contract manager
 // ---------------------------------------------------------------------------------
 contract Database {
@@ -28,10 +28,12 @@ contract Database {
     // --------------------------------------------------------------------------------------
     constructor(address[] _owners, bool _upgradeable)
     public {
-        boolStorage[keccak256(abi.encodePacked("owner", _owner))] = true;
-        if (_upgradeable) 
-            boolStorage[keccak256("upgradeable")] = true; 
-        emit LogInitialized(_owner, _upgradeable);
+        for(uint i; i<_owners.length; i++){
+          boolStorage[keccak256(abi.encodePacked("owner", _owners[i]))] = true;
+          emit LogInitialized(_owners[i], _upgradeable);
+        }
+        if (_upgradeable)
+            boolStorage[keccak256("upgradeable")] = true;    
     }
 
 
@@ -41,7 +43,7 @@ contract Database {
     // --------------------------------------------------------------------------------------
     function enableContractManagement(address _contractManager)
     external {
-        require(boolStorage[keccak256("upgradeable")]); 
+        require(boolStorage[keccak256("upgradeable")]);
         require(_contractManager != address(0));
         require(boolStorage[keccak256(abi.encodePacked("owner", msg.sender))]);
         require(addressStorage[keccak256(abi.encodePacked("contract", "ContractManager"))] == address(0));
