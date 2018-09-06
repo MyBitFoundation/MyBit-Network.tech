@@ -31,6 +31,7 @@
       database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
       database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));
       database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
+      emit LogAssetFundingStarted(assetID, msg.sender, _assetURI);
       return true;
     }
 
@@ -45,7 +46,7 @@
       uint tokensRemaining = thisToken.balanceOf(address(this));
       if (msg.value >= tokensRemaining) {
         require(thisToken.transfer(msg.sender, tokensRemaining));   // Send remaining asset tokens
-        require(payout(_assetID, thisToken.supply()));          // 1 token = 1 wei
+        require(payout(_assetID, thisToken.totalSupply()));          // 1 token = 1 wei
         msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI  
         database.deleteUint(keccak256(abi.encodePacked("fundingDeadline", _assetID)));   // This should disable ability to get refund
       }
@@ -67,7 +68,7 @@
       DividendToken thisToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
       uint userBalance = thisToken.balanceOf(msg.sender); 
       require(userBalance > 0); 
-      require(thisToken.burnFrom(msg.sender, address(this), userBalance));   // TODO: burn tokens? 
+      require(thisToken.burnFrom(msg.sender, userBalance));   // TODO: burn tokens? 
       msg.sender.transfer(userBalance); 
       emit LogRefund(_assetID, msg.sender, userBalance); 
       return true;
@@ -147,7 +148,7 @@
     //                                            Events
     //------------------------------------------------------------------------------------------------------------------
 
-
+    event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _broker, string _tokenURI); 
     event LogAssetPurchased(bytes32 indexed _assetID, address indexed _sender, uint _amount);
     event LogRefund(bytes32 indexed _assetID, address indexed _funder, uint _amount);
     event LogAssetPayout(bytes32 indexed _assetID, address indexed _distributionContract, uint _amount);

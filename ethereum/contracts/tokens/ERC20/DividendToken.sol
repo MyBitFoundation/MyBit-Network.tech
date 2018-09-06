@@ -115,7 +115,10 @@ contract DividendToken is BurnableERC20 {
         // Should https://github.com/OpenZeppelin/zeppelin-solidity/issues/707 be accepted,
         // this function needs to emit an event with the updated approval.
         allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
-        _burn(_from, _value);
+        balances[msg.sender] = balances[msg.sender].sub(_value);
+        supply = supply.sub(_value);
+        emit LogBurn(msg.sender, _value);
+        emit Transfer(msg.sender, address(0), _value);
         return true;
     }
     
@@ -124,10 +127,10 @@ contract DividendToken is BurnableERC20 {
     // @param _value uint256 The amount of token to be burned
     function _burn(uint256 _value)
     public {
-    balances[msg.sender] = balances[msg.sender].sub(_value);
-    supply = supply.sub(_value);
-    emit LogBurn(msg.sender, _value);
-    emit Transfer(msg.sender, address(0), _value);
+        balances[msg.sender] = balances[msg.sender].sub(_value);
+        supply = supply.sub(_value);
+        emit LogBurn(msg.sender, _value);
+        emit Transfer(msg.sender, address(0), _value);
     }
 
 

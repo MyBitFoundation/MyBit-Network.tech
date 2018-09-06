@@ -9,7 +9,7 @@ import '../../database/Database.sol';
 /// @dev This contract does not accept tokens. It only burns tokens from users wallets when approved to do so
 contract ERC20Burner {
 
-  BurnableToken public token;  // The instance of the ERC20 burner contract
+  BurnableERC20 public token;  // The instance of the ERC20 burner contract
   Database public database;
 
   mapping (address => bool) public authorizedBurner;    // A mapping showing which addresses are allowed to call the burn function
@@ -18,7 +18,7 @@ contract ERC20Burner {
   // @param (address) _myBitTokenAddress = The MyBit token address
   constructor(address _myBitTokenAddress)
   public {
-    token = BurnableToken(_myBitTokenAddress);
+    token = BurnableERC20(_myBitTokenAddress);
   }
 
   // @notice authorized contracts can burn mybit tokens here if the user has approved this contract to do so

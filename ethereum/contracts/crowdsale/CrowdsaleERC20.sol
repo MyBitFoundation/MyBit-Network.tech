@@ -37,7 +37,7 @@
       database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
       database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));
       database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
-      LogAssetFundingStarted(assetID, msg.sender, _assetURI); 
+      emit LogAssetFundingStarted(assetID, msg.sender, _assetURI); 
     }
 
 
@@ -52,7 +52,7 @@
       uint tokensRemaining = thisToken.balanceOf(address(this));
       if (msg.value >= tokensRemaining) {
         require(thisToken.transfer(msg.sender, tokensRemaining));   // Send remaining asset tokens
-        require(payout(_assetID, thisToken.supply()));          // 1 token = 1 wei
+        require(payout(_assetID, thisToken.totalSupply()));          // 1 token = 1 wei
         msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI  
         database.deleteUint(keccak256(abi.encodePacked("fundingDeadline", _assetID)));   // This should disable ability to get refund
       }
@@ -73,7 +73,7 @@
       DividendToken thisToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
       uint userBalance = thisToken.balanceOf(msg.sender); 
       require(userBalance > 0); 
-      require(thisToken.burnFrom(msg.sender, address(this), userBalance));   // TODO: burn tokens? 
+      require(thisToken.burnFrom(msg.sender, userBalance));   // TODO: burn tokens? 
       msg.sender.transfer(userBalance); 
       emit LogRefund(_assetID, msg.sender, userBalance); 
       return true;
@@ -103,17 +103,14 @@
 
     // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where operator/broker can withdraw
     // @dev The contract manager needs to know  the address PlatformDistribution contract 
-    function payout(bytes32 _assetID)
+    function payout(bytes32 _assetID, uint _amount)
     internal
-    whenNotPaused   // Can only get to stage 3 by receiving enough funding within time limit
+    whenNotPaused
     returns (bool) {
-      uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)));
-      uint myBitAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("myBitFoundationPercentage"))));
-      uint installerAmount = amountRaised.sub(myBitAmount);
-      database.addressStorage(keccak256(abi.encodePacked("MyBitFoundation"))).transfer(myBitAmount);             // Must be normal account
-      database.addressStorage(keccak256(abi.encodePacked("InstallerEscrow"))).transfer(installerAmount);             // Must be normal account
-      database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(4));
-      emit LogAssetPayout(_assetID, amountRaised);
+      address distributionContract = database.addressStorage(keccak256(abi.encodePacked("contract", "PlatformDistribution")));
+      assert (distributionContract != address(0));
+      distributionContract.transfer(_amount);
+      emit LogAssetPayout(_assetID, distributionContract, _amount);
       return true;
     }
 
@@ -162,6 +159,6 @@
     event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _broker, string _tokenURI); 
     event LogAssetPurchased(bytes32 indexed _assetID, address indexed _sender, uint _amount);
     event LogRefund(bytes32 indexed _assetID, address indexed _funder, uint _amount);
-    event LogAssetPayout(bytes32 indexed _assetID, uint _amount);
+    event LogAssetPayout(bytes32 indexed _assetID, address indexed _distributionContract, uint _amount);
     event LogDestruction(uint _amountSent, address indexed _caller);
   }
