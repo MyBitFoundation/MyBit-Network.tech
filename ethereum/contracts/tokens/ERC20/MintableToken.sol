@@ -1,19 +1,23 @@
 pragma solidity ^0.4.24;
 
 import "./StandardToken.sol";
-import "../../ownership/Ownable.sol";
-
+import "../../database/Database.sol";
 
 /**
  * @title Mintable token
  * @dev Simple ERC20 Token example, with mintable token creation
  * Based on code by TokenMarketNet: https://github.com/TokenMarketNet/ico/blob/master/contracts/MintableToken.sol
  */
-contract MintableToken is DividendToken {
+contract MintableToken is StandardToken{
 
+  Database database;
+  uint public supply;
   bool public mintingFinished = false;
 
-
+  constructor(address _creator, address _database) public{
+    database = Database(_database);
+    database.setAddress(keccak256(abi.encodePacked("assetOwner", msg.sender)), _creator);
+  }
 
   // @dev Function to mint tokens
   // @param _to The address that will receive the minted tokens.
@@ -32,10 +36,10 @@ contract MintableToken is DividendToken {
 
 
   // @dev Function to stop minting new tokens.
-  function finishMinting() 
-  public 
-  onlyOwner 
-  canMint 
+  function finishMinting()
+  public
+  hasMintPermission
+  canMint
   returns (bool) {
     mintingFinished = true;
     emit MintFinished();
@@ -50,7 +54,7 @@ contract MintableToken is DividendToken {
 
   // @notice only certified minter can call
   modifier hasMintPermission() {
-    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("assetOwner", msg.sender))));
+    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("assetOwner", address(this)))));
     _;
   }
 

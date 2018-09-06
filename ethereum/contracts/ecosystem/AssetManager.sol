@@ -1,12 +1,13 @@
 pragma solidity 0.4.24;
-import './Database.sol';
-import './SafeMath.sol';
+import '../database/Database.sol';
+import '../math/SafeMath.sol';
+import '../ownership/Pausible.sol';
 
 //----------------------------------------------------------------------------------------------------------------------------------------
 // @notice This contract is where users can initite funding periods for new assets.
 // Stores asset information in Database. Owners can modify funding variables here.
 //----------------------------------------------------------------------------------------------------------------------------------------
-contract AssetCreation {
+contract AssetManager is Pausible{
   using SafeMath for *;
 
   Database public database;
@@ -26,7 +27,7 @@ contract AssetCreation {
   external
   anyOwner
   noEmptyBytes(_assetID)
-  whenNotPaused
+  whenNotPaused(address(this))
   returns(bool) {
     require (_functionSigner != msg.sender);
     require(database.uintStorage(keccak256(abi.encodePacked("fundingStage", _assetID))) > uint(0));
@@ -49,6 +50,11 @@ contract AssetCreation {
   //------------------------------------------------------------------------------------------------------------------
   modifier anyOwner {
     require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
+    _;
+  }
+
+  modifier noEmptyBytes(bytes32 _bytes32){
+    require(_bytes32 != bytes32(0));
     _;
   }
 

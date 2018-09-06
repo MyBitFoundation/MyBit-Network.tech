@@ -12,4 +12,4 @@ contract('AssetCreation - Deploying and storing all contracts + validation', asy
   const funder1 = web3.eth.accounts[4];
   const funder2 = web3.eth.accounts[5];
 
-  }
+});

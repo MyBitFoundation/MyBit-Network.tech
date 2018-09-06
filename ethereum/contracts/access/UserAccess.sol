@@ -1,23 +1,25 @@
 pragma solidity 0.4.24;
 
-
+import '../database/Database.sol';
+import '../ownership/SingleOwned.sol';
 
 //------------------------------------------------------------------------------------------------------------------
-// @title A contract for granting and revoking access levels to different users 
+// @title A contract for granting and revoking access levels to different users
 // @notice Made for platforms that have hierarchical access restrictions
 //------------------------------------------------------------------------------------------------------------------
-contract AccessHierarchy {
+contract AccessHierarchy is SingleOwned{
 
-  Database public database; 
+  Database public database;
+  uint oneYear = 2103840; //avg number of blocks in a year (60*60*24*365.25)/15 (15 sec per block)
 
-  mapping (address => uint) public accessLevel;    // TODO: make bytes4
+  //mapping (address => uint) public accessLevels;    // TODO: make bytes4
 
   //------------------------------------------------------------------------------------------------------------------
   // Constructor: Inititalize Database
   //------------------------------------------------------------------------------------------------------------------
   constructor(address _database)
-  public  {  
-    database = Database(_database); 
+  public  {
+    database = Database(_database);
   }
 
   //------------------------------------------------------------------------------------------------------------------
