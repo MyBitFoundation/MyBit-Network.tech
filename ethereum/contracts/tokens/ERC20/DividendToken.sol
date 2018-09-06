@@ -1,18 +1,19 @@
 pragma solidity 0.4.24;
 
-import './SafeMath.sol'; 
-import '../interfaces/ERC20.sol'; 
+import '../../math/SafeMath.sol';
+import '../interfaces/ERC20.sol';
+import './MintableToken.sol';
 
 // @notice Receive approval and then execute function
 contract ApproveAndCallFallBack {
     function receiveApproval(address from, uint tokens, address token, bytes data) public;
 }
 
-// @title ERC20 token contract with shared revenue distribution functionality. 
-// @notice This token contract can receive payments in the fallback function and token owners receive their share when transferring tokens. 
+// @title ERC20 token contract with shared revenue distribution functionality.
+// @notice This token contract can receive payments in the fallback function and token owners receive their share when transferring tokens.
 // Credit goes to Nick Johnson for the dividend token https://medium.com/@weka/dividend-bearing-tokens-on-ethereum-42d01c710657
-contract DividendToken is ERC20 {
-    using SafeMath for uint; 
+contract DividendToken is MintableToken{
+    using SafeMath for uint;
 
     // @notice Token supply, balances and allowance
     uint internal supply;
@@ -28,24 +29,25 @@ contract DividendToken is ERC20 {
 
 
     mapping (address => uint) public incomeClaimed;
-    mapping (address => uint) public previousValuePerToken;    
+    mapping (address => uint) public previousValuePerToken;
 
 
-    // @notice constructor: initialized  
-    constructor(string _tokenURI, uint _totalSupply) 
+    // @notice constructor: initialized
+    constructor(string _tokenURI, uint _totalSupply, address _creator, address _database)
+    MintableToken(_creator, _database)
     public {
-        supply = _initialAmount;                        // Update total supply
-        id = _id;                                            // Set the id for reference
-        emit Transfer(address(0), msg.sender, _initialAmount);    // Transfer event indicating token creation
+        supply = _totalSupply;                        // Update total supply
+        tokenURI = _tokenURI;                           // Set the id for reference
+        emit Transfer(address(0), msg.sender, _totalSupply);    // Transfer event indicating token creation
     }
 
 
-    // @notice Transfer _amount tokens to address _to.  
+    // @notice Transfer _amount tokens to address _to.
     // @dev Sender must have enough tokens. Cannot send to 0x0.
-    // @param (address) _to = The address which will receive the tokens 
+    // @param (address) _to = The address which will receive the tokens
     // @param (uint) _amount = The amount of tokens to send
-    function transfer(address _to, uint _amount) 
-    public 
+    function transfer(address _to, uint _amount)
+    public
     updateIncomeClaimed(msg.sender)
     updateIncomeClaimed(_to)
     returns (bool success) {
@@ -59,16 +61,16 @@ contract DividendToken is ERC20 {
 
     // @notice A 3rd party can transfer tokens if user approves them to do so
     // @dev Transfer _amount of tokens if _from has allowed msg.sender to do so.
-    // @param (address) _from = The address who approved msg.sender to spend tokens 
-    // @param (address) _to = The address who will receive the tokens 
-    // @param (uint) _amount = The number of tokens to send 
-    function transferFrom(address _from, address _to, uint _amount) 
-    public 
+    // @param (address) _from = The address who approved msg.sender to spend tokens
+    // @param (address) _to = The address who will receive the tokens
+    // @param (uint) _amount = The number of tokens to send
+    function transferFrom(address _from, address _to, uint _amount)
+    public
     updateIncomeClaimed(_from)
     updateIncomeClaimed(_to)
     returns (bool success) {
-        require(_to != address(0)); 
-        require(_to != address(this)); 
+        require(_to != address(0));
+        require(_to != address(this));
         balances[_from] = balances[_from].sub(_amount);
         allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_amount);
         balances[_to] = balances[_to].add(_amount);
@@ -79,8 +81,8 @@ contract DividendToken is ERC20 {
     // @notice approves a 3rd party to transfer msg.sender's tokens on behalf of him/her
     // @param (address) _spender = The address of who msg.sender approves to spend tokens on their behalf
     // @param (uint) _amount = The upper limit of how many tokens can be spent
-    function approve(address _spender, uint _amount) 
-    public 
+    function approve(address _spender, uint _amount)
+    public
     returns (bool success) {
         allowed[msg.sender][_spender] = _amount;
         emit Approval(msg.sender, _spender, _amount);
@@ -89,11 +91,11 @@ contract DividendToken is ERC20 {
 
 
     // @notice Token holder can notify a contract that it has been approved to spend _amount of tokens
-    // @param (address) _spender = The contract to call after approval is done 
-    // @param (uint) _amount = Number of tokens to send 
-    // @param (bytes) _data = Bytes data to send along with the contract call 
-    function approveAndCall(address _spender, uint _amount, bytes _data) 
-    public 
+    // @param (address) _spender = The contract to call after approval is done
+    // @param (uint) _amount = Number of tokens to send
+    // @param (bytes) _data = Bytes data to send along with the contract call
+    function approveAndCall(address _spender, uint _amount, bytes _data)
+    public
     updateIncomeClaimed(msg.sender)
     updateIncomeClaimed(_spender)
     returns (bool success) {
@@ -109,8 +111,8 @@ contract DividendToken is ERC20 {
     updateIncomeClaimed(msg.sender)
     returns (uint _amount) {
         _amount = incomeClaimed[msg.sender].div(scalingFactor);
-        delete incomeClaimed[msg.sender]; 
-        msg.sender.transfer(_amount); 
+        delete incomeClaimed[msg.sender];
+        msg.sender.transfer(_amount);
         emit LogIncomeCollected(now, msg.sender, _amount);
     }
 
@@ -118,36 +120,36 @@ contract DividendToken is ERC20 {
 
 
     // ------------------------------------------------------------------------
-    //                           View functions 
+    //                           View functions
     // ------------------------------------------------------------------------
 
     // @notice Returns amount of tokens _spender is allowed to transfer or burn
-    function allowance(address _tokenHolder, address _spender) 
-    public 
-    view 
+    function allowance(address _tokenHolder, address _spender)
+    public
+    view
     returns (uint) {
         return allowed[_tokenHolder][_spender];
     }
 
     // @notice Returns the number of tokens in circulation
     function totalSupply()
-    public 
-    view 
-    returns (uint tokenSupply) { 
-        return supply; 
+    public
+    view
+    returns (uint tokenSupply) {
+        return supply;
     }
 
     // @notice Returns the token balance of user
-    function balanceOf(address _tokenHolder) 
-    public 
-    view 
+    function balanceOf(address _tokenHolder)
+    public
+    view
     returns (uint balance) {
         return balances[_tokenHolder];
     }
 
-    function tokenURI() 
-    external 
-    view 
+    function tokenURI()
+    external
+    view
     returns (string) {
         return tokenURI;
     }
@@ -172,15 +174,15 @@ contract DividendToken is ERC20 {
 
 
     // ------------------------------------------------------------------------
-    //                            Modifiers 
+    //                            Modifiers
     // ------------------------------------------------------------------------
 
     // Updates the amount owed to user while holding tokenSupply
     // @dev must be called before transfering tokens
-    modifier updateIncomeClaimed(address _user) { 
+    modifier updateIncomeClaimed(address _user) {
         incomeClaimed[_user] = incomeClaimed[_user].add(getAmountOwed(_user));
         previousValuePerToken[_user] = valuePerToken;
-        _; 
+        _;
     }
 
     // Fallback function:
@@ -203,7 +205,6 @@ contract DividendToken is ERC20 {
     }
 
     event LogIncomeReceived(address indexed _sender, uint _paymentAmount);
+    event LogIncomeCollected(uint _block, address _address, uint _amount);
 
 }
-
-

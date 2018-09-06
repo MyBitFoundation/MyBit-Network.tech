@@ -13,7 +13,7 @@ jobs:
             background: true
         - run: yarn test
         - run: yarn coverage
-        
+
 notify:
   webhooks:
-    - url: https://coveralls.io/webhook?repo_token=$COVERALLS_REPO_TOKEN
+    - url: https://coveralls.io/webhook?repo_token=$SDK_REPO_TOKEN

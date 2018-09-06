@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "../ownership/SingleOwned.sol";
-import "../ERC20/ERC20Basic.sol";
+import "../../ownership/SingleOwned.sol";
+import "../ERC20/StandardToken.sol";
 import "../ERC20/SafeERC20.sol";
 
 
@@ -12,15 +12,15 @@ import "../ERC20/SafeERC20.sol";
  * This will prevent any accidental loss of tokens.
  */
 contract CanReclaimToken is SingleOwned {
-  using SafeERC20 for ERC20Basic;
+  using SafeERC20 for StandardToken;
 
   /**
    * @dev Reclaim all ERC20Basic compatible tokens
    * @param _token ERC20Basic The address of the token contract
    */
-  function reclaimToken(ERC20Basic _token) external onlyOwner {
+  function reclaimToken(StandardToken _token) external onlyOwner {
     uint256 balance = _token.balanceOf(this);
-    _token.safeTransfer(owner, balance);
+    _token.safeTransfer(address(this), balance);
   }
 
 }

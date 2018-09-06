@@ -1,3 +1,5 @@
+pragma solidity ^0.4.24;
+
 interface MyBitToken {
 
   function totalSupply() external returns (uint);
@@ -10,7 +12,7 @@ interface MyBitToken {
 
   function burn(uint _amount) external returns (bool);
 
-  function burnFrom(address _from, uint _amount) external returns (bool); 
+  function burnFrom(address _from, uint _amount) external returns (bool);
 
   function approve(address _spender, uint _value) external returns (bool);
 

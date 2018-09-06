@@ -4,7 +4,7 @@ Contract interfaces set out the basic functionality that other contracts must ad
 
 ## Contract Categories
 
-### AssetFunding.sol
+### Crowdsale.sol
 Provides the functions used to fund assets with Ether or ERC-20 Tokens.
 
 ### Database.sol
