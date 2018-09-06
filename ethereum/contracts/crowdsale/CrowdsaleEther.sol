@@ -38,7 +38,7 @@
     // Users can send Ether here to fund asset if funding goal hasn't been reached and the funding period isn't over.
     // Invariants: Requires Eth be sent with transaction |  Must be in funding stage. Must be under goal | Must have KYC approved. | contract is not paused
     //------------------------------------------------------------------------------------------------------------------
-    function fundAsset(bytes32 _assetID)
+    function buyAsset(bytes32 _assetID)
     external
     payable
     requiresEther
@@ -75,19 +75,6 @@
       return true;
     }
 
-    //------------------------------------------------------------------------------------------------------------------
-    // This function needs to be called to allow refunds to be made. Signals to the myBitHub contract that funding has failed + moves stage to Funding failed
-    // Invariants: Must be still be in funding stage | must be passed deadline
-    //------------------------------------------------------------------------------------------------------------------
-    function initiateRefund(bytes32 _assetID)
-    external
-    fundingPeriodOver(_assetID)
-    atStage(_assetID, uint(1))
-    returns (bool) {
-      database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(2));
-      emit LogAssetFundingFailed(_assetID, database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID))));
-      return true;
-    }
 
     //------------------------------------------------------------------------------------------------------------------
     // Contributors can retrieve their funds here if campaign is finished + failure and initateRefund() has been called.
