@@ -1,13 +1,14 @@
 {
-  "name": "MyBit-Network",
+  "name": "mybit-network",
   "version": "0.0.0",
   "description": "The MyBit Trust Application",
   "repository": "https://github.com/MyBitFoundation/MyBit-Network.tech",
   "main": "truffle.js",
   "directories": {
-    "test": "test"
+    "test": "ethereum/test"
   },
   "scripts": {
+    "directory" : "cd ethereum",
     "compile": "truffle compile --all",
     "migrate": "truffle migrate",
     "test": "npm run compile; npm run migrate; truffle test",
