@@ -7,7 +7,6 @@ jobs:
     steps:
         - checkout
         - run: yarn
-        - run: yarn cd
         - run:
             name: testrpc
             command: yarn blockchain
