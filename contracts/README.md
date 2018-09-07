@@ -1,5 +1,8 @@
 # MyBit-SDK 
-The contracts in MyBit-SDK are tools to allow the creation of digital assets and the distribution of income earned by these digital assets. The assets are represented by modified ERC20 tokens. Using contract inheritance the contracts can be combined in different ways to modify the crowdfunding and re-distribution details. 
+
+:wrench: Block-end developer tools
+
+The contracts in the MyBit-SDK are tools to allow the creation of digital assets and the distribution of income earned by these digital assets. The assets are represented by modified ERC20 tokens. Using contract inheritance the contracts can be combined in different ways to modify the crowdfunding and re-distribution details. 
 
 
 ## Contract Categories
