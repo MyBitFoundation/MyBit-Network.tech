@@ -2,7 +2,7 @@
 
   import "../math/SafeMath.sol";
   import "../interfaces/Crowdsale.sol";
-  import "../interfaces/Database.sol";
+  import "../database/Database.sol";
   import "../tokens/ERC20/DividendToken.sol";
 
 
@@ -22,7 +22,7 @@
     //------------------------------------------------------------------------------------------------------------------
     constructor(address _database)
     public {
-        database = Database(_database); 
+        database = Database(_database);
     }
 
 
@@ -33,11 +33,11 @@
     returns (bool) {
       bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _assetURI));
       require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
-      DividendToken newAsset = new DividendToken(_assetURI, _amountToRaise, address(this), address(database));   // Gives this contract all new asset tokens
+      DividendToken newAsset = new DividendToken(_assetURI, _amountToRaise);   // Gives this contract all new asset tokens
       database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
       database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));
       database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
-      emit LogAssetFundingStarted(assetID, msg.sender, _assetURI); 
+      emit LogAssetFundingStarted(assetID, msg.sender, _assetURI);
     }
 
 
@@ -53,29 +53,29 @@
       if (msg.value >= tokensRemaining) {
         require(thisToken.transfer(msg.sender, tokensRemaining));   // Send remaining asset tokens
         require(payout(_assetID, thisToken.totalSupply()));          // 1 token = 1 wei
-        msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI  
+        msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI
         database.deleteUint(keccak256(abi.encodePacked("fundingDeadline", _assetID)));   // This should disable ability to get refund
       }
       else {
-        require(thisToken.transfer(msg.sender, msg.value));   
+        require(thisToken.transfer(msg.sender, msg.value));
       }
       emit LogAssetPurchased(_assetID, msg.sender, msg.value);
       return true;
     }
 
 
-    // @notice Contributors can retrieve their funds here if crowdsale has paased deadline 
+    // @notice Contributors can retrieve their funds here if crowdsale has paased deadline
     function refund(bytes32 _assetID)
     external
     whenNotPaused
     afterDeadline(_assetID)
     returns (bool) {
       DividendToken thisToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-      uint userBalance = thisToken.balanceOf(msg.sender); 
-      require(userBalance > 0); 
-      require(thisToken.burnFrom(msg.sender, userBalance));   // TODO: burn tokens? 
-      msg.sender.transfer(userBalance); 
-      emit LogRefund(_assetID, msg.sender, userBalance); 
+      uint userBalance = thisToken.balanceOf(msg.sender);
+      require(userBalance > 0);
+      require(thisToken.burnFrom(msg.sender, userBalance));   // TODO: burn tokens?
+      msg.sender.transfer(userBalance);
+      emit LogRefund(_assetID, msg.sender, userBalance);
       return true;
     }
 
@@ -91,7 +91,7 @@
     // Fallback: Reject Ether
     //------------------------------------------------------------------------------------------------------------------
     function ()
-    public 
+    public
     payable {
       revert();
     }
@@ -102,7 +102,7 @@
     //------------------------------------------------------------------------------------------------------------------
 
     // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where operator/broker can withdraw
-    // @dev The contract manager needs to know  the address PlatformDistribution contract 
+    // @dev The contract manager needs to know  the address PlatformDistribution contract
     function payout(bytes32 _assetID, uint _amount)
     internal
     whenNotPaused
@@ -133,9 +133,9 @@
     }
 
     // @notice function won't run if owners have paused this contract
-    modifier whenNotPaused { 
-      require(!database.boolStorage(keccak256(abi.encodePacked("paused", address(this))))); 
-      _; 
+    modifier whenNotPaused {
+      require(!database.boolStorage(keccak256(abi.encodePacked("paused", address(this)))));
+      _;
     }
 
     // @notice reverts if the funding deadline has already past
@@ -156,7 +156,7 @@
     //                                            Events
     //------------------------------------------------------------------------------------------------------------------
 
-    event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _broker, string _tokenURI); 
+    event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _broker, string _tokenURI);
     event LogAssetPurchased(bytes32 indexed _assetID, address indexed _sender, uint _amount);
     event LogRefund(bytes32 indexed _assetID, address indexed _funder, uint _amount);
     event LogAssetPayout(bytes32 indexed _assetID, address indexed _distributionContract, uint _amount);

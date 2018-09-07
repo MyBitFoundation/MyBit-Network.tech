@@ -16,8 +16,9 @@ contract ERC20Burner {
 
   // @notice constructor: instantiates myb token address and sets owner
   // @param (address) _myBitTokenAddress = The MyBit token address
-  constructor(address _myBitTokenAddress)
+  constructor(address _myBitTokenAddress, address _database)
   public {
+    database = Database(_database);
     token = BurnableERC20(_myBitTokenAddress);
   }
 
@@ -71,7 +72,7 @@ contract ERC20Burner {
 
   // @notice reverts if msg.sender isn't the owner
   modifier onlyOwner {
-    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("owner", msg.sender))));
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
     _;
   }
 
