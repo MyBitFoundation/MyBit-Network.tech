@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 
 // ---------------------------------------------------------------------------------
@@ -7,7 +7,7 @@ pragma solidity 0.4.24;
 // @dev The bytes32 hashes are derived from keccak256(variableName, uniqueID) => value
 // @dec Can enable upgradeable contracts by setting a contract manager
 // ---------------------------------------------------------------------------------
-contract Database {
+contract Database{
 
     // --------------------------------------------------------------------------------------
     // Storage Variables
@@ -26,14 +26,14 @@ contract Database {
     // @notice Constructor: Sets the owners of the platform
     // @dev Owners must set the contract manager to add more contracts
     // --------------------------------------------------------------------------------------
-    constructor(address[] _owners, bool _upgradeable)
-    public {
-        for(uint i; i<_owners.length; i++){
-          boolStorage[keccak256(abi.encodePacked("owner", _owners[i]))] = true;
-          emit LogInitialized(_owners[i], _upgradeable);
-        }
-        if (_upgradeable)
-            boolStorage[keccak256("upgradeable")] = true;    
+    constructor(address[] _owners, bool _upgradeable) public {
+      for(uint i=0; i<_owners.length; i++){
+        boolStorage[keccak256(abi.encodePacked("owner", _owners[i]))] = true;
+        emit LogInitialized(_owners[i], _upgradeable);
+      }
+      if (_upgradeable){
+        boolStorage[keccak256("upgradeable")] = true;
+      }
     }
 
 
