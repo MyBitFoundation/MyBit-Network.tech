@@ -7,6 +7,7 @@
 
 
 # MyBit-Network: Contract SDK
+[![CircleCI](https://circleci.com/gh/MyBitFoundation/MyBit-Network.tech.svg?style=shield)](https://circleci.com/gh/MyBitFoundation/MyBit-Network.tech) [![Coverage Status](https://coveralls.io/repos/github/MyBitFoundation/MyBit-Network.tech/badge.svg?branch=feature%2Fcoverage)](https://coveralls.io/github/MyBitFoundation/MyBit-Network.tech?branch=feature%2Fcoverage)
 
 A software development kit for the automated machine economy.
 
@@ -26,11 +27,61 @@ The Asset Manager is a user that initiates a crowdfunding period for an asset. A
 The manufacturer is the producer of the asset. They are in charge of receiving the crowdfunding funds and producing, delivering and installing the asset. 
 
 
-:pencil2:  All contracts are written in Solidity.
+✏️ All contracts are written in [Solidity](https://solidity.readthedocs.io/en/v0.4.24/) version 0.4.24.
 
 
+## Setup
 
-# Live test-net contracts 
+Install dependencies.
+
+`yarn`
+
+## Testing
+
+Bootstrap [Ganache](https://truffleframework.com/ganache)
+
+`yarn blockchain`
+
+Run tests
+
+`yarn test`
+
+✏️ All contracts are written in [Solidity](https://solidity.readthedocs.io/en/v0.4.24/) version 0.4.24.
+
+## Compiling
+
+`yarn compile`
+
+## Code Coverage
+
+Download solidity-coverage locally
+
+`npm install --save-dev solidity-coverage`
+
+Run solidity-coverage
+
+`./node_modules/.bin/solidity-coverage`
+
+Coverage reports can be accessed at 'coverage/index.html'
+
+## Documentation
+
+```
+cd docs/website
+yarn build
+```
+
+To publish to GitHub Pages
+
+```
+cd docs/website
+GIT_USER=<GIT_USER> \
+  USE_SSH=true \
+  yarn run publish-gh-pages
+```
+
+
+# Live example test-net contracts 
 * [InitialVariables](https://ropsten.etherscan.io/address/0x9e6606dedcf9d4960f8652abe2d624a048231841#code)
 * [UserAccess](https://ropsten.etherscan.io/address/0xb14c50bb7530c71e14f28498bad1f65d10b5b3a9#code)
 * [API](https://ropsten.etherscan.io/address/0x139ebd700b089f51a9dd90c0403e5326b1426f3b#code)
@@ -38,6 +89,9 @@ The manufacturer is the producer of the asset. They are in charge of receiving t
 * [FundingHub](https://ropsten.etherscan.io/address/0xb94bd7c5ca000beeff27db7cebb9c03749901f19#code)
 * [MyBitToken](https://ropsten.etherscan.io/address/0xbb07c8c6e7cd15e2e6f944a5c2cac056c5476151#code)
 * [TokenFaucet](https://ropsten.etherscan.io/address/0x8742272c58f6fe0c2943eba9399c04cbd5342ab2#writeContract)
+
+### ⚠️ Warning
+This application is unstable and has not undergone any rigorous security audits. Use at your own risk.
 
 
 <p align="center">

@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 // Database interface
-interface Database {
+interface DBInterface {
 
   function setContractManager(address _contractManager)
   external;

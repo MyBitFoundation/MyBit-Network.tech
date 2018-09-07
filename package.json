@@ -5,10 +5,9 @@
   "repository": "https://github.com/MyBitFoundation/MyBit-Network.tech",
   "main": "truffle.js",
   "directories": {
-    "test": "ethereum/test"
+    "test": "test"
   },
   "scripts": {
-    "directory" : "cd ethereum",
     "compile": "truffle compile --all",
     "migrate": "truffle migrate",
     "test": "npm run compile; npm run migrate; truffle test",
