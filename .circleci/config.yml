@@ -6,8 +6,8 @@ jobs:
       - image: circleci/node:9.6.1
     steps:
         - checkout
-        - run: cd ethereum
         - run: yarn
+        - run: yarn cd
         - run:
             name: testrpc
             command: yarn blockchain
