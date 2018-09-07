@@ -33,10 +33,11 @@ contract DividendToken is BurnableERC20 {
 
 
     // @notice constructor: initialized
-    constructor(string _tokenURI, uint _totalSupply, address _creator, address _database)
+    constructor(string _tokenURI, uint _totalSupply)
     public {
         supply = _totalSupply;                        // Update total supply
-        tokenURI = _tokenURI;                           // Set the id for reference
+        tokenURI = _tokenURI;                         // Set the id for reference
+        balances[msg.sender] = _totalSupply;
         emit Transfer(address(0), msg.sender, _totalSupply);    // Transfer event indicating token creation
     }
 
@@ -104,7 +105,7 @@ contract DividendToken is BurnableERC20 {
         return true;
     }
 
-      
+
     // @dev Burns a specific amount of tokens from the target address and decrements allowance
     // @param _from address The address which you want to send tokens from
     // @param _value uint256 The amount of token to be burned
@@ -115,13 +116,13 @@ contract DividendToken is BurnableERC20 {
         // Should https://github.com/OpenZeppelin/zeppelin-solidity/issues/707 be accepted,
         // this function needs to emit an event with the updated approval.
         allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
-        balances[msg.sender] = balances[msg.sender].sub(_value);
+        balances[_from] = balances[_from].sub(_value);
         supply = supply.sub(_value);
         emit LogBurn(msg.sender, _value);
         emit Transfer(msg.sender, address(0), _value);
         return true;
     }
-    
+
 
     // @dev Burns a specific amount of tokens from message sender
     // @param _value uint256 The amount of token to be burned
