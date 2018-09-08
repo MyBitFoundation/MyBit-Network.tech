@@ -13,9 +13,8 @@ contract KYC is AccessHierarchy {
   //------------------------------------------------------------------------------------------------------------------
   function approveKYC(address _user)
   onlyOwner
-  external
-  returns (bool) {
-    database.setBool(keccak256(abi.encodePacked("kycApproved", msg.sender)), true);
+  external {
+    database.setBool(keccak256(abi.encodePacked("kycApproved", _user)), true);
     emit LogKYCApproved(msg.sender, _user);
   }
 
@@ -24,9 +23,8 @@ contract KYC is AccessHierarchy {
   //------------------------------------------------------------------------------------------------------------------
   function revokeKYC(address _user)
   onlyOwner
-  external
-  returns (bool) {
-    database.deleteBool(keccak256(abi.encodePacked("kycApproved", msg.sender)));
+  external  {
+    database.deleteBool(keccak256(abi.encodePacked("kycApproved", _user)));
   }
 
 
