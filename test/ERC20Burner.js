@@ -49,7 +49,12 @@ contract('Burner', async() => {
 
   it('Deploy ERC20Burner', async() => {
     burner = await Burner.new(token.address, db.address);
-    await cm.addContract('ERC20Burner', burner.address);
+    console.log(burner.address); 
+  });
+
+  it('Add ERC20Burner to Database', async() => { 
+    let contractName = "ERC20Burner"; 
+    await cm.addContract(contractName, burner.address);
   });
 
   it('Fail to send ether', async() => {
