@@ -3,7 +3,7 @@ pragma solidity 0.4.24;
 import '../database/Database.sol'; 
 
 // @notice every operator on the plat
-contract OperatorDistribution {
+contract CrowdfundingDistribution {
 
   Database public database; 
  
