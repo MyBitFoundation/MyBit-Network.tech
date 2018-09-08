@@ -12,7 +12,6 @@ contract ERC20Burner {
   BurnableERC20 public token;  // The instance of the ERC20 burner contract
   Database public database;
 
-  mapping (address => bool) public authorizedBurner;    // A mapping showing which addresses are allowed to call the burn function
 
   // @notice constructor: instantiates myb token address and sets owner
   // @param (address) _myBitTokenAddress = The MyBit token address
