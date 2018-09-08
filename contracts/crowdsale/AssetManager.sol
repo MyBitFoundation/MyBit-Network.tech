@@ -1,10 +1,11 @@
 pragma solidity 0.4.24;
+
 import '../database/Database.sol';
 import '../math/SafeMath.sol';
 
 // @notice This contract is where users can initite funding periods for new assets.
 contract AssetCreation {
-  using SafeMath for *;
+  using SafeMath for uint256;
 
   Database public database;
 
