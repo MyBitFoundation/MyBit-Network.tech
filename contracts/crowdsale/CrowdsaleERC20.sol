@@ -29,15 +29,16 @@
     // @notice brokers can initiate a crowdfund for a new asset here
     // @dev this crowdsale contract is granted the whole supply to distribute to investors
     function startFundingPeriod(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise)
-    external
-    returns (bool) {
-      require(database.boolStorage(keccak256(abi.encodePacked("operator", _operatorID)))); 
-      bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _assetURI));
+    external {
+      address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))); 
+      require(operatorAddress != address(0)); 
+      bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
       require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
       DividendToken newAsset = new DividendToken(_assetURI, _amountToRaise);   // Gives this contract all new asset tokens
       database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
       database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));
       database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
+      database.setAddress(keccak256(abi.encodePacked("operator", assetID)), operatorAddress);   // TODO: Could reconstruct this using event logs
       emit LogAssetFundingStarted(assetID, msg.sender, _assetURI);
     }
 
