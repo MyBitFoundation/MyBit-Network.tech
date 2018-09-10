@@ -33,6 +33,9 @@ contract('Burner', async() => {
   });
 
   it('Spread tokens to users', async () => {
+    await token.transfer(user1, tokenPerAccount);
+    await token.transfer(user2, tokenPerAccount);
+    /*
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
       //console.log(web3.eth.accounts[i]);
@@ -45,15 +48,17 @@ contract('Burner', async() => {
     let remainingTokens = bn(tokenSupply).minus(totalTokensCirculating);
     let ledgerTrue = bn(await token.balanceOf(owner)).eq(remainingTokens);
     assert.equal(ledgerTrue, true);
+    */
   });
+
 
   it('Deploy ERC20Burner', async() => {
     burner = await Burner.new(token.address, db.address);
-    console.log(burner.address); 
+    console.log(burner.address);
   });
 
-  it('Add ERC20Burner to Database', async() => { 
-    let contractName = "ERC20Burner"; 
+  it('Add ERC20Burner to Database', async() => {
+    let contractName = "ERC20Burner";
     await cm.addContract(contractName, burner.address);
   });
 
