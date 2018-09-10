@@ -17,6 +17,7 @@ contract Operators {
   onlyOwner { 
     bytes32 operatorID = keccak256(abi.encodePacked(_operatorAddress, _operatorName, _assetCode, _country)); 
     database.setBool(keccak256(abi.encodePacked("operator", operatorID)), true);
+    database.setAddress()
     emit LogOperatorRegistered(operatorID, _operatorAddress, _operatorName, _assetCode, _country); 
   }
 

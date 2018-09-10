@@ -25,6 +25,7 @@
     function startFundingPeriod(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise)
     external
     returns (bool) {
+      require(database.boolStorage(keccak256(abi.encodePacked("operator", _operatorID)))); 
       bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _assetURI));
       require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
       DividendToken newAsset = new DividendToken(_assetURI, _amountToRaise);   // Gives this contract all new asset tokens
