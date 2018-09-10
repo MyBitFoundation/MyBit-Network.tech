@@ -13,9 +13,19 @@ contract CrowdfundingDistribution {
     database = Database(_database);  
   }
 
-  function receivePayment(bytes32 assetID)
-  external { 
+  function receiveEthPayment(bytes32 _id)
+  external
+  payable 
+  returns (bool) { 
     // TODO: give 1% to platformOwners and 99% to operator
+    return true;
+  }
+
+  function receiveTokenPayment(bytes32 _id, uint _amount)
+  external 
+  returns (bool) { 
+    // TODO: give 1% to platformOwners and 99% to operator
+    return true;
   }
 
   function withdraw()

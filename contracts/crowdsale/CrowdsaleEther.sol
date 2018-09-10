@@ -2,6 +2,7 @@
 
   import "../math/SafeMath.sol";
   import "../interfaces/Crowdsale.sol";
+  import "../interfaces/SendPayment.sol";  
   import "../database/Database.sol";
   import "../tokens/ERC20/DividendToken.sol";         // Change to Mintable or Burnable if needed
 
@@ -67,11 +68,11 @@
     afterDeadline(_assetID)
     returns (bool) {
       DividendToken thisToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-      uint userBalance = thisToken.balanceOf(msg.sender);
-      require(userBalance > 0);
-      require(thisToken.burnFrom(msg.sender, userBalance));   // TODO: burn tokens?
-      msg.sender.transfer(userBalance);
-      emit LogRefund(_assetID, msg.sender, userBalance);
+      uint investorBalance = thisToken.balanceOf(msg.sender);
+      require(investorBalance > 0);
+      require(thisToken.burnFrom(msg.sender, investorBalance));   // TODO: burn tokens?
+      msg.sender.transfer(investorBalance);
+      emit LogRefund(_assetID, msg.sender, investorBalance);
       return true;
     }
 
@@ -102,7 +103,7 @@
     returns (bool) {
       address distributionContract = database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdfundingDistribution")));
       assert (distributionContract != address(0));
-      distributionContract.transfer(_amount);
+      require(SendPayment(distributionContract).receiveEthPayment.value(_amount)(_assetID));
       emit LogAssetPayout(_assetID, distributionContract, _amount);
       return true;
     }
