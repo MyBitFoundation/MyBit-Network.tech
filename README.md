@@ -21,11 +21,13 @@ The SDK's contain a local blockchain and smart-contracts for developers to run a
 The investor is any user that holds asset tokens through participating in an asset crowdsale or by means of purchasing on an exchange.
 
 #### Broker 
-The Asset Manager is a user that initiates a crowdfunding period for an asset. After the funding period the Asset Manager is in charge of handling real world operations between the asset manufacturer and the investors. The role of the asset manager varies depending on the type of asset, but generally they hold responsibility for making sure the asset operates properly if the conditions allow it. 
+The Asset Manager is a user that initiates a crowdfunding period for an asset. After the funding period the Asset Manager is in charge of handling real world operations between the asset operator and the investors. The role of the asset manager varies depending on the type of asset, but generally they hold responsibility for making sure the asset operates properly if the conditions allow it. 
 
-#### Manufacturer
-The manufacturer is the producer of the asset. They are in charge of receiving the crowdfunding funds and producing, delivering and installing the asset. 
+#### Operator
+The operator is the producer of the asset. They are in charge of receiving the crowdfunding funds and producing, delivering and installing the asset. 
 
+#### StakeHolders 
+The Stakeholders have the opportunity to purchase a portion of the Brokers earnings in exchange for depositing escrow in the place of the Broker. 
 
 ✏️ All contracts are written in [Solidity](https://solidity.readthedocs.io/en/v0.4.24/) version 0.4.24.
 
