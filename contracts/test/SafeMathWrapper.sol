@@ -1,6 +1,6 @@
 pragma solidity 0.4.24;
 
-import "./SafeMath.sol";
+import "../math/SafeMath.sol";
 
 contract SafeMathWrapper {
   using SafeMath for uint;
