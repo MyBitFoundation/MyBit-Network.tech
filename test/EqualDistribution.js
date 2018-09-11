@@ -18,7 +18,7 @@ contract('Equal Distribution', async (accounts) => {
   const tokenSupply = 100000;
   const tokenPerAccount = 1000;
 
-  let burnFee = 250;
+  let burnFee = 250 * ETH;
   let originalBeneficiary; //Original beneficiary
 
   // Contract instances
@@ -57,7 +57,8 @@ contract('Equal Distribution', async (accounts) => {
       console.log('Cant get funds from that address');
     }
   });
-/*
+  
+
   it('Get funds', async() => {
     console.log('Owner Address: ' + owner);
     console.log('Distributor Address: ' + distributor);
@@ -75,6 +76,6 @@ contract('Equal Distribution', async (accounts) => {
     //assert.equal(b1After - b1Before, (14 * ETH)/3); //Need to calculate gas used up to this point
     assert.equal(BigNumber(b1Before).lt(b1After), true);
   });
-  */
+  
 
 });

@@ -13,12 +13,13 @@ const scaling = 1000000000000000000000000000000000000;
 const tokenSupply = 180000000000000000000000000;
 const tokenPerAccount = 1000000000000000000000;
 
+let tokenURI = 'https://mybit.io';
 
 contract('Token', async() => {
   let token;
 
   it('Deploy Token', async() => {
-    token = await Token.new('MyBit', tokenSupply);
+    token = await Token.new(tokenURI, tokenSupply);
   });
 
   it("Spread tokens to users", async() => {
@@ -38,7 +39,8 @@ contract('Token', async() => {
 
   //Test dividends functions
   it('View token uri', async() => {
-    let tokenURI = await token.tokenURI();
+    let _tokenURI = await token.tokenURI();
+    assert.equal(tokenURI, _tokenURI); 
     console.log(tokenURI);
   });
 
