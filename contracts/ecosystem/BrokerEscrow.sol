@@ -15,9 +15,22 @@
     } 
 
 
+    function depositEscrow(uint _amount, address _tokenAddress)
+    external { 
+
+    }
 
 
+    function lockEscrow(uint _amount, bytes32 _assetID)
+    external { 
 
+    }
+
+
+    function unlockEscrow(bytes32 _assetID)
+    external { 
+
+    }
 
 
 
