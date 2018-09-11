@@ -13,6 +13,7 @@ contract Operators {
 
   // @notice allows the platform owners to onboard a new operator. 
   // @notice operators will receive crowdfunding payments and are liable for producing/installing assets.
+  // TODO: Set preferred crowdfunding token (ERC20, ETH, DAI)  (which to reject)
   function registerOperator(address _operatorAddress, string _operatorURI)
   external 
   onlyOwner { 
@@ -52,8 +53,9 @@ contract Operators {
     _;
   }
 
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //                                                Modifiers                                                                     //
+  //                                                Events                                                                        //
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

@@ -1,7 +1,7 @@
 pragma solidity 0.4.24;
 
 import '../../math/SafeMath.sol';
-import '../../interfaces/BurnableERC20.sol';
+import '../../interfaces/ERC20.sol';
 
 
 // @notice Receive approval and then execute function
@@ -12,7 +12,7 @@ contract ApproveAndCallFallBack {
 // @title ERC20 token contract with shared revenue distribution functionality.
 // @notice This token contract can receive payments in the fallback function and token owners receive their share when transferring tokens.
 // Credit goes to Nick Johnson for the dividend token https://medium.com/@weka/dividend-bearing-tokens-on-ethereum-42d01c710657
-contract DividendToken is BurnableERC20 {
+contract DividendToken is ERC20 {
     using SafeMath for uint;
 
     // @notice Token supply, balances and allowance
@@ -106,35 +106,6 @@ contract DividendToken is BurnableERC20 {
     }
 
 
-    // @dev Burns a specific amount of tokens from the target address and decrements allowance
-    // @param _from address The address which you want to send tokens from
-    // @param _value uint256 The amount of token to be burned
-    function burnFrom(address _from, uint256 _value)
-    external
-    returns (bool success) {
-        require(_value <= allowed[_from][msg.sender]);
-        // Should https://github.com/OpenZeppelin/zeppelin-solidity/issues/707 be accepted,
-        // this function needs to emit an event with the updated approval.
-        allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
-        balances[_from] = balances[_from].sub(_value);
-        supply = supply.sub(_value);
-        emit LogBurn(msg.sender, _value);
-        emit Transfer(msg.sender, address(0), _value);
-        return true;
-    }
-
-
-    // @dev Burns a specific amount of tokens from message sender
-    // @param _value uint256 The amount of token to be burned
-    function _burn(uint256 _value)
-    public {
-        balances[msg.sender] = balances[msg.sender].sub(_value);
-        supply = supply.sub(_value);
-        emit LogBurn(msg.sender, _value);
-        emit Transfer(msg.sender, address(0), _value);
-    }
-
-
     // @notice Updates incomeClaimed, sends all wei to the token holder
     function collectOwedDividends()
     public
@@ -145,8 +116,6 @@ contract DividendToken is BurnableERC20 {
         msg.sender.transfer(_amount);
         emit LogIncomeCollected(now, msg.sender, _amount);
     }
-
-
 
 
     // ------------------------------------------------------------------------
