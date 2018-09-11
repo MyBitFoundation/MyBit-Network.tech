@@ -2,12 +2,12 @@
 
   import "../math/SafeMath.sol";
   import "../interfaces/Crowdsale.sol";
-  import "../interfaces/SendPayment.sol";  
   import "../database/Database.sol";
   import "../tokens/ERC20/DividendToken.sol";         // Change to Mintable or Burnable if needed
 
 
   // @title An asset crowdsale contract.
+  // @author Kyle Dewhurst, MyBit Foundation
   // @notice creates a dividend token to represent the newly created asset.
   contract CrowdsaleEther is Crowdsale{
     using SafeMath for uint256;
@@ -67,10 +67,10 @@
     whenNotPaused
     afterDeadline(_assetID)
     returns (bool) {
-      DividendToken thisToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-      uint investorBalance = thisToken.balanceOf(msg.sender);
+      DividendToken assetToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+      uint investorBalance = assetToken.balanceOf(msg.sender);
       require(investorBalance > 0);
-      require(thisToken.burnFrom(msg.sender, investorBalance));   // TODO: burn tokens?
+      require(assetToken.transferFrom(msg.sender, address(0), investorBalance));  
       msg.sender.transfer(investorBalance);
       emit LogRefund(_assetID, msg.sender, investorBalance);
       return true;
@@ -101,10 +101,14 @@
     internal
     whenNotPaused
     returns (bool) {
-      address distributionContract = database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdfundingDistribution")));
-      assert (distributionContract != address(0));
-      require(SendPayment(distributionContract).receiveEthPayment.value(_amount)(_assetID));
-      emit LogAssetPayout(_assetID, distributionContract, _amount);
+      address operator = database.addressStorage(keccak256(abi.encodePacked("operator", _assetID))); 
+      address platformWallet = database.addressStorage(keccak256(abi.encodePacked("platformWallet")));
+      assert (operator != address(0) && platformWallet != address(0)); 
+      uint operatorPortion = _amount.mul(99).div(100);          // Give operator 99%
+      uint platformPortion = _amount.sub(operatorPortion);      // Give platform 1% 
+      operator.transfer(operatorPortion);
+      platformWallet.transfer(platformPortion); 
+      emit LogAssetPayout(_assetID, operator, _amount);
       return true;
     }
 
