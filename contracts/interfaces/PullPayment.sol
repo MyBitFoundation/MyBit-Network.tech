@@ -5,6 +5,4 @@ interface PullPayment {
 
 	function withdraw()	external returns (bool);
 
-  function withdrawManagerIncome(bytes32 _assetID) external returns (bool);
-
 }
