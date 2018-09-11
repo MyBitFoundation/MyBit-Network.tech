@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import '../../interfaces/BurnableERC20.sol';
-import '../../database/Database.sol';
+import '../interfaces/BurnableERC20.sol';
+import '../database/Database.sol';
 
 /// @title A contract for burning ERC20 tokens as usage fee for dapps
 /// @author Kyle Dewhurst, MyBit Foundation
