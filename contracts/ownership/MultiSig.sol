@@ -40,6 +40,7 @@ contract DaoOwnership {
   // If restricted it will have to be called from address(this) using a voting proccess on signForFunctionCall
   function addRestrictedFunction(address _contractAddress, bytes4 _methodID, uint _quorumLevel)
   external 
+  isRestricted(bytes4(keccak256(abi.encodePacked("addRestrictedFunction(address, bytes4, uint256)"))), keccak256(abi.encodePacked(_contractAddress, _methodID, _quorumLevel)))
   anyOwner { 
     require(_quorumLevel > 0); 
     bytes32 functionID = keccak256(abi.encodePacked(_contractAddress, _methodID));
@@ -51,6 +52,7 @@ contract DaoOwnership {
   external
   anyOwner {
     bytes32 sigRequestID = keccak256(abi.encodePacked(_contractAddress, _methodID, _parameterHash)); 
+    
   }
 
 
@@ -67,11 +69,12 @@ contract DaoOwnership {
     _;
   }
 
-  modifier isFunctionRestricted(bytes4 _methodID, bytes32 _parameterHash) { 
-    if (database.boolStorage(keccak256(abi.encodePacked(address(this), _methodID)))) { 
+  // @notice add this modifer to functions that you want multi-sig requirements for
+  // @dev function can only be called after at least n >= quorumLevel owners have agreed to call it
+  modifier isRestricted(bytes4 _methodID, bytes32 _parameterHash) { 
       require(database.boolStorage(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash))));  // owners must have agreed on function + parameters
-    }
     _;
+      database.deleteBool(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash)));  
   }
 
   //------------------------------------------------------------------------------------------------------------------

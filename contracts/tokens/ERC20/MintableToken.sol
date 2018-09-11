@@ -9,7 +9,6 @@ import "./StandardToken.sol";
  */
 contract MintableToken is StandardToken{
 
-  uint public supply;
   bool public mintingFinished = false;
 
 
