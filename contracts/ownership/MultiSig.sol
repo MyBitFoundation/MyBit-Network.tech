@@ -20,7 +20,7 @@ contract DaoOwnership {
   uint public numberOfOwners; 
 
 
-  constructor(bytes32[] restrictedFunctions, uint[] quorumLevel)
+  constructor(bytes32[] restrictedFunctions, uint[] _quorumLevel)
   public { 
     // TODo: set the quorum level for these functions 
   }
