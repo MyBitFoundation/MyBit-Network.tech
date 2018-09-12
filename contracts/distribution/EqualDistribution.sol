@@ -31,7 +31,7 @@ contract EqualDistribution {
   function getFunds(address _contractAddress)
   external
   returns (bool) {
-    require(PullPayment(_contractAddress).withdraw());   // TODO: Need to play with gas here
+    PullPayment(_contractAddress).withdraw();   
     return true;
   }
 
@@ -51,7 +51,7 @@ contract EqualDistribution {
   function ()
   public
   payable {
-    emit LogPayment(msg.sender, msg.value);
+    // emit LogPayment(msg.sender, msg.value);
   }
 
 
