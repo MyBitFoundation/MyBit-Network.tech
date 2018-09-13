@@ -16,6 +16,11 @@
 
 
 
+    function lockEscrow(bytes32 _assetID, uint _amount, address _tokenAddress)
+    external 
+    returns (bool) { 
+      return true; 
+    }
 
 
 

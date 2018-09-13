@@ -2,7 +2,7 @@
 
 :wrench: Block-end developer tools
 
-The contracts in the MyBit-SDK are tools to allow the creation of digital assets and the distribution of income earned by these digital assets. The assets are represented by modified ERC20 tokens. Using contract inheritance the contracts can be combined in different ways to modify the crowdfunding and re-distribution details. 
+MyBit SDK allows developers to create personalized platforms which create and distribute income using tokenized assets on the Ethereum virtual machine. Using these tools front-end developers can build decentralized asset management platforms of their own using MyBit deploy scripts and API's. 
 
 
 ## Contract Categories
