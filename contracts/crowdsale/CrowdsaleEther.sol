@@ -23,7 +23,8 @@
 
     // @notice brokers can initiate a crowdfund for a new asset here
     // @dev this crowdsale contract is granted the whole supply to distribute to investors
-    function startFundingPeriod(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise)
+    // @dev can lookup the amount of escrow in the database with sha3("brokerEscrow", assetID)
+    function startFundingPeriod(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, uint _brokerFee)
     external {
       address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))); 
       require(operatorAddress != address(0)); 
@@ -33,6 +34,7 @@
       database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
       database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));
       database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
+      database.setUint(keccak256(abi.encodePacked("brokerFee", assetID)), _brokerFee);     // Percentage of income that goes to broker
       database.setAddress(keccak256(abi.encodePacked("operator", assetID)), operatorAddress);   // TODO: Could reconstruct this using event logs
       emit LogAssetFundingStarted(assetID, msg.sender, _assetURI);
     }

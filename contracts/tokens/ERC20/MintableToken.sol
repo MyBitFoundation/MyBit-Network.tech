@@ -7,7 +7,7 @@ import "./StandardToken.sol";
  * @dev Simple ERC20 Token example, with mintable token creation
  * Based on code by TokenMarketNet: https://github.com/TokenMarketNet/ico/blob/master/contracts/MintableToken.sol
  */
-contract MintableToken is StandardToken{
+contract MintableToken is DividendToken {
 
   bool public mintingFinished = false;
 

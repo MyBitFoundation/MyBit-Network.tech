@@ -13,7 +13,7 @@ contract ApproveAndCallFallBack {
 // @notice This token contract can receive payments in the fallback function and token owners receive their share when transferring tokens.
 // Credit goes to Nick Johnson for the dividend token https://medium.com/@weka/dividend-bearing-tokens-on-ethereum-42d01c710657
 // TODO: Suicide function
-contract DividendToken is ERC20 {
+contract DividendToken is MintableToken, ERC20 {
     using SafeMath for uint;
 
     // @notice Token supply, balances and allowance
@@ -27,7 +27,6 @@ contract DividendToken is ERC20 {
     uint constant scalingFactor = 1e32;
     uint public assetIncome;
     uint public valuePerToken;
-
 
     mapping (address => uint) public incomeClaimed;
     mapping (address => uint) public previousValuePerToken;
