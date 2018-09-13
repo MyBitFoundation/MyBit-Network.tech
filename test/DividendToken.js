@@ -10,8 +10,9 @@ const tokenHolders = [user1, user2];
 
 const ETH = 1000000000000000000;
 const scaling = 1000000000000000000000000000000000000;
-const tokenSupply = 180000000000000000000000000;
+//const tokenSupply = 180000000000000000000000000;
 const tokenPerAccount = 1000000000000000000000;
+const tokenSupply = tokenHolders.length * tokenPerAccount;
 
 let tokenURI = 'https://mybit.io';
 
@@ -19,28 +20,28 @@ contract('Token', async() => {
   let token;
 
   it('Deploy Token', async() => {
-    token = await Token.new(tokenURI, tokenSupply);
+    token = await Token.new(tokenURI);
   });
 
   it("Spread tokens to users", async() => {
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
       //console.log(web3.eth.accounts[i]);
-      await token.transfer(tokenHolders[i], tokenPerAccount);
+      await token.mint(tokenHolders[i], tokenPerAccount);
       userBalance = await token.balanceOf(tokenHolders[i]);
       assert.equal(userBalance, tokenPerAccount);
     }
     // Check token ledger is correct
-    let totalTokensCirculating = tokenHolders.length * tokenPerAccount;
-    let remainingTokens = bn(tokenSupply).minus(totalTokensCirculating);
-    let ledgerTrue = bn(await token.balanceOf(owner)).eq(remainingTokens);
-    assert.equal(ledgerTrue, true);
+    //let totalTokensCirculating = tokenHolders.length * tokenPerAccount;
+    //let remainingTokens = bn(tokenSupply).minus(totalTokensCirculating);
+    //let ledgerTrue = bn(await token.balanceOf(owner)).eq(remainingTokens);
+    assert.equal(await token.balanceOf(owner), 0);
   });
 
   //Test dividends functions
   it('View token uri', async() => {
     let _tokenURI = await token.tokenURI();
-    assert.equal(tokenURI, _tokenURI); 
+    assert.equal(tokenURI, _tokenURI);
     console.log(tokenURI);
   });
 

@@ -9,6 +9,10 @@ import "./StandardToken.sol";
  */
 contract MintableToken is StandardToken{
 
+  // @notice Token supply, balances
+  uint internal supply;
+  mapping (address => uint) internal balances;
+
   bool public mintingFinished = false;
 
 
