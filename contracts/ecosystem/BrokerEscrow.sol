@@ -2,7 +2,8 @@
 
   import "../math/SafeMath.sol";
   import "../database/Database.sol";
-  import "../interfaces/DivToken.sol";         
+  import "../interfaces/DivToken.sol";  
+  import "../interfaces/BurnERC20.sol";       
 
 
   contract BrokerEscrow { 
@@ -16,20 +17,26 @@
     } 
 
     // @dev assetID can be computed beforehand with sha3(msg.sender, _amountToRaise, _operatorID, _assetURI))
-    function lockEscrow(bytes32 _assetID, uint _amount, address _tokenAddress)
-    external { 
+    function lockEscrow(bytes32 _assetID, uint _amount)
+    external 
+    returns (bool) { 
       require(database.addressStorage(keccak256(abi.encodePacked("assetEscrower", _assetID))) == address(0)); 
-      require(DivToken(_tokenAddress).transferFrom(msg.sender, address(this), _amount)); 
+      address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platformToken")));
+      require(DivToken(tokenAddress).transferFrom(msg.sender, address(this), _amount)); 
       database.setUint(keccak256(abi.encodePacked("brokerEscrow", _assetID)), _amount); 
       database.setAddress(keccak256(abi.encodePacked("assetEscrower", _assetID)), msg.sender); 
+      return true;
     }
 
+    // @notice broker can increase how many tokens he locks for escrow
     function increaseEscrow(bytes32 _assetID, uint _amount, address _tokenAddress)
-    external { 
+    external 
+    returns (bool) { 
       require(database.addressStorage(keccak256(abi.encodePacked("assetEscrower", _assetID))) == msg.sender); 
       require(DivToken(_tokenAddress).transferFrom(msg.sender, address(this), _amount)); 
       uint escrowAmount = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _assetID))); 
       database.setUint(keccak256(abi.encodePacked("brokerEscrow", _assetID)), escrowAmount.add(_amount)); 
+      return true;
     }
 
 
@@ -40,26 +47,32 @@
     returns (bool) {  
       require(database.addressStorage(keccak256(abi.encodePacked("assetEscrower", _assetID))) == msg.sender); 
       DivToken assetToken = DivToken(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID)))); 
+      uint unlockAmount;
       if (database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))) == uint(0)) { 
-        assetToken.transfer(msg.sender, database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _assetID)))); 
+        unlockAmount = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _assetID))); 
+        assetToken.transfer(msg.sender, unlockAmount); 
       }
-      else{ 
-        uint scalingFactor = assetToken.scalingFactor().div(100);    // scale down 10^2 
+      else { 
+        uint scalingFactor = assetToken.scalingFactor().div(uint(100));    // scale down 10^2 
         uint percentageROI = assetToken.valueOfToken().div(scalingFactor);   // %ROI * 10^2
-        uint quarters = percentageROI.div(uint(25));    // Should round down
+        uint quarters = percentageROI.div(uint(25));    // TODO: test....Should round down
         uint amountUnlocked = database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", _assetID)));
-        uint unlockAmount = quarters.mul(database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _assetID)))).sub(amountUnlocked); 
+        unlockAmount = quarters.mul(database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _assetID)))).div(uint(100)).sub(amountUnlocked); 
         database.setUint(keccak256(abi.encodePacked("escrowRedeemed", _assetID)), amountUnlocked.add(unlockAmount)); 
         require(assetToken.transfer(msg.sender, unlockAmount)); 
       }
-
+      return true;
     }
 
     // @notice investors can vote to call this function and burn the brokers escrow for negligence
     function burnEscrow(bytes32 _assetID)
     external 
     onlyOwner { 
-
+      uint amountToBurn = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _assetID))); 
+      BurnERC20 token = BurnERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken")))); 
+      require(token.burn(amountToBurn)); 
+      database.deleteUint(keccak256(abi.encodePacked("brokerEscrow", _assetID))); 
+      database.deleteAddress(keccak256(abi.encodePacked("assetEscrower", _assetID))); 
     }
 
 
@@ -68,5 +81,8 @@
       require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
       _;
     }
+
+    event LogEscrowBurned(bytes32 indexed _assetID, address _broker, uint _amountBurnt); 
+    event LogEscrowLocked(bytes32 indexed _assetID, address indexed _operator, uint _amount); 
 
 }
