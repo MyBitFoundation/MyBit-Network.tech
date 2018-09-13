@@ -20,19 +20,6 @@ const scaling = 1000000000000000000000000000000000000;
 const tokenSupply = 180000000000000000000000000;
 const tokenPerAccount = 1000000000000000000000;
 
-function advanceBlock () {
-  return new Promise((resolve, reject) => {
-    web3.currentProvider.sendAsync({
-      jsonrpc: '2.0',
-      method: 'evm_mine',
-      id: Date.now(),
-    }, (err, res) => {
-      return err ? reject(err) : resolve(res);
-    });
-  });
-}
-
-
 contract('Ether Crowdsale', async() => {
   let token;
   let crowdsale;
@@ -45,29 +32,6 @@ contract('Ether Crowdsale', async() => {
   let assetURI;
   let tokenAddress;
 
-  let tokenTransferEvent;
-
-
-/*
-  it('Deploy Token', async() => {
-    token = await Token.new('MyBit', tokenSupply);
-  });
-
-  it("Spread tokens to users", async() => {
-    let userBalance;
-    for (var i = 0; i < tokenHolders.length; i++) {
-      //console.log(web3.eth.accounts[i]);
-      await token.transfer(tokenHolders[i], tokenPerAccount);
-      userBalance = await token.balanceOf(tokenHolders[i]);
-      assert.equal(userBalance, tokenPerAccount);
-    }
-    // Check token ledger is correct
-    let totalTokensCirculating = tokenHolders.length * tokenPerAccount;
-    let remainingTokens = bn(tokenSupply).minus(totalTokensCirculating);
-    let ledgerTrue = bn(await token.balanceOf(owner)).eq(remainingTokens);
-    assert.equal(ledgerTrue, true);
-  });
-  */
   it('Deploy hash contract', async() => {
     hash = await HashFunctions.new();
   });
@@ -85,11 +49,6 @@ contract('Ether Crowdsale', async() => {
     crowdsale = await Crowdsale.new(db.address);
     await cm.addContract('EtherCrowdsale', crowdsale.address);
     await cm.addContract('Owner', owner); //Right now some database functions are operated from owner account
-  });
-
-  it('Set platform', async() => {
-    let platformHash = await hash.stringHash('platformWallet');
-    await db.setAddress(platformHash, owner);
   });
 
   it('Set operator', async() => {
@@ -117,7 +76,7 @@ contract('Ether Crowdsale', async() => {
     assert.equal(user1Tokens, 5*ETH);
   });
 
-  it('Start failed funding', async() => {
+  it('Asset already exists fail', async() => {
     let err;
     //Fail because asset already exists
     try{
@@ -126,6 +85,21 @@ contract('Ether Crowdsale', async() => {
       err = e;
     }
     assert.notEqual(err, undefined);
+  });
+
+  it('Fail to buy asset, fail to payout. No platform address', async() => {
+    let err;
+    try{
+      await crowdsale.buyAsset(assetID, {from:user2, value:15*ETH});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it('Set platform', async() => {
+    let platformHash = await hash.stringHash('platformWallet');
+    await db.setAddress(platformHash, owner);
   });
 
   it('User2 funding', async() => {
@@ -142,6 +116,17 @@ contract('Ether Crowdsale', async() => {
 
     operatorBalanceAfter = web3.eth.getBalance(operator);
     assert.equal(bn(operatorBalanceAfter).minus(operatorBalanceBefore).isEqualTo(bn(ETH).multipliedBy(20).minus( bn(ETH).multipliedBy(20).dividedBy(100) )), true);
+  });
+
+  it('User3 funding fail', async() => {
+    //Funding finished
+    let err;
+    try{
+      await crowdsale.buyAsset(assetID, {from:user3, value:5*ETH});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
   });
 
   it('Fail to refund', async() => {
@@ -252,7 +237,29 @@ contract('Ether Crowdsale', async() => {
     assert.equal(bn(user3BalanceAfter).isGreaterThan(user3BalanceBefore), true);
   });
 
+  it('Fail to send money to contract', async() => {
+    let err;
+    try{
+      await web3.eth.sendTransaction({from:user3, to: crowdsale.address, value: ETH});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
 
+  it('Fail to destroy', async() => {
+    let err;
+    try{
+      await crowdsale.destroy({from:user3});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it('Destroy', async() => {
+    await crowdsale.destroy();
+  });
 
 
 });
