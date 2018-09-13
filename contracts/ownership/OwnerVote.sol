@@ -1,12 +1,19 @@
 pragma solidity 0.4.24;
 
 import '../database/Database.sol';
-// @title A contract which allows for multi-sig ownership
+import '../math/SafeMath.sol'; 
+import '../interfaces/ERC20.sol'; 
+
+
+// @title A contract which allows for token holders to restrict/approve functions on the platform
 // @notice Two owners are required to agree on a function to be called
 // @dev An owner has already been initialized when database is deployed
 // @author Kyle Dewhurst, MyBit Foundation
-contract DaoOwnership {
+// TODO: Lock tokens to avoid double voting from different accounts
+contract OwnerVote {
+  using SafeMath for uint256; 
   Database public database;
+
 
   // NOTE: Local contract variables only here as a reference
 
@@ -17,10 +24,9 @@ contract DaoOwnership {
   mapping (bytes32 => bool) public functionCallAuthorized;     // has enough signatures for this contract to call that function
   mapping (bytes32 => uint) public numberOfSignatures; 
 
-  uint public numberOfOwners; 
+  mapping (address => address) public delegate; 
 
-
-  constructor(bytes32[] restrictedFunctions, uint[] quorumLevel)
+  constructor(bytes32[] restrictedFunctions, uint[] _quorumLevel)
   public { 
     // TODo: set the quorum level for these functions 
   }
@@ -52,8 +58,12 @@ contract DaoOwnership {
   external
   anyOwner {
     bytes32 sigRequestID = keccak256(abi.encodePacked(_contractAddress, _methodID, _parameterHash)); 
-    
+    ERC20 platformToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
+    uint tokenHoldings = platformToken.balanceOf(msg.sender); 
+    uint numSignatures = database.uintStorage(keccak256(abi.encodePacked("numberOfSignatures", sigRequestID)));
+    database.setUint(keccak256(abi.encodePacked("numberOfSignatures", sigRequestID)), numSignatures.add(tokenHoldings)); 
   }
+
 
 
   //------------------------------------------------------------------------------------------------------------------
