@@ -1,7 +1,7 @@
 pragma solidity 0.4.24;
 
 import '../../math/SafeMath.sol';
-import '../../interfaces/ERC20.sol';
+import '../../tokens/ERC20/MintableToken.sol';
 
 
 // @notice Receive approval and then execute function
@@ -13,12 +13,10 @@ contract ApproveAndCallFallBack {
 // @notice This token contract can receive payments in the fallback function and token owners receive their share when transferring tokens.
 // Credit goes to Nick Johnson for the dividend token https://medium.com/@weka/dividend-bearing-tokens-on-ethereum-42d01c710657
 // TODO: Suicide function
-contract DividendToken is ERC20 {
+contract DividendToken is MintableToken {
     using SafeMath for uint;
 
-    // @notice Token supply, balances and allowance
-    uint internal supply;
-    mapping (address => uint) internal balances;
+    // @notice Token allowance
     mapping (address => mapping (address => uint)) internal allowed;
 
     string public tokenURI;                 // A reference to a URI containing further token information
@@ -34,12 +32,12 @@ contract DividendToken is ERC20 {
 
 
     // @notice constructor: initialized
-    constructor(string _tokenURI, uint _totalSupply)
+    constructor(string _tokenURI)
     public {
-        supply = _totalSupply;                        // Update total supply
+        supply = 0;                        // Update total supply
         tokenURI = _tokenURI;                         // Set the id for reference
-        balances[msg.sender] = _totalSupply;
-        emit Transfer(address(0), msg.sender, _totalSupply);    // Transfer event indicating token creation
+        //balances[msg.sender] = _totalSupply;
+        //emit Transfer(address(0), msg.sender, _totalSupply);    // Transfer event indicating token creation
     }
 
 
@@ -106,6 +104,14 @@ contract DividendToken is ERC20 {
         return true;
     }
 
+    function issueDividends()
+      payable
+      requiresEther
+      public {
+        valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
+        assetIncome = assetIncome.add(msg.value);
+        emit LogIncomeReceived(msg.sender, msg.value);
+    }
 
     // @notice Updates incomeClaimed, sends all wei to the token holder
     function collectOwedDividends()
