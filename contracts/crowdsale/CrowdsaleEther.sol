@@ -2,7 +2,7 @@
 
   import "../math/SafeMath.sol";
   import "../interfaces/Crowdsale.sol";
-  import "../database/Database.sol";
+  import "../interfaces/DBInterface.sol";
   import "../tokens/ERC20/DividendToken.sol";         // Change to Mintable or Burnable if needed
 
 
@@ -12,13 +12,13 @@
   contract CrowdsaleEther is Crowdsale{
     using SafeMath for uint256;
 
-    Database public database;
+    DBInterface public database;
 
     // @notice Constructor: Initiates the database
     // @param: The address for the database contract
     constructor(address _database)
     public {
-        database = Database(_database);
+        database = DBInterface(_database);
     }
 
     // @notice brokers can initiate a crowdfund for a new asset here
@@ -26,17 +26,18 @@
     // @dev can lookup the amount of escrow in the database with sha3("brokerEscrow", assetID)
     function startFundingPeriod(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, uint _brokerFee)
     external {
-      address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))); 
-      require(operatorAddress != address(0)); 
+      address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID)));
+      require(operatorAddress != address(0));
       bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
       require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
-      DividendToken newAsset = new DividendToken(_assetURI, _amountToRaise);   // Gives this contract all new asset tokens
+      DividendToken newAsset = new DividendToken(_assetURI);   // Gives this contract all new asset tokens
       database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
+      database.setUint(keccak256(abi.encodePacked("amountToRaise", assetID)), _amountToRaise);
       database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));
       database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
       database.setUint(keccak256(abi.encodePacked("brokerFee", assetID)), _brokerFee);     // Percentage of income that goes to broker
       database.setAddress(keccak256(abi.encodePacked("operator", assetID)), operatorAddress);   // TODO: Could reconstruct this using event logs
-      emit LogAssetFundingStarted(assetID, msg.sender, _assetURI);
+      emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, address(newAsset));
     }
 
     // @notice Users can send Ether here to fund asset if the deadline has not already passed.
@@ -45,17 +46,19 @@
     payable
     requiresEther
     beforeDeadline(_assetID)
+    notFinished(_assetID)
     returns (bool) {
       DividendToken thisToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-      uint tokensRemaining = thisToken.balanceOf(address(this));
+      uint tokensRemaining = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID))).sub(thisToken.totalSupply());
       if (msg.value >= tokensRemaining) {
-        require(thisToken.transfer(msg.sender, tokensRemaining));   // Send remaining asset tokens
+        require(thisToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens
+        require(thisToken.finishMinting());
         require(payout(_assetID, thisToken.totalSupply()));          // 1 token = 1 wei
         msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI
-        database.deleteUint(keccak256(abi.encodePacked("fundingDeadline", _assetID)));   // This should disable ability to get refund
+        database.setBool(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)), true);
       }
       else {
-        require(thisToken.transfer(msg.sender, msg.value));
+        require(thisToken.mint(msg.sender, msg.value));
       }
       emit LogAssetPurchased(_assetID, msg.sender, msg.value);
       return true;
@@ -68,13 +71,22 @@
     external
     whenNotPaused
     afterDeadline(_assetID)
+    notFinished(_assetID)
     returns (bool) {
-      DividendToken assetToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-      uint investorBalance = assetToken.balanceOf(msg.sender);
-      require(investorBalance > 0);
-      require(assetToken.transferFrom(msg.sender, address(0), investorBalance));  
-      msg.sender.transfer(investorBalance);
-      emit LogRefund(_assetID, msg.sender, investorBalance);
+      //DividendToken assetToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+      //uint investorBalance = assetToken.balanceOf(msg.sender);
+      //require(investorBalance > 0);
+      //require(assetToken.transferFrom(msg.sender, address(0), investorBalance));
+      //msg.sender.transfer(investorBalance);
+      //emit LogRefund(_assetID, msg.sender, investorBalance);
+
+      address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)));
+      DividendToken assetToken = DividendToken(tokenAddress);
+      //uint tokensRemaining = assetToken.balanceOf(address(this));
+      uint refundValue = assetToken.totalSupply(); //token=wei
+      database.setBool(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)), true);
+      //tokenAddress.transfer(refundValue);
+      assetToken.issueDividends.value(refundValue)();
       return true;
     }
 
@@ -103,13 +115,13 @@
     internal
     whenNotPaused
     returns (bool) {
-      address operator = database.addressStorage(keccak256(abi.encodePacked("operator", _assetID))); 
+      address operator = database.addressStorage(keccak256(abi.encodePacked("operator", _assetID)));
       address platformWallet = database.addressStorage(keccak256(abi.encodePacked("platformWallet")));
-      assert (operator != address(0) && platformWallet != address(0)); 
+      assert (operator != address(0) && platformWallet != address(0));
       uint operatorPortion = _amount.mul(99).div(100);          // Give operator 99%
-      uint platformPortion = _amount.sub(operatorPortion);      // Give platform 1% 
+      uint platformPortion = _amount.sub(operatorPortion);      // Give platform 1%
       operator.transfer(operatorPortion);
-      platformWallet.transfer(platformPortion); 
+      platformWallet.transfer(platformPortion);
       emit LogAssetPayout(_assetID, operator, _amount);
       return true;
     }
@@ -150,13 +162,18 @@
       _;
     }
 
+    // @notice returns true if crowdsale is not finshed
+    modifier notFinished(bytes32 _assetID) {
+      require( !database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinished", _assetID))) );
+      _;
+    }
 
 
     //------------------------------------------------------------------------------------------------------------------
     //                                            Events
     //------------------------------------------------------------------------------------------------------------------
 
-    event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _broker, string _tokenURI);
+    event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _broker, string _tokenURI, address indexed _tokenAddress);
     event LogAssetPurchased(bytes32 indexed _assetID, address indexed _sender, uint _amount);
     event LogRefund(bytes32 indexed _assetID, address indexed _funder, uint _amount);
     event LogAssetPayout(bytes32 indexed _assetID, address indexed _distributionContract, uint _amount);

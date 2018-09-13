@@ -28,16 +28,16 @@
     // TODO: restrict _fundingToken depending on operators preferences
     function startFundingPeriod(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, address _fundingToken)
     external {
-      address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))); 
-      require(operatorAddress != address(0)); 
+      address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID)));
+      require(operatorAddress != address(0));
       bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
       require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
-      DividendToken newAsset = new DividendToken(_assetURI, _amountToRaise);   // Gives this full asset token supply
+      DividendToken newAsset = new DividendToken(_assetURI);   // Gives this full asset token supply
       database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
       database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));
       database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
       database.setAddress(keccak256(abi.encodePacked("operator", assetID)), operatorAddress);   // TODO: Could reconstruct this using event logs
-      database.setAddress(keccak256(abi.encodePacked("fundingToken", assetID)), _fundingToken); 
+      database.setAddress(keccak256(abi.encodePacked("fundingToken", assetID)), _fundingToken);
       emit LogAssetFundingStarted(assetID, msg.sender, _assetURI);
     }
 
@@ -45,11 +45,11 @@
     // @notice Users can send Ether here to fund asset if the deadline has not already passed.
     // @param (bytes32) _assetID = The ID of the asset tokens, user wishes to purchase
     function buyAsset(bytes32 _assetID, uint _amount)
-    external 
+    external
     beforeDeadline(_assetID)
     returns (bool) {
-      DividendToken assetToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-      DividendToken fundingToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
+      DividendToken assetToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress"))));
+      DividendToken fundingToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("fundingToken"))));
       uint tokensRemaining = assetToken.balanceOf(address(this));
       if (_amount >= tokensRemaining) {
         database.deleteUint(keccak256(abi.encodePacked("fundingDeadline", _assetID)));   // This should disable ability to get refund
@@ -59,11 +59,11 @@
         emit LogAssetPurchased(_assetID, msg.sender, tokensRemaining);
       }
       else {
-        require(fundingToken.transferFrom(msg.sender, address(this), _amount)); 
+        require(fundingToken.transferFrom(msg.sender, address(this), _amount));
         require(assetToken.transfer(msg.sender, _amount));
         emit LogAssetPurchased(_assetID, msg.sender, _amount);
       }
-      return true; 
+      return true;
     }
 
 
@@ -73,10 +73,10 @@
     afterDeadline(_assetID)
     returns (bool) {
       DividendToken assetToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-      DividendToken fundingToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID)))); 
+      DividendToken fundingToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
       uint userBalance = assetToken.balanceOf(msg.sender);
       require(userBalance > 0);
-      require(assetToken.transferFrom(msg.sender, address(0), userBalance));   
+      require(assetToken.transferFrom(msg.sender, address(0), userBalance));
       fundingToken.transfer(msg.sender, userBalance);
       emit LogRefund(_assetID, msg.sender, userBalance);
       return true;
@@ -87,10 +87,10 @@
     function recoverTokens(address[] _erc20Tokens)
     onlyOwner
     public {
-      for (uint256 i = 0; i < _erc20Tokens.length; i++){ 
-        DividendToken thisToken = DividendToken(_erc20Tokens[i]); 
-        uint contractBalance = thisToken.balanceOf(address(this)); 
-        thisToken.transfer(msg.sender, contractBalance); 
+      for (uint256 i = 0; i < _erc20Tokens.length; i++){
+        DividendToken thisToken = DividendToken(_erc20Tokens[i]);
+        uint contractBalance = thisToken.balanceOf(address(this));
+        thisToken.transfer(msg.sender, contractBalance);
       }
     }
 
@@ -123,12 +123,12 @@
     whenNotPaused
     returns (bool) {
       DividendToken fundingToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
-      address operator = database.addressStorage(keccak256(abi.encodePacked("operator", _assetID))); 
+      address operator = database.addressStorage(keccak256(abi.encodePacked("operator", _assetID)));
       address platformWallet = database.addressStorage(keccak256(abi.encodePacked("platformWallet")));
-      uint operatorPortion = _amount.mul(99).div(100); 
-      uint platformPortion = _amount.sub(operatorPortion); 
+      uint operatorPortion = _amount.mul(99).div(100);
+      uint platformPortion = _amount.sub(operatorPortion);
       fundingToken.transfer(operator, operatorPortion);
-      fundingToken.transfer(platformWallet, platformPortion); 
+      fundingToken.transfer(platformWallet, platformPortion);
       emit LogAssetPayout(_assetID, operator, _amount);
       return true;
     }
