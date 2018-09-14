@@ -63,4 +63,15 @@ contract('SafeMath', async() => {
       }
       assert.notEqual(err, undefined);
     });
+
+    it('Test fractional amount', async() => {
+      let total = await sf.fraction(562, 2);
+      assert.equal(total, 11);
+    });
+
+    it('Bytes to Uint', async() => {
+      let total = await sf.bToU('100');
+      console.log(total);
+      assert.equal(total, 100);
+    });
 });
