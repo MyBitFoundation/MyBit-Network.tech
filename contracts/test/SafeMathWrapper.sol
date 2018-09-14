@@ -4,6 +4,7 @@ import "../math/SafeMath.sol";
 
 contract SafeMathWrapper {
   using SafeMath for uint;
+  using SafeMath for bytes;
 
   function multiply(uint256 a, uint256 b) external pure returns (uint256) {
     return a.mul(b);
@@ -19,6 +20,14 @@ contract SafeMathWrapper {
 
   function addto(uint256 a, uint256 b) external pure returns (uint256) {
     return a.add(b);
+  }
+
+  function fraction(uint256 a, uint256 b) external pure returns (uint256) {
+    return a.getFractionalAmount(b);
+  }
+
+  function bToU(bytes a) external pure returns (uint256) {
+    return a.bytesToUint();
   }
 
 }
