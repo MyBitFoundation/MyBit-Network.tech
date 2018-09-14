@@ -2,13 +2,13 @@ pragma solidity ^0.4.24;
 
 import "./StandardToken.sol";
 import "../../interfaces/BurnableERC20.sol";
-import "../../math/SafeMath.sol"; 
+import "../../math/SafeMath.sol";
 
 
 contract BurnableToken is BurnableERC20 {
-  using SafeMath for uint256; 
+  using SafeMath for uint256;
 
-  string public tokenURI; 
+  string public tokenURI;
 
   mapping(address => uint256) internal balances;
 
@@ -32,8 +32,8 @@ contract BurnableToken is BurnableERC20 {
   * @param _to The address to transfer to.
   * @param _value The amount to be transferred.
   */
-  function transfer(address _to, uint256 _value) 
-  public 
+  function transfer(address _to, uint256 _value)
+  public
   returns (bool) {
     require(_value <= balances[msg.sender]);
     require(_to != address(0));
@@ -52,8 +52,8 @@ contract BurnableToken is BurnableERC20 {
   * @param _spender The address which will spend the funds.
   * @param _value The amount of tokens to be spent.
   */
-  function approve(address _spender, uint256 _value) 
-  public 
+  function approve(address _spender, uint256 _value)
+  public
   returns (bool) {
     allowed[msg.sender][_spender] = _value;
     emit Approval(msg.sender, _spender, _value);
@@ -123,9 +123,9 @@ contract BurnableToken is BurnableERC20 {
   // ------------------------------------------------------------------------
   // Removes senders tokens from supply.
   // Lowers user balance and totalSupply by _amount
-  // ------------------------------------------------------------------------   
-  function burn(uint _amount) 
-  public 
+  // ------------------------------------------------------------------------
+  function burn(uint _amount)
+  public
   returns (bool success) {
     balances[msg.sender] = balances[msg.sender].sub(_amount);
     supply = supply.sub(_amount);
@@ -136,10 +136,10 @@ contract BurnableToken is BurnableERC20 {
 
   // ------------------------------------------------------------------------
   // An approved sender can burn _amount tokens of user _from
-  // Lowers user balance and supply by _amount 
-  // ------------------------------------------------------------------------    
-  function burnFrom(address _from, uint _amount) 
-  public 
+  // Lowers user balance and supply by _amount
+  // ------------------------------------------------------------------------
+  function burnFrom(address _from, uint _amount)
+  public
   returns (bool success) {
     balances[_from] = balances[_from].sub(_amount);                         // Subtract from the targeted balance
     allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_amount);             // Subtract from the sender's allowance

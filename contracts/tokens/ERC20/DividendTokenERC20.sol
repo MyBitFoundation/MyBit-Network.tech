@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import '../../math/SafeMath.sol';
 import '../../tokens/ERC20/MintableToken.sol';
@@ -17,30 +17,27 @@ contract ApproveAndCallFallBack {
 contract DividendTokenERC20 is MintableToken {
     using SafeMath for uint;
 
-    // @notice Token allowance
-    mapping (address => mapping (address => uint)) internal allowed;
-
     ERC20 public erc20;
     string public tokenURI;                 // A reference to a URI containing further token information
 
     // @notice Token Income Information
     uint constant scalingFactor = 1e32;
 
-    uint public assetIncome;
-    uint public assetIncomeIssued;
-    uint public valuePerToken;
+    uint private assetIncome;
+    uint private assetIncomeIssued;
+    uint private valuePerToken;
 
 
-    mapping (address => uint) public incomeClaimed;
-    mapping (address => uint) public previousValuePerToken;
+    mapping (address => uint) private incomeClaimed;
+    mapping (address => uint) private previousValuePerToken;
 
 
     // @notice constructor: initialized
-    constructor(string _tokenURI, address _tokenAddress)
+    constructor(string _tokenURI, address _erc20Address)
     public {
         supply = 0;                        // Update total supply
         tokenURI = _tokenURI;                         // Set the id for reference
-        erc20 = ERC20(_tokenAddress); //Set the address of the ERC20 token that will be issued as dividends
+        erc20 = ERC20(_erc20Address); //Set the address of the ERC20 token that will be issued as dividends
         //balances[msg.sender] = _totalSupply;
         //emit Transfer(address(0), msg.sender, _totalSupply);    // Transfer event indicating token creation
     }
@@ -50,6 +47,7 @@ contract DividendTokenERC20 is MintableToken {
     // @dev Sender must have enough tokens. Cannot send to 0x0.
     // @param (address) _to = The address which will receive the tokens
     // @param (uint) _amount = The amount of tokens to send
+    /*
     function transfer(address _to, uint _amount)
     public
     updateIncomeClaimed(msg.sender)
@@ -62,12 +60,23 @@ contract DividendTokenERC20 is MintableToken {
         emit Transfer(msg.sender, _to, _amount);
         return true;
     }
+    */
+    function transfer(address _to, uint _amount)
+    public
+    updateIncomeClaimed(msg.sender)
+    updateIncomeClaimed(_to)
+    returns (bool success) {
+        require(_to != address(this));
+        super.transfer(_to, _amount);
+        return true;
+    }
 
     // @notice A 3rd party can transfer tokens if user approves them to do so
     // @dev Transfer _amount of tokens if _from has allowed msg.sender to do so.
     // @param (address) _from = The address who approved msg.sender to spend tokens
     // @param (address) _to = The address who will receive the tokens
     // @param (uint) _amount = The number of tokens to send
+    /*
     function transferFrom(address _from, address _to, uint _amount)
     public
     updateIncomeClaimed(_from)
@@ -81,18 +90,16 @@ contract DividendTokenERC20 is MintableToken {
         emit Transfer(_from, _to, _amount);
         return true;
     }
-
-    // @notice approves a 3rd party to transfer msg.sender's tokens on behalf of him/her
-    // @param (address) _spender = The address of who msg.sender approves to spend tokens on their behalf
-    // @param (uint) _amount = The upper limit of how many tokens can be spent
-    function approve(address _spender, uint _amount)
+    */
+    function transferFrom(address _from, address _to, uint _amount)
     public
+    updateIncomeClaimed(_from)
+    updateIncomeClaimed(_to)
     returns (bool success) {
-        allowed[msg.sender][_spender] = _amount;
-        emit Approval(msg.sender, _spender, _amount);
+        require(_to != address(this));
+        super.transferFrom(_from, _to, _amount);
         return true;
     }
-
 
     // @notice Token holder can notify a contract that it has been approved to spend _amount of tokens
     // @param (address) _spender = The contract to call after approval is done
@@ -134,8 +141,7 @@ contract DividendTokenERC20 is MintableToken {
     //anyone can run this function to clean up the balances
     //and distribute the difference to token holders
     function checkForTransfers()
-    public
-    returns (uint){
+    external {
       uint bookBalance = assetIncome.sub(assetIncomeIssued);
       uint actualBalance = erc20.balanceOf(address(this));
       uint diffBalance = actualBalance.sub(bookBalance);
@@ -151,31 +157,6 @@ contract DividendTokenERC20 is MintableToken {
     // ------------------------------------------------------------------------
     //                           View functions
     // ------------------------------------------------------------------------
-
-    // @notice Returns amount of tokens _spender is allowed to transfer or burn
-    function allowance(address _tokenHolder, address _spender)
-    public
-    view
-    returns (uint) {
-        return allowed[_tokenHolder][_spender];
-    }
-
-    // @notice Returns the number of tokens in circulation
-    function totalSupply()
-    public
-    view
-    returns (uint tokenSupply) {
-        return supply;
-    }
-
-    // @notice Returns the token balance of user
-    function balanceOf(address _tokenHolder)
-    public
-    view
-    returns (uint balance) {
-        return balances[_tokenHolder];
-    }
-
     function tokenURI()
     external
     view
