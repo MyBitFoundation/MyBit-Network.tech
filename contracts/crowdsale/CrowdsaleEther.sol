@@ -1,7 +1,6 @@
   pragma solidity ^0.4.24;
 
   import "../math/SafeMath.sol";
-  import "../interfaces/Crowdsale.sol";
   import "../interfaces/DBInterface.sol";
   import "../tokens/ERC20/DividendToken.sol";         // Change to Mintable or Burnable if needed
 
@@ -9,7 +8,7 @@
   // @title An asset crowdsale contract.
   // @author Kyle Dewhurst, MyBit Foundation
   // @notice creates a dividend token to represent the newly created asset.
-  contract CrowdsaleEther is Crowdsale{
+  contract CrowdsaleEther{
     using SafeMath for uint256;
 
     DBInterface public database;
@@ -49,11 +48,11 @@
       DividendToken thisToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
       uint tokensRemaining = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID))).sub(thisToken.totalSupply());
       if (msg.value >= tokensRemaining) {
+        database.setBool(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)), true);
         require(thisToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens
         require(thisToken.finishMinting());
         require(payout(_assetID, thisToken.totalSupply()));          // 1 token = 1 wei
         msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI
-        database.setBool(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)), true);
       }
       else {
         require(thisToken.mint(msg.sender, msg.value));
@@ -78,12 +77,10 @@
       //msg.sender.transfer(investorBalance);
       //emit LogRefund(_assetID, msg.sender, investorBalance);
 
-      address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)));
-      DividendToken assetToken = DividendToken(tokenAddress);
+      DividendToken assetToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
       //uint tokensRemaining = assetToken.balanceOf(address(this));
       uint refundValue = assetToken.totalSupply(); //token=wei
       database.setBool(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)), true);
-      //tokenAddress.transfer(refundValue);
       assetToken.issueDividends.value(refundValue)();
       return true;
     }
