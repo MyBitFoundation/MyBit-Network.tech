@@ -9,10 +9,6 @@ import "./StandardToken.sol";
  */
 contract MintableToken is DividendToken {
 
-  // @notice Token supply, balances
-  uint internal supply;
-  mapping (address => uint) internal balances;
-
   bool public mintingFinished = false;
 
 

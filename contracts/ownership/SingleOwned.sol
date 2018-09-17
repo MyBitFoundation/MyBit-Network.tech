@@ -8,9 +8,10 @@ contract SingleOwned {
 
   Database public database;
 
-  constructor(address _database, address _owner) public {
+  constructor(address _database) public {
     database = Database(_database);
-    database.setAddress(keccak256(abi.encodePacked("owner")),  _owner);
+    //database.setAddress(keccak256(abi.encodePacked("owner")),  _owner);
+    //database.boolStorage(keccak256(abi.encodePacked("owner", _owner))) = true;
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -19,13 +20,15 @@ contract SingleOwned {
   function changeOwner(address _newOwner)
   public
   onlyOwner {
-    database.setAddress(keccak256(abi.encodePacked("owner")), _newOwner);
+    //database.setAddress(keccak256(abi.encodePacked("owner")), _newOwner);
+    database.setBool(keccak256(abi.encodePacked("owner", _newOwner)), true);
+    database.setBool(keccak256(abi.encodePacked("owner", msg.sender)), false);
     emit OwnershipTransferred(msg.sender, _newOwner);
   }
 
   // @notice reverts if caller is not the owner
   modifier onlyOwner() {
-    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("owner", msg.sender))));
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))) == true);
     _;
   }
 
