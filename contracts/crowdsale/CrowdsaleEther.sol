@@ -1,7 +1,6 @@
   pragma solidity ^0.4.24;
 
   import "../math/SafeMath.sol";
-  import "../interfaces/Crowdsale.sol";
   import "../interfaces/DBInterface.sol";
   import "../tokens/ERC20/DividendToken.sol";         // Change to Mintable or Burnable if needed
 
@@ -9,7 +8,7 @@
   // @title An asset crowdsale contract.
   // @author Kyle Dewhurst, MyBit Foundation
   // @notice creates a dividend token to represent the newly created asset.
-  contract CrowdsaleEther is Crowdsale{
+  contract CrowdsaleEther{
     using SafeMath for uint256;
 
     DBInterface public database;
