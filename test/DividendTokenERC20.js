@@ -1,6 +1,7 @@
 var bn = require('bignumber.js');
 
-const Token = artifacts.require("./tokens/ERC20/DividendToken.sol");
+const Token = artifacts.require("./tokens/ERC20/DividendTokenERC20.sol");
+const BurnableToken = artifacts.require("./tokens/ERC20/BurnableToken.sol");
 
 const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
@@ -16,11 +17,16 @@ const tokenSupply = tokenHolders.length * tokenPerAccount;
 
 let tokenURI = 'https://mybit.io';
 
-contract('Token', async() => {
+contract('Dividend Token ERC20', async() => {
   let token;
+  let erc20;
 
-  it('Deploy Token', async() => {
-    token = await Token.new(tokenURI);
+  it("Deploy standard token", async() => {
+    erc20 = await BurnableToken.new('Dai', 10000*ETH);
+  });
+
+  it('Deploy Dividend Token', async() => {
+    token = await Token.new(tokenURI, erc20.address);
   });
 
   it("Spread tokens to users", async() => {
@@ -45,14 +51,16 @@ contract('Token', async() => {
     console.log(tokenURI);
   });
 
-  it('Send money to token contract', async() => {
-    await web3.eth.sendTransaction({from:owner, to:token.address, value:10*ETH})
+  it('Send erc20 to token contract', async() => {
+    await erc20.approve(token.address, 10*ETH);
+    await token.issueDividends(10*ETH, {from:owner});
   });
 
   it('Fail to send money', async() => {
     let err;
     try{
-      await web3.eth.sendTransaction({from:owner, to:token.address, value:0})
+      await erc20.approve(token.address, 10*ETH);
+      await token.issueDividends(0, {from:owner});
     } catch(e){
       err = e;
     }
@@ -66,31 +74,31 @@ contract('Token', async() => {
   });
 
   it('Transfer tokens with dividends not withdrawn', async() => {
-    user2Balance1 = web3.eth.getBalance(user2);
+    user2Balance1 = await erc20.balanceOf(user2);
     await token.transfer(user3, tokenPerAccount/2, {from: user2});
-    user2Balance2 = web3.eth.getBalance(user2);
+    user2Balance2 = await erc20.balanceOf(user2);
     console.log(user2Balance2 - user2Balance1);
     await token.collectOwedDividends({from: user2})
-    user2Balance3 = web3.eth.getBalance(user2);
+    user2Balance3 = await erc20.balanceOf(user2);
     console.log(user2Balance3 - user2Balance2);
 
-    await web3.eth.sendTransaction({from:owner, to:token.address, value:10*ETH})
-    user3Balance1 = web3.eth.getBalance(user3);
+    await token.issueDividends(10*ETH, {from:owner})
+    user3Balance1 = await erc20.balanceOf(user3);
     await token.collectOwedDividends({from: user3})
-    user3Balance2 = web3.eth.getBalance(user3);
+    user3Balance2 = await erc20.balanceOf(user3);
     console.log(user3Balance2 - user3Balance1);
 
     await token.collectOwedDividends({from: user2})
-    user2Balance4 = web3.eth.getBalance(user2);
+    user2Balance4 = await erc20.balanceOf(user2);
     console.log(user2Balance4 - user2Balance3);
 
     await token.collectOwedDividends({from: user2})
-    user2Balance5 = web3.eth.getBalance(user2);
+    user2Balance5 = await erc20.balanceOf(user2);
     console.log(user2Balance5 - user2Balance4);
 
-    user1Balance1 = web3.eth.getBalance(user1);
+    user1Balance1 = await erc20.balanceOf(user1);
     await token.collectOwedDividends({from: user1})
-    user1Balance2 = web3.eth.getBalance(user1);
+    user1Balance2 = await erc20.balanceOf(user1);
     console.log(user1Balance2 - user1Balance1);
   });
 
@@ -148,6 +156,22 @@ contract('Token', async() => {
   it('Transfer From', async() => {
     await token.transferFrom(user2, user1, 5000, {from: user1});
     assert.equal(await token.allowance(user2, user1), 5000);
+  });
+
+  it('Check for direct transfers', async() => {
+    let tx = await token.checkForTransfers();
+    diff = tx.logs[0].args._difference;
+    assert.equal(diff, 0);
+  });
+
+  it('Send erc20 directly to dividend contract', async() => {
+    await erc20.transfer(token.address, 10*ETH);
+  });
+
+  it('Check for direct transfers', async() => {
+    let tx = await token.checkForTransfers();
+    diff = tx.logs[0].args._difference;
+    assert.equal(diff, 10*ETH);
   });
 
 });

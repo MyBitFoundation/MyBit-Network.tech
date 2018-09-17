@@ -1,19 +1,17 @@
   pragma solidity ^0.4.24;
 
   import "../math/SafeMath.sol";
-  import "../interfaces/Crowdsale.sol";
   import "../interfaces/DBInterface.sol";
-  import "../tokens/ERC20/DividendToken.sol";
-
-
+  import "../tokens/ERC20/DividendTokenERC20.sol";
+  import "../interfaces/ERC20.sol";
 
   // @title An asset crowdsale contract.
   // @author Kyle Dewhurst, MyBit Foundation
   // @notice creates a dividend token to represent the newly created asset.
-  contract CrowdsaleERC20 is Crowdsale {
+  contract CrowdsaleERC20{
     using SafeMath for uint256;
 
-    DBInterface public database;
+    DBInterface private database;
 
     // @notice This contract
     // @param: The address for the AssetCreation contract
@@ -32,35 +30,37 @@
       require(operatorAddress != address(0));
       bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
       require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
-      DividendToken newAsset = new DividendToken(_assetURI);   // Gives this full asset token supply
+      DividendTokenERC20 newAsset = new DividendTokenERC20(_assetURI, _fundingToken);   // Gives this full asset token supply
       database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
+      database.setUint(keccak256(abi.encodePacked("amountToRaise", assetID)), _amountToRaise);
       database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));
       database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
       database.setAddress(keccak256(abi.encodePacked("operator", assetID)), operatorAddress);   // TODO: Could reconstruct this using event logs
       database.setAddress(keccak256(abi.encodePacked("fundingToken", assetID)), _fundingToken);
-      emit LogAssetFundingStarted(assetID, msg.sender, _assetURI);
+      emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, address(newAsset));
     }
 
 
-    // @notice Users can send Ether here to fund asset if the deadline has not already passed.
+    // @notice Users can send ERC20 here to fund asset if the deadline has not already passed.
     // @param (bytes32) _assetID = The ID of the asset tokens, user wishes to purchase
     function buyAsset(bytes32 _assetID, uint _amount)
     external
-    beforeDeadline(_assetID)
+    notFinished(_assetID)
     returns (bool) {
-      DividendToken assetToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress"))));
-      DividendToken fundingToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("fundingToken"))));
-      uint tokensRemaining = assetToken.balanceOf(address(this));
+      require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
+      DividendTokenERC20 assetToken = DividendTokenERC20(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+      ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
+      uint tokensRemaining = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID))).sub(assetToken.totalSupply());
       if (_amount >= tokensRemaining) {
-        database.deleteUint(keccak256(abi.encodePacked("fundingDeadline", _assetID)));   // This should disable ability to get refund
+        database.setBool(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)), true);
         require(fundingToken.transferFrom(msg.sender, address(this), tokensRemaining));    // transfer investors tokens into contract
-        require(assetToken.transfer(msg.sender, tokensRemaining));   // Send remaining asset tokens to investor
+        require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens to investor
+        require(assetToken.finishMinting());
         require(payout(_assetID, assetToken.totalSupply()));          // 1 token = 1 wei
         emit LogAssetPurchased(_assetID, msg.sender, tokensRemaining);
-      }
-      else {
+      } else {
         require(fundingToken.transferFrom(msg.sender, address(this), _amount));
-        require(assetToken.transfer(msg.sender, _amount));
+        require(assetToken.mint(msg.sender, _amount));
         emit LogAssetPurchased(_assetID, msg.sender, _amount);
       }
       return true;
@@ -70,46 +70,41 @@
     // @notice Contributors can retrieve their funds here if crowdsale has paased deadline
     function refund(bytes32 _assetID)
     external
-    afterDeadline(_assetID)
+    whenNotPaused
+    notFinished(_assetID)
     returns (bool) {
-      DividendToken assetToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-      DividendToken fundingToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
-      uint userBalance = assetToken.balanceOf(msg.sender);
-      require(userBalance > 0);
-      require(assetToken.transferFrom(msg.sender, address(0), userBalance));
-      fundingToken.transfer(msg.sender, userBalance);
-      emit LogRefund(_assetID, msg.sender, userBalance);
+      require(now > database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
+      address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)));
+      DividendTokenERC20 assetToken = DividendTokenERC20(tokenAddress);
+      ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
+
+      uint refundValue = assetToken.totalSupply(); //token=wei
+      database.setBool(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)), true);
+      fundingToken.approve(tokenAddress, refundValue);
+      assetToken.issueDividends(refundValue);
       return true;
     }
 
 
     // @notice platform owners can recover tokens here
-    function recoverTokens(address[] _erc20Tokens)
+    /*
+    function recoverTokens(address _erc20Token)
     onlyOwner
-    public {
-      for (uint256 i = 0; i < _erc20Tokens.length; i++){
-        DividendToken thisToken = DividendToken(_erc20Tokens[i]);
-        uint contractBalance = thisToken.balanceOf(address(this));
-        thisToken.transfer(msg.sender, contractBalance);
-      }
+    external {
+      ERC20 thisToken = ERC20(_erc20Token);
+      uint contractBalance = thisToken.balanceOf(address(this));
+      thisToken.transfer(msg.sender, contractBalance);
     }
-
+    */
+    /*
     // @notice platform owners can destroy contract here
     function destroy()
     onlyOwner
-    public {
+    external {
       emit LogDestruction(address(this).balance, msg.sender);
       selfdestruct(msg.sender);
     }
-
-    //------------------------------------------------------------------------------------------------------------------
-    // Fallback: Reject Ether
-    //------------------------------------------------------------------------------------------------------------------
-    function ()
-    public
-    payable {
-      revert();
-    }
+    */
 
 
     //------------------------------------------------------------------------------------------------------------------
@@ -119,10 +114,10 @@
     // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where operator/broker can withdraw
     // @dev The contract manager needs to know  the address PlatformDistribution contract
     function payout(bytes32 _assetID, uint _amount)
-    internal
+    private
     whenNotPaused
     returns (bool) {
-      DividendToken fundingToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
+      ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
       address operator = database.addressStorage(keccak256(abi.encodePacked("operator", _assetID)));
       address platformWallet = database.addressStorage(keccak256(abi.encodePacked("platformWallet")));
       uint operatorPortion = _amount.mul(99).div(100);
@@ -138,13 +133,6 @@
     //                                            Modifiers
     //------------------------------------------------------------------------------------------------------------------
 
-
-    // @notice Requires that Ether is sent with the transaction
-    modifier requiresEther() {
-      require(msg.value > 0);
-      _;
-    }
-
     // @notice Sender must be a registered owner
     modifier onlyOwner {
       require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
@@ -157,27 +145,18 @@
       _;
     }
 
-    // @notice reverts if the funding deadline has already past
-    modifier beforeDeadline(bytes32 _assetID) {
-      require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
+    // @notice returns true if crowdsale is not finshed
+    modifier notFinished(bytes32 _assetID) {
+      require( !database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinished", _assetID))) );
       _;
     }
-
-    // @notice reverts if the funding deadline has already past
-    modifier afterDeadline(bytes32 _assetID) {
-      require(now > database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
-      _;
-    }
-
-
 
     //------------------------------------------------------------------------------------------------------------------
     //                                            Events
     //------------------------------------------------------------------------------------------------------------------
 
-    event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _broker, string _tokenURI);
+    event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _broker, string _tokenURI, address indexed _tokenAddress);
     event LogAssetPurchased(bytes32 indexed _assetID, address indexed _sender, uint _amount);
-    event LogRefund(bytes32 indexed _assetID, address indexed _funder, uint _amount);
     event LogAssetPayout(bytes32 indexed _assetID, address indexed _operator, uint _amount);
     event LogDestruction(uint _amountSent, address indexed _caller);
   }
