@@ -16,18 +16,22 @@ The SDK's contain a local blockchain and smart-contracts for developers to run a
 ## Getting Started
 
 ## Roles 
+All actors must use Ethereum on a dapp brower to use the full functionality of the platform. All actors are authorized by the platform according to their public Ethereum address. 
+
+#### Platform Owner(s)
+The owners of the platform are in charge of deciding high level upgrades and authorization changes made in the platform. Ownership can be decided by one owner, a multi-sig, or token holders themselves. 
 
 #### Investor 
-The investor is any user that holds asset tokens through participating in an asset crowdsale or by means of purchasing on an exchange.
+The investor is any user that holds asset tokens through participating in an asset crowdsale or by means of purchasing them on an exchange.
 
 #### Broker 
-The Asset Manager is a user that initiates a crowdfunding period for an asset. After the funding period the Asset Manager is in charge of handling real world operations between the asset operator and the investors. The role of the asset manager varies depending on the type of asset, but generally they hold responsibility for making sure the asset operates properly if the conditions allow it. 
+The Broker is a user that initiates a crowdfunding period for an asset. After the funding period, the Broker is in charge of handling real world operations between the asset operator and the investors. The role of the Broker varies depending on the type of asset, but they are responsible for the asset operating properly if the conditions allow it. The Broker can put down tokens in escrow, which is at stake to get burned if the owners of the asset find negligence. 
 
 #### Operator
-The operator is the producer of the asset. They are in charge of receiving the crowdfunding funds and producing, delivering and installing the asset. 
+The operator is the producer of the asset, physical or digital. They are in charge of receiving the crowdfunding funds and producing, delivering and installing the asset. Brokers will deal with Operators to ensure continued functioning of the asset. 
 
 #### StakeHolders 
-The Stakeholders have the opportunity to purchase a portion of the Brokers earnings in exchange for depositing escrow in the place of the Broker. 
+The Stakeholders have the opportunity to purchase a portion of the Brokers earnings in exchange for depositing escrow in the place of the Broker. The Stakeholders will agree on a contract address for Broker fees to get sent and split according to the arrangement between Brokers and Stakeholders. 
 
 ✏️ All contracts are written in [Solidity](https://solidity.readthedocs.io/en/v0.4.24/) version 0.4.24.
 
