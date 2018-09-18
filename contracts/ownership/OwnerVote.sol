@@ -24,11 +24,11 @@ contract OwnerVote {
   mapping (bytes32 => bool) public functionCallAuthorized;     // has enough signatures for this contract to call that function
   mapping (bytes32 => uint) public numberOfSignatures; 
 
-  mapping (address => address) public delegate; 
+  mapping (address => address) public delegate;    // user can authorize another address to vote for them
 
   constructor(bytes32[] restrictedFunctions, uint[] _quorumLevel)
   public { 
-    // TODo: set the quorum level for these functions 
+    // TODo: set the quorum level for functions within this contract ie. addRestrictedFunction() , signForFunctionCall
   }
 
   function addOwner(address _newOwner)
