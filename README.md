@@ -16,7 +16,7 @@ The SDK's contain a local blockchain and smart-contracts for developers to run a
 ## Getting Started
 
 ## Roles 
-All actors must use Ethereum on a dapp brower to use the full functionality of the platform. All actors are authorized by the platform according to their public Ethereum address. 
+The tokenized asset management structure is made up of different actors who have specific incentives to participate in the creation and management of tokenized assets within the ecosystem. The assets are managed by the broker, who receives a fee for his work and escrows tokens as collateral to investors. The tokens remain in escrow until the asset tokens returns sufficient income. The platform owners can choose how assets are governed, whether by asset token holders or designated ownership roles.  
 
 #### Platform Owner(s)
 The owners of the platform are in charge of deciding high level upgrades and authorization changes made in the platform. Ownership can be decided by one owner, a multi-sig, or token holders themselves. 
