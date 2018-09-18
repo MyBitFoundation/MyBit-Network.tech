@@ -8,11 +8,10 @@ import '../../interfaces/ERC20.sol';
 // @notice This token contract can receive payments in the fallback function and token owners can withdraw their share
 // Credit goes to Nick Johnson for the dividend token https://medium.com/@weka/dividend-bearing-tokens-on-ethereum-42d01c710657
 // TODO: Suicide function
-contract MintableDistribution is ERC20 {
+
+contract FixedDistribution is ERC20 {
   using SafeMath for uint;
 
-  bool public mintingFinished = false;
-  address public mint; 
 
   uint public totalSupply;
   mapping (address => uint) internal balanceOf;
@@ -30,10 +29,15 @@ contract MintableDistribution is ERC20 {
 
 
   // @notice constructor: initialized
-  constructor(string _tokenURI, address _mint)
+  constructor(string _tokenURI, address[] _tokenHolders, uint[] _amount)
   public {
-      tokenURI = _tokenURI;                         // Set the id for reference
-      mint = _mint; 
+    uint _totalSupply;
+    tokenURI = _tokenURI; 
+    for (uint8 i = 0; i < _tokenHolders.length; i++;) { 
+      totalSupply = totalSupply.add(_amount[i]); 
+      balanceOf[_tokenHolders[i]] = balanceOf[_tokenHolders[i]].add(_amount[i]); 
+    }
+    totalSupply = _totalSupply; 
   }
 
   function issueDividends()
@@ -46,7 +50,7 @@ contract MintableDistribution is ERC20 {
   }
 
   // @notice Updates claimableIncome, sends all wei to the token holder
-  function collectOwedDividends()
+  function withdraw()
   public
   updateclaimableIncome(msg.sender)
   returns (uint _amount) {
@@ -54,32 +58,6 @@ contract MintableDistribution is ERC20 {
       delete claimableIncome[msg.sender];
       msg.sender.transfer(_amount);
       emit LogIncomeCollected(now, msg.sender, _amount);
-  }
-
-
-  // @dev Function to mint tokens
-  // @param _to The address that will receive the minted tokens.
-  // @param _amount The amount of tokens to mint.
-  function mint(address _to, uint256 _amount)
-  public
-  canMint
-  returns (bool) {
-    supply = supply.add(_amount);
-    balances[_to] = balances[_to].add(_amount);
-    emit Mint(_to, _amount);
-    emit Transfer(address(0), _to, _amount);
-    return true;
-  }
-
-
-  // @dev Function to stop minting new tokens.
-  function finishMinting()
-  public
-  canMint
-  returns (bool) {
-    mintingFinished = true;
-    emit MintFinished();
-    return true;
   }
 
     // Fallback function: Accepts Ether and updates ledger
@@ -120,12 +98,6 @@ contract MintableDistribution is ERC20 {
   // ------------------------------------------------------------------------------------------------
 
 
-  // @notice modifier: Requires that minting hasn't finished
-  modifier canMint() {
-    require(!mintingFinished && msg.sender == mint);
-    _;
-  }
-
 
   // Updates the amount owed to user while holding tokenSupply
   // @dev must be called before transfering tokens
@@ -139,7 +111,6 @@ contract MintableDistribution is ERC20 {
   //                                     Events
   // ------------------------------------------------------------------------------------------------
 
-  event Mint(address indexed to, uint256 amount);
-  event MintFinished();
+  
 
 }

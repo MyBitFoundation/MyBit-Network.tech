@@ -35,7 +35,7 @@
       database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));
       database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
       database.setUint(keccak256(abi.encodePacked("brokerFee", assetID)), _brokerFee);     // Percentage of income that goes to broker
-      database.setAddress(keccak256(abi.encodePacked("operator", assetID)), operatorAddress);   // TODO: Could reconstruct this using event logs
+      database.setAddress(keccak256(abi.encodePacked("operator", assetID)), operatorAddress);   
       emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, address(newAsset));
     }
 
@@ -52,6 +52,8 @@
       if (msg.value >= tokensRemaining) {
         database.setBool(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)), true);
         require(thisToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens
+        uint brokerFee = thisToken.totalSupply().mul(database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID)))).div(100); 
+        require(thisToken.mint(database.addressStorage(keccak256(abi.encodePacked("broker", _assetID)))), brokerFee); 
         require(thisToken.finishMinting());
         require(payout(_assetID, thisToken.totalSupply()));          // 1 token = 1 wei
         msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI
