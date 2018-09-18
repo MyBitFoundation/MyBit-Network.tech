@@ -33,7 +33,7 @@ contract FixedDistribution is ERC20 {
   public {
     uint _totalSupply;
     tokenURI = _tokenURI; 
-    for (uint8 i = 0; i < _tokenHolders.length; i++;) { 
+    for (uint8 i = 0; i < _tokenHolders.length; i++) { 
       totalSupply = totalSupply.add(_amount[i]); 
       balanceOf[_tokenHolders[i]] = balanceOf[_tokenHolders[i]].add(_amount[i]); 
     }
