@@ -26,7 +26,6 @@ contract DividendToken is MintableToken {
     uint public assetIncome;
     uint public valuePerToken;
 
-
     mapping (address => uint) public incomeClaimed;
     mapping (address => uint) public previousValuePerToken;
 

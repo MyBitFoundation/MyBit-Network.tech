@@ -5,7 +5,9 @@
   import "../interfaces/DivToken.sol";  
   import "../interfaces/BurnERC20.sol";       
 
-
+  // @title A contract to hold escrow as collateral against assets
+  // @author Kyle Dewhurst, MyBit Foundation
+  // @notice Broker can lock his escrow in this contract and retrieve it if asset funding fails or successfully returns ROI 
   contract BrokerEscrow { 
     using SafeMath for uint256; 
 
