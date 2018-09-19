@@ -40,7 +40,7 @@
       require (database.bytes32Storage(_assetID) == agreementHash);
       ERC20 stakingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
       // TODO: Lock tokens in escrow
-      MintableDistribution distributionToken = distributionToken(database.addressStorage(keccak256(abi.encodePacked("stakingMint", _assetID))));
+      MintableDistribution distributionToken = MintableDistribution(database.addressStorage(keccak256(abi.encodePacked("stakingMint", _assetID))));
       bytes32 finalAgreement = keccak256(abi.encodePacked(msg.sender, agreementHash));
       database.setBytes32(_assetID, finalAgreement);
       require(distributionToken.mint(msg.sender, _amount));
