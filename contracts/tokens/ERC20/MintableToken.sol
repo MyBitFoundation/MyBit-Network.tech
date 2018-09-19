@@ -3,11 +3,24 @@ pragma solidity ^0.4.24;
 import "./DividendToken.sol";
 
 
-// @title Mintable token
-// @dev Simple ERC20 Token example, with mintable token creation
-contract MintableToken is DividendToken {
+/**
+ * @title Mintable token
+ * @dev Simple ERC20 Token example, with mintable token creation
+ * Based on code by TokenMarketNet: https://github.com/TokenMarketNet/ico/blob/master/contracts/MintableToken.sol
+ */
+contract MintableToken is StandardToken {
 
-  bool public mintingFinished = false;
+  bool internal mintingFinished;
+  address internal minter;
+  string internal tokenURI;                 // A reference to a URI containing further token information
+
+
+  // @notice constructor: initialized
+  constructor(string _tokenURI)
+  public {
+      tokenURI = _tokenURI;                         // Set the id for reference
+      minter = msg.sender;
+  }
 
 
   // @dev Function to mint tokens
@@ -24,7 +37,6 @@ contract MintableToken is DividendToken {
     return true;
   }
 
-
   // @dev Function to stop minting new tokens.
   function finishMinting()
   public
@@ -35,13 +47,18 @@ contract MintableToken is DividendToken {
     return true;
   }
 
-  // @notice modifier: Requires that minting hasn't finished
-  modifier canMint() {
-    require(!mintingFinished);
-    _;
+  function getTokenURI()
+  external
+  view
+  returns (string) {
+      return tokenURI;
   }
 
-
+  // @notice modifier: Requires that minting hasn't finished
+  modifier canMint() {
+    require(!mintingFinished && msg.sender == minter);
+    _;
+  }
 
   event Mint(address indexed to, uint256 amount);
   event MintFinished();

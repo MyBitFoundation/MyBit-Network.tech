@@ -31,7 +31,7 @@ contract EqualDistribution {
   function getFunds(address _contractAddress)
   external
   returns (bool) {
-    PullPayment(_contractAddress).withdraw();   
+    PullPayment(_contractAddress).withdraw();
     return true;
   }
 

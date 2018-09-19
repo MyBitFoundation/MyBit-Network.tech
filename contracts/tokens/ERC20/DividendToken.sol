@@ -16,11 +16,6 @@ contract ApproveAndCallFallBack {
 contract DividendToken is MintableToken {
     using SafeMath for uint;
 
-    // @notice Token allowance
-    mapping (address => mapping (address => uint)) internal allowed;
-
-    string public tokenURI;                 // A reference to a URI containing further token information
-
     // @notice Token Income Information
     uint constant scalingFactor = 1e32;
     uint public assetIncome;
@@ -31,15 +26,7 @@ contract DividendToken is MintableToken {
 
 
     // @notice constructor: initialized
-    constructor(string _tokenURI)
-    public {
-        supply = 0;                        // Update total supply
-        tokenURI = _tokenURI;                         // Set the id for reference
-        //balances[msg.sender] = _totalSupply;
-        //emit Transfer(address(0), msg.sender, _totalSupply);    // Transfer event indicating token creation
-    }
-
-
+    constructor(string _tokenURI) public MintableToken(_tokenURI){}
     // @notice Transfer _amount tokens to address _to.
     // @dev Sender must have enough tokens. Cannot send to 0x0.
     // @param (address) _to = The address which will receive the tokens
@@ -49,11 +36,8 @@ contract DividendToken is MintableToken {
     updateIncomeClaimed(msg.sender)
     updateIncomeClaimed(_to)
     returns (bool success) {
-        require(_to != address(0));         // Use burn() function instead
         require(_to != address(this));
-        balances[msg.sender] = balances[msg.sender].sub(_amount);
-        balances[_to] = balances[_to].add(_amount);
-        emit Transfer(msg.sender, _to, _amount);
+        super.transfer(_to, _amount);
         return true;
     }
 
@@ -67,26 +51,10 @@ contract DividendToken is MintableToken {
     updateIncomeClaimed(_from)
     updateIncomeClaimed(_to)
     returns (bool success) {
-        require(_to != address(0));
         require(_to != address(this));
-        balances[_from] = balances[_from].sub(_amount);
-        allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_amount);
-        balances[_to] = balances[_to].add(_amount);
-        emit Transfer(_from, _to, _amount);
+        super.transferFrom(_from, _to, _amount);
         return true;
     }
-
-    // @notice approves a 3rd party to transfer msg.sender's tokens on behalf of him/her
-    // @param (address) _spender = The address of who msg.sender approves to spend tokens on their behalf
-    // @param (uint) _amount = The upper limit of how many tokens can be spent
-    function approve(address _spender, uint _amount)
-    public
-    returns (bool success) {
-        allowed[msg.sender][_spender] = _amount;
-        emit Approval(msg.sender, _spender, _amount);
-        return true;
-    }
-
 
     // @notice Token holder can notify a contract that it has been approved to spend _amount of tokens
     // @param (address) _spender = The contract to call after approval is done
@@ -123,7 +91,6 @@ contract DividendToken is MintableToken {
         emit LogIncomeCollected(now, msg.sender, _amount);
     }
 
-
     // ------------------------------------------------------------------------
     //                           View functions
     // ------------------------------------------------------------------------
@@ -134,29 +101,6 @@ contract DividendToken is MintableToken {
     view
     returns (uint) {
         return allowed[_tokenHolder][_spender];
-    }
-
-    // @notice Returns the number of tokens in circulation
-    function totalSupply()
-    public
-    view
-    returns (uint tokenSupply) {
-        return supply;
-    }
-
-    // @notice Returns the token balance of user
-    function balanceOf(address _tokenHolder)
-    public
-    view
-    returns (uint balance) {
-        return balances[_tokenHolder];
-    }
-
-    function tokenURI()
-    external
-    view
-    returns (string) {
-        return tokenURI;
     }
 
     // @notice Calculates how much value _user holds
@@ -175,8 +119,6 @@ contract DividendToken is MintableToken {
     returns (uint) {
         return (getAmountOwed(_user).add(incomeClaimed[_user]).div(scalingFactor));
     }
-
-
 
     // ------------------------------------------------------------------------
     //                            Modifiers

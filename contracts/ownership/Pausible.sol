@@ -34,11 +34,9 @@ contract Pausible {
     emit LogUnpaused(_contract, msg.sender);
   }
 
-
-
   // @notice reverts if caller is not the owner
   modifier onlyOwner() {
-    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("owner", msg.sender))));
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
     _;
   }
 

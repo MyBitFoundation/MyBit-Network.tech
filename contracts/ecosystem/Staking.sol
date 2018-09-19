@@ -3,61 +3,51 @@
   import "../math/SafeMath.sol";
   import "../database/Database.sol";
   import "../interfaces/ERC20.sol";
-  import "../tokens/ERC20/distribution/MintableDistribution.sol";         
-  import "./BrokerEscrow.sol"; 
-  
+  import "../tokens/ERC20/distribution/MintableDistribution.sol";
+  import "./BrokerEscrow.sol";
+
 
   // @title A contract for investors to loan ERC20 tokens to brokers who require escrow
   // @author Kyle Dewhurst, MyBit Foundation
   // @notice Broker can lock his escrow in this contract and retrieve it if asset funding fails or successfully returns ROI
-  contract Staking { 
+  contract Staking {
 
-    Database public database; 
+    Database public database;
 
-    mapping (bytes32 => bytes32) public agreement; 
+    mapping (bytes32 => bytes32) public agreement;
 
 
     constructor(address _database)
-    public { 
-      database = Database(_database); 
+    public {
+      database = Database(_database);
     }
 
     // @notice broker can request for a staker to lend tokens to cover escrow
     function requestStaking(string _tokenURI, bytes32 _assetID, uint _amount, uint _sharePercentage)
-    external 
-    returns (bool) { 
-      bytes32 agreementHash = keccak256(abi.encodePacked(msg.sender, _assetID, _amount, _sharePercentage)); 
-      database.setBytes32(_assetID, agreementHash); 
-      MintableDistribution mintableDistribution = new MintableDistribution(_tokenURI, address(this)); 
-      database.setAddress(keccak256(abi.encodePacked("stakingMint", _assetID)), address(mintableDistribution)); 
-      return true;
-    }
-
-    // @notice staker can purchase all of 
-    function purchaseStake(bytes32 _assetID, address _requester, uint _amount, uint _sharePercentage)
-    external 
+    external
     returns (bool) {
-      bytes32 agreementHash = keccak256(abi.encodePacked(_requester, _assetID, _amount, _sharePercentage)); 
-      require (database.bytes32Storage(_assetID) == agreementHash); 
-      ERC20 stakingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken")))); 
-      // TODO: Lock tokens in escrow
-      MintableDistribution distributionToken = distributionToken(database.addressStorage(keccak256(abi.encodePacked("stakingMint", _assetID)))); 
-      bytes32 finalAgreement = keccak256(abi.encodePacked(msg.sender, agreementHash));
-      database.setBytes32(_assetID, finalAgreement); 
-      require(distributionToken.mint(msg.sender, _amount)); 
-      require(distributionToken.finishMinting()); 
+      bytes32 agreementHash = keccak256(abi.encodePacked(msg.sender, _assetID, _amount, _sharePercentage));
+      database.setBytes32(_assetID, agreementHash);
+      MintableDistribution mintableDistribution = new MintableDistribution(_tokenURI, address(this));
+      database.setAddress(keccak256(abi.encodePacked("stakingMint", _assetID)), address(mintableDistribution));
       return true;
     }
 
-
-  //------------------------------------------------------------------------------------------------------------------
-  // Constructor. Initiate Database and MyBitToken
-  //------------------------------------------------------------------------------------------------------------------
-  constructor(address _database)
-  public {
-    database = Database(_database);
-  }
-
+    // @notice staker can purchase all of
+    function purchaseStake(bytes32 _assetID, address _requester, uint _amount, uint _sharePercentage)
+    external
+    returns (bool) {
+      bytes32 agreementHash = keccak256(abi.encodePacked(_requester, _assetID, _amount, _sharePercentage));
+      require (database.bytes32Storage(_assetID) == agreementHash);
+      ERC20 stakingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
+      // TODO: Lock tokens in escrow
+      MintableDistribution distributionToken = MintableDistribution(database.addressStorage(keccak256(abi.encodePacked("stakingMint", _assetID))));
+      bytes32 finalAgreement = keccak256(abi.encodePacked(msg.sender, agreementHash));
+      database.setBytes32(_assetID, finalAgreement);
+      require(distributionToken.mint(msg.sender, _amount));
+      require(distributionToken.finishMinting());
+      return true;
+    }
 
   //------------------------------------------------------------------------------------------------------------------
   //                                            Modifiers
