@@ -1,12 +1,10 @@
 pragma solidity ^0.4.24;
 
-import "./StandardToken.sol";
+import "./DividendToken.sol";
 
-/**
- * @title Mintable token
- * @dev Simple ERC20 Token example, with mintable token creation
- * Based on code by TokenMarketNet: https://github.com/TokenMarketNet/ico/blob/master/contracts/MintableToken.sol
- */
+
+// @title Mintable token
+// @dev Simple ERC20 Token example, with mintable token creation
 contract MintableToken is DividendToken {
 
   bool public mintingFinished = false;

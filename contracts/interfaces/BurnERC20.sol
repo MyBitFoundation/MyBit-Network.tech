@@ -1,3 +1,6 @@
+pragma solidity ^0.4.24;
+
+
   interface BurnERC20 { 
 
     function burnFrom(address _tokenHolder, uint _amount) external returns (bool success); 

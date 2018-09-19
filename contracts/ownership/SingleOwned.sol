@@ -10,8 +10,6 @@ contract SingleOwned {
 
   constructor(address _database) public {
     database = Database(_database);
-    //database.setAddress(keccak256(abi.encodePacked("owner")),  _owner);
-    //database.boolStorage(keccak256(abi.encodePacked("owner", _owner))) = true;
   }
 
   //------------------------------------------------------------------------------------------------------------------

@@ -22,6 +22,7 @@
       database = Database(_database); 
     }
 
+    // @notice broker can request for a staker to lend tokens to cover escrow
     function requestStaking(string _tokenURI, bytes32 _assetID, uint _amount, uint _sharePercentage)
     external 
     returns (bool) { 

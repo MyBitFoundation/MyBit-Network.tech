@@ -5,11 +5,12 @@ import '../math/SafeMath.sol';
 import '../interfaces/ERC20.sol'; 
 
 
-// @title A contract which allows for platform owners to come to consensus on important functionality
-// @notice Can hold any number of owners. Each getting 1 vote. 
+// @title A contract which allows for token holders to restrict/approve functions on the platform
+// @notice Two owners are required to agree on a function to be called
 // @dev An owner has already been initialized when database is deployed
 // @author Kyle Dewhurst, MyBit Foundation
-contract OwnerVote {
+// TODO: Lock tokens to avoid double voting from different accounts
+contract TokenOwned {
   using SafeMath for uint256; 
   Database public database;
 
@@ -17,7 +18,7 @@ contract OwnerVote {
   // NOTE: Local contract variables only here as a reference
 
   // @notice bytes32 key is sha3(contractAddress, methodID)    methodID = bytes4(sha3("functionName(parameterType, parameterType, etc...)) ")
-  mapping (bytes32 => uint8) public quorumLevel;     // Percentage of how many owners need to sign this function
+  mapping (bytes32 => uint) public quorumLevel;     // Percentage of how many owners need to sign this function
 
   // @notice bytes32 key is sha3(contractAddress, methodID, sha3(parameter(s)))
   mapping (bytes32 => bool) public functionCallAuthorized;     // has enough signatures for this contract to call that function
@@ -25,42 +26,20 @@ contract OwnerVote {
 
   mapping (address => address) public delegate;    // user can authorize another address to vote for them
 
-  uint public numberOfOwners; 
-
+  // @notice creator of the contract sets the initial functions quorum level, dictating the level of consensus required for that function
   constructor(bytes32[] _restrictedFunctions, uint[] _quorumLevel)
   public { 
-    // TODO: set the quorum level for functions within this contract ie. addRestrictedFunction() , signForFunctionCall
     require(_restrictedFunctions.length == _quorumLevel.length && _restrictedFunctions.length < 100); 
     for (uint8 i = 0; i < _restrictedFunctions.length; i++){
       database.setUint(_restrictedFunctions[i], _quorumLevel); 
     }
   }
 
-  // @notice any owner on the platform can call this function to add a new user if it has receieve quorum level of signatures
-  // @param (address) _newOwner the address of the new owner 
-  function addOwner(address _newOwner)
-  external
-  isRestricted(bytes4(keccak256(abi.encodePacked("addOwner(address)"))), keccak256(abi.encodePacked(_newOwner)))
-  anyOwner {
-    uint numOwners = database.uintStorage(keccak256(abi.encodePacked("numberOfOwners")));
-    database.setBool(keccak256(abi.encodePacked("owner", _newOwner)), true);
-    database.setUint(keccak256(abi.encodePacked("numberOfOwners")), numOwners.add(1)); 
-  }
-
-  // @notice any owner can call this function to remove an owner if the the function receives quorum level of signatures
-  function removeOwner(address _owner)
-  external
-  isRestricted(bytes4(keccak256(abi.encodePacked("removeOwner(address)"))), keccak256(abi.encodePacked(_owner)))
-  anyOwner {
-    database.deleteBool(keccak256(abi.encodePacked("owner", _owner)));
-  }
-
   // If restricted it will have to be called from address(this) using a voting proccess on signForFunctionCall
-  function addRestrictedFunction(address _contractAddress, bytes4 _methodID, uint8 _quorumLevel)
+  function addRestrictedFunction(address _contractAddress, bytes4 _methodID, uint _quorumLevel)
   external 
   isRestricted(bytes4(keccak256(abi.encodePacked("addRestrictedFunction(address, bytes4, uint256)"))), keccak256(abi.encodePacked(_contractAddress, _methodID, _quorumLevel)))
   anyOwner { 
-    require(_quorumLevel > 0 && _quorumLevel < uint8(100)); 
     bytes32 functionID = keccak256(abi.encodePacked(_contractAddress, _methodID));
     database.setUint(functionID, _quorumLevel); 
   }
