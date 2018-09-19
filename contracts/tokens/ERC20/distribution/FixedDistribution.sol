@@ -4,7 +4,6 @@ import '../../../math/SafeMath.sol';
 import './StandardDistribution.sol';
 
 
-
 // @title Non-Transferable ERC20 token contract with shared revenue distribution functionality.
 // @notice This token contract can receive payments in the fallback function and token owners can withdraw their share
 // Credit goes to Nick Johnson for the dividend token https://medium.com/@weka/dividend-bearing-tokens-on-ethereum-42d01c710657
