@@ -7,10 +7,19 @@ import "./StandardToken.sol";
  * @dev Simple ERC20 Token example, with mintable token creation
  * Based on code by TokenMarketNet: https://github.com/TokenMarketNet/ico/blob/master/contracts/MintableToken.sol
  */
-contract MintableToken is DividendToken {
+contract MintableToken is StandardToken {
 
-  bool public mintingFinished = false;
+  bool internal mintingFinished = false;
+  address internal minter;
+  string internal tokenURI;                 // A reference to a URI containing further token information
 
+  // @notice constructor: initialized
+  constructor(string _tokenURI)
+  public {
+      tokenURI = _tokenURI;                         // Set the id for reference
+      minter = msg.sender;
+      supply = 0;
+  }
 
   // @dev Function to mint tokens
   // @param _to The address that will receive the minted tokens.
@@ -26,7 +35,6 @@ contract MintableToken is DividendToken {
     return true;
   }
 
-
   // @dev Function to stop minting new tokens.
   function finishMinting()
   public
@@ -37,13 +45,18 @@ contract MintableToken is DividendToken {
     return true;
   }
 
-  // @notice modifier: Requires that minting hasn't finished
-  modifier canMint() {
-    require(!mintingFinished);
-    _;
+  function getTokenURI()
+  external
+  view
+  returns (string) {
+      return tokenURI;
   }
 
-
+  // @notice modifier: Requires that minting hasn't finished
+  modifier canMint() {
+    require(!mintingFinished && msg.sender == minter);
+    _;
+  }
 
   event Mint(address indexed to, uint256 amount);
   event MintFinished();
