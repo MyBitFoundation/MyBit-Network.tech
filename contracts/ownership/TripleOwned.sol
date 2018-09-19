@@ -41,7 +41,7 @@ contract TripleOwned {
   external
   anyOwner
   returns (bool) {
-    require(bytes(_methodID).length != uint(0));
+    require(bytes4(_methodID).length != uint(0));
     bytes32 functionAuthHash = keccak256(abi.encodePacked(_contractAddress, _methodID, _parameterHash)); 
     database.setAddress(functionAuthHash, msg.sender);  // Save owner who signed it
     database.setBool(functionAuthHash, true);    // Sign the function name + parameter = true
@@ -110,5 +110,5 @@ contract TripleOwned {
   event LogPaused(address indexed _contract);
   event LogUnpaused(address indexed _contract);
   event LogOwnerChanged(address indexed _previousOwner, address indexed _newOwner);
-  event LogFunctionAuthorized(address indexed _owner, string indexed _methodID, bytes32 indexed _beneficiary, bytes32 _authHash);
+  event LogFunctionAuthorized(address indexed _owner, bytes4 indexed _methodID, bytes32 indexed _beneficiary, bytes32 _authHash);
 }

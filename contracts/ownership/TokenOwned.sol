@@ -31,7 +31,7 @@ contract TokenOwned {
   public { 
     require(_restrictedFunctions.length == _quorumLevel.length && _restrictedFunctions.length < 100); 
     for (uint8 i = 0; i < _restrictedFunctions.length; i++){
-      database.setUint(_restrictedFunctions[i], _quorumLevel); 
+      database.setUint(_restrictedFunctions[i], _quorumLevel[i]); 
     }
   }
 

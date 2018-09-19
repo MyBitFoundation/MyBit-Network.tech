@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import '../../math/SafeMath.sol';
-import '../../tokens/ERC20/MintableToken.sol';
+import './MintableToken.sol';
 import '../../interfaces/ERC20.sol';
 
 
@@ -11,7 +11,7 @@ contract ApproveAndCallFallBack {
 }
 
 // @title ERC20 token contract with shared revenue distribution functionality.
-// @notice This token contract can receive payments in the fallback function and token owners receive their share when transferring tokens.
+// @notice This token contract can receive ERC20 tokens as payments and token owners receive their share when transferring tokens.
 // Credit goes to Nick Johnson for the dividend token https://medium.com/@weka/dividend-bearing-tokens-on-ethereum-42d01c710657
 // TODO: Suicide function
 contract DividendTokenERC20 is MintableToken {

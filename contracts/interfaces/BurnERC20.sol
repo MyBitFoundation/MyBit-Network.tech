@@ -1,10 +1,5 @@
 pragma solidity ^0.4.24;
-<<<<<<< HEAD
 
-
-  interface BurnERC20 { 
-=======
->>>>>>> cfca62c0ebbd634466419668061fdcb9510084e2
 
 interface BurnERC20 {
 

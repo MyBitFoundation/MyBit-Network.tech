@@ -9,7 +9,7 @@ import '../interfaces/ERC20.sol';
 // @notice Can hold any number of owners. Each getting 1 vote. 
 // @dev An owner has already been initialized when database is deployed
 // @author Kyle Dewhurst, MyBit Foundation
-contract OwnerVote {
+contract CollectiveOwned {
   using SafeMath for uint256; 
   Database public database;
 
@@ -32,7 +32,7 @@ contract OwnerVote {
     // TODO: set the quorum level for functions within this contract ie. addRestrictedFunction() , signForFunctionCall
     require(_restrictedFunctions.length == _quorumLevel.length && _restrictedFunctions.length < 100); 
     for (uint8 i = 0; i < _restrictedFunctions.length; i++){
-      database.setUint(_restrictedFunctions[i], _quorumLevel); 
+      database.setUint(_restrictedFunctions[i], _quorumLevel[i]); 
     }
   }
 
