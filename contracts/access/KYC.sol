@@ -1,13 +1,15 @@
 pragma solidity 0.4.24;
 
-import './AccessHierarchy.sol'; 
+import './AccessHierarchy.sol';
 
 // @title A contract that manages KYC approval
 // @notice KYC can be granted or revoked here
 // @author Kyle Dewhurst, MyBit Foundation
 
-contract KYC is AccessHierarchy { 
+contract KYC is AccessHierarchy {
 
+  constructor(address _database) public AccessHierarchy(_database){}
+    
   // @notice Owner can approve KYC for user
   function approveKYC(address _user)
   onlyOwner

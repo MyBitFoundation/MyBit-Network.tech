@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import '../math/SafeMath.sol';
-import '../interfaces/PullPayment.sol';
+import '../../../math/SafeMath.sol';
+import '../../../interfaces/PullPayment.sol';
 
 // @title A contract made to equally distribute payments amongs a list of beneficiaries
 // @author Kyle Dewhurst, MyBit Foundation
@@ -31,7 +31,7 @@ contract EqualDistribution {
   function getFunds(address _contractAddress)
   external
   returns (bool) {
-    PullPayment(_contractAddress).withdraw();   
+    PullPayment(_contractAddress).withdraw();
     return true;
   }
 

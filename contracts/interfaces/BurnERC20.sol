@@ -1,9 +1,11 @@
-  interface BurnERC20 { 
+pragma solidity ^0.4.24;
 
-    function burnFrom(address _tokenHolder, uint _amount) external returns (bool success); 
+interface BurnERC20 {
 
-    function burn(uint _amount) external returns (bool success); 
+    function burnFrom(address _tokenHolder, uint _amount) external returns (bool success);
 
-    event LogBurn(address indexed _spender, uint256 _value); 
+    function burn(uint _amount) external returns (bool success);
+
+    event LogBurn(address indexed _spender, uint256 _value);
 
 }

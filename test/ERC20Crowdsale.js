@@ -6,6 +6,7 @@ const Database = artifacts.require("./database/Database.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const BurnableToken = artifacts.require("./tokens/ERC20/BurnableToken.sol");
+const Pausible = artifacts.require("./ownership/Pausible.sol");
 
 const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
@@ -33,6 +34,7 @@ contract('ERC20 Crowdsale', async() => {
   let assetID;
   let assetURI;
   let tokenAddress;
+  let pausible;
 
   it('Deploy hash contract', async() => {
     hash = await HashFunctions.new();
@@ -45,6 +47,11 @@ contract('ERC20 Crowdsale', async() => {
   it('Deploy contract manager contract', async() => {
     cm = await ContractManager.new(db.address);
     await db.enableContractManagement(cm.address);
+  });
+
+  it('Deploy pausible contract', async() => {
+    pausible = await Pausible.new(db.address);
+    await cm.addContract('Pausible', pausible.address);
   });
 
   it("Deploy standard token", async() => {
@@ -245,8 +252,7 @@ contract('ERC20 Crowdsale', async() => {
   });
 
   it('Pause contract', async() => {
-    let pauseHash = await hash.stringAddress('paused', crowdsale.address)
-    await db.setBool(pauseHash, true);
+    await pausible.pause(crowdsale.address);
   });
 
   it('Fail to refund: paused', async() => {
@@ -260,8 +266,7 @@ contract('ERC20 Crowdsale', async() => {
   });
 
   it('Unpause contract', async() => {
-    let pauseHash = await hash.stringAddress('paused', crowdsale.address)
-    await db.setBool(pauseHash, false);
+    await pausible.unpause(crowdsale.address);
   });
 
   it('Refund', async() => {

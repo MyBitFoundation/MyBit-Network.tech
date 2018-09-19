@@ -1,21 +1,20 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
-import '../../math/SafeMath.sol';
-import '../../interfaces/ERC20.sol';
+import '../../../math/SafeMath.sol';
+import '../../../interfaces/PullPayment.sol';
 
 
 // @title Non-Transferable ERC20 token contract with shared revenue distribution functionality.
 // @notice This token contract can receive payments in the fallback function and token owners can withdraw their share
 // Credit goes to Nick Johnson for the dividend token https://medium.com/@weka/dividend-bearing-tokens-on-ethereum-42d01c710657
 // TODO: Suicide function
-contract MintableDistribution is ERC20 {
+
+contract StandardDistribution{
   using SafeMath for uint;
 
-  bool public mintingFinished = false;
-  address public mint; 
 
-  uint public totalSupply;
-  mapping (address => uint) internal balanceOf;
+  uint public supply;
+  mapping (address => uint) internal balances;
 
   string public tokenURI;                 // A reference to a URI containing further token information
 
@@ -29,24 +28,8 @@ contract MintableDistribution is ERC20 {
   mapping (address => uint) public previousValuePerToken;
 
 
-  // @notice constructor: initialized
-  constructor(string _tokenURI, address _mint)
-  public {
-      tokenURI = _tokenURI;                         // Set the id for reference
-      mint = _mint; 
-  }
-
-  function issueDividends()
-  payable
-  requiresEther
-  public {
-      valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
-      assetIncome = assetIncome.add(msg.value);
-      emit LogIncomeReceived(msg.sender, msg.value);
-  }
-
   // @notice Updates claimableIncome, sends all wei to the token holder
-  function collectOwedDividends()
+  function withdraw()
   public
   updateclaimableIncome(msg.sender)
   returns (uint _amount) {
@@ -56,30 +39,25 @@ contract MintableDistribution is ERC20 {
       emit LogIncomeCollected(now, msg.sender, _amount);
   }
 
-
-  // @dev Function to mint tokens
-  // @param _to The address that will receive the minted tokens.
-  // @param _amount The amount of tokens to mint.
-  function mint(address _to, uint256 _amount)
-  public
-  canMint
+  // @notice allows beneficiaries to withdraw from contracts at different locations to be re-distributed here
+  // @dev can call withdraw() on any address if there are no parameters required. Fallback function will be triggered
+  // @param (address) _contractAddress = The address to call withdraw() on.
+  /*
+  function getFunds(address _contractAddress)
+  external
   returns (bool) {
-    supply = supply.add(_amount);
-    balances[_to] = balances[_to].add(_amount);
-    emit Mint(_to, _amount);
-    emit Transfer(address(0), _to, _amount);
+    PullPayment(_contractAddress).withdraw();
     return true;
   }
+  */
 
-
-  // @dev Function to stop minting new tokens.
-  function finishMinting()
-  public
-  canMint
-  returns (bool) {
-    mintingFinished = true;
-    emit MintFinished();
-    return true;
+  function issueDividends()
+  payable
+  requiresEther
+  public {
+      valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
+      assetIncome = assetIncome.add(msg.value);
+      emit LogIncomeReceived(msg.sender, msg.value);
   }
 
     // Fallback function: Accepts Ether and updates ledger
@@ -92,10 +70,8 @@ contract MintableDistribution is ERC20 {
       emit LogIncomeReceived(msg.sender, msg.value);
   }
 
-
-
   // ------------------------------------------------------------------------------------------------
-  //                                   View Functions 
+  //                                   View Functions
   // ------------------------------------------------------------------------------------------------
 
   // @notice Calculates how much value _user holds
@@ -115,17 +91,17 @@ contract MintableDistribution is ERC20 {
       return (getTokenValue(_user).add(claimableIncome[_user]).div(scalingFactor));
   }
 
+  function totalSupply() public view returns (uint256) {
+    return supply;
+  }
+
+  function balanceOf(address _owner) public view returns (uint256) {
+    return balances[_owner];
+  }
+
   // ------------------------------------------------------------------------------------------------
   //                                   Modifiers
   // ------------------------------------------------------------------------------------------------
-
-
-  // @notice modifier: Requires that minting hasn't finished
-  modifier canMint() {
-    require(!mintingFinished && msg.sender == mint);
-    _;
-  }
-
 
   // Updates the amount owed to user while holding tokenSupply
   // @dev must be called before transfering tokens
@@ -135,11 +111,17 @@ contract MintableDistribution is ERC20 {
       _;
   }
 
+  // @notice Requires that Ether is sent with the transaction
+  modifier requiresEther {
+      require(msg.value > 0);
+      _;
+  }
+
   // ------------------------------------------------------------------------------------------------
   //                                     Events
   // ------------------------------------------------------------------------------------------------
 
-  event Mint(address indexed to, uint256 amount);
-  event MintFinished();
+  event LogIncomeReceived(address indexed _sender, uint _paymentAmount);
+  event LogIncomeCollected(uint _block, address _address, uint _amount);
 
 }

@@ -18,7 +18,6 @@ contract DividendTokenERC20 is MintableToken {
     using SafeMath for uint;
 
     ERC20 public erc20;
-    string public tokenURI;                 // A reference to a URI containing further token information
 
     // @notice Token Income Information
     uint constant scalingFactor = 1e32;
@@ -34,9 +33,7 @@ contract DividendTokenERC20 is MintableToken {
 
     // @notice constructor: initialized
     constructor(string _tokenURI, address _erc20Address)
-    public {
-        supply = 0;                        // Update total supply
-        tokenURI = _tokenURI;                         // Set the id for reference
+    public  MintableToken(_tokenURI){
         erc20 = ERC20(_erc20Address); //Set the address of the ERC20 token that will be issued as dividends
         //balances[msg.sender] = _totalSupply;
         //emit Transfer(address(0), msg.sender, _totalSupply);    // Transfer event indicating token creation
@@ -157,13 +154,7 @@ contract DividendTokenERC20 is MintableToken {
     // ------------------------------------------------------------------------
     //                           View functions
     // ------------------------------------------------------------------------
-    function tokenURI()
-    external
-    view
-    returns (string) {
-        return tokenURI;
-    }
-
+    
     // @notice Calculates how much value _user holds
     function getAmountOwed(address _user)
     private

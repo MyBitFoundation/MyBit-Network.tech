@@ -5,6 +5,7 @@ const Crowdsale = artifacts.require("./crowdsale/CrowdsaleEther.sol");
 const Database = artifacts.require("./database/Database.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
+const Pausible = artifacts.require("./ownership/Pausible.sol");
 
 const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
@@ -19,6 +20,7 @@ const ETH = 1000000000000000000;
 const scaling = 1000000000000000000000000000000000000;
 const tokenSupply = 180000000000000000000000000;
 const tokenPerAccount = 1000000000000000000000;
+const brokerFee = 5;
 
 contract('Ether Crowdsale', async() => {
   let token;
@@ -31,6 +33,7 @@ contract('Ether Crowdsale', async() => {
   let assetID;
   let assetURI;
   let tokenAddress;
+  let pausible;
 
   it('Deploy hash contract', async() => {
     hash = await HashFunctions.new();
@@ -43,6 +46,11 @@ contract('Ether Crowdsale', async() => {
   it('Deploy contract manager contract', async() => {
     cm = await ContractManager.new(db.address);
     await db.enableContractManagement(cm.address);
+  });
+
+  it('Deploy pausible contract', async() => {
+    pausible = await Pausible.new(db.address);
+    await cm.addContract('Pausible', pausible.address);
   });
 
   it('Deploy crowdsale contract', async() => {
@@ -61,7 +69,7 @@ contract('Ether Crowdsale', async() => {
   //Start successful funding
   it('Start funding', async() => {
     assetURI = 'BTC ATM';
-    let tx = await crowdsale.startFundingPeriod(assetURI, operatorID, 10, 20*ETH, {from:broker});
+    let tx = await crowdsale.startFundingPeriod(assetURI, operatorID, 10, 20*ETH, brokerFee, {from:broker});
     //console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
     tokenAddress = tx.logs[0].args._tokenAddress;
@@ -73,14 +81,14 @@ contract('Ether Crowdsale', async() => {
     console.log('Token Supply: ' + tokenSupply);
     let tx = await crowdsale.buyAsset(assetID, {from:user1, value:5*ETH});
     let user1Tokens = await token.balanceOf(user1);
-    assert.equal(user1Tokens, 5*ETH);
+    assert.equal(user1Tokens, 5*ETH*(100-brokerFee)/100);
   });
 
   it('Asset already exists fail', async() => {
     let err;
     //Fail because asset already exists
     try{
-      await crowdsale.startFundingPeriod(assetURI, operatorID, 10, 20*ETH, {from:broker});
+      await crowdsale.startFundingPeriod(assetURI, operatorID, 10, 20*ETH, brokerFee, {from:broker});
     } catch(e){
       err = e;
     }
@@ -109,7 +117,7 @@ contract('Ether Crowdsale', async() => {
 
     let tx = await crowdsale.buyAsset(assetID, {from:user2, value:15*ETH});
     let user2Tokens = await token.balanceOf(user2);
-    assert.equal(user2Tokens, 15*ETH);
+    assert.equal(user2Tokens, 15*ETH*(100-brokerFee)/100);
 
     ownerBalanceAfter = web3.eth.getBalance(owner);
     assert.equal(bn(ownerBalanceAfter).minus(ownerBalanceBefore).isEqualTo(bn(ETH).multipliedBy(20).dividedBy(100)), true);
@@ -178,7 +186,7 @@ contract('Ether Crowdsale', async() => {
   it('Start funding that does not reach goal', async() => {
     await db.setAddress(operatorHash, operator);
     assetURI = 'No Goal';
-    let tx = await crowdsale.startFundingPeriod(assetURI, operatorID, 2, 20*ETH, {from:broker});
+    let tx = await crowdsale.startFundingPeriod(assetURI, operatorID, 2, 20*ETH, brokerFee, {from:broker});
     //console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
     tokenAddress = tx.logs[0].args._tokenAddress;
@@ -188,7 +196,7 @@ contract('Ether Crowdsale', async() => {
   it('User3 funding', async() => {
     let tx = await crowdsale.buyAsset(assetID, {from:user3, value:5*ETH});
     let user3Tokens = await token.balanceOf(user3);
-    assert.equal(user3Tokens, 5*ETH);
+    assert.equal(user3Tokens, 5*ETH*(100-brokerFee)/100);
   });
 
   it('User1 funding fail', async() => {
@@ -208,9 +216,21 @@ contract('Ether Crowdsale', async() => {
     assert.notEqual(err, undefined);
   });
 
+  it('Fail to pause', async() => {
+    let err;
+    try{
+      await pausible.pause(crowdsale.address, {from:user3});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+
   it('Pause contract', async() => {
-    let pauseHash = await hash.stringAddress('paused', crowdsale.address)
-    await db.setBool(pauseHash, true);
+    //let pauseHash = await hash.stringAddress('paused', crowdsale.address)
+    //await db.setBool(pauseHash, true);
+    await pausible.pause(crowdsale.address);
   });
 
   it('Fail to refund: paused', async() => {
@@ -224,8 +244,7 @@ contract('Ether Crowdsale', async() => {
   });
 
   it('Unpause contract', async() => {
-    let pauseHash = await hash.stringAddress('paused', crowdsale.address)
-    await db.setBool(pauseHash, false);
+    await pausible.unpause(crowdsale.address);
   });
 
   it('Refund', async() => {
