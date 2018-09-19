@@ -42,7 +42,6 @@ contract AccessHierarchy {
     return true;
   }
 
-
   // @notice Owner can set the upper bound on access levels
   // @param (uint8) _newUpperLimit = The highest access level on the platform
   function setUpperAccessLevel(uint8 _newUpperLimit)
@@ -52,7 +51,6 @@ contract AccessHierarchy {
     upperAccessLevel = _newUpperLimit;
   }
 
-
   // @notice Deny empty address parameters
   modifier noEmptyAddress(address _param) {
     require(_param != address(0));
@@ -61,7 +59,7 @@ contract AccessHierarchy {
 
   // @notice Deny all callers except owner
   modifier onlyOwner {
-    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("owner", msg.sender))));
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
     _;
   }
 
