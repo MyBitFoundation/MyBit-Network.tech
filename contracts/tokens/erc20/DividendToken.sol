@@ -1,7 +1,7 @@
 pragma solidity 0.4.24;
 
 import '../../math/SafeMath.sol';
-import '../../tokens/ERC20/MintableToken.sol';
+import './MintableToken.sol';
 
 
 // @notice Receive approval and then execute function

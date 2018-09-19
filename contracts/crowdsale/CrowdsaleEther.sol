@@ -2,7 +2,7 @@
 
   import "../math/SafeMath.sol";
   import "../interfaces/DBInterface.sol";
-  import "../tokens/ERC20/DividendToken.sol";         // Change to Mintable or Burnable if needed
+  import "../tokens/erc20/DividendToken.sol";         // Change to Mintable or Burnable if needed
 
 
   // @title An asset crowdsale contract.

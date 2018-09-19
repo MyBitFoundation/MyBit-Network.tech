@@ -3,8 +3,8 @@
   import "../math/SafeMath.sol";
   import "../database/Database.sol";
   import "../interfaces/ERC20.sol";
-  import "../tokens/ERC20/distribution/MintableDistribution.sol";
-  import "./BrokerEscrow.sol";
+  import "../tokens/distribution/MintableDistribution.sol";
+
 
 
   // @title A contract for investors to loan ERC20 tokens to brokers who require escrow
@@ -40,7 +40,6 @@
       bytes32 agreementHash = keccak256(abi.encodePacked(_requester, _assetID, _amount, _sharePercentage));
       require (database.bytes32Storage(_assetID) == agreementHash);
       ERC20 stakingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
-      // TODO: Lock tokens in escrow
       MintableDistribution distributionToken = MintableDistribution(database.addressStorage(keccak256(abi.encodePacked("stakingMint", _assetID))));
       bytes32 finalAgreement = keccak256(abi.encodePacked(msg.sender, agreementHash));
       database.setBytes32(_assetID, finalAgreement);
