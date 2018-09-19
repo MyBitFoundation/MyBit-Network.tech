@@ -35,7 +35,7 @@
       database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));
       database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
       database.setUint(keccak256(abi.encodePacked("brokerFee", assetID)), _brokerFee);     // Percentage of income that goes to broker
-      database.setAddress(keccak256(abi.encodePacked("operator", assetID)), operatorAddress);   
+      database.setAddress(keccak256(abi.encodePacked("operator", assetID)), operatorAddress);
       emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, address(newAsset));
     }
 
@@ -48,18 +48,21 @@
     notFinished(_assetID)
     returns (bool) {
       DividendToken thisToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-      uint tokensRemaining = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID))).sub(thisToken.totalSupply());
-      if (msg.value >= tokensRemaining) {
+      uint brokerPercent = database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID)));
+      uint investorPercent = uint(100).sub(brokerPercent);
+      uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID)));
+      uint tokensRemaining = amountToRaise.mul(investorPercent).div(100).sub(thisToken.totalSupply()); //Amount to raise minus the broker's percent
+      if (msg.value.mul(investorPercent).div(100) >= tokensRemaining) {
         database.setBool(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)), true);
         require(thisToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens
-        uint brokerFee = thisToken.totalSupply().mul(database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID)))).div(100); 
-        require(thisToken.mint(database.addressStorage(keccak256(abi.encodePacked("broker", _assetID)))), brokerFee); 
+        uint brokerTokens = amountToRaise.mul(brokerPercent).div(100);
+        require(thisToken.mint(database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))), brokerTokens));
         require(thisToken.finishMinting());
         require(payout(_assetID, thisToken.totalSupply()));          // 1 token = 1 wei
-        msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI
+        msg.sender.transfer(msg.value.sub(tokensRemaining.mul(100).div(investorPercent)));     // Return leftover WEI
       }
       else {
-        require(thisToken.mint(msg.sender, msg.value));
+        require(thisToken.mint(msg.sender, msg.value.mul(investorPercent).div(100)));
       }
       emit LogAssetPurchased(_assetID, msg.sender, msg.value);
       return true;

@@ -1,6 +1,7 @@
 var bn = require('bignumber.js');
 
 const Token = artifacts.require("./tokens/ERC20/DividendToken.sol");
+const ApproveAndCall = artifacts.require("./test/ApproveAndCallTest.sol");
 
 const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
@@ -26,7 +27,7 @@ contract('Dividend Token Ether', async() => {
   it("Spread tokens to users", async() => {
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
-      //console.log(web3.eth.accounts[i]);
+      console.log(web3.eth.accounts[i]);
       await token.mint(tokenHolders[i], tokenPerAccount);
       userBalance = await token.balanceOf(tokenHolders[i]);
       assert.equal(userBalance, tokenPerAccount);
@@ -38,9 +39,19 @@ contract('Dividend Token Ether', async() => {
     assert.equal(await token.balanceOf(owner), 0);
   });
 
+  it('Fail to mint tokens', async() => {
+    let err;
+    try{
+      await token.mint(user3, 100*ETH, {from:user3});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
   //Test dividends functions
   it('View token uri', async() => {
-    let _tokenURI = await token.tokenURI();
+    let _tokenURI = await token.getTokenURI();
     assert.equal(tokenURI, _tokenURI);
     console.log(tokenURI);
   });
@@ -128,7 +139,7 @@ contract('Dividend Token Ether', async() => {
   it('Fail to transfer from', async() => {
     let err;
     try{
-      await token.transferFrom(user1, 0, 1000);
+      await token.transferFrom(user1, '', 0);
     } catch(e){
       err = e;
     }
@@ -146,8 +157,53 @@ contract('Dividend Token Ether', async() => {
   });
 
   it('Transfer From', async() => {
+    balance2 = await token.balanceOf(user2);
+    console.log(Number(balance2));
     await token.transferFrom(user2, user1, 5000, {from: user1});
     assert.equal(await token.allowance(user2, user1), 5000);
   });
+
+  it('Decrease approval', async() => {
+    await token.decreaseApproval(user1, 2500, {from:user2})
+    assert.equal(await token.allowance(user2, user1), 2500);
+  });
+
+  it('Increase approval', async() => {
+    await token.increaseApproval(user1, 2500, {from:user2})
+    assert.equal(await token.allowance(user2, user1), 5000);
+  });
+
+  it('Decrease approval', async() => {
+    await token.decreaseApproval(user1, 10000, {from:user2})
+    assert.equal(await token.allowance(user2, user1), 0);
+  });
+
+  it('Fail to transfer from', async() => {
+    let err;
+    try{
+      await token.transferFrom(user1, user2, 10000000*ETH);
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it('Fail to transfer from', async() => {
+    let err;
+    try{
+      await token.transfer('', 0, {from:user1});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it('Approve and call', async() => {
+    let approveandcall = await ApproveAndCall.new();
+    tx = await token.approveAndCall(approveandcall.address, 1000, '');
+    console.log(tx.logs[0].args);
+    assert.equal(tx.logs[0].args.value, 1000);
+  });
+
 
 });

@@ -2,6 +2,7 @@ var bn = require('bignumber.js');
 
 const Token = artifacts.require("./tokens/ERC20/DividendTokenERC20.sol");
 const BurnableToken = artifacts.require("./tokens/ERC20/BurnableToken.sol");
+const ApproveAndCall = artifacts.require("./test/ApproveAndCallTest.sol");
 
 const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
@@ -46,7 +47,7 @@ contract('Dividend Token ERC20', async() => {
 
   //Test dividends functions
   it('View token uri', async() => {
-    let _tokenURI = await token.tokenURI();
+    let _tokenURI = await token.getTokenURI();
     assert.equal(tokenURI, _tokenURI);
     console.log(tokenURI);
   });
@@ -172,6 +173,13 @@ contract('Dividend Token ERC20', async() => {
     let tx = await token.checkForTransfers();
     diff = tx.logs[0].args._difference;
     assert.equal(diff, 10*ETH);
+  });
+
+  it('Approve and call', async() => {
+    let approveandcall = await ApproveAndCall.new();
+    tx = await token.approveAndCall(approveandcall.address, 1000, '');
+    console.log(tx.logs[0].args);
+    assert.equal(tx.logs[0].args.value, 1000);
   });
 
 });

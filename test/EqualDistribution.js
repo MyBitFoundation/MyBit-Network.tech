@@ -1,7 +1,7 @@
 var BigNumber = require('bignumber.js');
 
 /* Contracts  */
-const EqualDistribution = artifacts.require("./distribution/EqualDistribution.sol");
+const EqualDistribution = artifacts.require("./tokens/ERC20/distribution/EqualDistribution.sol");
 const WithdrawTest = artifacts.require("./test/WithdrawTest.sol");
 
 
@@ -57,7 +57,7 @@ contract('Equal Distribution', async (accounts) => {
       console.log('Cant get funds from that address');
     }
   });
-  
+
 
   it('Get funds', async() => {
     console.log('Owner Address: ' + owner);
@@ -76,6 +76,6 @@ contract('Equal Distribution', async (accounts) => {
     //assert.equal(b1After - b1Before, (14 * ETH)/3); //Need to calculate gas used up to this point
     assert.equal(BigNumber(b1Before).lt(b1After), true);
   });
-  
+
 
 });
