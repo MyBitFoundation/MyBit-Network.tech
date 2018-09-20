@@ -51,7 +51,7 @@ contract EqualDistribution {
   function ()
   public
   payable {
-    // emit LogPayment(msg.sender, msg.value);
+    emit LogPayment(msg.sender, msg.value);
   }
 
 

@@ -57,18 +57,10 @@ contract('Dividend Token Ether', async() => {
   });
 
   it('Send money to token contract', async() => {
-    await web3.eth.sendTransaction({from:owner, to:token.address, value:10*ETH})
+    await web3.eth.sendTransaction({from:owner, to:token.address, value:10*ETH});
+    await web3.eth.sendTransaction({from:owner, to:token.address, value:0});
   });
 
-  it('Fail to send money', async() => {
-    let err;
-    try{
-      await web3.eth.sendTransaction({from:owner, to:token.address, value:0})
-    } catch(e){
-      err = e;
-    }
-    assert.notEqual(err, undefined);
-  });
 
   it('View dividends owed', async() => {
     let owed = new bn(await token.getOwedDividends(user1));
@@ -81,26 +73,26 @@ contract('Dividend Token Ether', async() => {
     await token.transfer(user3, tokenPerAccount/2, {from: user2});
     user2Balance2 = web3.eth.getBalance(user2);
     console.log(user2Balance2 - user2Balance1);
-    await token.collectOwedDividends({from: user2})
+    await token.withdraw({from: user2})
     user2Balance3 = web3.eth.getBalance(user2);
     console.log(user2Balance3 - user2Balance2);
 
     await web3.eth.sendTransaction({from:owner, to:token.address, value:10*ETH})
     user3Balance1 = web3.eth.getBalance(user3);
-    await token.collectOwedDividends({from: user3})
+    await token.withdraw({from: user3})
     user3Balance2 = web3.eth.getBalance(user3);
     console.log(user3Balance2 - user3Balance1);
 
-    await token.collectOwedDividends({from: user2})
+    await token.withdraw({from: user2})
     user2Balance4 = web3.eth.getBalance(user2);
     console.log(user2Balance4 - user2Balance3);
 
-    await token.collectOwedDividends({from: user2})
+    await token.withdraw({from: user2})
     user2Balance5 = web3.eth.getBalance(user2);
     console.log(user2Balance5 - user2Balance4);
 
     user1Balance1 = web3.eth.getBalance(user1);
-    await token.collectOwedDividends({from: user1})
+    await token.withdraw({from: user1})
     user1Balance2 = web3.eth.getBalance(user1);
     console.log(user1Balance2 - user1Balance1);
   });

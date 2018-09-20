@@ -14,8 +14,6 @@
 
     Database public database;
 
-    mapping (bytes32 => bytes32) public agreement;
-
 
     constructor(address _database)
     public {

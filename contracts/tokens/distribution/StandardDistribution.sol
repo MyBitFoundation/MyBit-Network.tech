@@ -42,28 +42,25 @@ contract StandardDistribution{
   // @notice allows beneficiaries to withdraw from contracts at different locations to be re-distributed here
   // @dev can call withdraw() on any address if there are no parameters required. Fallback function will be triggered
   // @param (address) _contractAddress = The address to call withdraw() on.
-  /*
   function getFunds(address _contractAddress)
   external
   returns (bool) {
     PullPayment(_contractAddress).withdraw();
     return true;
   }
-  */
+  
 
   function issueDividends()
   payable
-  requiresEther
   public {
       valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
       assetIncome = assetIncome.add(msg.value);
       emit LogIncomeReceived(msg.sender, msg.value);
   }
 
-    // Fallback function: Accepts Ether and updates ledger
+    // Fallback function: Accepts Ether and updates ledger (issues dividends)
   function ()
     payable
-    requiresEther
     public {
       valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
       assetIncome = assetIncome.add(msg.value);
@@ -111,11 +108,6 @@ contract StandardDistribution{
       _;
   }
 
-  // @notice Requires that Ether is sent with the transaction
-  modifier requiresEther {
-      require(msg.value > 0);
-      _;
-  }
 
   // ------------------------------------------------------------------------------------------------
   //                                     Events
