@@ -79,26 +79,26 @@ contract('Dividend Token ERC20', async() => {
     await token.transfer(user3, tokenPerAccount/2, {from: user2});
     user2Balance2 = await erc20.balanceOf(user2);
     console.log(user2Balance2 - user2Balance1);
-    await token.collectOwedDividends({from: user2})
+    await token.withdraw({from: user2})
     user2Balance3 = await erc20.balanceOf(user2);
     console.log(user2Balance3 - user2Balance2);
 
     await token.issueDividends(10*ETH, {from:owner})
     user3Balance1 = await erc20.balanceOf(user3);
-    await token.collectOwedDividends({from: user3})
+    await token.withdraw({from: user3})
     user3Balance2 = await erc20.balanceOf(user3);
     console.log(user3Balance2 - user3Balance1);
 
-    await token.collectOwedDividends({from: user2})
+    await token.withdraw({from: user2})
     user2Balance4 = await erc20.balanceOf(user2);
     console.log(user2Balance4 - user2Balance3);
 
-    await token.collectOwedDividends({from: user2})
+    await token.withdraw({from: user2})
     user2Balance5 = await erc20.balanceOf(user2);
     console.log(user2Balance5 - user2Balance4);
 
     user1Balance1 = await erc20.balanceOf(user1);
-    await token.collectOwedDividends({from: user1})
+    await token.withdraw({from: user1})
     user1Balance2 = await erc20.balanceOf(user1);
     console.log(user1Balance2 - user1Balance1);
   });

@@ -1,7 +1,8 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import '../../math/SafeMath.sol';
-import '../../tokens/ERC20/MintableToken.sol';
+import './MintableToken.sol';
+import '../../interfaces/ERC20.sol';
 
 
 // @notice Receive approval and then execute function
@@ -10,27 +11,34 @@ contract ApproveAndCallFallBack {
 }
 
 // @title ERC20 token contract with shared revenue distribution functionality.
-// @notice This token contract can receive payments in the fallback function and token owners receive their share when transferring tokens.
+// @notice This token contract can receive ERC20 tokens as payments and token owners receive their share when transferring tokens.
 // Credit goes to Nick Johnson for the dividend token https://medium.com/@weka/dividend-bearing-tokens-on-ethereum-42d01c710657
 // TODO: Suicide function
-contract DividendToken is MintableToken {
+contract DividendTokenERC20 is MintableToken {
     using SafeMath for uint;
+
+    ERC20 public erc20;
 
     // @notice Token Income Information
     uint constant scalingFactor = 1e32;
-    uint public assetIncome;
-    uint public valuePerToken;
 
-    mapping (address => uint) public incomeClaimed;
-    mapping (address => uint) public previousValuePerToken;
+    uint private assetIncome;
+    uint private assetIncomeIssued;
+    uint private valuePerToken;
+
+
+    mapping (address => uint) private incomeClaimed;
+    mapping (address => uint) private previousValuePerToken;
 
 
     // @notice constructor: initialized
-    constructor(string _tokenURI) public MintableToken(_tokenURI){}
-    // @notice Transfer _amount tokens to address _to.
-    // @dev Sender must have enough tokens. Cannot send to 0x0.
-    // @param (address) _to = The address which will receive the tokens
-    // @param (uint) _amount = The amount of tokens to send
+    constructor(string _tokenURI, address _erc20Address)
+    public  
+    MintableToken(_tokenURI) {
+        erc20 = ERC20(_erc20Address); //Set the address of the ERC20 token that will be issued as dividends
+    }
+
+
     function transfer(address _to, uint _amount)
     public
     updateIncomeClaimed(msg.sender)
@@ -41,11 +49,7 @@ contract DividendToken is MintableToken {
         return true;
     }
 
-    // @notice A 3rd party can transfer tokens if user approves them to do so
-    // @dev Transfer _amount of tokens if _from has allowed msg.sender to do so.
-    // @param (address) _from = The address who approved msg.sender to spend tokens
-    // @param (address) _to = The address who will receive the tokens
-    // @param (uint) _amount = The number of tokens to send
+
     function transferFrom(address _from, address _to, uint _amount)
     public
     updateIncomeClaimed(_from)
@@ -71,38 +75,48 @@ contract DividendToken is MintableToken {
         return true;
     }
 
-    function issueDividends()
-      payable
-      requiresEther
-      public {
-        valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
-        assetIncome = assetIncome.add(msg.value);
-        emit LogIncomeReceived(msg.sender, msg.value);
+    function issueDividends(uint _amount)
+    public {
+        require(_amount > 0);
+        erc20.transferFrom(msg.sender, address(this), _amount);
+        valuePerToken = valuePerToken.add(_amount.mul(scalingFactor).div(supply));
+        assetIncome = assetIncome.add(_amount);
+        emit LogIncomeReceived(msg.sender, _amount);
     }
 
     // @notice Updates incomeClaimed, sends all wei to the token holder
-    function collectOwedDividends()
+    function withdraw()
     public
     updateIncomeClaimed(msg.sender)
     returns (uint _amount) {
         _amount = incomeClaimed[msg.sender].div(scalingFactor);
         delete incomeClaimed[msg.sender];
-        msg.sender.transfer(_amount);
+        assetIncomeIssued = assetIncomeIssued.add(_amount);
+        erc20.transfer(msg.sender, _amount);
         emit LogIncomeCollected(now, msg.sender, _amount);
     }
+
+    //In case a user transferred a token directly to this contract
+    //anyone can run this function to clean up the balances
+    //and distribute the difference to token holders
+    function checkForTransfers()
+    external {
+      uint bookBalance = assetIncome.sub(assetIncomeIssued);
+      uint actualBalance = erc20.balanceOf(address(this));
+      uint diffBalance = actualBalance.sub(bookBalance);
+      if(diffBalance > 0){
+        //Update value per token
+        valuePerToken = valuePerToken.add(diffBalance.mul(scalingFactor).div(supply));
+        assetIncome = assetIncome.add(diffBalance);
+      }
+      emit LogCheckBalance(diffBalance);
+    }
+
 
     // ------------------------------------------------------------------------
     //                           View functions
     // ------------------------------------------------------------------------
-
-    // @notice Returns amount of tokens _spender is allowed to transfer or burn
-    function allowance(address _tokenHolder, address _spender)
-    public
-    view
-    returns (uint) {
-        return allowed[_tokenHolder][_spender];
-    }
-
+    
     // @notice Calculates how much value _user holds
     function getAmountOwed(address _user)
     private
@@ -120,6 +134,8 @@ contract DividendToken is MintableToken {
         return (getAmountOwed(_user).add(incomeClaimed[_user]).div(scalingFactor));
     }
 
+
+
     // ------------------------------------------------------------------------
     //                            Modifiers
     // ------------------------------------------------------------------------
@@ -133,25 +149,19 @@ contract DividendToken is MintableToken {
     }
 
     // Fallback function:
-    function ()
-      payable
-      requiresEther
+    // Only works with ERC223
+    // Can't currently detect which token
+    /*
+    function tokenFallback(address _from, uint _value, bytes _data)
       public {
-        valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
-        assetIncome = assetIncome.add(msg.value);
-        emit LogIncomeReceived(msg.sender, msg.value);
+        valuePerToken = valuePerToken.add(_value.mul(scalingFactor).div(supply));
+        assetIncome = assetIncome.add(_value);
+        emit LogIncomeReceived(_from, _value);
     }
-
-
-    //------------------------------------------------------------------------------------------------------------------
-    // Requires that Ether is sent with the transaction
-    //------------------------------------------------------------------------------------------------------------------
-    modifier requiresEther {
-        require(msg.value > 0);
-        _;
-    }
+    */
 
     event LogIncomeReceived(address indexed _sender, uint _paymentAmount);
+    event LogCheckBalance(uint _difference);
     event LogIncomeCollected(uint _block, address _address, uint _amount);
 
 }

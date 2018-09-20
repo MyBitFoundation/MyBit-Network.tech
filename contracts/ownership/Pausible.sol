@@ -3,6 +3,9 @@ pragma solidity 0.4.24;
 
 import '../database/Database.sol';
 
+// @title A contract which allows for the freezing of functionality within the platform. 
+// @dev only valid with a single owned ownership model
+// @author Kyle Dewhurst, MyBit Foundation
 contract Pausible {
 
   Database public database;

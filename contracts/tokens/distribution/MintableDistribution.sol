@@ -1,7 +1,8 @@
 pragma solidity ^0.4.24;
 
-import '../../../math/SafeMath.sol';
+import '../../math/SafeMath.sol';
 import './StandardDistribution.sol';
+
 
 
 // @title Non-Transferable ERC20 token contract with shared revenue distribution functionality.
