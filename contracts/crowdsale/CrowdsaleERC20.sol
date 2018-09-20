@@ -2,7 +2,7 @@
 
   import "../math/SafeMath.sol";
   import "../interfaces/DBInterface.sol";
-  import "../tokens/ERC20/DividendTokenERC20.sol";
+  import "../tokens/erc20/DividendTokenERC20.sol";
   import "../interfaces/ERC20.sol";
 
   // @title An asset crowdsale contract.
@@ -24,7 +24,7 @@
     // @notice brokers can initiate a crowdfund for a new asset here
     // @dev this crowdsale contract is granted the whole supply to distribute to investors
     // TODO: restrict _fundingToken depending on operators preferences
-    function startFundingPeriod(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, address _fundingToken)
+    function createAssetOrder(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, address _fundingToken)
     external {
       address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID)));
       require(operatorAddress != address(0));
@@ -43,7 +43,7 @@
 
     // @notice Users can send ERC20 here to fund asset if the deadline has not already passed.
     // @param (bytes32) _assetID = The ID of the asset tokens, user wishes to purchase
-    function buyAsset(bytes32 _assetID, uint _amount)
+    function buyAssetOrder(bytes32 _assetID, uint _amount)
     external
     notFinished(_assetID)
     returns (bool) {
@@ -68,6 +68,7 @@
 
 
     // @notice Contributors can retrieve their funds here if crowdsale has paased deadline
+    // @param (bytes32) _assetID =  The ID of the asset which didn't reach it's crowdfunding goals
     function refund(bytes32 _assetID)
     external
     whenNotPaused

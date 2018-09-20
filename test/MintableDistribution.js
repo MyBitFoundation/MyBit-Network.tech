@@ -54,17 +54,8 @@ contract('Mintable Distribution', async (accounts) => {
   });
 
   it('Send money to token contract', async() => {
-    await web3.eth.sendTransaction({from:owner, to:token.address, value:10*ETH})
-  });
-
-  it('Fail to send money', async() => {
-    let err;
-    try{
-      await web3.eth.sendTransaction({from:owner, to:token.address, value:0})
-    } catch(e){
-      err = e;
-    }
-    assert.notEqual(err, undefined);
+    await web3.eth.sendTransaction({from:owner, to:token.address, value:10*ETH});
+    await web3.eth.sendTransaction({from:owner, to:token.address, value:0});
   });
 
   it('View dividends owed', async() => {
