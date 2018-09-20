@@ -2,12 +2,7 @@ pragma solidity 0.4.24;
 
 import '../../math/SafeMath.sol';
 import '../../tokens/ERC20/MintableToken.sol';
-
-
-// @notice Receive approval and then execute function
-contract ApproveAndCallFallBack {
-    function receiveApproval(address from, uint tokens, address token, bytes data) public;
-}
+import '../../interfaces/ApproveAndCallFallback.sol';
 
 // @title ERC20 token contract with shared revenue distribution functionality.
 // @notice This token contract can receive payments in the fallback function and token owners receive their share when transferring tokens.
@@ -26,7 +21,7 @@ contract DividendToken is MintableToken {
 
 
     // @notice constructor: initialized
-    constructor(string _tokenURI) public MintableToken(_tokenURI){}
+    constructor(string _tokenURI, address _owner) public MintableToken(_tokenURI, _owner){}
     // @notice Transfer _amount tokens to address _to.
     // @dev Sender must have enough tokens. Cannot send to 0x0.
     // @param (address) _to = The address which will receive the tokens

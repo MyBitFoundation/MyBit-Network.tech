@@ -21,7 +21,7 @@ contract('Dividend Token Ether', async() => {
   let token;
 
   it('Deploy Token', async() => {
-    token = await Token.new(tokenURI);
+    token = await Token.new(tokenURI, owner);
   });
 
   it("Spread tokens to users", async() => {

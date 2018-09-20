@@ -2,8 +2,9 @@
 
   import "../math/SafeMath.sol";
   import "../interfaces/DBInterface.sol";
-  import "../tokens/ERC20/DividendTokenERC20.sol";
   import "../interfaces/ERC20.sol";
+  import "../interfaces/ERC20DividendInterface.sol";
+  import "../interfaces/TokenFactoryInterface.sol";
 
   // @title An asset crowdsale contract.
   // @author Kyle Dewhurst, MyBit Foundation
@@ -12,14 +13,15 @@
     using SafeMath for uint256;
 
     DBInterface private database;
+    TokenFactoryInterface private tokenFactory;
 
     // @notice This contract
     // @param: The address for the AssetCreation contract
-    constructor(address _database)
-    public {
+    constructor(address _database, address _tokenFactory)
+    public{
         database = DBInterface(_database);
+        tokenFactory = TokenFactoryInterface(_tokenFactory);
     }
-
 
     // @notice brokers can initiate a crowdfund for a new asset here
     // @dev this crowdsale contract is granted the whole supply to distribute to investors
@@ -30,14 +32,15 @@
       require(operatorAddress != address(0));
       bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
       require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
-      DividendTokenERC20 newAsset = new DividendTokenERC20(_assetURI, _fundingToken);   // Gives this full asset token supply
+      //DividendTokenERC20 newAsset = new DividendTokenERC20(_assetURI, _fundingToken);   // Gives this full asset token supply
+      address assetAddress = tokenFactory.createERC20Dividend(_assetURI, _fundingToken);
       database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
       database.setUint(keccak256(abi.encodePacked("amountToRaise", assetID)), _amountToRaise);
-      database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));
+      database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), assetAddress);
       database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
       database.setAddress(keccak256(abi.encodePacked("operator", assetID)), operatorAddress);   // TODO: Could reconstruct this using event logs
       database.setAddress(keccak256(abi.encodePacked("fundingToken", assetID)), _fundingToken);
-      emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, address(newAsset));
+      emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, assetAddress);
     }
 
 
@@ -48,7 +51,8 @@
     notFinished(_assetID)
     returns (bool) {
       require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
-      DividendTokenERC20 assetToken = DividendTokenERC20(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+      //DividendTokenERC20 assetToken = DividendTokenERC20(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+      ERC20DividendInterface assetToken = ERC20DividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
       ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
       uint tokensRemaining = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID))).sub(assetToken.totalSupply());
       if (_amount >= tokensRemaining) {
@@ -75,7 +79,7 @@
     returns (bool) {
       require(now > database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
       address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)));
-      DividendTokenERC20 assetToken = DividendTokenERC20(tokenAddress);
+      ERC20DividendInterface assetToken = ERC20DividendInterface(tokenAddress);
       ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
 
       uint refundValue = assetToken.totalSupply(); //token=wei
@@ -84,28 +88,6 @@
       assetToken.issueDividends(refundValue);
       return true;
     }
-
-
-    // @notice platform owners can recover tokens here
-    /*
-    function recoverTokens(address _erc20Token)
-    onlyOwner
-    external {
-      ERC20 thisToken = ERC20(_erc20Token);
-      uint contractBalance = thisToken.balanceOf(address(this));
-      thisToken.transfer(msg.sender, contractBalance);
-    }
-    */
-    /*
-    // @notice platform owners can destroy contract here
-    function destroy()
-    onlyOwner
-    external {
-      emit LogDestruction(address(this).balance, msg.sender);
-      selfdestruct(msg.sender);
-    }
-    */
-
 
     //------------------------------------------------------------------------------------------------------------------
     //                                            Internal Functions
@@ -128,6 +110,22 @@
       return true;
     }
 
+    // @notice platform owners can recover tokens here
+    function recoverTokens(address _erc20Token)
+    onlyOwner
+    external {
+      ERC20 thisToken = ERC20(_erc20Token);
+      uint contractBalance = thisToken.balanceOf(address(this));
+      thisToken.transfer(msg.sender, contractBalance);
+    }
+
+    // @notice platform owners can destroy contract here
+    function destroy()
+    onlyOwner
+    external {
+      emit LogDestruction(address(this).balance, msg.sender);
+      selfdestruct(msg.sender);
+    }
 
     //------------------------------------------------------------------------------------------------------------------
     //                                            Modifiers

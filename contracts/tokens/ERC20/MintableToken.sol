@@ -14,10 +14,10 @@ contract MintableToken is StandardToken {
   string internal tokenURI;                 // A reference to a URI containing further token information
 
   // @notice constructor: initialized
-  constructor(string _tokenURI)
+  constructor(string _tokenURI, address _minter)
   public {
       tokenURI = _tokenURI;                         // Set the id for reference
-      minter = msg.sender;
+      minter = _minter;
       supply = 0;
   }
 
