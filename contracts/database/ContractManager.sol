@@ -1,18 +1,19 @@
 pragma solidity 0.4.24;
 
-import "./Database.sol";
+import "../interfaces/DBInterface.sol";
 
 // ------------------------------------------------------------------------------------------------
 // This contract determines which contracts are allowed to make changes to the database contract.
 // ------------------------------------------------------------------------------------------------
 contract ContractManager{
-  Database public database;
+  DBInterface public database;
 
-  // Set the database contract
+  // @notice constructor: initializes database
+  // @param: the address for the database contract used by this platform
   constructor(address _database)
   public
   noEmptyAddress(_database) {
-    database = Database(_database);
+    database = DBInterface(_database);
   }
 
   // ------------------------------------------------------------------------------------------------

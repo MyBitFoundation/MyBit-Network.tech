@@ -2,8 +2,9 @@
 
   import "../math/SafeMath.sol";
   import "../interfaces/DBInterface.sol";
-  import "../tokens/erc20/DividendTokenERC20.sol";
   import "../interfaces/ERC20.sol";
+  import "../interfaces/ERC20DividendInterface.sol";
+
 
   // @title An asset crowdsale contract.
   // @author Kyle Dewhurst, MyBit Foundation
@@ -14,30 +15,10 @@
     DBInterface private database;
 
     // @notice This contract
-    // @param: The address for the AssetCreation contract
+    // @param: The address for the platform database
     constructor(address _database)
-    public {
+    public{
         database = DBInterface(_database);
-    }
-
-
-    // @notice brokers can initiate a crowdfund for a new asset here
-    // @dev this crowdsale contract is granted the whole supply to distribute to investors
-    function createAssetOrder(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, address _fundingToken)
-    external {
-      address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID)));
-      require (database.boolStorage(keccak256(abi.encodePacked("acceptedToken", _operatorID, _fundingToken)))); 
-      require(operatorAddress != address(0));
-      bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
-      require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
-      DividendTokenERC20 newAsset = new DividendTokenERC20(_assetURI, _fundingToken);   // Gives this full asset token supply
-      database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
-      database.setUint(keccak256(abi.encodePacked("amountToRaise", assetID)), _amountToRaise);
-      database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));
-      database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
-      database.setAddress(keccak256(abi.encodePacked("operator", assetID)), operatorAddress);   // TODO: Could reconstruct this using event logs
-      database.setAddress(keccak256(abi.encodePacked("fundingToken", assetID)), _fundingToken);
-      emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, address(newAsset));
     }
 
 
@@ -48,17 +29,19 @@
     notFinished(_assetID)
     returns (bool) {
       require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
-      DividendTokenERC20 assetToken = DividendTokenERC20(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+      //DividendTokenERC20 assetToken = DividendTokenERC20(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+      ERC20DividendInterface assetToken = ERC20DividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
       ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
       uint tokensRemaining = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID))).sub(assetToken.totalSupply());
       if (_amount >= tokensRemaining) {
-        database.setBool(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)), true);
+        require(finalizeCrowdsale(_assetID));
         require(fundingToken.transferFrom(msg.sender, address(this), tokensRemaining));    // transfer investors tokens into contract
         require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens to investor
         require(assetToken.finishMinting());
         require(payout(_assetID, assetToken.totalSupply()));          // 1 token = 1 wei
         emit LogAssetPurchased(_assetID, msg.sender, tokensRemaining);
-      } else {
+      } 
+      else {
         require(fundingToken.transferFrom(msg.sender, address(this), _amount));
         require(assetToken.mint(msg.sender, _amount));
         emit LogAssetPurchased(_assetID, msg.sender, _amount);
@@ -76,37 +59,14 @@
     returns (bool) {
       require(now > database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
       address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)));
-      DividendTokenERC20 assetToken = DividendTokenERC20(tokenAddress);
+      ERC20DividendInterface assetToken = ERC20DividendInterface(tokenAddress);
       ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
-
       uint refundValue = assetToken.totalSupply(); //token=wei
-      database.setBool(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)), true);
+      require(finalizeCrowdsale(_assetID)); 
       fundingToken.approve(tokenAddress, refundValue);
       assetToken.issueDividends(refundValue);
       return true;
     }
-
-
-    // @notice platform owners can recover tokens here
-    /*
-    function recoverTokens(address _erc20Token)
-    onlyOwner
-    external {
-      ERC20 thisToken = ERC20(_erc20Token);
-      uint contractBalance = thisToken.balanceOf(address(this));
-      thisToken.transfer(msg.sender, contractBalance);
-    }
-    */
-    /*
-    // @notice platform owners can destroy contract here
-    function destroy()
-    onlyOwner
-    external {
-      emit LogDestruction(address(this).balance, msg.sender);
-      selfdestruct(msg.sender);
-    }
-    */
-
 
     //------------------------------------------------------------------------------------------------------------------
     //                                            Internal Functions
@@ -129,6 +89,39 @@
       return true;
     }
 
+    // @notice platform owners can recover tokens here
+    function recoverTokens(address _erc20Token)
+    onlyOwner
+    external {
+      ERC20 thisToken = ERC20(_erc20Token);
+      uint contractBalance = thisToken.balanceOf(address(this));
+      thisToken.transfer(msg.sender, contractBalance);
+    }
+
+    // @notice platform owners can destroy contract here
+    function destroy()
+    onlyOwner
+    external {
+      emit LogDestruction(address(this).balance, msg.sender);
+      selfdestruct(msg.sender);
+    }
+
+
+    //------------------------------------------------------------------------------------------------------------------
+    //                                            Modifiers
+    //------------------------------------------------------------------------------------------------------------------
+
+    // @notice internal function for freeing up storage after crowdsale finishes
+    // @param the ID of this asset. 
+    function finalizeCrowdsale(bytes32 _assetID)
+    internal 
+    whenNotPaused
+    returns (bool) { 
+        database.setBool(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)), true);
+        database.deleteUint(keccak256(abi.encodePacked("fundingDeadline", _assetID)));   
+        database.deleteUint(keccak256(abi.encodePacked("amountToRaise", _assetID))); 
+        return true; 
+    }
 
     //------------------------------------------------------------------------------------------------------------------
     //                                            Modifiers
@@ -156,7 +149,6 @@
     //                                            Events
     //------------------------------------------------------------------------------------------------------------------
 
-    event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _broker, string _tokenURI, address indexed _tokenAddress);
     event LogAssetPurchased(bytes32 indexed _assetID, address indexed _sender, uint _amount);
     event LogAssetPayout(bytes32 indexed _assetID, address indexed _operator, uint _amount);
     event LogDestruction(uint _amountSent, address indexed _caller);

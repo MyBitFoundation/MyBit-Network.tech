@@ -4,9 +4,13 @@ const Token = artifacts.require("./tokens/ERC20/DividendTokenERC20.sol");
 const Crowdsale = artifacts.require("./crowdsale/CrowdsaleERC20.sol");
 const Database = artifacts.require("./database/Database.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
-const HashFunctions = artifacts.require("./test/HashFunctions.sol");
+//const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const BurnableToken = artifacts.require("./tokens/ERC20/BurnableToken.sol");
 const Pausible = artifacts.require("./ownership/Pausible.sol");
+const TokenFactory = artifacts.require("./crowdsale/TokenFactory.sol");
+const Operators = artifacts.require("./ecosystem/Operators.sol");
+const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
+
 
 const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
@@ -26,19 +30,17 @@ contract('ERC20 Crowdsale', async() => {
   let token;
   let erc20;
   let crowdsale;
+  let tokenFactory;
   let db;
   let cm;
-  let hash;
+  //let hash;
+  let platform;
+  let operators;
   let operatorID;
-  let operatorHash;
   let assetID;
   let assetURI;
   let tokenAddress;
   let pausible;
-
-  it('Deploy hash contract', async() => {
-    hash = await HashFunctions.new();
-  });
 
   it('Deploy database contract', async() => {
     db = await Database.new([owner], true);
@@ -74,17 +76,22 @@ contract('ERC20 Crowdsale', async() => {
     assert.equal(ledgerTrue, true);
   });
 
+  it('Deploy token factory', async() => {
+    tokenFactory = await TokenFactory.new();
+  });
+
   it('Deploy crowdsale contract', async() => {
-    crowdsale = await Crowdsale.new(db.address);
+    crowdsale = await Crowdsale.new(db.address, tokenFactory.address);
     await cm.addContract('ERC20Crowdsale', crowdsale.address);
     await cm.addContract('Owner', owner); //Right now some database functions are operated from owner account
+    await tokenFactory.addOwner(crowdsale.address);
   });
 
   it('Set operator', async() => {
-    //Presumably there is some onboarding process for the operator?
-    operatorID = await hash.addressHash(operator);
-    operatorHash = await hash.stringBytes('operator', operatorID);
-    await db.setAddress(operatorHash, operator);
+    operators = await Operators.new(db.address);
+    await cm.addContract('Operators', operators.address);
+    let tx = await operators.registerOperator(operator, 'Operator');
+    operatorID = tx.logs[0].args._operatorID;
   });
 
   //Start successful funding
@@ -135,8 +142,21 @@ contract('ERC20 Crowdsale', async() => {
   });
 
   it('Set platform', async() => {
-    let platformHash = await hash.stringHash('platformWallet');
-    await db.setAddress(platformHash, owner);
+    //let platformHash = await hash.stringHash('platformWallet');
+    //await db.setAddress(platformHash, owner);
+    platform = await Platform.new(db.address);
+    await cm.addContract('PlatformFunds', platform.address);
+    await platform.setPlatformWallet(owner);
+  });
+
+  it('Fail to set platform wallet', async() => {
+    let err;
+    try{
+      await platform.setPlatformWallet(broker, {from:broker});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
   });
 
   it('User2 funding', async() => {
@@ -205,7 +225,7 @@ contract('ERC20 Crowdsale', async() => {
   it('Start failed funding', async() => {
     let err;
 
-    await db.deleteAddress(operatorHash);
+    await operators.removeOperator(operatorID);
     assetURI = 'Fail: No operator';
 
     try{
@@ -217,9 +237,10 @@ contract('ERC20 Crowdsale', async() => {
   });
 
   it('Start funding that does not reach goal', async() => {
-    await db.setAddress(operatorHash, operator);
+    let tx = await operators.registerOperator(operator, 'NewOperator');
+    operatorID = tx.logs[0].args._operatorID;
     assetURI = 'No Goal';
-    let tx = await crowdsale.createAssetOrder(assetURI, operatorID, 2, 20*ETH, erc20.address, {from:broker});
+    tx = await crowdsale.createAssetOrder(assetURI, operatorID, 2, 20*ETH, erc20.address, {from:broker});
     //console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
     tokenAddress = tx.logs[0].args._tokenAddress;
@@ -235,12 +256,7 @@ contract('ERC20 Crowdsale', async() => {
 
   it('User1 funding fail', async() => {
     web3.currentProvider.send({jsonrpc: "2.0", method: "evm_increaseTime", params: [3], id: 0});
-    //After deadline
-    let now = await web3.eth.getBlock('latest').timestamp;
-    console.log(now);
-    let deadlineHash = await hash.stringBytes('fundingDeadline', assetID);
-    let deadline = await db.uintStorage(deadlineHash);
-    console.log(Number(deadline));
+
     let err;
     try{
       await erc20.approve(crowdsale.address, 5*ETH, {from:user1});

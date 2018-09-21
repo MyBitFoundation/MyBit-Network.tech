@@ -27,7 +27,7 @@ contract('Dividend Token ERC20', async() => {
   });
 
   it('Deploy Dividend Token', async() => {
-    token = await Token.new(tokenURI, erc20.address);
+    token = await Token.new(tokenURI, owner, erc20.address);
   });
 
   it("Spread tokens to users", async() => {
