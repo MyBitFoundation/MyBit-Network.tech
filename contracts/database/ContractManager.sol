@@ -1,18 +1,19 @@
 pragma solidity 0.4.24;
 
-import "./Database.sol";
+import "../interfaces/DBInterface.sol";
 
 // ------------------------------------------------------------------------------------------------
 // This contract determines which contracts are allowed to make changes to the database contract.
 // ------------------------------------------------------------------------------------------------
 contract ContractManager{
-  Database public database;
+  DBInterface public database;
 
-  // Set the database contract
+  // @notice constructor: initializes database
+  // @param: the address for the database contract used by this platform
   constructor(address _database)
   public
   noEmptyAddress(_database) {
-    database = Database(_database);
+    database = DBInterface(_database);
   }
 
   // ------------------------------------------------------------------------------------------------
@@ -92,6 +93,15 @@ contract ContractManager{
     _;
   }
 
+  // @notice add this modifer to functions that you want multi-sig requirements for
+  // @dev function can only be called after at least n >= quorumLevel owners have agreed to call it
+  modifier isRestricted(bytes4 _methodID, bytes32 _parameterHash) { 
+      require(database.boolStorage(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash))));  // owners must have agreed on function + parameters
+    _;
+      database.deleteBool(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash)));  
+  }
+
+  
   // ------------------------------------------------------------------------------------------------
   //  Verify address isn't null
   // ------------------------------------------------------------------------------------------------

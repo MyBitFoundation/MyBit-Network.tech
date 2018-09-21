@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import '../interfaces/BurnableERC20.sol';
-import '../database/Database.sol';
+  import "../interfaces/DBInterface.sol";
 
 /// @title A contract for burning ERC20 tokens as usage fee for dapps
 /// @author Kyle Dewhurst, MyBit Foundation
@@ -10,14 +10,15 @@ import '../database/Database.sol';
 contract ERC20Burner {
 
   BurnableERC20 public token;  // The instance of the ERC20 burner contract
-  Database public database;
+  DBInterface public database;   // The datbase instance
 
 
-  // @notice constructor: instantiates myb token address and sets owner
+  // @notice constructor: initializes database and the MYB token
+  // @param: the address for the database contract used by this platform
   // @param (address) _myBitTokenAddress = The MyBit token address
   constructor(address _myBitTokenAddress, address _database)
   public {
-    database = Database(_database);
+    database = DBInterface(_database);
     token = BurnableERC20(_myBitTokenAddress);
   }
 

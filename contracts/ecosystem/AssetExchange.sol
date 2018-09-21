@@ -21,8 +21,8 @@ contract AssetExchange {
 
 
   //------------------------------------------------------------------------------------------------------------------
-  // Constructor
-  // Initialize database for storage
+  // @notice constructor: initializes database
+  // @param: the address for the database contract used by this platform
   //------------------------------------------------------------------------------------------------------------------
   constructor(address _database)
   public {
