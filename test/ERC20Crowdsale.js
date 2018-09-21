@@ -240,7 +240,7 @@ contract('ERC20 Crowdsale', async() => {
     let tx = await operators.registerOperator(operator, 'NewOperator');
     operatorID = tx.logs[0].args._operatorID;
     assetURI = 'No Goal';
-    let tx = await crowdsale.createAssetOrder(assetURI, operatorID, 2, 20*ETH, erc20.address, {from:broker});
+    tx = await crowdsale.createAssetOrder(assetURI, operatorID, 2, 20*ETH, erc20.address, {from:broker});
     //console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
     tokenAddress = tx.logs[0].args._tokenAddress;

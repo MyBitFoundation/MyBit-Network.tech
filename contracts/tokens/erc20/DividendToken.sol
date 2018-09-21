@@ -1,7 +1,7 @@
 pragma solidity 0.4.24;
 
+import './MintableToken.sol';
 import '../../math/SafeMath.sol';
-import '../../tokens/ERC20/MintableToken.sol';
 import '../../interfaces/ApproveAndCallFallback.sol';
 
 // @title ERC20 token contract with shared revenue distribution functionality.

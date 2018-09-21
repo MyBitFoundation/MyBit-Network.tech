@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import '../../math/SafeMath.sol';
 import './MintableToken.sol';
+import '../../math/SafeMath.sol';
 import '../../interfaces/ERC20.sol';
 import '../../interfaces/ApproveAndCallFallback.sol';
 

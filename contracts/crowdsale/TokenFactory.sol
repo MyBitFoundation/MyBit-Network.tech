@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "../tokens/ERC20/DividendToken.sol";
-import "../tokens/ERC20/DividendTokenERC20.sol";
+import "../tokens/erc20/DividendToken.sol";
+import "../tokens/erc20/DividendTokenERC20.sol";
 
 contract TokenFactory{
   mapping(address => bool) owners;
