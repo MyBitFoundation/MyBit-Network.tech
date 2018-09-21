@@ -29,7 +29,7 @@
       require(operatorAddress != address(0));
       bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
       require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
-      DividendToken newAsset = new DividendToken(_assetURI);   // Gives this contract all new asset tokens
+      DividendToken newAsset = new DividendToken(_assetURI, address(this));   // Gives this contract all new asset tokens
       database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
       database.setUint(keccak256(abi.encodePacked("amountToRaise", assetID)), _amountToRaise);
       database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));
@@ -60,6 +60,8 @@
         require(thisToken.finishMinting());
         require(payout(_assetID, thisToken.totalSupply()));          // 1 token = 1 wei
         msg.sender.transfer(msg.value.sub(tokensRemaining.mul(100).div(investorPercent)));     // Return leftover WEI
+        //This bool is set to true to make it a valid token on the DAX.
+        database.setBool(keccak256(abi.encodePacked("assetTradeable", _assetID)), true);
       }
       else {
         require(thisToken.mint(msg.sender, msg.value.mul(investorPercent).div(100)));
