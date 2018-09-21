@@ -24,12 +24,12 @@
 
     // @notice Users can send ERC20 here to fund asset if the deadline has not already passed.
     // @param (bytes32) _assetID = The ID of the asset tokens, user wishes to purchase
+    // @param (uint) _amount = The amount to spend purchasing this asset
     function buyAssetOrder(bytes32 _assetID, uint _amount)
     external
     notFinished(_assetID)
     returns (bool) {
-      require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
-      //DividendTokenERC20 assetToken = DividendTokenERC20(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+      // require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
       ERC20DividendInterface assetToken = ERC20DividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
       ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
       uint tokensRemaining = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID))).sub(assetToken.totalSupply());

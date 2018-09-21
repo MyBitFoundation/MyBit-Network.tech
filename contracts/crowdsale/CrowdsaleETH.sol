@@ -9,7 +9,7 @@
   // @author Kyle Dewhurst, MyBit Foundation
   // @notice handles the funding and refunding of a newly created asset crowdsale. 
   // @dev this contract only accepts Ether
-  contract CrowdsaleEther{
+  contract CrowdsaleETH {
     using SafeMath for uint256;
 
     DBInterface public database;

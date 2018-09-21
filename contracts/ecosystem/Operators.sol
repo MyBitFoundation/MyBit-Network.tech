@@ -44,11 +44,11 @@ contract Operators {
   }
 
   // @notice operator can choose which ERC20 tokens he's willing to accept as payment
-  function acceptERC20Token(bytes32 _operatorID, address _tokenAddress)
+  function acceptERC20Token(bytes32 _operatorID, address _tokenAddress, bool _accept)
   external
   onlyOperator(_operatorID) 
   returns (bool) { 
-    database.setBool(keccak256(abi.encodePacked("acceptedToken", _operatorID, _tokenAddress)), true); 
+    database.setBool(keccak256(abi.encodePacked("acceptedToken", _operatorID, _tokenAddress)), _accept); 
     return true; 
   }
 
