@@ -22,9 +22,12 @@ contract PlatformFunds {
     emit LogPlatformWallet(_walletAddress);
   }
 
-  //function setPlatformToken(address _tokenAddress)
-
-
+  function setPlatformToken(address _tokenAddress)
+  external
+  onlyOwner {
+    database.setAddress(keccak256(abi.encodePacked("platformToken")), _tokenAddress);
+    emit LogPlatformToken(_tokenAddress);
+  }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                                Modifiers                                                                     //
@@ -42,6 +45,7 @@ contract PlatformFunds {
 
 
   event LogPlatformWallet(address _platformWallet);
+  event LogPlatformToken(address _platformToken);
 
 
 

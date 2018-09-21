@@ -88,10 +88,6 @@ contract('ERC20 Crowdsale', async() => {
   });
 
   it('Set operator', async() => {
-    //Presumably there is some onboarding process for the operator?
-    //operatorID = await hash.addressHash(operator);
-    //operatorHash = await hash.stringBytes('operator', operatorID);
-    //await db.setAddress(operatorHash, operator);
     operators = await Operators.new(db.address);
     await cm.addContract('Operators', operators.address);
     let tx = await operators.registerOperator(operator, 'Operator');

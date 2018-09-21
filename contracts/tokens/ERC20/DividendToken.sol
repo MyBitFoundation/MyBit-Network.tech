@@ -90,14 +90,6 @@ contract DividendToken is MintableToken {
     //                           View functions
     // ------------------------------------------------------------------------
 
-    // @notice Returns amount of tokens _spender is allowed to transfer or burn
-    function allowance(address _tokenHolder, address _spender)
-    public
-    view
-    returns (uint) {
-        return allowed[_tokenHolder][_spender];
-    }
-
     // @notice Calculates how much value _user holds
     function getAmountOwed(address _user)
     private

@@ -60,6 +60,8 @@
         require(thisToken.finishMinting());
         require(payout(_assetID, thisToken.totalSupply()));          // 1 token = 1 wei
         msg.sender.transfer(msg.value.sub(tokensRemaining.mul(100).div(investorPercent)));     // Return leftover WEI
+        //This bool is set to true to make it a valid token on the DAX.
+        database.setBool(keccak256(abi.encodePacked("assetTradeable", _assetID)), true);
       }
       else {
         require(thisToken.mint(msg.sender, msg.value.mul(investorPercent).div(100)));

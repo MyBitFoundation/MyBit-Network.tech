@@ -166,9 +166,7 @@ contract DividendTokenERC20 is MintableToken {
     returns (uint) {
         return (getAmountOwed(_user).add(incomeClaimed[_user]).div(scalingFactor));
     }
-
-
-
+    
     // ------------------------------------------------------------------------
     //                            Modifiers
     // ------------------------------------------------------------------------

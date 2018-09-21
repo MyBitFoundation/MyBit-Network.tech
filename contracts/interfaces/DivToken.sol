@@ -67,19 +67,19 @@ interface DivToken {
 
     // @notice Returns the URI of this token
     function tokenURI()
-    external 
-    view 
-    returns (string); 
+    external
+    view
+    returns (string);
 
-    function valueOfToken()
-    external 
-    view 
-    returns (uint); 
+    function valuePerToken()
+    external
+    view
+    returns (uint);
 
     function scalingFactor()
-    external 
-    view 
-    returns (uint); 
+    external
+    view
+    returns (uint);
 
     // @notice Calculates how much value _user holds
     function getAmountOwed(address _user)
@@ -91,6 +91,11 @@ interface DivToken {
     function getOwedDividends(address _user)
     external
     constant
+    returns (uint);
+
+    function assetIncome()
+    external
+    view
     returns (uint);
 
 
