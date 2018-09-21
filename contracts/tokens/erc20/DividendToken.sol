@@ -66,25 +66,38 @@ contract DividendToken is MintableToken {
         return true;
     }
 
+    // @notice token holders can withdraw income here
+    function withdraw()
+    public
+    updateIncomeClaimed(msg.sender)
+    returns (bool) {
+        uint amount = incomeClaimed[msg.sender].div(scalingFactor);
+        delete incomeClaimed[msg.sender];
+        msg.sender.transfer(amount);
+        emit LogIncomeCollected(now, msg.sender, amount);
+        return true;
+    }
+
+    // @notice assets can send their income here to be collected by investors
     function issueDividends()
-      payable
-      requiresEther
-      public {
+    payable
+    public
+    returns (bool) {
+        valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
+        assetIncome = assetIncome.add(msg.value);
+        emit LogIncomeReceived(msg.sender, msg.value);
+        return true;
+    }
+
+    // Fallback function: receives Ether and updates income ledger
+    function ()
+    payable
+    public {
         valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
         assetIncome = assetIncome.add(msg.value);
         emit LogIncomeReceived(msg.sender, msg.value);
     }
 
-    // @notice Updates incomeClaimed, sends all wei to the token holder
-    function collectOwedDividends()
-    public
-    updateIncomeClaimed(msg.sender)
-    returns (uint _amount) {
-        _amount = incomeClaimed[msg.sender].div(scalingFactor);
-        delete incomeClaimed[msg.sender];
-        msg.sender.transfer(_amount);
-        emit LogIncomeCollected(now, msg.sender, _amount);
-    }
 
     // ------------------------------------------------------------------------
     //                           View functions
@@ -119,24 +132,9 @@ contract DividendToken is MintableToken {
         _;
     }
 
-    // Fallback function:
-    function ()
-      payable
-      requiresEther
-      public {
-        valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
-        assetIncome = assetIncome.add(msg.value);
-        emit LogIncomeReceived(msg.sender, msg.value);
-    }
 
 
-    //------------------------------------------------------------------------------------------------------------------
-    // Requires that Ether is sent with the transaction
-    //------------------------------------------------------------------------------------------------------------------
-    modifier requiresEther {
-        require(msg.value > 0);
-        _;
-    }
+
 
     event LogIncomeReceived(address indexed _sender, uint _paymentAmount);
     event LogIncomeCollected(uint _block, address _address, uint _amount);

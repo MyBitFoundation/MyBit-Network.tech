@@ -97,7 +97,7 @@ contract('ERC20 Crowdsale', async() => {
   //Start successful funding
   it('Start funding', async() => {
     assetURI = 'BTC ATM';
-    let tx = await crowdsale.startFundingPeriod(assetURI, operatorID, 10, 20*ETH, erc20.address, {from:broker});
+    let tx = await crowdsale.createAssetOrder(assetURI, operatorID, 10, 20*ETH, erc20.address, {from:broker});
     //console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
     tokenAddress = tx.logs[0].args._tokenAddress;
@@ -107,7 +107,7 @@ contract('ERC20 Crowdsale', async() => {
 
   it('User1 funding', async() => {
     await erc20.approve(crowdsale.address, 5*ETH, {from:user1});
-    let tx = await crowdsale.buyAsset(assetID, 5*ETH, {from:user1});
+    let tx = await crowdsale.buyAssetOrder(assetID, 5*ETH, {from:user1});
     console.log(Number(tx.logs[0].args._amount));
     let user1Tokens = await token.balanceOf(user1);
     console.log('Token Address: ' + token.address);
@@ -123,7 +123,7 @@ contract('ERC20 Crowdsale', async() => {
     let err;
     //Fail because asset already exists
     try{
-      await crowdsale.startFundingPeriod(assetURI, operatorID, 10, 20*ETH, {from:broker});
+      await crowdsale.createAssetOrder(assetURI, operatorID, 10, 20*ETH, {from:broker});
     } catch(e){
       err = e;
     }
@@ -134,7 +134,7 @@ contract('ERC20 Crowdsale', async() => {
     let err;
     try{
       await erc20.approve(crowdsale.address, 15*ETH, {from:user2});
-      await crowdsale.buyAsset(assetID, 15*ETH, {from:user2});
+      await crowdsale.buyAssetOrder(assetID, 15*ETH, {from:user2});
     } catch(e){
       err = e;
     }
@@ -164,7 +164,7 @@ contract('ERC20 Crowdsale', async() => {
     ownerBalanceBefore = await erc20.balanceOf(owner);
     operatorBalanceBefore = await erc20.balanceOf(operator);
     await erc20.approve(crowdsale.address, 15*ETH, {from:user2});
-    let tx = await crowdsale.buyAsset(assetID, 15*ETH, {from:user2});
+    let tx = await crowdsale.buyAssetOrder(assetID, 15*ETH, {from:user2});
     let user2Tokens = await token.balanceOf(user2);
     assert.equal(user2Tokens, 15*ETH);
 
@@ -181,7 +181,7 @@ contract('ERC20 Crowdsale', async() => {
     let err;
     try{
       await erc20.approve(crowdsale.address, 5*ETH, {from:user3});
-      await crowdsale.buyAsset(assetID, 5*ETH, {from:user3});
+      await crowdsale.buyAssetOrder(assetID, 5*ETH, {from:user3});
     } catch(e){
       err = e;
     }
@@ -209,14 +209,14 @@ contract('ERC20 Crowdsale', async() => {
 
   it('User1 withdraw dividends', async() => {
     user1BalanceBefore = await erc20.balanceOf(user1);
-    await token.collectOwedDividends({from:user1});
+    await token.withdraw({from:user1});
     user1BalanceAfter = await erc20.balanceOf(user1);
     assert.equal(bn(user1BalanceAfter).isGreaterThan(user1BalanceBefore), true);
   });
 
   it('User2 withdraw dividends', async() => {
     user2BalanceBefore = await erc20.balanceOf(user2);
-    await token.collectOwedDividends({from:user2});
+    await token.withdraw({from:user2});
     user2BalanceAfter = await erc20.balanceOf(user2);
     assert.equal(bn(user2BalanceAfter).isGreaterThan(user2BalanceBefore), true);
   });
@@ -229,7 +229,7 @@ contract('ERC20 Crowdsale', async() => {
     assetURI = 'Fail: No operator';
 
     try{
-      await crowdsale.startFundingPeriod(assetURI, operatorID, 10, 20*ETH, {from:broker});
+      await crowdsale.createAssetOrder(assetURI, operatorID, 10, 20*ETH, {from:broker});
     } catch(e){
       err = e;
     }
@@ -240,7 +240,7 @@ contract('ERC20 Crowdsale', async() => {
     let tx = await operators.registerOperator(operator, 'NewOperator');
     operatorID = tx.logs[0].args._operatorID;
     assetURI = 'No Goal';
-    tx = await crowdsale.startFundingPeriod(assetURI, operatorID, 2, 20*ETH, erc20.address, {from:broker});
+    let tx = await crowdsale.createAssetOrder(assetURI, operatorID, 2, 20*ETH, erc20.address, {from:broker});
     //console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
     tokenAddress = tx.logs[0].args._tokenAddress;
@@ -249,7 +249,7 @@ contract('ERC20 Crowdsale', async() => {
 
   it('User3 funding', async() => {
     await erc20.approve(crowdsale.address, 5*ETH, {from:user3});
-    let tx = await crowdsale.buyAsset(assetID, 5*ETH, {from:user3});
+    let tx = await crowdsale.buyAssetOrder(assetID, 5*ETH, {from:user3});
     let user3Tokens = await token.balanceOf(user3);
     assert.equal(user3Tokens, 5*ETH);
   });
@@ -260,7 +260,7 @@ contract('ERC20 Crowdsale', async() => {
     let err;
     try{
       await erc20.approve(crowdsale.address, 5*ETH, {from:user1});
-      await crowdsale.buyAsset(assetID, 5*ETH, {from:user1});
+      await crowdsale.buyAssetOrder(assetID, 5*ETH, {from:user1});
     } catch(e){
       err = e;
     }
@@ -289,7 +289,7 @@ contract('ERC20 Crowdsale', async() => {
     let totalTokens = await token.totalSupply();
     user3BalanceBefore = await erc20.balanceOf(user3);
     await crowdsale.refund(assetID);
-    await token.collectOwedDividends({from:user3});
+    await token.withdraw({from:user3});
     user3BalanceAfter = await erc20.balanceOf(user3);
     assert.equal(bn(user3BalanceAfter).isGreaterThan(user3BalanceBefore), true);
   });

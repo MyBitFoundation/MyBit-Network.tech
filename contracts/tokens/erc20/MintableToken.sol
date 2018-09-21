@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import "./StandardToken.sol";
 
+
 /**
  * @title Mintable token
  * @dev Simple ERC20 Token example, with mintable token creation
@@ -9,9 +10,10 @@ import "./StandardToken.sol";
  */
 contract MintableToken is StandardToken {
 
-  bool internal mintingFinished = false;
+  bool internal mintingFinished;
   address internal minter;
   string internal tokenURI;                 // A reference to a URI containing further token information
+
 
   // @notice constructor: initialized
   constructor(string _tokenURI, address _minter)
@@ -20,6 +22,7 @@ contract MintableToken is StandardToken {
       minter = _minter;
       supply = 0;
   }
+
 
   // @dev Function to mint tokens
   // @param _to The address that will receive the minted tokens.

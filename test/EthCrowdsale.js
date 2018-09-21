@@ -69,7 +69,7 @@ contract('Ether Crowdsale', async() => {
   //Start successful funding
   it('Start funding', async() => {
     assetURI = 'BTC ATM';
-    let tx = await crowdsale.startFundingPeriod(assetURI, operatorID, 10, 20*ETH, brokerFee, {from:broker});
+    let tx = await crowdsale.createAssetOrder(assetURI, operatorID, 10, 20*ETH, brokerFee, {from:broker});
     //console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
     tokenAddress = tx.logs[0].args._tokenAddress;
@@ -79,7 +79,7 @@ contract('Ether Crowdsale', async() => {
   it('User1 funding', async() => {
     let tokenSupply = await token.totalSupply()
     console.log('Token Supply: ' + tokenSupply);
-    let tx = await crowdsale.buyAsset(assetID, {from:user1, value:5*ETH});
+    let tx = await crowdsale.buyAssetOrder(assetID, {from:user1, value:5*ETH});
     let user1Tokens = await token.balanceOf(user1);
     assert.equal(user1Tokens, 5*ETH*(100-brokerFee)/100);
   });
@@ -88,7 +88,7 @@ contract('Ether Crowdsale', async() => {
     let err;
     //Fail because asset already exists
     try{
-      await crowdsale.startFundingPeriod(assetURI, operatorID, 10, 20*ETH, brokerFee, {from:broker});
+      await crowdsale.createAssetOrder(assetURI, operatorID, 10, 20*ETH, brokerFee, {from:broker});
     } catch(e){
       err = e;
     }
@@ -98,7 +98,7 @@ contract('Ether Crowdsale', async() => {
   it('Fail to buy asset, fail to payout. No platform address', async() => {
     let err;
     try{
-      await crowdsale.buyAsset(assetID, {from:user2, value:15*ETH});
+      await crowdsale.buyAssetOrder(assetID, {from:user2, value:15*ETH});
     } catch(e){
       err = e;
     }
@@ -115,7 +115,7 @@ contract('Ether Crowdsale', async() => {
     ownerBalanceBefore = web3.eth.getBalance(owner);
     operatorBalanceBefore = web3.eth.getBalance(operator);
 
-    let tx = await crowdsale.buyAsset(assetID, {from:user2, value:15*ETH});
+    let tx = await crowdsale.buyAssetOrder(assetID, {from:user2, value:15*ETH});
     let user2Tokens = await token.balanceOf(user2);
     assert.equal(user2Tokens, 15*ETH*(100-brokerFee)/100);
 
@@ -130,7 +130,7 @@ contract('Ether Crowdsale', async() => {
     //Funding finished
     let err;
     try{
-      await crowdsale.buyAsset(assetID, {from:user3, value:5*ETH});
+      await crowdsale.buyAssetOrder(assetID, {from:user3, value:5*ETH});
     } catch(e){
       err = e;
     }
@@ -156,14 +156,14 @@ contract('Ether Crowdsale', async() => {
 
   it('User1 withdraw dividends', async() => {
     user1BalanceBefore = web3.eth.getBalance(user1);
-    await token.collectOwedDividends({from:user1});
+    await token.withdraw({from:user1});
     user1BalanceAfter = web3.eth.getBalance(user1);
     assert.equal(bn(user1BalanceAfter).isGreaterThan(user1BalanceBefore), true);
   });
 
   it('User2 withdraw dividends', async() => {
     user2BalanceBefore = web3.eth.getBalance(user2);
-    await token.collectOwedDividends({from:user2});
+    await token.withdraw({from:user2});
     user2BalanceAfter = web3.eth.getBalance(user2);
     assert.equal(bn(user2BalanceAfter).isGreaterThan(user2BalanceBefore), true);
   });
@@ -176,7 +176,7 @@ contract('Ether Crowdsale', async() => {
     assetURI = 'Fail: No operator';
 
     try{
-      await crowdsale.startFundingPeriod(assetURI, operatorID, 10, 20*ETH, {from:broker});
+      await crowdsale.createAssetOrder(assetURI, operatorID, 10, 20*ETH, {from:broker});
     } catch(e){
       err = e;
     }
@@ -186,7 +186,7 @@ contract('Ether Crowdsale', async() => {
   it('Start funding that does not reach goal', async() => {
     await db.setAddress(operatorHash, operator);
     assetURI = 'No Goal';
-    let tx = await crowdsale.startFundingPeriod(assetURI, operatorID, 2, 20*ETH, brokerFee, {from:broker});
+    let tx = await crowdsale.createAssetOrder(assetURI, operatorID, 2, 20*ETH, brokerFee, {from:broker});
     //console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
     tokenAddress = tx.logs[0].args._tokenAddress;
@@ -194,7 +194,7 @@ contract('Ether Crowdsale', async() => {
   });
 
   it('User3 funding', async() => {
-    let tx = await crowdsale.buyAsset(assetID, {from:user3, value:5*ETH});
+    let tx = await crowdsale.buyAssetOrder(assetID, {from:user3, value:5*ETH});
     let user3Tokens = await token.balanceOf(user3);
     assert.equal(user3Tokens, 5*ETH*(100-brokerFee)/100);
   });
@@ -209,7 +209,7 @@ contract('Ether Crowdsale', async() => {
     console.log(Number(deadline));
     let err;
     try{
-      await crowdsale.buyAsset(assetID, {from:user1, value:5*ETH});
+      await crowdsale.buyAssetOrder(assetID, {from:user1, value:5*ETH});
     } catch(e){
       err = e;
     }
@@ -251,7 +251,7 @@ contract('Ether Crowdsale', async() => {
     let totalTokens = await token.totalSupply();
     user3BalanceBefore = web3.eth.getBalance(user3);
     await crowdsale.refund(assetID);
-    await token.collectOwedDividends({from:user3});
+    await token.withdraw({from:user3});
     user3BalanceAfter = web3.eth.getBalance(user3);
     assert.equal(bn(user3BalanceAfter).isGreaterThan(user3BalanceBefore), true);
   });

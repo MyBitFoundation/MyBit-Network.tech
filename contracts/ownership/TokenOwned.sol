@@ -10,7 +10,7 @@ import '../interfaces/ERC20.sol';
 // @dev An owner has already been initialized when database is deployed
 // @author Kyle Dewhurst, MyBit Foundation
 // TODO: Lock tokens to avoid double voting from different accounts
-contract OwnerVote {
+contract TokenOwned {
   using SafeMath for uint256; 
   Database public database;
 
@@ -26,21 +26,13 @@ contract OwnerVote {
 
   mapping (address => address) public delegate;    // user can authorize another address to vote for them
 
-  constructor(bytes32[] restrictedFunctions, uint[] _quorumLevel)
+  // @notice creator of the contract sets the initial functions quorum level, dictating the level of consensus required for that function
+  constructor(bytes32[] _restrictedFunctions, uint[] _quorumLevel)
   public { 
-    // TODo: set the quorum level for functions within this contract ie. addRestrictedFunction() , signForFunctionCall
-  }
-
-  function addOwner(address _newOwner)
-  external
-  anyOwner {
-    database.setBool(keccak256(abi.encodePacked("owner", _newOwner)), true);
-  }
-
-  function removeOwner(address _owner)
-  external
-  anyOwner {
-    database.deleteBool(keccak256(abi.encodePacked("owner", _owner)));
+    require(_restrictedFunctions.length == _quorumLevel.length && _restrictedFunctions.length < 100); 
+    for (uint8 i = 0; i < _restrictedFunctions.length; i++){
+      database.setUint(_restrictedFunctions[i], _quorumLevel[i]); 
+    }
   }
 
   // If restricted it will have to be called from address(this) using a voting proccess on signForFunctionCall
@@ -48,7 +40,6 @@ contract OwnerVote {
   external 
   isRestricted(bytes4(keccak256(abi.encodePacked("addRestrictedFunction(address, bytes4, uint256)"))), keccak256(abi.encodePacked(_contractAddress, _methodID, _quorumLevel)))
   anyOwner { 
-    require(_quorumLevel > 0); 
     bytes32 functionID = keccak256(abi.encodePacked(_contractAddress, _methodID));
     database.setUint(functionID, _quorumLevel); 
   }

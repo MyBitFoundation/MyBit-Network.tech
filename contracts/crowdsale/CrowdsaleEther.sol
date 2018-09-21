@@ -2,7 +2,7 @@
 
   import "../math/SafeMath.sol";
   import "../interfaces/DBInterface.sol";
-  import "../tokens/ERC20/DividendToken.sol";         // Change to Mintable or Burnable if needed
+  import "../tokens/erc20/DividendToken.sol";         // Change to Mintable or Burnable if needed
 
 
   // @title An asset crowdsale contract.
@@ -23,7 +23,7 @@
     // @notice brokers can initiate a crowdfund for a new asset here
     // @dev this crowdsale contract is granted the whole supply to distribute to investors
     // @dev can lookup the amount of escrow in the database with sha3("brokerEscrow", assetID)
-    function startFundingPeriod(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, uint _brokerFee)
+    function createAssetOrder(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, uint _brokerFee)
     external {
       address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID)));
       require(operatorAddress != address(0));
@@ -40,7 +40,7 @@
     }
 
     // @notice Users can send Ether here to fund asset if the deadline has not already passed.
-    function buyAsset(bytes32 _assetID)
+    function buyAssetOrder(bytes32 _assetID)
     external
     payable
     requiresEther
@@ -79,13 +79,6 @@
     afterDeadline(_assetID)
     notFinished(_assetID)
     returns (bool) {
-      //DividendToken assetToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-      //uint investorBalance = assetToken.balanceOf(msg.sender);
-      //require(investorBalance > 0);
-      //require(assetToken.transferFrom(msg.sender, address(0), investorBalance));
-      //msg.sender.transfer(investorBalance);
-      //emit LogRefund(_assetID, msg.sender, investorBalance);
-
       DividendToken assetToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
       //uint tokensRemaining = assetToken.balanceOf(address(this));
       uint refundValue = assetToken.totalSupply(); //token=wei
