@@ -27,6 +27,7 @@
     external {
       address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID)));
       require(operatorAddress != address(0));
+      require (database.boolStorage(keccak256(abi.encodePacked("acceptsEther", _operatorID)))); 
       bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
       require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
       DividendToken newAsset = new DividendToken(_assetURI);   // Gives this contract all new asset tokens

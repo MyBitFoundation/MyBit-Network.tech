@@ -23,10 +23,10 @@
 
     // @notice brokers can initiate a crowdfund for a new asset here
     // @dev this crowdsale contract is granted the whole supply to distribute to investors
-    // TODO: restrict _fundingToken depending on operators preferences
     function createAssetOrder(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, address _fundingToken)
     external {
       address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID)));
+      require (database.boolStorage(keccak256(abi.encodePacked("acceptedToken", _operatorID, _fundingToken)))); 
       require(operatorAddress != address(0));
       bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
       require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);

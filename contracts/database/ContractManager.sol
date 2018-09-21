@@ -92,6 +92,15 @@ contract ContractManager{
     _;
   }
 
+  // @notice add this modifer to functions that you want multi-sig requirements for
+  // @dev function can only be called after at least n >= quorumLevel owners have agreed to call it
+  modifier isRestricted(bytes4 _methodID, bytes32 _parameterHash) { 
+      require(database.boolStorage(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash))));  // owners must have agreed on function + parameters
+    _;
+      database.deleteBool(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash)));  
+  }
+
+  
   // ------------------------------------------------------------------------------------------------
   //  Verify address isn't null
   // ------------------------------------------------------------------------------------------------

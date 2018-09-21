@@ -43,6 +43,23 @@ contract Operators {
     emit LogOperatorAddressChanged(_operatorID, msg.sender, _newAddress); 
   }
 
+  // @notice operator can choose which ERC20 tokens he's willing to accept as payment
+  function acceptERC20Token(bytes32 _operatorID, address _tokenAddress)
+  external
+  onlyOperator(_operatorID) 
+  returns (bool) { 
+    database.setBool(keccak256(abi.encodePacked("acceptedToken", _operatorID, _tokenAddress)), true); 
+    return true; 
+  }
+
+  // @notice operator can choose whether or not to accept Ether
+  function acceptEther(bytes32 _operatorID, bool _accept)
+  external 
+  onlyOperator(_operatorID)
+  returns (bool) { 
+    database.setBool(keccak256(abi.encodePacked("acceptsEther", _operatorID)), _accept); 
+    return true; 
+  }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                                Modifiers                                                                     //
@@ -54,6 +71,11 @@ contract Operators {
     _;
   }
 
+  // @notice Sender must be the operator address for this operatorID
+  modifier onlyOperator(bytes32 _operatorID) { 
+    require(database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))) == msg.sender);
+    _;
+  }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                                Events                                                                        //
@@ -63,4 +85,5 @@ contract Operators {
   event LogOperatorRegistered(bytes32 indexed _operatorID, string _operatorURI); 
   event LogOperatorRemoved(bytes32 indexed _operatorID, address _owner); 
   event LogOperatorAddressChanged(bytes32 indexed _operatorID, address _oldAddress, address _newAddress); 
+  event LogOperatorAcceptsToken(bytes32 indexed _operatorID, address _tokenAddress); 
 }

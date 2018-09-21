@@ -50,7 +50,7 @@
       require(database.addressStorage(keccak256(abi.encodePacked("assetEscrower", _assetID))) == msg.sender); 
       DivToken assetToken = DivToken(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID)))); 
       uint unlockAmount;
-      if (database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))) == uint(0)) { 
+      if (database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)))) { 
         unlockAmount = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _assetID))); 
         assetToken.transfer(msg.sender, unlockAmount); 
       }
