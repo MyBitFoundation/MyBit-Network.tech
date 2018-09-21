@@ -1,7 +1,7 @@
   pragma solidity ^0.4.24;
 
   import "../math/SafeMath.sol";
-  import "../database/Database.sol";
+  import "../interfaces/DBInterface.sol";
   import "../interfaces/DivToken.sol";
   import "../interfaces/BurnableERC20.sol";
 
@@ -11,11 +11,13 @@
   contract BrokerEscrow {
     using SafeMath for uint256;
 
-    Database public database;
+    DBInterface public database;
 
+    // @notice constructor: initializes database
+    // @param: the address for the database contract used by this platform
     constructor(address _database)
     public {
-      database = Database(_database);
+      database = DBInterface(_database);
     }
     
     // @dev assetID can be computed beforehand with sha3(msg.sender, _amountToRaise, _operatorID, _assetURI))
@@ -53,26 +55,17 @@
       DivToken assetToken = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
       BurnableERC20 burnToken = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
       uint unlockAmount;
-      if (!database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)))) {
+      if (database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))) == uint(0)) {
         unlockAmount = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _assetID)));
         database.deleteAddress(keccak256(abi.encodePacked("assetEscrower", _assetID)));
         database.deleteUint(keccak256(abi.encodePacked("brokerEscrow", _assetID)));
-        //assetToken.transfer(msg.sender, unlockAmount);
+        assetToken.transfer(msg.sender, unlockAmount);
       }
       else {
-        /*
-        uint scalingFactor = assetToken.scalingFactor().div(uint(100));    // scale down 10^2
-        uint percentageROI = assetToken.valuePerToken().div(scalingFactor);   // %ROI * 10^2
-        uint quarters = percentageROI.div(uint(25));    // TODO: test....Should round down
-        uint amountUnlocked = database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", _assetID)));
-        unlockAmount = quarters.mul(database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _assetID)))).div(uint(100)).sub(amountUnlocked);
-        database.setUint(keccak256(abi.encodePacked("escrowRedeemed", _assetID)), amountUnlocked.add(unlockAmount));
-        require(assetToken.transfer(msg.sender, unlockAmount));
-        */
         uint assetIncome = assetToken.assetIncome();
         uint brokerCut = assetIncome.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID))));
         uint totalReturns = assetIncome.sub(brokerCut);
-        uint quarter = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID))).div(4);
+        uint quarter = assetToken.totalSupply().div(4);    // TODO: subtract broker fee as well? 
         uint escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", _assetID)));
         unlockAmount = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _assetID))).div(4);
         require(totalReturns.sub(escrowRedeemed) >= quarter);
