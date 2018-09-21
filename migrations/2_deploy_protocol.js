@@ -1,3 +1,5 @@
+var fs = require('fs');
+
 var Database = artifacts.require("./database/Database.sol");
 var ContractManager = artifacts.require("./database/ContractManager.sol");
 var CrowdsaleEther = artifacts.require("./crowdsale/CrowdsaleEther.sol");
@@ -37,6 +39,17 @@ module.exports = function(deployer, network, accounts) {
     console.log('CrowdsaleEther.sol: ' + crowdsale.address);
     cm.addContract('CrowdsaleEther', crowdsale.address);
 
+  }).then(function() {
+    var addresses = {
+      "Database" : db.address,
+      "ContractManager" : cm.address,
+      "CrowdsaleEther" : crowdsale.address
+    }
+    var json = JSON.stringify(addresses);
+    fs.writeFile('addresses.json', json, (err) => {
+     if (err) throw err;
+     console.log('Saved');
+    });
   });
 
 };
