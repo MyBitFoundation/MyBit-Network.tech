@@ -1,7 +1,7 @@
 var bn = require('bignumber.js');
 
 /* Contracts  */
-const Token = artifacts.require("./tokens/ERC20/distribution/MintableDistribution.sol");
+const Token = artifacts.require("./tokens/distribution/MintableDistribution.sol");
 
 const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
