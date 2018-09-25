@@ -25,10 +25,10 @@ contract CrowdsaleGeneratorERC20 {
   // @dev this crowdsale contract is granted the whole supply to distribute to investors
   function createAssetOrderERC20(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, uint _brokerFee, address _fundingToken)
   external {
-    require (_brokerFee < 100 && _brokerFee > 1); 
+    require (_brokerFee < 100 && _brokerFee > 1);
     address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID)));
-    address crowdsaleERC20Address = database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleERC20"))); 
-    require (database.boolStorage(keccak256(abi.encodePacked("acceptedToken", _operatorID, _fundingToken)))); 
+    address crowdsaleERC20Address = database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleERC20")));
+    require (database.boolStorage(keccak256(abi.encodePacked("acceptedToken", _operatorID, _fundingToken))));
     require(operatorAddress != address(0));
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
     require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
