@@ -1,13 +1,14 @@
   pragma solidity ^0.4.24;
 
   import "../math/SafeMath.sol";
+  import "../interfaces/ERC20.sol";
   import "../interfaces/DBInterface.sol";
-  import "../interfaces/EtherDividendInterface.sol";         
+  import "../interfaces/EtherDividendInterface.sol";
 
 
   // @title An asset crowdsale contract.
   // @author Kyle Dewhurst, MyBit Foundation
-  // @notice handles the funding and refunding of a newly created asset crowdsale. 
+  // @notice handles the funding and refunding of a newly created asset crowdsale.
   // @dev this contract only accepts Ether
   contract CrowdsaleETH {
     using SafeMath for uint256;
@@ -28,26 +29,27 @@
     payable
     requiresEther
     beforeDeadline(_assetID)
-    notFinished(_assetID)
+    notFinalized(_assetID)
     returns (bool) {
-      EtherDividendInterface thisToken = EtherDividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+      EtherDividendInterface assetToken = EtherDividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
       uint brokerPercent = database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID)));
       uint investorPercent = uint(100).sub(brokerPercent);
+      uint investorAmount = msg.value.mul(investorPercent).div(100);
       uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID)));
-      uint tokensRemaining = amountToRaise.mul(investorPercent).div(100).sub(thisToken.totalSupply()); //Amount to raise minus the broker's percent
-      if (msg.value.mul(investorPercent).div(100) >= tokensRemaining) {
+      uint tokensRemaining = amountToRaise.mul(investorPercent).div(100).sub(assetToken.totalSupply()); //Amount to raise minus the broker's percent
+      if (investorAmount >= tokensRemaining) {
         require(finalizeCrowdsale(_assetID));
-        require(thisToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens
+        require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens
         uint brokerTokens = amountToRaise.mul(brokerPercent).div(100);
-        require(thisToken.mint(database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))), brokerTokens));
-        require(thisToken.finishMinting());
-        database.setBool(keccak256(abi.encodePacked("assetTradeable", _assetID)), true);  //         // Validate token on the DAX.
-        require(payout(_assetID, thisToken.totalSupply()));          // 1 token = 1 wei
+        address broker = database.addressStorage(keccak256(abi.encodePacked("broker", _assetID)));
+        require(assetToken.mint(broker, brokerTokens));
+        require(assetToken.finishMinting());
+        //database.setBool(keccak256(abi.encodePacked("assetTradeable", _assetID)), true);  //         // Validate token on the DAX.
+        require(payout(_assetID, assetToken.totalSupply()));          // 1 token = 1 wei
         msg.sender.transfer(msg.value.sub(tokensRemaining.mul(100).div(investorPercent)));     // Return leftover WEI
-
       }
       else {
-        require(thisToken.mint(msg.sender, msg.value.mul(investorPercent).div(100)));
+        require(assetToken.mint(msg.sender, investorAmount));
       }
       emit LogAssetPurchased(_assetID, msg.sender, msg.value);
       return true;
@@ -60,19 +62,32 @@
     external
     whenNotPaused
     afterDeadline(_assetID)
-    notFinished(_assetID)
+    notFinalized(_assetID)
     returns (bool) {
+      require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))) != 0);
+      database.deleteUint(keccak256(abi.encodePacked("fundingDeadline", _assetID)));
       EtherDividendInterface assetToken = EtherDividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-      require(finalizeCrowdsale(_assetID)); 
+      // @dev We don't want to mark a refund 'finalized' because then the broker
+      //      would never be able to pull out their escrowed funds
+      //require(finalizeCrowdsale(_assetID));
       uint refundValue = assetToken.totalSupply(); //token=wei
       assetToken.issueDividends.value(refundValue)();
       return true;
     }
 
+    // @notice platform owners can recover tokens here
+    function recoverTokens(address _erc20Token)
+    onlyOwner
+    external {
+      ERC20 thisToken = ERC20(_erc20Token);
+      uint contractBalance = thisToken.balanceOf(address(this));
+      thisToken.transfer(msg.sender, contractBalance);
+    }
+
     // @notice platform owners can destroy contract here
     function destroy()
     onlyOwner
-    public {
+    external {
       emit LogDestruction(address(this).balance, msg.sender);
       selfdestruct(msg.sender);
     }
@@ -95,23 +110,29 @@
     returns (bool) {
       address operator = database.addressStorage(keccak256(abi.encodePacked("operator", _assetID)));
       address platformWallet = database.addressStorage(keccak256(abi.encodePacked("platformWallet")));
-      assert (operator != address(0) && platformWallet != address(0));
-      uint operatorPortion = _amount.mul(99).div(100);          // Give operator 99%
-      uint platformPortion = _amount.sub(operatorPortion);      // Give platform 1%
-      operator.transfer(operatorPortion);
+      require(operator != address(0) && platformWallet != address(0));
+      uint operatorPortion = _amount.mul(99).div(100);
+      uint platformPortion = _amount.sub(operatorPortion);
       platformWallet.transfer(platformPortion);
+      operator.transfer(operatorPortion);
       emit LogAssetPayout(_assetID, operator, _amount);
       return true;
     }
 
     // @notice internal function for freeing up storage after crowdsale finishes
-    // @param the ID of this asset. 
+    // @param the ID of this asset.
     function finalizeCrowdsale(bytes32 _assetID)
-    internal 
-    returns (bool) { 
-        database.setBool(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)), true);
-        database.deleteUint(keccak256(abi.encodePacked("fundingDeadline", _assetID)));   
-        database.deleteUint(keccak256(abi.encodePacked("amountToRaise", _assetID))); 
+    internal
+    whenNotPaused
+    returns (bool) {
+        database.setBool(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)), true);
+        // @dev Cannot delete funding deadline because it's necessary for the logic
+        //      of broker escrow refunds and investor refunds
+        //      If it's 0, its impossible to tell whether its a finalized sale
+        //      or an asset that was never created
+        //      Also, we use it for creating a crowdsale. Don't want to overwrite active assets
+        //database.deleteUint(keccak256(abi.encodePacked("fundingDeadline", _assetID)));
+        database.deleteUint(keccak256(abi.encodePacked("amountToRaise", _assetID)));
         return true;
     }
 
@@ -139,7 +160,6 @@
       _;
     }
 
-
     // @notice reverts if the funding deadline has already past
     modifier beforeDeadline(bytes32 _assetID) {
       require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
@@ -153,11 +173,10 @@
     }
 
     // @notice returns true if crowdsale is not finshed
-    modifier notFinished(bytes32 _assetID) {
-      require( !database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinished", _assetID))) );
+    modifier notFinalized(bytes32 _assetID) {
+      require( !database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID))) );
       _;
     }
-
 
     //------------------------------------------------------------------------------------------------------------------
     //                                            Events

@@ -102,16 +102,16 @@ contract('Asset Exchange', async() => {
     asset1Token = await DivToken.new('Asset1', owner);
     let tokenHash = await hash.stringBytes('tokenAddress', asset1ID);
     await db.setAddress(tokenHash, asset1Token.address);
-    let tradeHash = await hash.stringBytes('assetTradeable', asset1ID);
-    db.setBool(tradeHash, true);
+    let finalizedHash = await hash.stringBytes('crowdsaleFinalized', asset1ID);
+    db.setBool(finalizedHash, true);
   });
 
   it("Deploy asset2 token", async() => {
     asset2Token = await DivToken.new('Asset2', owner);
     let tokenHash = await hash.stringBytes('tokenAddress', asset2ID);
     await db.setAddress(tokenHash, asset2Token.address);
-    let tradeHash = await hash.stringBytes('assetTradeable', asset2ID);
-    db.setBool(tradeHash, true);
+    let finalizedHash = await hash.stringBytes('crowdsaleFinalized', asset2ID);
+    db.setBool(finalizedHash, true);
   });
 
   it("Spread asset1 tokens to users", async() => {

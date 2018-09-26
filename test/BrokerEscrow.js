@@ -136,7 +136,7 @@ contract('Broker Escrow', async() => {
   });
 
   it("Finish funding", async() => {
-    let finishHash = await hash.stringBytes('crowdsaleFinished', assetID);
+    let finishHash = await hash.stringBytes('crowdsaleFinalized', assetID);
     await db.setBool(finishHash, true);
     let amountHash = await hash.stringBytes("amountToRaise", assetID);
     await db.setUint(amountHash, 100*ETH);

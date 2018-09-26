@@ -240,7 +240,7 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   modifier validAsset(bytes32 _assetID) {
     require (_assetID != bytes32(0));
-    require (database.boolStorage(keccak256(abi.encodePacked("assetTradeable", _assetID))));
+    require (database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID))));
     _;
   }
 

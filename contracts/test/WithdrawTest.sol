@@ -4,9 +4,9 @@ contract WithdrawTest{
 
   mapping(address => uint) public balances;
 
-  function withdraw() 
-  external 
-  returns (bool) {
+  function withdraw()
+  external
+  returns (bool){
     emit LogWithdraw(msg.sender, balances[msg.sender]);
     uint amount = balances[msg.sender];
     balances[msg.sender] = 0;
@@ -14,8 +14,8 @@ contract WithdrawTest{
     return true;
   }
 
-  function deposit(address _receiver) 
-  payable 
+  function deposit(address _receiver)
+  payable
   external{
     emit LogDeposit(_receiver, msg.value);
     balances[_receiver] += msg.value;
