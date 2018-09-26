@@ -187,10 +187,15 @@ module.exports = function(deployer, network, accounts) {
       "AssetExchange" : dax.address
     }
 
-    var json = JSON.stringify(addresses, null, 4);
-    fs.writeFile('addresses.json', json, (err) => {
+    var addresses_json = JSON.stringify(addresses, null, 4);
+    var accounts_json = JSON.stringify(accounts, null, 4);
+    fs.writeFile('addresses.json', addresses_json, (err) => {
      if (err) throw err;
-     console.log('Saved');
+     console.log('Contracts Saved');
+    });
+    fs.writeFile('accounts.json', accounts_json, (err) => {
+     if (err) throw err;
+     console.log('Accounts Saved');
     });
   });
 
