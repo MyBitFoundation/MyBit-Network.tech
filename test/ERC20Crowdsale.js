@@ -35,7 +35,7 @@ contract('ERC20 Crowdsale', async() => {
   let cm;
   let hash;
   let platform;
-  let brokerFee; 
+  let brokerFee;
   let operators;
   let operatorID;
   let assetID;
@@ -52,8 +52,8 @@ contract('ERC20 Crowdsale', async() => {
     await db.enableContractManagement(cm.address);
   });
 
-  it('Deploy hashing contract', async() => { 
-    hash = await HashFunctions.new(db.address); 
+  it('Deploy hashing contract', async() => {
+    hash = await HashFunctions.new(db.address);
   });
 
   it('Deploy pausible contract', async() => {
@@ -83,7 +83,7 @@ contract('ERC20 Crowdsale', async() => {
 
   it('Deploy CrowdsaleGenerator', async() => {
     crowdsaleGen = await CrowdsaleGenerator.new(db.address);
-    await cm.addContract("CrowdsaleGenerator", crowdsaleGen.address); 
+    await cm.addContract("CrowdsaleGenerator", crowdsaleGen.address);
   });
 
   it('Deploy crowdsale contract', async() => {
@@ -98,13 +98,13 @@ contract('ERC20 Crowdsale', async() => {
     let tx = await operators.registerOperator(operator, 'Operator');
     operatorID = tx.logs[0].args._operatorID;
     await operators.acceptERC20Token(operatorID, erc20.address, true, {from: operator});
-    await operators.acceptEther(operatorID, true, {from: operator}); 
+    await operators.acceptEther(operatorID, true, {from: operator});
   });
 
   //Start successful funding
   it('Start funding', async() => {
     assetURI = 'ipfs.io/F3b2854A9';
-    brokerFee = 5; 
+    brokerFee = 5;
     let tx = await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 100, 20*ETH, brokerFee, erc20.address, {from:broker});
     // console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
@@ -116,7 +116,7 @@ contract('ERC20 Crowdsale', async() => {
   it('User1 funding', async() => {
     await erc20.approve(crowdsale.address, 5*ETH, {from:user1});
     let tx = await crowdsale.buyAssetOrder(assetID, 5*ETH, {from:user1});
-    console.log(Number(tx.logs[0].args._amount));
+    console.log(tx.logs[0].args);
     let user1AssetTokens = await assetToken.balanceOf(user1);
     console.log('assetToken Address: ' + assetToken.address);
     console.log('User: ' + user1);
@@ -124,7 +124,7 @@ contract('ERC20 Crowdsale', async() => {
 
     let assetTokenSupply = await assetToken.totalSupply()
     console.log('assetToken Supply: ' + assetTokenSupply);
-    assert.equal(user1AssetTokens, 5*ETH);
+    assert.equal(user1AssetTokens, 5*ETH*(100-brokerFee)/100);
   });
 
   it('Asset already exists fail', async() => {
@@ -151,8 +151,6 @@ contract('ERC20 Crowdsale', async() => {
   });
 
   it('Set platform', async() => {
-    //let platformHash = await hash.stringHash('platformWallet');
-    //await db.setAddress(platformHash, owner);
     platform = await Platform.new(db.address);
     await cm.addContract('PlatformFunds', platform.address);
     await platform.setPlatformWallet(owner);
@@ -175,7 +173,8 @@ contract('ERC20 Crowdsale', async() => {
     await erc20.approve(crowdsale.address, 15*ETH, {from:user2});
     let tx = await crowdsale.buyAssetOrder(assetID, 15*ETH, {from:user2});
     let user2AssetTokens = await assetToken.balanceOf(user2);
-    assert.equal(user2AssetTokens, 15*ETH);
+    console.log(Number(user2AssetTokens));
+    assert.equal(user2AssetTokens, 15*ETH*(100-brokerFee)/100);
 
     ownerBalanceAfter = await erc20.balanceOf(owner);
     console.log(Number(ownerBalanceAfter))
@@ -236,7 +235,7 @@ contract('ERC20 Crowdsale', async() => {
 
     await operators.removeOperator(operatorID);
     assetURI = 'Fail: No operator';
-    brokerFee = 10; 
+    brokerFee = 10;
     try{
       await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 10, 20*ETH, brokerFee, erc20.address, {from:broker});
     } catch(e){
@@ -253,7 +252,7 @@ contract('ERC20 Crowdsale', async() => {
 
   it('Start funding that does not reach goal', async() => {
     assetURI = 'Goooooooaaallllllll';
-    brokerFee = 20; 
+    brokerFee = 20;
     tx = await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 1, 20*ETH, brokerFee, erc20.address, {from:broker});
     //console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
@@ -265,7 +264,7 @@ contract('ERC20 Crowdsale', async() => {
     await erc20.approve(crowdsale.address, 5*ETH, {from:user3});
     let tx = await crowdsale.buyAssetOrder(assetID, 5*ETH, {from:user3});
     let user3assetTokens = await assetToken.balanceOf(user3);
-    assert.equal(user3assetTokens, 5*ETH);
+    assert.equal(user3assetTokens, 5*ETH*(100-brokerFee)/100);
   });
 
   // TODO: this isn't failing as it should

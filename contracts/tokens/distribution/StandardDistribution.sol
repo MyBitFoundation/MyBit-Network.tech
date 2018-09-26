@@ -38,7 +38,7 @@ contract StandardDistribution{
       msg.sender.transfer(_amount);
       emit LogIncomeCollected(now, msg.sender, _amount);
   }
-
+/*
   // @notice allows beneficiaries to withdraw from contracts at different locations to be re-distributed here
   // @dev can call withdraw() on any address if there are no parameters required. Fallback function will be triggered
   // @param (address) _contractAddress = The address to call withdraw() on.
@@ -48,8 +48,8 @@ contract StandardDistribution{
     PullPayment(_contractAddress).withdraw();
     return true;
   }
-  
 
+*/
   function issueDividends()
   payable
   public {
