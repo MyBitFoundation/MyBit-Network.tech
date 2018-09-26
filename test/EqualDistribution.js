@@ -1,7 +1,7 @@
 var BigNumber = require('bignumber.js');
 
 /* Contracts  */
-const EqualDistribution = artifacts.require("./tokens/ERC20/distribution/EqualDistribution.sol");
+const EqualDistribution = artifacts.require("./tokens/distribution/EqualDistribution.sol");
 const WithdrawTest = artifacts.require("./test/WithdrawTest.sol");
 
 
@@ -47,9 +47,10 @@ contract('Equal Distribution', async (accounts) => {
     withdrawTest = await WithdrawTest.new();
     await withdrawTest.deposit(eqDistribution.address, {value: 10*ETH, from: distributor});
     amount = await withdrawTest.balances(eqDistribution.address);
+    console.log('Equal Distribution:' + eqDistribution.address);
     assert.equal(amount, 10*ETH);
   });
-
+/*
   it('Fail to get funds', async() => {
     try{
       await eqDistribution.getFunds(web3.eth.accounts[9], {from: distributor});
@@ -57,14 +58,14 @@ contract('Equal Distribution', async (accounts) => {
       console.log('Cant get funds from that address');
     }
   });
-
-
+*/
   it('Get funds', async() => {
     console.log('Owner Address: ' + owner);
     console.log('Distributor Address: ' + distributor);
     console.log('Withdraw Address: ' + withdrawTest.address);
     console.log('Eq Address: ' + eqDistribution.address);
-    await eqDistribution.getFunds(withdrawTest.address, {from: distributor});
+    console.log('Account 9: ' + web3.eth.accounts[9]);
+    await eqDistribution.getFunds(withdrawTest.address, {from:beneficiary});
   });
 
   it('Withdraw funds to beneficiaries', async() => {

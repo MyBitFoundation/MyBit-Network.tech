@@ -1,14 +1,9 @@
 pragma solidity ^0.4.24;
 
-import '../../math/SafeMath.sol';
 import './MintableToken.sol';
+import '../../math/SafeMath.sol';
 import '../../interfaces/ERC20.sol';
-
-
-// @notice Receive approval and then execute function
-contract ApproveAndCallFallBack {
-    function receiveApproval(address from, uint tokens, address token, bytes data) public;
-}
+import '../../interfaces/ApproveAndCallFallback.sol';
 
 // @title ERC20 token contract with shared revenue distribution functionality.
 // @notice This token contract can receive ERC20 tokens as payments and token owners receive their share when transferring tokens.
@@ -32,9 +27,8 @@ contract DividendTokenERC20 is MintableToken {
 
 
     // @notice constructor: initialized
-    constructor(string _tokenURI, address _erc20Address)
-    public  
-    MintableToken(_tokenURI) {
+    constructor(string _tokenURI, address _owner, address _erc20Address)
+    public  MintableToken(_tokenURI, _owner){
         erc20 = ERC20(_erc20Address); //Set the address of the ERC20 token that will be issued as dividends
     }
 
@@ -116,7 +110,7 @@ contract DividendTokenERC20 is MintableToken {
     // ------------------------------------------------------------------------
     //                           View functions
     // ------------------------------------------------------------------------
-    
+
     // @notice Calculates how much value _user holds
     function getAmountOwed(address _user)
     private
@@ -133,8 +127,6 @@ contract DividendTokenERC20 is MintableToken {
     returns (uint) {
         return (getAmountOwed(_user).add(incomeClaimed[_user]).div(scalingFactor));
     }
-
-
 
     // ------------------------------------------------------------------------
     //                            Modifiers
