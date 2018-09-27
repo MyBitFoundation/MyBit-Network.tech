@@ -31,6 +31,10 @@ contract ContractManager{
     require(database.addressStorage(keccak256(abi.encodePacked("contract", _name))) == address(0));
     database.setAddress(keccak256(abi.encodePacked("contract", _name)), _contractAddress);
     database.setBool(keccak256(abi.encodePacked("contract", _contractAddress)), true);
+    //Update currentState
+    bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));
+    bytes32 newState = keccak256(abi.encodePacked(currentState, _contractAddress));
+    database.setBytes32(keccak256(abi.encodePacked("currentState")), newState);
     emit LogContractAdded(_contractAddress, _name, block.number);
   }
 
@@ -66,6 +70,11 @@ contract ContractManager{
     database.setAddress(keccak256(abi.encodePacked("contract", _name)), _newContractAddress);
     database.setBool(keccak256(abi.encodePacked("contract", _newContractAddress)), true);
     database.deleteBool(keccak256(abi.encodePacked("contract", oldAddress)));
+    //Update currentState
+    bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));
+    bytes32 newState = keccak256(abi.encodePacked(currentState, _newContractAddress));
+    database.setBytes32(keccak256(abi.encodePacked("currentState")), newState);
+
     emit LogContractUpdated(oldAddress, _name, block.number);
     emit LogNewContractLocation(_newContractAddress, _name, block.number);
   }
@@ -95,13 +104,13 @@ contract ContractManager{
 
   // @notice add this modifer to functions that you want multi-sig requirements for
   // @dev function can only be called after at least n >= quorumLevel owners have agreed to call it
-  modifier isRestricted(bytes4 _methodID, bytes32 _parameterHash) { 
+  modifier isRestricted(bytes4 _methodID, bytes32 _parameterHash) {
       require(database.boolStorage(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash))));  // owners must have agreed on function + parameters
     _;
-      database.deleteBool(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash)));  
+      database.deleteBool(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash)));
   }
 
-  
+
   // ------------------------------------------------------------------------------------------------
   //  Verify address isn't null
   // ------------------------------------------------------------------------------------------------

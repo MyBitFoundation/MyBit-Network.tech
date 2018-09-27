@@ -1,9 +1,10 @@
 var bn = require('bignumber.js');
 
 const Token = artifacts.require("./tokens/ERC20/BurnableToken.sol");
-const Burner = artifacts.require("./tokens/ERC20Burner.sol");
+const ERC20Burner = artifacts.require("./ecosystem/ERC20Burner.sol");
 const Database = artifacts.require("./database/Database.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
+const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
 
 const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
@@ -19,7 +20,7 @@ contract('Burner', async() => {
   let token;
   let db;
   let cm;
-
+  let platform;
 
   it('Deploy Database', async() => {
     db = await Database.new([owner], true);
@@ -51,15 +52,17 @@ contract('Burner', async() => {
     */
   });
 
-
-  it('Deploy ERC20Burner', async() => {
-    burner = await Burner.new(token.address, db.address);
-    console.log(burner.address);
+  it('Set platform', async() => {
+    platform = await Platform.new(db.address);
+    await cm.addContract('PlatformFunds', platform.address);
+    await platform.setPlatformToken(token.address);
   });
 
-  it('Add ERC20Burner to Database', async() => {
-    let contractName = "ERC20Burner";
-    await cm.addContract(contractName, burner.address);
+
+  it('Deploy ERC20Burner', async() => {
+    burner = await ERC20Burner.new(db.address);
+    await cm.addContract("ERC20Burner", burner.address);
+    console.log(burner.address);
   });
 
   it('Fail to send ether', async() => {
@@ -73,6 +76,9 @@ contract('Burner', async() => {
   });
 
   it('Fail to burn tokens', async() => {
+    console.log(user1);
+    console.log(user2);
+    console.log(burner.address);
     let err;
     try{
       await burner.burn(user2, 1000, {from: user1});
@@ -118,8 +124,21 @@ contract('Burner', async() => {
     assert.notEqual(err, undefined);
   });
 
+  it('Fail to burn tokens', async() => {
+    let err;
+    try{
+      await token.approve(burner.address, 1000, {from: user2});
+      await burner.burn(user2, 1000, {from: user1});
+    } catch(e){
+      err = e;
+      //console.log('User has not given permission to current state');
+    }
+    assert.notEqual(err, undefined);
+  });
+
   it('Burn tokens', async() => {
     await token.approve(burner.address, 1000, {from: user2});
+    await burner.givePermission({from:user2});
     await burner.burn(user2, 1000, {from: user1});
   });
 
