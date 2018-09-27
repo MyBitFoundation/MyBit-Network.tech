@@ -1,6 +1,6 @@
 {
-  "name": "mybit-network",
-  "version": "0.0.0",
+  "name": "@mybit/contracts",
+  "version": "0.1.0",
   "description": "The MyBit Network: SDK's for the machine economy",
   "repository": "https://github.com/MyBitFoundation/MyBit-Network.tech",
   "main": "truffle.js",
@@ -13,7 +13,8 @@
     "test": "npm run compile; npm run migrate; truffle test",
     "blockchain": "ganache-cli --networkId 70 --accounts 20",
     "coverage": "solidity-coverage && sleep 5 && npm run coveralls",
-    "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
+    "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "publish": "echo \"Run: npx np minor --no-publish && npm publish --access=public\" && exit 0"
   },
   "author": "",
   "license": "ISC",
