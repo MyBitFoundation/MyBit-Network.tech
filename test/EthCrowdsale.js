@@ -1,6 +1,8 @@
 var bn = require('bignumber.js');
 
-const Token = artifacts.require("./tokens/ERC20/DividendToken.sol");
+const Token = artifacts.require("./tokens/erc20/DividendToken.sol");
+const PlatformToken = artifacts.require("./tokens/erc20/BurnableToken.sol");
+const ERC20Burner = artifacts.require("./ecosystem/ERC20Burner.sol");
 const Crowdsale = artifacts.require("./crowdsale/CrowdsaleETH.sol");
 const CrowdsaleGenerator = artifacts.require("./crowdsale/CrowdsaleGeneratorETH.sol");
 const Database = artifacts.require("./database/Database.sol");
@@ -29,8 +31,9 @@ const brokerFee = 5;
 contract('Ether Crowdsale', async() => {
 
   let token;
+  let platformToken;
   let crowdsale;
-  let crowdsaleGenerator;
+  let crowdsaleGen;
   let db;
   let cm;
   let hash;
@@ -56,25 +59,74 @@ contract('Ether Crowdsale', async() => {
     await db.enableContractManagement(cm.address);
   });
 
+  it('Deploy MyB token', async() => {
+    platformToken = await PlatformToken.new('MyBit', tokenSupply);
+  });
+
+  it("Spread tokens to users", async() => {
+    let userBalance;
+    for (var i = 1; i < web3.eth.accounts.length; i++) {
+      //console.log(web3.eth.accounts[i]);
+      await platformToken.transfer(web3.eth.accounts[i], tokenPerAccount);
+      userBalance = await platformToken.balanceOf(web3.eth.accounts[i]);
+      assert.equal(userBalance, tokenPerAccount);
+    }
+    // Check token ledger is correct
+    let totalTokensCirculating = (web3.eth.accounts.length-1) * tokenPerAccount;
+    let remainingTokens = bn(tokenSupply).minus(totalTokensCirculating);
+    let ledgerTrue = bn(await platformToken.balanceOf(owner)).eq(remainingTokens);
+    assert.equal(ledgerTrue, true);
+  });
+
+  it('Deploy burner contract', async() => {
+    burner = await ERC20Burner.new(db.address);
+    await cm.addContract("ERC20Burner", burner.address);
+    //Add burn fees for each function
+    burner.setFee("buyAssetOrder(bytes32, uint)", 250); //CrowdsaleERC20
+    burner.setFee("buyAssetOrder(bytes32)", 250); //CrowdsaleETH
+    burner.setFee("createAssetOrderERC20(string, bytes32, uint, uint, uint, address)", 250); //CrowdsaleGeneratorERC20
+    burner.setFee("createAssetOrderETH(string, bytes32, uint, uint, uint)", 250); //CrowdsaleGeneratorETH
+    burner.setFee("buyAsset(bytes32, address, uint, uint)", 250); //AssetExchange
+    burner.setFee("createBuyOrder(bytes32, uint, uint)", 250); //AssetExchange
+  });
+
   it('Deploy pausible contract', async() => {
     pausible = await Pausible.new(db.address);
     await cm.addContract('Pausible', pausible.address);
+  });
+
+  it('Deploy platform funds', async() => {
+    platform = await Platform.new(db.address);
+    await cm.addContract('PlatformFunds', platform.address);
+    await platform.setPlatformToken(platformToken.address);
+  });
+
+  it('Deploy CrowdsaleGenerator', async() => {
+    crowdsaleGen = await CrowdsaleGenerator.new(db.address);
+    await cm.addContract("CrowdsaleGeneratorETH", crowdsaleGen.address);
+    await burner.authorizeBurner(crowdsaleGen.address);
   });
 
   it('Deploy crowdsale contract', async() => {
     crowdsale = await Crowdsale.new(db.address);
     await cm.addContract('CrowdsaleETH', crowdsale.address);
     await cm.addContract('Owner', owner); //Right now some database functions are operated from owner account
+    await burner.authorizeBurner(crowdsale.address);
   });
 
-  it('Deploy CrowdsaleGenerator', async() => {
-    crowdsaleGenerator = await CrowdsaleGenerator.new(db.address);
-    await cm.addContract("CrowdsaleGeneratorETH", crowdsaleGenerator.address);
+  it('Deploy operators', async() => {
+    operators = await Operators.new(db.address);
+    await cm.addContract('Operators', operators.address);
+  });
+
+  it('Give platform burning permission', async() => {
+    for(var i=1; i<web3.eth.accounts.length; i++){
+      await burner.givePermission({from:web3.eth.accounts[i]});
+      await platformToken.approve(burner.address, tokenPerAccount, {from:web3.eth.accounts[i]});
+    }
   });
 
   it('Set operator', async() => {
-    operators = await Operators.new(db.address);
-    await cm.addContract('Operators', operators.address);
     let tx = await operators.registerOperator(operator, 'Operator');
     operatorID = tx.logs[0].args._operatorID;
     await operators.acceptEther(operatorID, true, {from: operator});
@@ -83,7 +135,7 @@ contract('Ether Crowdsale', async() => {
   //Start successful funding
   it('Start funding', async() => {
     assetURI = 'BTC ATM';
-    let tx = await crowdsaleGenerator.createAssetOrderETH(assetURI, operatorID, 1, 20*ETH, brokerFee, {from:broker});
+    let tx = await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 1, 20*ETH, brokerFee, {from:broker});
     //console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
     tokenAddress = tx.logs[0].args._tokenAddress;
@@ -102,7 +154,7 @@ contract('Ether Crowdsale', async() => {
     let err;
     //Fail because asset already exists
     try{
-      await crowdsaleGenerator.createAssetOrderETH(assetURI, operatorID, 10, 20*ETH, brokerFee, {from:broker});
+      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 20*ETH, brokerFee, {from:broker});
     } catch(e){
       err = e;
     }
@@ -120,11 +172,9 @@ contract('Ether Crowdsale', async() => {
   });
 
   it('Set platform', async() => {
-    //platform = await Platform.new(db.address);
-    //await cm.addContract('PlatformFunds', platform.address);
-    //await platform.setPlatformWallet(owner);
-    let platformHash = await hash.stringHash('platformWallet');
-    await db.setAddress(platformHash, owner);
+    await platform.setPlatformWallet(owner);
+    //let platformHash = await hash.stringHash('platformWallet');
+    //await db.setAddress(platformHash, owner);
   });
 
   it('User2 funding', async() => {
@@ -191,7 +241,7 @@ contract('Ether Crowdsale', async() => {
     await operators.removeOperator(operatorID);
     assetURI = 'Fail: No operator';
     try{
-      await crowdsaleGenerator.createAssetOrderETH(assetURI, operatorID, 10, 20*ETH, brokerFee, {from:broker});
+      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 20*ETH, brokerFee, {from:broker});
     } catch(e){
       err = e;
     }
@@ -206,7 +256,7 @@ contract('Ether Crowdsale', async() => {
 
   it('Start funding that does not reach goal', async() => {
     assetURI = 'No Goal';
-    let tx = await crowdsaleGenerator.createAssetOrderETH(assetURI, operatorID, 2, 20*ETH, brokerFee, {from:broker});
+    let tx = await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 2, 20*ETH, brokerFee, {from:broker});
     //console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
     tokenAddress = tx.logs[0].args._tokenAddress;

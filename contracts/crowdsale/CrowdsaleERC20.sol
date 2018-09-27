@@ -4,7 +4,7 @@
   import "../interfaces/ERC20.sol";
   import "../interfaces/DBInterface.sol";
   import "../interfaces/ERC20DividendInterface.sol";
-
+  import "../ecosystem/ERC20Burner.sol";
 
   // @title An asset crowdsale contract.
   // @author Kyle Dewhurst, MyBit Foundation
@@ -13,12 +13,14 @@
     using SafeMath for uint256;
 
     DBInterface private database;
+    ERC20Burner private burner;
 
     // @notice This contract
     // @param: The address for the platform database
     constructor(address _database)
     public{
         database = DBInterface(_database);
+        burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
     }
 
 
@@ -29,6 +31,7 @@
     external
     notFinalized(_assetID)
     returns (bool) {
+      require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked("buyAssetOrder(bytes32, uint)")))));
       // @dev This require statement stops people from spending when the crowdsale is past its deadline
       //      and it did not succeed, cause it wouldn't get 'finalized' in that situation
       require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
