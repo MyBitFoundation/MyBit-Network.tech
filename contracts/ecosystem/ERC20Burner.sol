@@ -29,9 +29,9 @@ contract ERC20Burner {
   external
   onlyAuthorizedBurner(msg.sender)
   returns (bool) {
-    emit LogStates(database.bytes32Storage(keccak256(abi.encodePacked("burnPermission", _tokenHolder))), database.bytes32Storage(keccak256(abi.encodePacked("currentState"))));
+    //emit LogStates(database.bytes32Storage(keccak256(abi.encodePacked("burnPermission", _tokenHolder))), database.bytes32Storage(keccak256(abi.encodePacked("currentState"))));
     //Check whether user has given permission for the current state of platform to burn tokens
-    //require(database.bytes32Storage(keccak256(abi.encodePacked("burnPermission", _tokenHolder)))) == database.bytes32Storage(keccak256(abi.encodePacked("currentState"))));
+    require(database.bytes32Storage(keccak256(abi.encodePacked("burnPermission", _tokenHolder))) == database.bytes32Storage(keccak256(abi.encodePacked("currentState"))));
 
     //Using LogMYBBurned to see values of addresses and allowance
     //emit LogMYBBurned(_tokenHolder, msg.sender, token.allowance(_tokenHolder, address(this)));
