@@ -27,13 +27,13 @@ contract CrowdsaleGeneratorERC20 {
   // @notice brokers can initiate a crowdfund for a new asset here
   // @dev this crowdsale contract is granted the whole supply to distribute to investors
   function createAssetOrderERC20(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, uint _brokerFee, address _fundingToken)
-  external {
-    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked("createAssetOrderERC20(string, bytes32, uint, uint, uint, address)")))));
-    require (_brokerFee < 100 && _brokerFee > 1);
+  external 
+  isTrue(_brokerFee < 100 && _brokerFee > 0)
+  isTrue(_brokerFee > 0 && _brokerFee < 100)
+  isTrue(database.boolStorage(keccak256(abi.encodePacked("acceptsToken", _operatorID))))
+  burnRequired{
     address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID)));
     address crowdsaleERC20Address = database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleERC20")));
-    require (database.boolStorage(keccak256(abi.encodePacked("acceptedToken", _operatorID, _fundingToken))));
-    require(operatorAddress != address(0));
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
     require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
     address assetAddress = address(new DividendTokenERC20(_assetURI, crowdsaleERC20Address, _fundingToken));
@@ -42,10 +42,31 @@ contract CrowdsaleGeneratorERC20 {
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), assetAddress);
     database.setUint(keccak256(abi.encodePacked("brokerFee", assetID)), _brokerFee);     // Percentage of income that goes to broker
     database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
-    database.setAddress(keccak256(abi.encodePacked("operator", assetID)), operatorAddress);   // TODO: Could reconstruct this using event logs
+    database.setAddress(keccak256(abi.encodePacked("operator", assetID)), operatorAddress);  
     database.setAddress(keccak256(abi.encodePacked("fundingToken", assetID)), _fundingToken);
     emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, assetAddress);
   }
+
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                            Modifiers
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  modifier isTrue(bool _conditional){ 
+    require(_conditional); 
+    _; 
+  }
+
+  modifier burnRequired { 
+    bytes4 methodID = bytes4(keccak256(abi.encodePacked("createAssetOrderETH(string, bytes32, uint256, uint256, uint256)")));
+    address crowdsaleGeneratorETH = database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleGeneratorETH")));
+    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(methodID, crowdsaleGeneratorETH)))));
+    _; 
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                            Events
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _broker, string _assetURI, address indexed _tokenAddress);
 }

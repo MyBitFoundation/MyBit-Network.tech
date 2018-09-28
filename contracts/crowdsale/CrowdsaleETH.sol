@@ -70,9 +70,6 @@ contract CrowdsaleETH {
       require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))) != 0);
       database.deleteUint(keccak256(abi.encodePacked("fundingDeadline", _assetID)));
       EtherDividendInterface assetToken = EtherDividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-      // @dev We don't want to mark a refund 'finalized' because then the broker
-      //      would never be able to pull out their escrowed funds
-      //require(finalizeCrowdsale(_assetID));
       uint refundValue = assetToken.totalSupply(); //token=wei
       assetToken.issueDividends.value(refundValue)();
       return true;
@@ -129,12 +126,6 @@ contract CrowdsaleETH {
     whenNotPaused
     returns (bool) {
         database.setBool(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)), true);
-        // @dev Cannot delete funding deadline because it's necessary for the logic
-        //      of broker escrow refunds and investor refunds
-        //      If it's 0, its impossible to tell whether its a finalized sale
-        //      or an asset that was never created
-        //      Also, we use it for creating a crowdsale. Don't want to overwrite active assets
-        //database.deleteUint(keccak256(abi.encodePacked("fundingDeadline", _assetID)));
         database.deleteUint(keccak256(abi.encodePacked("amountToRaise", _assetID)));
         return true;
     }
