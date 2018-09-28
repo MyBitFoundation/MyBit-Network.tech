@@ -4,17 +4,17 @@ Contracts that control the ownership of all the contracts on the platform. This 
 
 ## Contract Categories
 
-### MultiOwned.sol
+### CollectiveOwned
 A multi-sig contract that gives access to core functions with a majority approval of owners.
 
-### Owned.sol
-Contract the gets the current owner from the database.
-
-### Pausible.sol
+### Pausible
 Lets the owner pause any contract in the ecosystem.
 
-### SinglOwned.sol
+### SinglOwned
 Lets the owner transfer ownership to another address.
 
-### SingleOwnedClaimable.sol
-Allows the owner to transfer ownership to another address, and lets that address claim ownership.
+### TokenOwned
+Ownership mediated by a token.
+
+### TripleOwned
+Ownership is controlled by 3 addresses, where 2 are needed to call restricted functions.
