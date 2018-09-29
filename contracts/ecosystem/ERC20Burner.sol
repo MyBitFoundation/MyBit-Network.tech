@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import '../interfaces/BurnableERC20.sol';
-  import "../interfaces/DBInterface.sol";
+import "../interfaces/DBInterface.sol";
 
 /// @title A contract for burning ERC20 tokens as usage fee for dapps
 /// @author Kyle Dewhurst, MyBit Foundation
@@ -16,10 +16,10 @@ contract ERC20Burner {
   // @notice constructor: initializes database and the MYB token
   // @param: the address for the database contract used by this platform
   // @param (address) _myBitTokenAddress = The MyBit token address
-  constructor(address _myBitTokenAddress, address _database)
+  constructor(address _database)
   public {
     database = DBInterface(_database);
-    token = BurnableERC20(_myBitTokenAddress);
+    token = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
   }
 
   // @notice authorized contracts can burn mybit tokens here if the user has approved this contract to do so
@@ -29,6 +29,12 @@ contract ERC20Burner {
   external
   onlyAuthorizedBurner(msg.sender)
   returns (bool) {
+    //emit LogStates(database.bytes32Storage(keccak256(abi.encodePacked("burnPermission", _tokenHolder))), database.bytes32Storage(keccak256(abi.encodePacked("currentState"))));
+    //Check whether user has given permission for the current state of platform to burn tokens
+    require(database.bytes32Storage(keccak256(abi.encodePacked("burnPermission", _tokenHolder))) == database.bytes32Storage(keccak256(abi.encodePacked("currentState"))));
+
+    //Using LogMYBBurned to see values of addresses and allowance
+    //emit LogMYBBurned(_tokenHolder, msg.sender, token.allowance(_tokenHolder, address(this)));
     require(token.allowance(_tokenHolder, address(this)) >= _amount);
     require(token.burnFrom(_tokenHolder, _amount));
     emit LogMYBBurned(_tokenHolder, msg.sender, _amount);
@@ -59,6 +65,23 @@ contract ERC20Burner {
     return true;
   }
 
+  function setFee(string _methodString, uint _amount)
+  external
+  onlyOwner
+  returns (bool) {
+    //Sets the price to burn per function in MyB.
+    database.setUint(keccak256(abi.encodePacked(_methodString)), _amount);
+    return true;
+  }
+
+  function givePermission()
+  external
+  returns (bool) {
+    bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));
+    database.setBytes32(keccak256(abi.encodePacked("burnPermission", msg.sender)), currentState);
+    return true;
+  }
+
   // @notice fallback function. Rejects all ether
   function ()
   external
@@ -86,7 +109,9 @@ contract ERC20Burner {
   //                                            Events
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  event LogMYBBurned(address indexed _tokenHolder, address indexed _burningContract, uint _amount);
+  event LogMYBBurned(address _tokenHolder, address _burningContract, uint _amount);
   event LogBurnerAuthorized(address _owner, address _burningContract);
   event LogBurnerRemoved(address _owner, address _burningContract);
+  event LogStates(bytes32 _permissionedState, bytes32 _currentState);
+
 }

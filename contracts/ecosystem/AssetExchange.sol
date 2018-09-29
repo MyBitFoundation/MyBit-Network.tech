@@ -1,7 +1,9 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 import '../database/Database.sol';
 import '../math/SafeMath.sol';
 import '../interfaces/DivToken.sol';
+import "./ERC20Burner.sol";
+
 
 //------------------------------------------------------------------------------------------------------------------
 // Note: Users can only have 1 sell order and 1 buy order for each individual asset
@@ -12,6 +14,7 @@ contract AssetExchange {
   using SafeMath for uint;
 
   Database public database;
+  ERC20Burner private burner;
 
   mapping (address => mapping (bytes32 => bool)) public orders;  // Hash of (assetID, sellerAddress, amountToBuy, price, boolean(BuyOrder = true))
 
@@ -27,6 +30,7 @@ contract AssetExchange {
   constructor(address _database)
   public {
     database = Database(_database);
+    burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -46,6 +50,7 @@ contract AssetExchange {
   onlyApproved
   isAllowed(_assetID, _seller, _amount)
   returns (bool){
+    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked("buyAsset(bytes32, address, uint, uint)")))));
     bytes32 thisOrder = keccak256(abi.encodePacked(_assetID, _seller, _amount, _price, false));
     require(orders[_seller][thisOrder]);
     require(msg.value == _amount.mul(_price).div(decimals));
@@ -99,6 +104,7 @@ contract AssetExchange {
   aboveZero(_amount, _price)
   validAsset(_assetID)
   returns (bool) {
+    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked("createBuyOrder(bytes32, uint, uint)")))));
     require(msg.value == _amount.mul(_price).div(decimals));
     bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, true));
     require(!orders[msg.sender][orderID]);

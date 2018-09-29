@@ -96,6 +96,21 @@ module.exports = function(deployer, network, accounts) {
     platform.setPlatformWallet(accounts[0]);
     platform.setPlatformToken(MyB.address);
 
+    return ERC20Burner.new(db.address);
+
+  }).then(function(instance) {
+
+    burner = instance;
+    console.log('ERC20Burner.sol: ' + burner.address);
+    cm.addContract('ERC20Burner', burner.address);
+    //Add burn fees for each function
+    burner.setFee("buyAssetOrder(bytes32, uint)", 250); //CrowdsaleERC20
+    burner.setFee("buyAssetOrder(bytes32)", 250); //CrowdsaleETH
+    burner.setFee("createAssetOrderERC20(string, bytes32, uint, uint, uint, address)", 250); //CrowdsaleGeneratorERC20
+    burner.setFee("createAssetOrderETH(string, bytes32, uint, uint, uint)", 250); //CrowdsaleGeneratorETH
+    burner.setFee("buyAsset(bytes32, address, uint, uint)", 250); //AssetExchange
+    burner.setFee("createBuyOrder(bytes32, uint, uint)", 250); //AssetExchange
+
     return Operators.new(db.address);
 
   }).then(function(instance) {
@@ -103,14 +118,6 @@ module.exports = function(deployer, network, accounts) {
     operators = instance;
     console.log('Operators.sol: ' + operators.address);
     cm.addContract('Operators', operators.address);
-
-    return ERC20Burner.new(MyB.address, db.address);
-
-  }).then(function(instance) {
-
-    burner = instance;
-    console.log('ERC20Burner.sol: ' + burner.address);
-    cm.addContract('ERC20Burner', burner.address);
 
     return AccessHierarchy.new(db.address);
 
@@ -135,6 +142,7 @@ module.exports = function(deployer, network, accounts) {
     crowdsaleGeneratorETH = instance;
     console.log('CrowdsaleGeneratorETH.sol: ' + crowdsaleGeneratorETH.address);
     cm.addContract('CrowdsaleGeneratorETH', crowdsaleGeneratorETH.address);
+    burner.authorizeBurner(crowdsaleGeneratorETH.address);
 
     return CrowdsaleETH.new(db.address);
 
@@ -143,6 +151,7 @@ module.exports = function(deployer, network, accounts) {
     crowdsaleETH = instance;
     console.log('CrowdsaleETH.sol: ' + crowdsaleETH.address);
     cm.addContract('CrowdsaleETH', crowdsaleETH.address);
+    burner.authorizeBurner(crowdsaleETH.address);
 
     return CrowdsaleGeneratorERC20.new(db.address);
 
@@ -151,6 +160,7 @@ module.exports = function(deployer, network, accounts) {
     crowdsaleGeneratorERC20 = instance;
     console.log('CrowdsaleGeneratorERC20.sol: ' + crowdsaleGeneratorERC20.address);
     cm.addContract('CrowdsaleGeneratorERC20', crowdsaleGeneratorERC20.address);
+    burner.authorizeBurner(crowdsaleGeneratorERC20.address);
 
     return CrowdsaleERC20.new(db.address);
 
@@ -159,6 +169,7 @@ module.exports = function(deployer, network, accounts) {
     crowdsaleERC20 = instance;
     console.log('CrowdsaleERC20.sol: ' + crowdsaleERC20.address);
     cm.addContract('CrowdsaleERC20', crowdsaleERC20.address);
+    burner.authorizeBurner(crowdsaleERC20.address);
 
     return AssetExchange.new(db.address);
 
@@ -167,6 +178,7 @@ module.exports = function(deployer, network, accounts) {
     dax = instance;
     console.log('AssetExchange.sol: ' + dax.address);
     cm.addContract('AssetExchange', dax.address);
+    burner.authorizeBurner(dax.address);
 
   }).then(function() {
     var addresses = {

@@ -4,7 +4,8 @@ const AssetExchange = artifacts.require("./ecosystem/AssetExchange.sol");
 const Database = artifacts.require("./database/Database.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const DivToken = artifacts.require("./tokens/ERC20/DividendToken.sol");
-//const BurnableToken = artifacts.require("./tokens/ERC20/BurnableToken.sol");
+const PlatformToken = artifacts.require("./tokens/erc20/BurnableToken.sol");
+const ERC20Burner = artifacts.require("./ecosystem/ERC20Burner.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Operators = artifacts.require("./ecosystem/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
@@ -22,6 +23,8 @@ const asset1Holders = [user1, user2];
 const asset2Holders = [user3, user2];
 
 const ETH = 1000000000000000000;
+const tokenSupply = 180000000000000000000000000;
+const tokenPerAccount = 1000000000000000000000;
 const token1PerAccount = 10*ETH;
 const token2PerAccount = 2*ETH;
 
@@ -29,11 +32,13 @@ contract('Asset Exchange', async() => {
   let dax;
   let db;
   let cm;
+  let burner;
   let hash;
   let asset1ID;
   let asset1Token;
   let asset2ID;
   let asset2Token;
+  let platformToken;
   let platform;
   let operators;
   let operatorID;
@@ -57,21 +62,53 @@ contract('Asset Exchange', async() => {
     await cm.addContract('Owner', owner);
   });
 
-  it('Deploy pausible contract', async() => {
-    pausible = await Pausible.new(db.address);
-    await cm.addContract('Pausible', pausible.address);
+  it('Deploy MyB token', async() => {
+    platformToken = await PlatformToken.new('MyBit', tokenSupply);
+  });
+
+  it("Spread tokens to users", async() => {
+    let userBalance;
+    for (var i = 1; i < web3.eth.accounts.length; i++) {
+      //console.log(web3.eth.accounts[i]);
+      await platformToken.transfer(web3.eth.accounts[i], tokenPerAccount);
+      userBalance = await platformToken.balanceOf(web3.eth.accounts[i]);
+      assert.equal(userBalance, tokenPerAccount);
+    }
+    // Check token ledger is correct
+    let totalTokensCirculating = (web3.eth.accounts.length-1) * tokenPerAccount;
+    let remainingTokens = bn(tokenSupply).minus(totalTokensCirculating);
+    let ledgerTrue = bn(await platformToken.balanceOf(owner)).eq(remainingTokens);
+    assert.equal(ledgerTrue, true);
   });
 
   it('Deploy platform', async() => {
     platform = await Platform.new(db.address);
     await cm.addContract('PlatformFunds', platform.address);
     await platform.setPlatformWallet(owner);
-    //await platform.setPlatformToken(burnToken.address);
+    await platform.setPlatformToken(platformToken.address);
+  });
+
+  it('Deploy burner contract', async() => {
+    burner = await ERC20Burner.new(db.address);
+    await cm.addContract("ERC20Burner", burner.address);
+    //Add burn fees for each function
+    burner.setFee("buyAssetOrder(bytes32, uint)", 250); //CrowdsaleERC20
+    burner.setFee("buyAssetOrder(bytes32)", 250); //CrowdsaleETH
+    burner.setFee("createAssetOrderERC20(string, bytes32, uint, uint, uint, address)", 250); //CrowdsaleGeneratorERC20
+    burner.setFee("createAssetOrderETH(string, bytes32, uint, uint, uint)", 250); //CrowdsaleGeneratorETH
+    burner.setFee("buyAsset(bytes32, address, uint, uint)", 250); //AssetExchange
+    burner.setFee("createBuyOrder(bytes32, uint, uint)", 250); //AssetExchange
+  });
+
+  it('Deploy pausible contract', async() => {
+    pausible = await Pausible.new(db.address);
+    await cm.addContract('Pausible', pausible.address);
   });
 
   it('Deploy exchange', async() => {
     dax = await AssetExchange.new(db.address);
     await cm.addContract('AssetExchange', dax.address);
+    await burner.authorizeBurner(dax.address);
   });
 
   it('Set operator', async() => {
@@ -79,6 +116,13 @@ contract('Asset Exchange', async() => {
     await cm.addContract('Operators', operators.address);
     let tx = await operators.registerOperator(operator, 'Operator');
     operatorID = tx.logs[0].args._operatorID;
+  });
+
+  it('Give platform burning permission', async() => {
+    for(var i=1; i<web3.eth.accounts.length; i++){
+      await burner.givePermission({from:web3.eth.accounts[i]});
+      await platformToken.approve(burner.address, tokenSupply, {from:web3.eth.accounts[i]});
+    }
   });
 
   it('Give users access to DAX', async() => {

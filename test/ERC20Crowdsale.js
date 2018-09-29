@@ -1,11 +1,12 @@
 var bn = require('bignumber.js');
 
-const AssetToken = artifacts.require("./tokens/ERC20/DividendTokenERC20.sol");
+const AssetToken = artifacts.require("./tokens/erc20/DividendTokenERC20.sol");
+const BurnableToken = artifacts.require("./tokens/erc20/BurnableToken.sol");
+const ERC20Burner = artifacts.require("./ecosystem/ERC20Burner.sol");
 const Crowdsale = artifacts.require("./crowdsale/CrowdsaleERC20.sol");
 const Database = artifacts.require("./database/Database.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
-const BurnableToken = artifacts.require("./tokens/ERC20/BurnableToken.sol");
 const Pausible = artifacts.require("./ownership/Pausible.sol");
 const CrowdsaleGenerator = artifacts.require("./crowdsale/CrowdsaleGeneratorERC20.sol");
 const Operators = artifacts.require("./ecosystem/Operators.sol");
@@ -29,6 +30,7 @@ const tokenPerAccount = 1000000000000000000000;
 contract('ERC20 Crowdsale', async() => {
   let assetToken;
   let erc20;
+  let platformToken;
   let crowdsale;
   let crowdsaleGen;   // crowdsale generator
   let db;
@@ -54,6 +56,43 @@ contract('ERC20 Crowdsale', async() => {
 
   it('Deploy hashing contract', async() => {
     hash = await HashFunctions.new(db.address);
+  });
+
+  it('Deploy MyB token', async() => {
+    platformToken = await BurnableToken.new('MyBit', tokenSupply);
+  });
+
+  it("Spread tokens to users", async() => {
+    let userBalance;
+    for (var i = 1; i < web3.eth.accounts.length; i++) {
+      //console.log(web3.eth.accounts[i]);
+      await platformToken.transfer(web3.eth.accounts[i], tokenPerAccount);
+      userBalance = await platformToken.balanceOf(web3.eth.accounts[i]);
+      assert.equal(userBalance, tokenPerAccount);
+    }
+    // Check token ledger is correct
+    let totalTokensCirculating = (web3.eth.accounts.length-1) * tokenPerAccount;
+    let remainingTokens = bn(tokenSupply).minus(totalTokensCirculating);
+    let ledgerTrue = bn(await platformToken.balanceOf(owner)).eq(remainingTokens);
+    assert.equal(ledgerTrue, true);
+  });
+
+  it('Deploy platform funds', async() => {
+    platform = await Platform.new(db.address);
+    await cm.addContract('PlatformFunds', platform.address);
+    await platform.setPlatformToken(platformToken.address);
+  });
+
+  it('Deploy burner contract', async() => {
+    burner = await ERC20Burner.new(db.address);
+    await cm.addContract("ERC20Burner", burner.address);
+    //Add burn fees for each function
+    burner.setFee("buyAssetOrder(bytes32, uint)", 250); //CrowdsaleERC20
+    burner.setFee("buyAssetOrder(bytes32)", 250); //CrowdsaleETH
+    burner.setFee("createAssetOrderERC20(string, bytes32, uint, uint, uint, address)", 250); //CrowdsaleGeneratorERC20
+    burner.setFee("createAssetOrderETH(string, bytes32, uint, uint, uint)", 250); //CrowdsaleGeneratorETH
+    burner.setFee("buyAsset(bytes32, address, uint, uint)", 250); //AssetExchange
+    burner.setFee("createBuyOrder(bytes32, uint, uint)", 250); //AssetExchange
   });
 
   it('Deploy pausible contract', async() => {
@@ -84,17 +123,29 @@ contract('ERC20 Crowdsale', async() => {
   it('Deploy CrowdsaleGenerator', async() => {
     crowdsaleGen = await CrowdsaleGenerator.new(db.address);
     await cm.addContract("CrowdsaleGenerator", crowdsaleGen.address);
+    await burner.authorizeBurner(crowdsaleGen.address);
   });
 
   it('Deploy crowdsale contract', async() => {
     crowdsale = await Crowdsale.new(db.address);
     await cm.addContract('CrowdsaleERC20', crowdsale.address);
     await cm.addContract('Owner', owner); //Right now some database functions are operated from owner account
+    await burner.authorizeBurner(crowdsale.address);
+  });
+
+  it('Deploy operators', async() => {
+    operators = await Operators.new(db.address);
+    await cm.addContract('Operators', operators.address);
+  });
+
+  it('Give platform burning permission', async() => {
+    for(var i=1; i<web3.eth.accounts.length; i++){
+      await burner.givePermission({from:web3.eth.accounts[i]});
+      await platformToken.approve(burner.address, tokenSupply, {from:web3.eth.accounts[i]});
+    }
   });
 
   it('Set operator', async() => {
-    operators = await Operators.new(db.address);
-    await cm.addContract('Operators', operators.address);
     let tx = await operators.registerOperator(operator, 'Operator');
     operatorID = tx.logs[0].args._operatorID;
     await operators.acceptERC20Token(operatorID, erc20.address, true, {from: operator});
@@ -151,8 +202,6 @@ contract('ERC20 Crowdsale', async() => {
   });
 
   it('Set platform', async() => {
-    platform = await Platform.new(db.address);
-    await cm.addContract('PlatformFunds', platform.address);
     await platform.setPlatformWallet(owner);
   });
 

@@ -1,25 +1,27 @@
-  pragma solidity ^0.4.24;
+pragma solidity ^0.4.24;
 
-  import "../math/SafeMath.sol";
-  import "../interfaces/ERC20.sol";
-  import "../interfaces/DBInterface.sol";
-  import "../interfaces/EtherDividendInterface.sol";
+import "../math/SafeMath.sol";
+import "../interfaces/ERC20.sol";
+import "../interfaces/DBInterface.sol";
+import "../interfaces/EtherDividendInterface.sol";
+import "../ecosystem/ERC20Burner.sol";
 
-
-  // @title An asset crowdsale contract.
-  // @author Kyle Dewhurst, MyBit Foundation
-  // @notice handles the funding and refunding of a newly created asset crowdsale.
-  // @dev this contract only accepts Ether
-  contract CrowdsaleETH {
+// @title An asset crowdsale contract.
+// @author Kyle Dewhurst, MyBit Foundation
+// @notice handles the funding and refunding of a newly created asset crowdsale.
+// @dev this contract only accepts Ether
+contract CrowdsaleETH {
     using SafeMath for uint256;
 
     DBInterface public database;
+    ERC20Burner private burner;
 
     // @notice Constructor: Initiates the database
     // @param: The address for the database contract
     constructor(address _database)
     public {
         database = DBInterface(_database);
+        burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
     }
 
 
@@ -31,6 +33,7 @@
     beforeDeadline(_assetID)
     notFinalized(_assetID)
     returns (bool) {
+      require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked("buyAssetOrder(bytes32)")))));
       EtherDividendInterface assetToken = EtherDividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
       uint brokerPercent = database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID)));
       uint investorPercent = uint(100).sub(brokerPercent);
