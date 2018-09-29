@@ -14,7 +14,6 @@ contract CrowdsaleGeneratorETH {
   DBInterface private database;
   ERC20Burner private burner;
 
-
   // @notice This contract
   // @param: The address for the database contract used by this platform
   constructor(address _database)
@@ -23,14 +22,13 @@ contract CrowdsaleGeneratorETH {
       burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
-
   // @notice brokers can initiate a crowdfund for a new asset here
   // @dev this crowdsale contract is granted the whole supply to distribute to investors
   // @dev can lookup the amount of escrow in the database with sha3("brokerEscrow", assetID)
   function createAssetOrderETH(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, uint _brokerFee)
   external {
     require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked("createAssetOrderETH(string, bytes32, uint, uint, uint)")))));
-    require (_brokerFee < 100 && _brokerFee > 1);
+    require (_brokerFee < 100);
     address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID)));
     require(operatorAddress != address(0));
     require (database.boolStorage(keccak256(abi.encodePacked("acceptsEther", _operatorID))));

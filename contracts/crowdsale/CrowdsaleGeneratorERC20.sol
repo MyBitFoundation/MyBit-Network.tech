@@ -14,7 +14,6 @@ contract CrowdsaleGeneratorERC20 {
   DBInterface private database;
   ERC20Burner private burner;
 
-
   // @notice This contract
   // @param: The address for the database contract used by this platform
   constructor(address _database)
@@ -22,7 +21,6 @@ contract CrowdsaleGeneratorERC20 {
       database = DBInterface(_database);
       burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
-
 
   // @notice brokers can initiate a crowdfund for a new asset here
   // @dev this crowdsale contract is granted the whole supply to distribute to investors
