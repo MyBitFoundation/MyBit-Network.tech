@@ -78,6 +78,12 @@ contract('Ether Crowdsale', async() => {
     assert.equal(ledgerTrue, true);
   });
 
+  it('Deploy platform funds', async() => {
+    platform = await Platform.new(db.address);
+    await cm.addContract('PlatformFunds', platform.address);
+    await platform.setPlatformToken(platformToken.address);
+  });
+
   it('Deploy burner contract', async() => {
     burner = await ERC20Burner.new(db.address);
     await cm.addContract("ERC20Burner", burner.address);
@@ -93,12 +99,6 @@ contract('Ether Crowdsale', async() => {
   it('Deploy pausible contract', async() => {
     pausible = await Pausible.new(db.address);
     await cm.addContract('Pausible', pausible.address);
-  });
-
-  it('Deploy platform funds', async() => {
-    platform = await Platform.new(db.address);
-    await cm.addContract('PlatformFunds', platform.address);
-    await platform.setPlatformToken(platformToken.address);
   });
 
   it('Deploy CrowdsaleGenerator', async() => {
@@ -122,7 +122,7 @@ contract('Ether Crowdsale', async() => {
   it('Give platform burning permission', async() => {
     for(var i=1; i<web3.eth.accounts.length; i++){
       await burner.givePermission({from:web3.eth.accounts[i]});
-      await platformToken.approve(burner.address, tokenPerAccount, {from:web3.eth.accounts[i]});
+      await platformToken.approve(burner.address, tokenSupply, {from:web3.eth.accounts[i]});
     }
   });
 

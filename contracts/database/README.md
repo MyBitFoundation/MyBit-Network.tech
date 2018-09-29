@@ -2,7 +2,7 @@
 # Database
 Contract related to the storing of data on the blockchain. All essential data for the ecosystem is stored here, thus allowing other contracts to be upgraded without losing data.
 
-## Contract Categories
+## Contracts
 
 ### ContractManager.sol
 Contract Manager controls which contracts have access to the database. This prevents contracts and users without permission from overwriting or deleting data from the database.
