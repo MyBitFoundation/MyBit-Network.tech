@@ -4,6 +4,7 @@
   import "../interfaces/DBInterface.sol";
   import "../interfaces/DivToken.sol";
   import "../interfaces/BurnableERC20.sol";
+  import "./ERC20Burner.sol"; 
 
   // @title A contract to hold escrow as collateral against assets
   // @author Kyle Dewhurst, MyBit Foundation
@@ -23,6 +24,7 @@
     // @dev assetID can be computed beforehand with sha3(msg.sender, _amountToRaise, _operatorID, _assetURI))
     function lockEscrow(bytes32 _assetID, uint _amount)
     external
+    burnRequired
     returns (bool) {
       require(database.addressStorage(keccak256(abi.encodePacked("assetEscrower", _assetID))) == address(0));
       address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platformToken")));
@@ -54,27 +56,25 @@
       require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))) < now);
       BurnableERC20 burnToken = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
       uint unlockAmount;
-      if (database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))) < now) {
-        if(!database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)))){
-          //If we're past deadline but crowdsale did NOT finalize, release all escrow
-          unlockAmount = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _assetID)));
-          database.deleteAddress(keccak256(abi.encodePacked("assetEscrower", _assetID)));
-          database.deleteUint(keccak256(abi.encodePacked("brokerEscrow", _assetID)));
-        }
-        else {
-          //Past the deadline with a successful funding. Only pay back based on ROI
-          DivToken assetToken = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-          uint assetIncome = assetToken.assetIncome();
-          uint brokerCut = assetIncome.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID))));
-          uint totalReturns = assetIncome.sub(brokerCut);
-          uint quarter = assetToken.totalSupply().div(4);    // TODO: subtract broker fee as well?
-          uint escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", _assetID)));
-          unlockAmount = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _assetID))).div(4);
-          require(totalReturns.sub(escrowRedeemed) >= quarter);
-          database.setUint(keccak256(abi.encodePacked("escrowRedeemed", _assetID)), escrowRedeemed.add(unlockAmount));
-        }
-        require(burnToken.transfer(msg.sender, unlockAmount));
+      if(!database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)))){
+        //If we're past deadline but crowdsale did NOT finalize, release all escrow
+        unlockAmount = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _assetID)));
+        database.deleteAddress(keccak256(abi.encodePacked("assetEscrower", _assetID)));
+        database.deleteUint(keccak256(abi.encodePacked("brokerEscrow", _assetID)));
       }
+      else {
+        //Past the deadline with a successful funding. Only pay back based on ROI
+        DivToken assetToken = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+        uint assetIncome = assetToken.assetIncome();
+        uint brokerCut = assetIncome.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID))));
+        uint totalReturns = assetIncome.sub(brokerCut);
+        uint quarter = assetToken.totalSupply().div(4);    // TODO: subtract broker fee as well?
+        uint escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", _assetID)));
+        unlockAmount = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _assetID))).div(4);
+        require(totalReturns.sub(escrowRedeemed) >= quarter);
+        database.setUint(keccak256(abi.encodePacked("escrowRedeemed", _assetID)), escrowRedeemed.add(unlockAmount));
+      }
+      require(burnToken.transfer(msg.sender, unlockAmount));
       return true;
     }
 
@@ -95,6 +95,14 @@
       require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
       _;
     }
+
+  // @notice reverts if user hasn't approved burner to burn platform token
+  modifier burnRequired { 
+    ERC20Burner burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner")))); 
+    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
+    _; 
+  }
+
 
     event LogEscrowBurned(bytes32 indexed _assetID, address _broker, uint _amountBurnt);
     event LogEscrowLocked(bytes32 indexed _assetID, address indexed _operator, uint _amount);

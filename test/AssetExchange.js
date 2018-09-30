@@ -81,6 +81,13 @@ contract('Asset Exchange', async() => {
     assert.equal(ledgerTrue, true);
   });
 
+  it('Deploy platform', async() => {
+    platform = await Platform.new(db.address);
+    await cm.addContract('PlatformFunds', platform.address);
+    await platform.setPlatformWallet(owner);
+    await platform.setPlatformToken(platformToken.address);
+  });
+
   it('Deploy burner contract', async() => {
     burner = await ERC20Burner.new(db.address);
     await cm.addContract("ERC20Burner", burner.address);
@@ -98,24 +105,10 @@ contract('Asset Exchange', async() => {
     await cm.addContract('Pausible', pausible.address);
   });
 
-  it('Deploy platform', async() => {
-    platform = await Platform.new(db.address);
-    await cm.addContract('PlatformFunds', platform.address);
-    await platform.setPlatformWallet(owner);
-    await platform.setPlatformToken(platformToken.address);
-  });
-
   it('Deploy exchange', async() => {
     dax = await AssetExchange.new(db.address);
     await cm.addContract('AssetExchange', dax.address);
     await burner.authorizeBurner(dax.address);
-  });
-
-  it('Give platform burning permission', async() => {
-    for(var i=1; i<web3.eth.accounts.length; i++){
-      await burner.givePermission({from:web3.eth.accounts[i]});
-      await platformToken.approve(burner.address, tokenPerAccount, {from:web3.eth.accounts[i]});
-    }
   });
 
   it('Set operator', async() => {
@@ -123,6 +116,13 @@ contract('Asset Exchange', async() => {
     await cm.addContract('Operators', operators.address);
     let tx = await operators.registerOperator(operator, 'Operator');
     operatorID = tx.logs[0].args._operatorID;
+  });
+
+  it('Give platform burning permission', async() => {
+    for(var i=1; i<web3.eth.accounts.length; i++){
+      await burner.givePermission({from:web3.eth.accounts[i]});
+      await platformToken.approve(burner.address, tokenSupply, {from:web3.eth.accounts[i]});
+    }
   });
 
   it('Give users access to DAX', async() => {

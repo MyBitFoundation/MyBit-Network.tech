@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 import '../database/Database.sol';
 import '../math/SafeMath.sol';
 import '../interfaces/DivToken.sol';
@@ -47,14 +47,12 @@ contract AssetExchange {
   external
   payable
   whenNotPaused
-  onlyApproved
   isAllowed(_assetID, _seller, _amount)
+  burnRequired
   returns (bool){
-    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked("buyAsset(bytes32, address, uint, uint)")))));
     bytes32 thisOrder = keccak256(abi.encodePacked(_assetID, _seller, _amount, _price, false));
     require(orders[_seller][thisOrder]);
     require(msg.value == _amount.mul(_price).div(decimals));
-    //require(tradeOwnershipUnits(_assetID, _seller, msg.sender, _amount));
     DivToken assetToken = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
     require(assetToken.transferFrom(_seller, msg.sender, _amount));
     weiOwed[_seller] = weiOwed[_seller].add(msg.value);
@@ -73,13 +71,11 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   function sellAsset(bytes32 _assetID, address _buyer, uint _amount, uint _price)
   public
-  onlyApproved
   whenNotPaused
   isAllowed(_assetID, msg.sender, _amount)
   returns (bool){
     bytes32 thisOrder = keccak256(abi.encodePacked(_assetID, _buyer, _amount, _price, true));       // Get order ID
     require(orders[_buyer][thisOrder]);    // Check order exists
-    //require(tradeOwnershipUnits(_assetID, msg.sender, _buyer, _amount));
     uint value = _amount.mul(_price).div(decimals);
     DivToken assetToken = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
     require(assetToken.transferFrom(msg.sender, _buyer, _amount));
@@ -98,13 +94,12 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   function createBuyOrder(bytes32 _assetID, uint _amount, uint _price)
   external
-  onlyApproved
   payable
   requiresEther
   aboveZero(_amount, _price)
   validAsset(_assetID)
+  burnRequired
   returns (bool) {
-    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked("createBuyOrder(bytes32, uint, uint)")))));
     require(msg.value == _amount.mul(_price).div(decimals));
     bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, true));
     require(!orders[msg.sender][orderID]);
@@ -124,7 +119,6 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   function createSellOrder(bytes32 _assetID, uint _amount, uint _price)
   external
-  onlyApproved
   aboveZero(_amount, _price)
   validAsset(_assetID)
   isAllowed(_assetID, msg.sender, _amount)
@@ -146,7 +140,6 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   function deleteOrder(bytes32 _assetID, uint _amount, uint _price, bool _buyOrder)
   external
-  onlyApproved
   returns (bool) {
     bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, _buyOrder));
     require(orders[msg.sender][orderID]);
@@ -163,7 +156,6 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   function withdraw()
   external
-  onlyApproved
   whenNotPaused
   returns (bool){
     uint owed = weiOwed[msg.sender];
@@ -172,37 +164,6 @@ contract AssetExchange {
     return true;
   }
 
-    //------------------------------------------------------------------------------------------------------------------
-  // Trades ownershipUnits of an asset to other user.Must trade over relative amount of paidToFunder,
-  // So person buying ownershipUnits will also be recognized as being paid out for those ownershipUnits in the past
-  // Invariants: Can only be called by current marketplace contract. User must have enough ownershipUnits to make trade.
-  // @Param address selling ownershipUnits
-  // @Param address buying ownershipUnits
-  // @Param number of ownershipUnits being traded
-  // TODO: Move as internal fn to DAX??
-  //------------------------------------------------------------------------------------------------------------------
-  /*
-  function tradeOwnershipUnits(bytes32 _assetID, address _from, address _to, uint _amount)
-  internal
-  returns (bool) {
-    require(getAmountOwed(_assetID, _from) == uint(0));
-    uint ownershipUnitsFrom = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, _from)));
-    require(ownershipUnitsFrom >= _amount);
-    uint ownershipUnitsTo = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, _to)));
-    uint paidToFunderFrom = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _from)));
-    uint paidToFunderTo = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to)));
-    uint paidToAndFrom = paidToFunderFrom.add(paidToFunderTo);
-    uint relativePaidOutAmount = (paidToFunderFrom.mul(_amount)).div(ownershipUnitsFrom);    // TODO: Can round down, letting user withdraw 1 wei
-    assert(relativePaidOutAmount > uint(0));
-    database.setUint(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to)), paidToFunderTo.add(relativePaidOutAmount));
-    database.setUint(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _from)), paidToFunderFrom.sub(relativePaidOutAmount));
-    assert (paidToAndFrom == (database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to))).add(database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to))))));
-    database.setUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, _from)), ownershipUnitsFrom.sub(_amount));
-    database.setUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, _to)), ownershipUnitsTo.add(_amount));
-    emit LogownershipUnitsTraded(_assetID, _from, _to, _amount);
-    return true;
-  }
-  */
 
   //------------------------------------------------------------------------------------------------------------------
   // Destroys contract and sends WEI to _holdingAddress
@@ -216,25 +177,6 @@ contract AssetExchange {
     selfdestruct(_holdingAddress);
   }
 
-
-    //------------------------------------------------------------------------------------------------------------------
-  // Returns the amount of WEI owed to the asset owner
-  // @Param: The ID of the asset
-  // @Param: The address of the asset owner
-  //------------------------------------------------------------------------------------------------------------------
-  /*
-  function getAmountOwed(bytes32 _assetID, address _user)
-  public
-  view
-  returns (uint){
-    uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, _user)));
-    if (ownershipUnits == uint(0)) { return uint(0); }
-    uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)));
-    uint totalPaidToFunder = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _user)));
-    uint assetIncome = database.uintStorage(keccak256(abi.encodePacked("assetIncome", _assetID)));
-    return assetIncome.mul(ownershipUnits).div(amountRaised).sub(totalPaidToFunder);
-  }
-  */
 
   //------------------------------------------------------------------------------------------------------------------
   //                                      Modifiers
@@ -266,13 +208,10 @@ contract AssetExchange {
     _;
   }
 
-  //------------------------------------------------------------------------------------------------------------------
-  // Must have access level of 3 to use marketplace
-  //------------------------------------------------------------------------------------------------------------------
-  modifier onlyApproved {
-    require(database.uintStorage(keccak256(abi.encodePacked("userAccess", msg.sender))) == uint(3));
-    require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiration", msg.sender))) > now);
-    _;
+  // @notice reverts if user hasn't approved burner to burn platform token
+  modifier burnRequired { 
+    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
+    _; 
   }
 
   //------------------------------------------------------------------------------------------------------------------

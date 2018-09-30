@@ -45,7 +45,7 @@ contract ERC20Burner {
   returns (bool) {
     //Sets the price to burn per function in MyB.
     database.setUint(keccak256(abi.encodePacked(_methodID, _contractAddress)), _amount);
-    LogFeeAdded(_contractAddress, _methodID, _amount); 
+    emit LogFeeAdded(_contractAddress, _methodID, _amount); 
     return true;
   }
 

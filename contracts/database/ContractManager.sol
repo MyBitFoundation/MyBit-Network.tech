@@ -23,7 +23,7 @@ contract ContractManager{
   isTrue(_contractAddress != address(0))
   isTrue(bytes(_name).length != uint(0))
   anyOwner {
-    require(!database.boolStorage(keccak256(abi.encodePacked("contract", _contract))));
+    require(!database.boolStorage(keccak256(abi.encodePacked("contract", _contractAddress))));
     require(database.addressStorage(keccak256(abi.encodePacked("contract", _name))) == address(0));
     database.setAddress(keccak256(abi.encodePacked("contract", _name)), _contractAddress);
     database.setBool(keccak256(abi.encodePacked("contract", _contractAddress)), true);
@@ -76,7 +76,7 @@ contract ContractManager{
     bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));
     if (_acceptCurrentState) database.setBool(keccak256(abi.encodePacked(currentState, msg.sender)), true);
     if (_ignoreStateChanges)  database.setBool(keccak256(abi.encodePacked("ignoreStateChanges", msg.sender)), true); 
-    LogContractStatePreferenceChanged(msg.sender, _acceptCurrentState, _ignoreStateChanges); 
+    emit LogContractStatePreferenceChanged(msg.sender, _acceptCurrentState, _ignoreStateChanges); 
     return true;
   }
 

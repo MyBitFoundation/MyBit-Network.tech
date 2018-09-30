@@ -1,7 +1,7 @@
 pragma solidity 0.4.24;
 
 import '../ecosystem/ERC20Burner.sol'; 
-
+import '../database/Database.sol'; 
 
 contract TestBurner {
 
@@ -32,7 +32,7 @@ contract TestBurner {
 
   function getMethodID()
   external 
-  view 
+  pure 
   returns (bytes4) { 
     return bytes4(keccak256(abi.encodePacked("burnTokens()")));
   }
