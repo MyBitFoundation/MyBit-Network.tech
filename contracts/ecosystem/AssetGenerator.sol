@@ -1,7 +1,8 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
+import "./ERC20Burner.sol"; 
 import "../tokens/erc20/DividendToken.sol";
 import "../tokens/distribution/FixedDistribution.sol"; 
 
@@ -25,6 +26,7 @@ contract AssetGenerator {
   // @dev creates an ERC20 dividend token (tradeable) or distribution token (not-tradeable)
   function createAsset(address _broker, uint _brokerFee, string _tokenURI, address[] _tokenHolders, uint[] _amount)
   external 
+  burnRequired
   returns (bool) { 
     require(_brokerFee < 100); 
     require (_tokenHolders.length == _amount.length && _tokenHolders.length <= 200); 
@@ -42,9 +44,10 @@ contract AssetGenerator {
   // @dev creates an ERC20 dividend token (tradeable) or
   function createTradeableAsset(address _broker, uint _brokerFee, string _tokenURI, address[] _tokenHolders, uint[] _amount)
   external 
+  burnRequired
   returns (bool) { 
     require(_brokerFee < 100); 
-    require (_tokenHolders.length == _amount.length && _tokenHolders.length <= 200); 
+    require (_tokenHolders.length == _amount.length && _tokenHolders.length <= uint8(200)); 
     address assetGeneratorAddress = database.addressStorage(keccak256(abi.encodePacked("contract", "AssetGenerator"))); 
     bytes32 assetID = keccak256(abi.encodePacked(_broker, _tokenURI));
     require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))) == address(0)); 
@@ -58,6 +61,14 @@ contract AssetGenerator {
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetInstance));
     emit LogTradeableAssetCreated(assetID, address(assetInstance), _broker, _tokenURI); 
     return true;
+  }
+
+
+  // @notice reverts if user hasn't approved burner to burn platform token
+  modifier burnRequired { 
+    ERC20Burner burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner")))); 
+    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
+    _; 
   }
 
 

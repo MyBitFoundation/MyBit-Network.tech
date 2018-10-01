@@ -142,7 +142,6 @@ module.exports = function(deployer, network, accounts) {
     crowdsaleGeneratorETH = instance;
     console.log('CrowdsaleGeneratorETH.sol: ' + crowdsaleGeneratorETH.address);
     cm.addContract('CrowdsaleGeneratorETH', crowdsaleGeneratorETH.address);
-    burner.authorizeBurner(crowdsaleGeneratorETH.address);
 
     return CrowdsaleETH.new(db.address);
 
@@ -151,7 +150,6 @@ module.exports = function(deployer, network, accounts) {
     crowdsaleETH = instance;
     console.log('CrowdsaleETH.sol: ' + crowdsaleETH.address);
     cm.addContract('CrowdsaleETH', crowdsaleETH.address);
-    burner.authorizeBurner(crowdsaleETH.address);
 
     return CrowdsaleGeneratorERC20.new(db.address);
 
@@ -160,7 +158,7 @@ module.exports = function(deployer, network, accounts) {
     crowdsaleGeneratorERC20 = instance;
     console.log('CrowdsaleGeneratorERC20.sol: ' + crowdsaleGeneratorERC20.address);
     cm.addContract('CrowdsaleGeneratorERC20', crowdsaleGeneratorERC20.address);
-    burner.authorizeBurner(crowdsaleGeneratorERC20.address);
+
 
     return CrowdsaleERC20.new(db.address);
 
@@ -169,7 +167,6 @@ module.exports = function(deployer, network, accounts) {
     crowdsaleERC20 = instance;
     console.log('CrowdsaleERC20.sol: ' + crowdsaleERC20.address);
     cm.addContract('CrowdsaleERC20', crowdsaleERC20.address);
-    burner.authorizeBurner(crowdsaleERC20.address);
 
     return AssetExchange.new(db.address);
 
@@ -178,7 +175,12 @@ module.exports = function(deployer, network, accounts) {
     dax = instance;
     console.log('AssetExchange.sol: ' + dax.address);
     cm.addContract('AssetExchange', dax.address);
-    burner.authorizeBurner(dax.address);
+
+    for (var i = 0; i < accounts.length; i++){
+      cm.setContractStatePreferences(true, true, {from: accounts[i]});
+    }
+
+
 
   }).then(function() {
     var addresses = {
