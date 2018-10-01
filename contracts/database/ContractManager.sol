@@ -70,12 +70,12 @@ contract ContractManager{
   // @notice if user accepts future upgrades they will automatically be able to interact with upgraded contracts
   // @param (bool) _acceptCurrentState: does the user agree to use the current contracts in the platform 
   // @param (bool) _ignoreStateChanges: does the user agree to use the platform despite contract changes
-  function acceptContractState(bool _acceptCurrentState, bool _ignoreStateChanges)
+  function setContractStatePreferences(bool _acceptCurrentState, bool _ignoreStateChanges)
   external
   returns (bool) {
     bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));
-    if (_acceptCurrentState) database.setBool(keccak256(abi.encodePacked(currentState, msg.sender)), true);
-    if (_ignoreStateChanges)  database.setBool(keccak256(abi.encodePacked("ignoreStateChanges", msg.sender)), true); 
+    database.setBool(keccak256(abi.encodePacked(currentState, msg.sender)), _acceptCurrentState);
+    database.setBool(keccak256(abi.encodePacked("ignoreStateChanges", msg.sender)), _ignoreStateChanges); 
     emit LogContractStatePreferenceChanged(msg.sender, _acceptCurrentState, _ignoreStateChanges); 
     return true;
   }

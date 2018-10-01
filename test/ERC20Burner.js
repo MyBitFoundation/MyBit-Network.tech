@@ -127,7 +127,7 @@ contract('Burner', async() => {
     let err;
     let burnAmount = 1000; 
     testBurnerMethodID = await testBurner.getMethodID(); 
-    await token.approve(burner.address, burnAmount {from: user1}); 
+    await token.approve(burner.address, burnAmount, {from: user1}); 
     try{
       await testBurner.burnTokens({from: user1});
     } catch(e){
@@ -155,13 +155,12 @@ contract('Burner', async() => {
   });
 
   it('Give permissions to current state (both users)', async() => { 
-    await cm.acceptContractState(true, true, {from: user1}); 
-    await cm.acceptContractState(true, true, {from: user2}); 
+    await cm.setContractStatePreferences(true, true, {from: user1}); 
+    await cm.setContractStatePreferences(true, true, {from: user2}); 
   });
 
   it('Burn tokens using methodID fee', async() => {
-    let burnAmount = 1000;
-    await token.approve(burner.address, burnAmount {from: user1});
+    await token.approve(burner.address, 1000, {from: user1});
     await testBurner.burnTokens({from:user1}); 
   });
 
@@ -170,22 +169,22 @@ contract('Burner', async() => {
     let amountBurnt = await testBurner.amountBurnt(); 
     let supplyAfterBurn = bn(tokenSupply).minus(amountBurnt); 
 
-    await token.approve(burner.address, burnAmount {from: user1}); 
+    await token.approve(burner.address, burnAmount, {from: user1}); 
     await testBurner.burnTokensManualFee(burnAmount, {from: user1});
     assert.equal(amountBurnt, burnAmount); 
     assert.equal(supplyAfterBurn, await token.totalSupply()); 
   });
 
   it('Remove permissions to current state (both users)', async() => { 
-    await cm.acceptContractState(false, false, {from: user1}); 
-    await cm.acceptContractState(false, false, {from: user2}); 
+    await cm.setContractStatePreferences(false, false, {from: user1}); 
+    await cm.setContractStatePreferences(false, false, {from: user2}); 
   });
 
   // Permissions are removed
   it('Fail to burn', async() => {
     let err;
     try {
-      await testBurner.burnTokensManualFee(1000j, {from: user1});
+      await testBurner.burnTokensManualFee(1000, {from: user1});
     } catch(e){
       err = e;
     }
@@ -193,8 +192,8 @@ contract('Burner', async() => {
   });
 
   it('Restore permissions to current state (both users)', async() => { 
-    await cm.acceptContractState(true, true, {from: user1}); 
-    await cm.acceptContractState(true, true, {from: user2}); 
+    await cm.setContractStatePreferences(true, true, {from: user1}); 
+    await cm.setContractStatePreferences(true, true, {from: user2}); 
   });
 
   it('Burn tokens using manual fee', async() => {
