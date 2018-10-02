@@ -94,7 +94,7 @@ GIT_USER=<GIT_USER> \
 * [AssetCreation](https://ropsten.etherscan.io/address/0x011d426358f1982e327648506d3fdae01d054297#code)
 * [FundingHub](https://ropsten.etherscan.io/address/0xb94bd7c5ca000beeff27db7cebb9c03749901f19#code)
 * [MyBitToken](https://ropsten.etherscan.io/address/0xbb07c8c6e7cd15e2e6f944a5c2cac056c5476151#code)
-* [TokenFaucet](https://ropsten.etherscan.io/address/0x8742272c58f6fe0c2943eba9399c04cbd5342ab2#writeContract)
+* [TokenFaucet](https://ropsten.etherscan.io/address/0x564a7464b6ea98259aae1ad4aa8a11ca9b502cf8#code)
 
 ### ⚠️ Warning
 This application is unstable and has not undergone any rigorous security audits. Use at your own risk.
