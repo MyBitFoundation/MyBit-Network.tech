@@ -28,7 +28,7 @@ contract('Access Hierarchy', async (accounts) => {
 
   it('Add user to manager', async() => {
     await contractManager.addContract('User', owner);
-    assert.equal(await contractManager.contractExists(owner), true);
+    //assert.equal(await database.boolStorage(sha3("contract", owner)), true);
   });
 
   it('Deploy access', async() => {

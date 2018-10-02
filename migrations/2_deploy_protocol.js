@@ -104,12 +104,12 @@ module.exports = function(deployer, network, accounts) {
     console.log('ERC20Burner.sol: ' + burner.address);
     cm.addContract('ERC20Burner', burner.address);
     //Add burn fees for each function
-    burner.setFee("buyAssetOrder(bytes32, uint)", 250); //CrowdsaleERC20
-    burner.setFee("buyAssetOrder(bytes32)", 250); //CrowdsaleETH
-    burner.setFee("createAssetOrderERC20(string, bytes32, uint, uint, uint, address)", 250); //CrowdsaleGeneratorERC20
-    burner.setFee("createAssetOrderETH(string, bytes32, uint, uint, uint)", 250); //CrowdsaleGeneratorETH
-    burner.setFee("buyAsset(bytes32, address, uint, uint)", 250); //AssetExchange
-    burner.setFee("createBuyOrder(bytes32, uint, uint)", 250); //AssetExchange
+    //burner.setFee("buyAssetOrder(bytes32, uint)", 250); //CrowdsaleERC20
+    //burner.setFee("buyAssetOrder(bytes32)", 250); //CrowdsaleETH
+    //burner.setFee("createAssetOrderERC20(string, bytes32, uint, uint, uint, address)", 250); //CrowdsaleGeneratorERC20
+    //burner.setFee("createAssetOrderETH(string, bytes32, uint, uint, uint)", 250); //CrowdsaleGeneratorETH
+    //burner.setFee("buyAsset(bytes32, address, uint, uint)", 250); //AssetExchange
+    //burner.setFee("createBuyOrder(bytes32, uint, uint)", 250); //AssetExchange
 
     return Operators.new(db.address);
 
@@ -180,7 +180,14 @@ module.exports = function(deployer, network, accounts) {
       cm.setContractStatePreferences(true, true, {from: accounts[i]});
     }
 
+  }).then(function() {
 
+    burner.setFee('0x667de2cd', crowdsaleGeneratorETH.address,  250); //CrowdsaleGeneratorETH
+    burner.setFee('0xa71d4c6a', crowdsaleETH.address,  250); //CrowdsaleETH
+    burner.setFee('0x40aedf24', crowdsaleGeneratorERC20.address,  250);
+    burner.setFee('0xc9cd97eb', crowdsaleERC20.address,  250);
+    burner.setFee('0xf08fa7b0', dax.address,  250);
+    burner.setFee('0xf5e20d6f', dax.address,  250);
 
   }).then(function() {
     var addresses = {

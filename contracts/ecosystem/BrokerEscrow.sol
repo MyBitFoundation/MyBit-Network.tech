@@ -4,7 +4,7 @@
   import "../interfaces/DBInterface.sol";
   import "../interfaces/DivToken.sol";
   import "../interfaces/BurnableERC20.sol";
-  import "./ERC20Burner.sol"; 
+  import "./ERC20Burner.sol";
 
   // @title A contract to hold escrow as collateral against assets
   // @author Kyle Dewhurst, MyBit Foundation
@@ -24,7 +24,6 @@
     // @dev assetID can be computed beforehand with sha3(msg.sender, _amountToRaise, _operatorID, _assetURI))
     function lockEscrow(bytes32 _assetID, uint _amount)
     external
-    burnRequired
     returns (bool) {
       require(database.addressStorage(keccak256(abi.encodePacked("assetEscrower", _assetID))) == address(0));
       address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platformToken")));
@@ -97,11 +96,13 @@
     }
 
   // @notice reverts if user hasn't approved burner to burn platform token
-  modifier burnRequired { 
-    ERC20Burner burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner")))); 
+  /*
+  modifier burnRequired {
+    ERC20Burner burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
     require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
-    _; 
+    _;
   }
+  */
 
 
     event LogEscrowBurned(bytes32 indexed _assetID, address _broker, uint _amountBurnt);

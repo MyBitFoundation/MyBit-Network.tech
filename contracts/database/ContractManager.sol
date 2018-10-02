@@ -68,15 +68,15 @@ contract ContractManager{
 
   // @notice user can decide to accept or deny the current and future state of the platform contracts
   // @notice if user accepts future upgrades they will automatically be able to interact with upgraded contracts
-  // @param (bool) _acceptCurrentState: does the user agree to use the current contracts in the platform 
+  // @param (bool) _acceptCurrentState: does the user agree to use the current contracts in the platform
   // @param (bool) _ignoreStateChanges: does the user agree to use the platform despite contract changes
   function setContractStatePreferences(bool _acceptCurrentState, bool _ignoreStateChanges)
   external
   returns (bool) {
     bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));
     database.setBool(keccak256(abi.encodePacked(currentState, msg.sender)), _acceptCurrentState);
-    database.setBool(keccak256(abi.encodePacked("ignoreStateChanges", msg.sender)), _ignoreStateChanges); 
-    emit LogContractStatePreferenceChanged(msg.sender, _acceptCurrentState, _ignoreStateChanges); 
+    database.setBool(keccak256(abi.encodePacked("ignoreStateChanges", msg.sender)), _ignoreStateChanges);
+    emit LogContractStatePreferenceChanged(msg.sender, _acceptCurrentState, _ignoreStateChanges);
     return true;
   }
 
@@ -99,14 +99,14 @@ contract ContractManager{
       database.deleteBool(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash)));
   }
 
-  modifier contractExists(address _contract) { 
-    database.boolStorage(keccak256(abi.encodePacked("contract", _contract)));
-    _; 
+  modifier contractExists(address _contract) {
+    require(database.boolStorage(keccak256(abi.encodePacked("contract", _contract))));
+    _;
   }
 
   modifier isTrue(bool _conditional) {
-    require(_conditional); 
-    _; 
+    require(_conditional);
+    _;
   }
 
 
@@ -118,5 +118,5 @@ contract ContractManager{
   event LogContractRemoved(address contractToDelete, string _name, uint _blockNumber);
   event LogContractUpdated(address oldAddress, string _name, uint _blockNumber);
   event LogNewContractLocation(address _contractAddress, string _name, uint _blockNumber);
-  event LogContractStatePreferenceChanged(address indexed _user, bool _currentStateAcceptance, bool _ignoreStateChanges); 
+  event LogContractStatePreferenceChanged(address indexed _user, bool _currentStateAcceptance, bool _ignoreStateChanges);
 }
