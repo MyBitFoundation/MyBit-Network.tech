@@ -28,24 +28,32 @@ contract ERC20Burner {
   function burn(address _tokenHolder, uint _amount)
   external
   onlyPlatformContracts(msg.sender)
-  acceptedState
+  acceptedState(_tokenHolder)
   returns (bool) {
     require(token.burnFrom(_tokenHolder, _amount));
     emit LogMYBBurned(_tokenHolder, msg.sender, _amount);
     return true;
   }
 
-  // @notice owners can set the cost of functionality on the platform here. 
+  function givePermission()
+  external
+  returns (bool) {
+   bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));
+   database.setBool(keccak256(abi.encodePacked(currentState, msg.sender)), true);
+   return true;
+  }
+
+  // @notice owners can set the cost of functionality on the platform here.
   // @dev _amount will be how many platformTokens are burned to call the method at _contractAddress
-  // @param (bytes4) _methodID: the methodID of the function which is to require a burning fee 
-  // @param (address) _contractAddress: the address of the contract where this method is contained 
+  // @param (bytes4) _methodID: the methodID of the function which is to require a burning fee
+  // @param (address) _contractAddress: the address of the contract where this method is contained
   function setFee(bytes4 _methodID, address _contractAddress, uint _amount)
   external
   onlyOwner
   returns (bool) {
     //Sets the price to burn per function in MyB.
     database.setUint(keccak256(abi.encodePacked(_methodID, _contractAddress)), _amount);
-    emit LogFeeAdded(_contractAddress, _methodID, _amount); 
+    emit LogFeeAdded(_contractAddress, _methodID, _amount);
     return true;
   }
 
@@ -74,10 +82,10 @@ contract ERC20Burner {
   }
 
   // @notice reverts if user hasn't accepted current contract state or if he doesn't ignore state changes entirely
-  modifier acceptedState {
-    bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState"))); 
-    require(database.boolStorage(keccak256(abi.encodePacked(currentState, msg.sender))) || database.boolStorage(keccak256(abi.encodePacked("ignoreStateChanges", msg.sender))));
-    _; 
+  modifier acceptedState(address _user) {
+    bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));
+    require(database.boolStorage(keccak256(abi.encodePacked(currentState, _user))) || database.boolStorage(keccak256(abi.encodePacked("ignoreStateChanges", _user))));
+    _;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,6 +93,6 @@ contract ERC20Burner {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   event LogMYBBurned(address _tokenHolder, address _burningContract, uint _amount);
-  event LogFeeAdded(address indexed _contractAddress, bytes4 _methodID, uint _amount); 
+  event LogFeeAdded(address indexed _contractAddress, bytes4 _methodID, uint _amount);
 
 }
