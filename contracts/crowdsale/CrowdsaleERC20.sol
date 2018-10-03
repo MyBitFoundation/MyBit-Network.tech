@@ -45,7 +45,7 @@ contract CrowdsaleERC20{
       // Give broker his portion of tokens
       require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))), database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID))) ));
       require(assetToken.finishMinting());
-      require(payout(_assetID, amountToRaise));          // 1 token = 1 wei
+      require(payoutERC20(_assetID, amountToRaise));          // 1 token = 1 wei
     }
     else {
       require(fundingToken.transferFrom(msg.sender, address(this), _amount));
@@ -85,7 +85,7 @@ contract CrowdsaleERC20{
 
   // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where operator/broker can withdraw
   // @dev The contract manager needs to know  the address PlatformDistribution contract
-  function payout(bytes32 _assetID, uint _amount)
+  function payoutERC20(bytes32 _assetID, uint _amount)
   private
   whenNotPaused
   returns (bool) {
