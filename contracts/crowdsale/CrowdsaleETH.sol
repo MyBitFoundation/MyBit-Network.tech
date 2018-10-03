@@ -26,7 +26,7 @@ contract CrowdsaleETH {
 
 
     // @notice Users can send Ether here to fund asset if the deadline has not already passed.
-    function buyAssetOrder(bytes32 _assetID)
+    function buyAssetOrderETH(bytes32 _assetID)
     external
     payable
     requiresEther
@@ -36,18 +36,16 @@ contract CrowdsaleETH {
     burnRequired
     returns (bool) {
       EtherDividendInterface assetToken = EtherDividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-      uint investorSupply = database.uintStorage(keccak256(abi.encodePacked("investorSupply", _assetID)));
-      uint tokensRemaining = investorSupply.sub(assetToken.totalSupply()); //Amount of tokens for investors minus the broker's portion
+      uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID)));
+      uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
       if (msg.value >= tokensRemaining) {
-        uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID)));
         require(finalizeCrowdsale(_assetID));
         require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens
-        // Give broker his portion of tokens 
-        require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))), amountToRaise.sub(investorSupply)));
+        // Give broker his portion of tokens
+        require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))), database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID))) ));
         require(assetToken.finishMinting());
-        //database.setBool(keccak256(abi.encodePacked("assetTradeable", _assetID)), true);  //         // Validate token on the DAX.
-        require(payout(_assetID, assetToken.totalSupply()));          // 1 token = 1 wei
-        msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI
+        require(payout(_assetID, amountToRaise));          // 1 token = 1 wei
+        msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI after cost of tokens calculated and subtracted from msg.value
       }
       else {
         require(assetToken.mint(msg.sender, msg.value));
@@ -127,7 +125,7 @@ contract CrowdsaleETH {
     returns (bool) {
         database.setBool(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)), true);
         database.deleteUint(keccak256(abi.encodePacked("amountToRaise", _assetID)));
-        database.deleteUint(keccak256(abi.encodePacked("investorSupply", _assetID))); 
+        database.deleteUint(keccak256(abi.encodePacked("investorSupply", _assetID)));
         return true;
     }
 
@@ -150,21 +148,22 @@ contract CrowdsaleETH {
     }
 
     // @notice reverts if user hasn't approved burner to burn platform token
-    modifier burnRequired { 
+    modifier burnRequired {
+      //emit LogSig(msg.sig);
       require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
-      _; 
+      _;
     }
-    
+
     // @notice function won't run if owners have paused this contract
     modifier whenNotPaused {
       require(!database.boolStorage(keccak256(abi.encodePacked("paused", address(this)))));
       _;
     }
 
-    // @notice reverts if the asset does not have a token address set in the database 
-    modifier validAsset(bytes32 _assetID) { 
-      require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))) != address(0)); 
-      _; 
+    // @notice reverts if the asset does not have a token address set in the database
+    modifier validAsset(bytes32 _assetID) {
+      require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))) != address(0));
+      _;
     }
 
     // @notice reverts if the funding deadline has already past
@@ -193,4 +192,5 @@ contract CrowdsaleETH {
     event LogRefund(bytes32 indexed _assetID, address indexed _funder, uint _amount);
     event LogAssetPayout(bytes32 indexed _assetID, address indexed _distributionContract, uint _amount);
     event LogDestruction(uint _amountSent, address indexed _caller);
+    event LogSig(bytes4 _sig);
   }

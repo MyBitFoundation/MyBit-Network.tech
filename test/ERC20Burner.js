@@ -5,7 +5,7 @@ const ERC20Burner = artifacts.require("./ecosystem/ERC20Burner.sol");
 const Database = artifacts.require("./database/Database.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
-const TestBurner = artifacts.require("./test/TestBurner.sol"); 
+const TestBurner = artifacts.require("./test/TestBurner.sol");
 
 
 const owner = web3.eth.accounts[0];
@@ -23,7 +23,7 @@ contract('Burner', async() => {
   let db;
   let cm;
   let platform;
-  let testBurner; 
+  let testBurner;
 
   let testBurnerMethodID;
 
@@ -70,9 +70,9 @@ contract('Burner', async() => {
     console.log(burner.address);
   });
 
-  it('Deploy TestBurner', async() => { 
-    testBurner = await TestBurner.new(db.address, burner.address); 
-    await cm.addContract("TestBurner", testBurner.address); 
+  it('Deploy TestBurner', async() => {
+    testBurner = await TestBurner.new(db.address, burner.address);
+    await cm.addContract("TestBurner", testBurner.address);
   });
 
 
@@ -105,7 +105,7 @@ contract('Burner', async() => {
 
 
   // Did not approve burner to spend tokens
-  // permissions not set 
+  // permissions not set
   it('Fail to burn tokens from test burner', async() => {
     console.log(user1);
     console.log(user2);
@@ -121,13 +121,13 @@ contract('Burner', async() => {
   });
 
 
-  // Fee not set 
-  // User has not given permission to current contract state 
+  // Fee not set
+  // User has not given permission to current contract state
   it('Fail to burn tokens from test Burner', async() => {
     let err;
-    let burnAmount = 1000; 
-    testBurnerMethodID = await testBurner.getMethodID(); 
-    await token.approve(burner.address, burnAmount, {from: user1}); 
+    let burnAmount = 1000;
+    testBurnerMethodID = await testBurner.getMethodID();
+    await token.approve(burner.address, burnAmount, {from: user1});
     try{
       await testBurner.burnTokens({from: user1});
     } catch(e){
@@ -137,13 +137,13 @@ contract('Burner', async() => {
   });
 
   it('Set testBurner fee', async() => {
-    await burner.setFee(testBurnerMethodID, testBurner.address); 
+    await burner.setFee(testBurnerMethodID, testBurner.address, 1000);
   })
 
   // User has not given permission to current state
   it('Fail to burn tokens', async() => {
     let err;
-    let burnAmount = 1000; 
+    let burnAmount = 1000;
     try{
       await token.approve(burner.address, burnAmount, {from: user2});
       await burner.burn(user2, burnAmount, {from: user1});
@@ -154,30 +154,19 @@ contract('Burner', async() => {
     assert.notEqual(err, undefined);
   });
 
-  it('Give permissions to current state (both users)', async() => { 
-    await cm.setContractStatePreferences(true, true, {from: user1}); 
-    await cm.setContractStatePreferences(true, true, {from: user2}); 
+  it('Give permissions to current state (both users)', async() => {
+    await cm.setContractStatePreferences(true, true, {from: user1});
+    await cm.setContractStatePreferences(true, true, {from: user2});
   });
 
   it('Burn tokens using methodID fee', async() => {
     await token.approve(burner.address, 1000, {from: user1});
-    await testBurner.burnTokens({from:user1}); 
+    await testBurner.burnTokens({from:user1});
   });
 
-  it('Burn tokens with manual fee', async() => {
-    let burnAmount = 1000; 
-    let amountBurnt = await testBurner.amountBurnt(); 
-    let supplyAfterBurn = bn(tokenSupply).minus(amountBurnt); 
-
-    await token.approve(burner.address, burnAmount, {from: user1}); 
-    await testBurner.burnTokensManualFee(burnAmount, {from: user1});
-    assert.equal(amountBurnt, burnAmount); 
-    assert.equal(supplyAfterBurn, await token.totalSupply()); 
-  });
-
-  it('Remove permissions to current state (both users)', async() => { 
-    await cm.setContractStatePreferences(false, false, {from: user1}); 
-    await cm.setContractStatePreferences(false, false, {from: user2}); 
+  it('Remove permissions to current state (both users)', async() => {
+    await cm.setContractStatePreferences(false, false, {from: user1});
+    await cm.setContractStatePreferences(false, false, {from: user2});
   });
 
   // Permissions are removed
@@ -191,9 +180,9 @@ contract('Burner', async() => {
     assert.notEqual(err, undefined);
   });
 
-  it('Restore permissions to current state (both users)', async() => { 
-    await cm.setContractStatePreferences(true, true, {from: user1}); 
-    await cm.setContractStatePreferences(true, true, {from: user2}); 
+  it('Restore permissions to current state (both users)', async() => {
+    await cm.setContractStatePreferences(true, true, {from: user1});
+    await cm.setContractStatePreferences(true, true, {from: user2});
   });
 
   it('Burn tokens using manual fee', async() => {
@@ -201,7 +190,7 @@ contract('Burner', async() => {
     await testBurner.burnTokensManualFee(1000, {from: user1});
   });
 
-  // Fail to approve burner to spend tokens 
+  // Fail to approve burner to spend tokens
   it('Fail to burn tokens from test burner', async() => {
     let err;
     try{
@@ -213,7 +202,7 @@ contract('Burner', async() => {
     assert.notEqual(err, undefined);
   });
 
-  // TODO: set fee to 0 and try 
-  // TODO: 
+  // TODO: set fee to 0 and try
+  // TODO:
 
 });

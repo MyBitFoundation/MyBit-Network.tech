@@ -209,9 +209,10 @@ contract AssetExchange {
   }
 
   // @notice reverts if user hasn't approved burner to burn platform token
-  modifier burnRequired { 
+  modifier burnRequired {
+    //emit LogSig(msg.sig);
     require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
-    _; 
+    _;
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -252,4 +253,5 @@ contract AssetExchange {
   event LogBuyOrderDetails(bytes32 _orderID, uint indexed _amount, uint indexed _price);
   event LogSellOrderDetails(bytes32 orderID, uint indexed _amount, uint indexed _price);
   event LogownershipUnitsTraded(bytes32 _assetID, address _from, address _to, uint _amount);
+  event LogSig(bytes4 _sig);
 }
