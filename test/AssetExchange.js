@@ -91,13 +91,6 @@ contract('Asset Exchange', async() => {
   it('Deploy burner contract', async() => {
     burner = await ERC20Burner.new(db.address);
     await cm.addContract("ERC20Burner", burner.address);
-    //Add burn fees for each function
-    burner.setFee("buyAssetOrder(bytes32, uint)", 250); //CrowdsaleERC20
-    burner.setFee("buyAssetOrder(bytes32)", 250); //CrowdsaleETH
-    burner.setFee("createAssetOrderERC20(string, bytes32, uint, uint, uint, address)", 250); //CrowdsaleGeneratorERC20
-    burner.setFee("createAssetOrderETH(string, bytes32, uint, uint, uint)", 250); //CrowdsaleGeneratorETH
-    burner.setFee("buyAsset(bytes32, address, uint, uint)", 250); //AssetExchange
-    burner.setFee("createBuyOrder(bytes32, uint, uint)", 250); //AssetExchange
   });
 
   it('Deploy pausible contract', async() => {
@@ -108,7 +101,8 @@ contract('Asset Exchange', async() => {
   it('Deploy exchange', async() => {
     dax = await AssetExchange.new(db.address);
     await cm.addContract('AssetExchange', dax.address);
-    await burner.authorizeBurner(dax.address);
+    await burner.setFee('0xf08fa7b0', dax.address,  250);
+    await burner.setFee('0xf5e20d6f', dax.address,  250);
   });
 
   it('Set operator', async() => {
@@ -246,7 +240,7 @@ contract('Asset Exchange', async() => {
     }
     assert.notEqual(err, undefined);
   });
-
+/*
   it("Fail to buy order", async() => {
     let err;
     //Fail because user not approved
@@ -278,7 +272,7 @@ contract('Asset Exchange', async() => {
     }
     assert.notEqual(err, undefined);
   });
-
+*/
   it("Fail to buy order", async() => {
     let err;
     //Fail because wrong value

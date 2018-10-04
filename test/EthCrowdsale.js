@@ -87,13 +87,6 @@ contract('Ether Crowdsale', async() => {
   it('Deploy burner contract', async() => {
     burner = await ERC20Burner.new(db.address);
     await cm.addContract("ERC20Burner", burner.address);
-    //Add burn fees for each function
-    burner.setFee("buyAssetOrder(bytes32, uint)", 250); //CrowdsaleERC20
-    burner.setFee("buyAssetOrder(bytes32)", 250); //CrowdsaleETH
-    burner.setFee("createAssetOrderERC20(string, bytes32, uint, uint, uint, address)", 250); //CrowdsaleGeneratorERC20
-    burner.setFee("createAssetOrderETH(string, bytes32, uint, uint, uint)", 250); //CrowdsaleGeneratorETH
-    burner.setFee("buyAsset(bytes32, address, uint, uint)", 250); //AssetExchange
-    burner.setFee("createBuyOrder(bytes32, uint, uint)", 250); //AssetExchange
   });
 
   it('Deploy pausible contract', async() => {
@@ -104,14 +97,14 @@ contract('Ether Crowdsale', async() => {
   it('Deploy CrowdsaleGenerator', async() => {
     crowdsaleGen = await CrowdsaleGenerator.new(db.address);
     await cm.addContract("CrowdsaleGeneratorETH", crowdsaleGen.address);
-    await burner.authorizeBurner(crowdsaleGen.address);
+    await burner.setFee('0x667de2cd', crowdsaleGen.address,  250);
   });
 
   it('Deploy crowdsale contract', async() => {
     crowdsale = await Crowdsale.new(db.address);
     await cm.addContract('CrowdsaleETH', crowdsale.address);
     await cm.addContract('Owner', owner); //Right now some database functions are operated from owner account
-    await burner.authorizeBurner(crowdsale.address);
+    await burner.setFee('0xa71d4c6a', crowdsale.address,  250);
   });
 
   it('Deploy operators', async() => {
@@ -145,9 +138,9 @@ contract('Ether Crowdsale', async() => {
   it('User1 funding', async() => {
     let tokenSupply = await token.totalSupply()
     console.log('Token Supply: ' + tokenSupply);
-    let tx = await crowdsale.buyAssetOrder(assetID, {from:user1, value:5*ETH});
+    let tx = await crowdsale.buyAssetOrderETH(assetID, {from:user1, value:5*ETH});
     let user1Tokens = await token.balanceOf(user1);
-    assert.equal(user1Tokens, 5*ETH*(100-brokerFee)/100);
+    assert.equal(user1Tokens, 5*ETH);
   });
 
   it('Asset already exists fail', async() => {
@@ -164,7 +157,7 @@ contract('Ether Crowdsale', async() => {
   it('Fail to buy asset, fail to payout. No platform address', async() => {
     let err;
     try{
-      await crowdsale.buyAssetOrder(assetID, {from:user2, value:15*ETH});
+      await crowdsale.buyAssetOrderETH(assetID, {from:user2, value:15*ETH});
     } catch(e){
       err = e;
     }
@@ -173,8 +166,16 @@ contract('Ether Crowdsale', async() => {
 
   it('Set platform', async() => {
     await platform.setPlatformWallet(owner);
-    //let platformHash = await hash.stringHash('platformWallet');
-    //await db.setAddress(platformHash, owner);
+  });
+
+  it('Fail to set platform wallet', async() => {
+    let err;
+    try{
+      await platform.setPlatformWallet(broker, {from:broker});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
   });
 
   it('User2 funding', async() => {
@@ -182,9 +183,9 @@ contract('Ether Crowdsale', async() => {
     ownerBalanceBefore = web3.eth.getBalance(owner);
     operatorBalanceBefore = web3.eth.getBalance(operator);
 
-    let tx = await crowdsale.buyAssetOrder(assetID, {from:user2, value:15*ETH});
+    let tx = await crowdsale.buyAssetOrderETH(assetID, {from:user2, value:15*ETH});
     let user2Tokens = await token.balanceOf(user2);
-    assert.equal(user2Tokens, 15*ETH*(100-brokerFee)/100);
+    assert.equal(user2Tokens, 15*ETH);
 
     ownerBalanceAfter = web3.eth.getBalance(owner);
     assert.equal(bn(ownerBalanceAfter).minus(ownerBalanceBefore).isEqualTo(bn(ETH).multipliedBy(20).dividedBy(100)), true);
@@ -197,7 +198,7 @@ contract('Ether Crowdsale', async() => {
     //Funding finished
     let err;
     try{
-      await crowdsale.buyAssetOrder(assetID, {from:user3, value:5*ETH});
+      await crowdsale.buyAssetOrderETH(assetID, {from:user3, value:5*ETH});
     } catch(e){
       err = e;
     }
@@ -264,9 +265,9 @@ contract('Ether Crowdsale', async() => {
   });
 
   it('User3 funding', async() => {
-    let tx = await crowdsale.buyAssetOrder(assetID, {from:user3, value:5*ETH});
+    let tx = await crowdsale.buyAssetOrderETH(assetID, {from:user3, value:5*ETH});
     let user3Tokens = await token.balanceOf(user3);
-    assert.equal(user3Tokens, 5*ETH*(100-brokerFee)/100);
+    assert.equal(user3Tokens, 5*ETH);
   });
 
   it('User1 funding fail', async() => {
@@ -279,7 +280,7 @@ contract('Ether Crowdsale', async() => {
     console.log(Number(deadline));
     let err;
     try{
-      await crowdsale.buyAssetOrder(assetID, {from:user1, value:5*ETH});
+      await crowdsale.buyAssetOrderETH(assetID, {from:user1, value:5*ETH});
     } catch(e){
       err = e;
     }
