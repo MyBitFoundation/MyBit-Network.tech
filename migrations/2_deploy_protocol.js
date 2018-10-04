@@ -188,6 +188,8 @@ module.exports = function(deployer, network, accounts) {
     burner.setFee('0xc9cd97eb', crowdsaleERC20.address,  250);
     burner.setFee('0xf08fa7b0', dax.address,  250);
     burner.setFee('0xf5e20d6f', dax.address,  250);
+    //burner.setFee('0xf76c5c55', assetGenerator.address,  250);
+    //burner.setFee('0x4e38c7f4', assetGenerator.address,  250);
 
   }).then(function() {
     var addresses = {
