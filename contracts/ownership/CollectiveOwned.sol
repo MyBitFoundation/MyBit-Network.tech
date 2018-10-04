@@ -29,7 +29,6 @@ contract CollectiveOwned {
 
   constructor(bytes32[] _restrictedFunctions, uint[] _quorumLevel)
   public { 
-    // TODO: set the quorum level for functions within this contract ie. addRestrictedFunction() , signForFunctionCall
     require(_restrictedFunctions.length == _quorumLevel.length && _restrictedFunctions.length < 100); 
     for (uint8 i = 0; i < _restrictedFunctions.length; i++){
       database.setUint(_restrictedFunctions[i], _quorumLevel[i]); 
@@ -40,7 +39,7 @@ contract CollectiveOwned {
   // @param (address) _newOwner the address of the new owner 
   function addOwner(address _newOwner)
   external
-  isRestricted(bytes4(keccak256(abi.encodePacked("addOwner(address)"))), keccak256(abi.encodePacked(_newOwner)))
+  isRestricted(msg.sig, keccak256(abi.encodePacked(_newOwner)))
   anyOwner {
     uint numOwners = database.uintStorage(keccak256(abi.encodePacked("numberOfOwners")));
     database.setBool(keccak256(abi.encodePacked("owner", _newOwner)), true);
@@ -50,7 +49,7 @@ contract CollectiveOwned {
   // @notice any owner can call this function to remove an owner if the the function receives quorum level of signatures
   function removeOwner(address _owner)
   external
-  isRestricted(bytes4(keccak256(abi.encodePacked("removeOwner(address)"))), keccak256(abi.encodePacked(_owner)))
+  isRestricted(msg.sig, keccak256(abi.encodePacked(_owner)))
   anyOwner {
     database.deleteBool(keccak256(abi.encodePacked("owner", _owner)));
   }
@@ -58,14 +57,14 @@ contract CollectiveOwned {
   // If restricted it will have to be called from address(this) using a voting proccess on signForFunctionCall
   function addRestrictedFunction(address _contractAddress, bytes4 _methodID, uint8 _quorumLevel)
   external 
-  isRestricted(bytes4(keccak256(abi.encodePacked("addRestrictedFunction(address, bytes4, uint256)"))), keccak256(abi.encodePacked(_contractAddress, _methodID, _quorumLevel)))
+  isRestricted(msg.sig, keccak256(abi.encodePacked(_contractAddress, _methodID, _quorumLevel)))
   anyOwner { 
     require(_quorumLevel > 0 && _quorumLevel < uint8(100)); 
     bytes32 functionID = keccak256(abi.encodePacked(_contractAddress, _methodID));
     database.setUint(functionID, _quorumLevel); 
   }
 
-  // @param (bytes32) _parameterHash = The hash of the exact parameter to be called for function...ie sha3(0x3b443c34, 55)
+  // @param (bytes32) _parameterHash = The hash of the exact parameter to be called for function...ie sha3(0x3b443c34.., 55)
   function signForFunctionCall(address _contractAddress, bytes4 _methodID, bytes32 _parameterHash)
   external
   anyOwner {

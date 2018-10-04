@@ -95,14 +95,6 @@
       _;
     }
 
-  // @notice reverts if user hasn't approved burner to burn platform token
-  /*
-  modifier burnRequired {
-    ERC20Burner burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
-    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
-    _;
-  }
-  */
 
 
     event LogEscrowBurned(bytes32 indexed _assetID, address _broker, uint _amountBurnt);
