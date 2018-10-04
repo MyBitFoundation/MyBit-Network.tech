@@ -40,10 +40,11 @@ contract CrowdsaleETH {
       uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
       if (msg.value >= tokensRemaining) {
         // Give broker his portion of tokens
+        require(finalizeCrowdsale(_assetID));    // delete unnecessary variables 
         require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))), database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID))) ));
         require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens
-        require(finalizeCrowdsale(_assetID));    // delete unnecessary variables 
-        require(payout(_assetID, amountToRaise));          // 1 token = 1 wei
+        require(assetToken.finishMinting());
+        require(payoutETH(_assetID, amountToRaise));          // 1 token = 1 wei
         msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI after cost of tokens calculated and subtracted from msg.value
       }
       else {
@@ -102,16 +103,17 @@ contract CrowdsaleETH {
 
     // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where operator/broker can withdraw
     // @dev The contract manager needs to know  the address PlatformDistribution contract
-    function payout(bytes32 _assetID, uint _amount)
+    function payoutETH(bytes32 _assetID, uint _amount)
     internal
     returns (bool) {
-      address operator = database.addressStorage(keccak256(abi.encodePacked("operator", _assetID)));
+      address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _assetID)));
       address platformWallet = database.addressStorage(keccak256(abi.encodePacked("platformWallet")));
-      require(platformWallet != address(0));
+      require(operatorAddress != address(0) && platformWallet != address(0));
       uint operatorPortion = _amount.mul(99).div(100);
-      platformWallet.transfer(_amount.sub(operatorPortion));
-      operator.transfer(operatorPortion);
-      emit LogAssetPayout(_assetID, operator, _amount);
+      uint platformPortion = _amount.sub(operatorPortion);
+      platformWallet.transfer(platformPortion);
+      operatorAddress.transfer(operatorPortion);
+      emit LogAssetPayout(_assetID, operatorAddress, _amount);
       return true;
     }
 
@@ -121,8 +123,6 @@ contract CrowdsaleETH {
     internal
     whenNotPaused
     returns (bool) {
-        EtherDividendInterface assetToken = EtherDividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-        require(assetToken.finishMinting());
         database.setBool(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)), true);
         database.deleteUint(keccak256(abi.encodePacked("amountToRaise", _assetID)));
         database.deleteUint(keccak256(abi.encodePacked("brokerFee", _assetID)));

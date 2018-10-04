@@ -41,10 +41,12 @@ contract CrowdsaleERC20{
     if (_amount >= tokensRemaining) {
       require(fundingToken.transferFrom(msg.sender, address(this), tokensRemaining));    // transfer investors tokens into contract
       require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))), database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID))) ));
-      require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens to investor
       require(finalizeCrowdsale(_assetID));
+      require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens to investor
       // Give broker his portion of tokens
-      require(payout(_assetID, amountToRaise));          // 1 token = 1 wei
+      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))), database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID))) ));
+      require(assetToken.finishMinting());
+      require(payoutERC20(_assetID, amountToRaise));          // 1 token = 1 wei
     }
     else {
       require(fundingToken.transferFrom(msg.sender, address(this), _amount));
@@ -84,7 +86,7 @@ contract CrowdsaleERC20{
 
   // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where operator/broker can withdraw
   // @dev The contract manager needs to know  the address PlatformDistribution contract
-  function payout(bytes32 _assetID, uint _amount)
+  function payoutERC20(bytes32 _assetID, uint _amount)
   private
   whenNotPaused
   returns (bool) {
@@ -128,8 +130,6 @@ contract CrowdsaleERC20{
   internal
   whenNotPaused
   returns (bool) {
-      ERC20DividendInterface assetToken = ERC20DividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-      require(assetToken.finishMinting());
       database.setBool(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)), true);
       database.deleteUint(keccak256(abi.encodePacked("amountToRaise", _assetID)));
       database.deleteUint(keccak256(abi.encodePacked("brokerFee", _assetID)));
