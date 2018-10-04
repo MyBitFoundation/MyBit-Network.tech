@@ -39,12 +39,11 @@ contract CrowdsaleERC20{
     uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID)));
     uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
     if (_amount >= tokensRemaining) {
-      require(finalizeCrowdsale(_assetID));
       require(fundingToken.transferFrom(msg.sender, address(this), tokensRemaining));    // transfer investors tokens into contract
-      require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens to investor
-      // Give broker his portion of tokens
       require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))), database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID))) ));
-      require(assetToken.finishMinting());
+      require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens to investor
+      require(finalizeCrowdsale(_assetID));
+      // Give broker his portion of tokens
       require(payout(_assetID, amountToRaise));          // 1 token = 1 wei
     }
     else {
@@ -120,7 +119,7 @@ contract CrowdsaleERC20{
 
 
   //------------------------------------------------------------------------------------------------------------------
-  //                                            Modifiers
+  //                                            Internal functions
   //------------------------------------------------------------------------------------------------------------------
 
   // @notice internal function for freeing up storage after crowdsale finishes
@@ -129,8 +128,11 @@ contract CrowdsaleERC20{
   internal
   whenNotPaused
   returns (bool) {
+      ERC20DividendInterface assetToken = ERC20DividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+      require(assetToken.finishMinting());
       database.setBool(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)), true);
       database.deleteUint(keccak256(abi.encodePacked("amountToRaise", _assetID)));
+      database.deleteUint(keccak256(abi.encodePacked("brokerFee", _assetID)));
       return true;
   }
 
@@ -152,7 +154,6 @@ contract CrowdsaleERC20{
 
   // @notice reverts if user hasn't approved burner to burn platform token
   modifier burnRequired {
-    //emit LogSig(msg.sig);
     require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
     _;
   }
@@ -189,5 +190,4 @@ contract CrowdsaleERC20{
   event LogAssetPayout(bytes32 indexed _assetID, address indexed _operator, uint _amount);
   event LogDestruction(uint _amountSent, address indexed _caller);
   event LogAssetInfo(uint _investorAmount, uint _tokensRemaining);
-  event LogSig(bytes4 _sig);
 }

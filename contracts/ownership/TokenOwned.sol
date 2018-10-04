@@ -13,7 +13,9 @@ import '../interfaces/ERC20.sol';
 contract TokenOwned {
   using SafeMath for uint256; 
   Database public database;
+  ERC20 public governanceToken; 
 
+  bool public governanceEnded; 
 
   // NOTE: Local contract variables only here as a reference
 
@@ -27,9 +29,10 @@ contract TokenOwned {
   mapping (address => address) public delegate;    // user can authorize another address to vote for them
 
   // @notice creator of the contract sets the initial functions quorum level, dictating the level of consensus required for that function
-  constructor(bytes32[] _restrictedFunctions, uint[] _quorumLevel)
+  constructor(address _governanceToken, bytes32[] _restrictedFunctions, uint[] _quorumLevel)
   public { 
     require(_restrictedFunctions.length == _quorumLevel.length && _restrictedFunctions.length < 100); 
+    governanceToken = ERC20(_governanceToken); 
     for (uint8 i = 0; i < _restrictedFunctions.length; i++){
       database.setUint(_restrictedFunctions[i], _quorumLevel[i]); 
     }
@@ -38,44 +41,71 @@ contract TokenOwned {
   // If restricted it will have to be called from address(this) using a voting proccess on signForFunctionCall
   function addRestrictedFunction(address _contractAddress, bytes4 _methodID, uint _quorumLevel)
   external 
-  isRestricted(bytes4(keccak256(abi.encodePacked("addRestrictedFunction(address, bytes4, uint256)"))), keccak256(abi.encodePacked(_contractAddress, _methodID, _quorumLevel)))
-  anyOwner { 
+  isRestricted(msg.sig, keccak256(abi.encodePacked(_contractAddress, _methodID, _quorumLevel)))
+  returns (bool) { 
     bytes32 functionID = keccak256(abi.encodePacked(_contractAddress, _methodID));
     database.setUint(functionID, _quorumLevel); 
+    return true; 
   }
 
   // @param (bytes32) _parameterHash = The hash of the exact parameter to be called for function...ie sha3(0x3b443c34, 55)
-  function signForFunctionCall(address _contractAddress, bytes4 _methodID, bytes32 _parameterHash)
-  external
-  anyOwner {
+  function signForFunctionCall(address _contractAddress, bytes4 _methodID, bytes32 _parameterHash, uint _amountToLock)
+  external 
+  returns (bool) {
     bytes32 sigRequestID = keccak256(abi.encodePacked(_contractAddress, _methodID, _parameterHash)); 
-    ERC20 platformToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
-    uint tokenHoldings = platformToken.balanceOf(msg.sender); 
-    uint numSignatures = database.uintStorage(keccak256(abi.encodePacked("numberOfSignatures", sigRequestID)));
-    database.setUint(keccak256(abi.encodePacked("numberOfSignatures", sigRequestID)), numSignatures.add(tokenHoldings)); 
+    bytes32 numSignaturesID = keccak256(abi.encodePacked("numberOfSignatures", sigRequestID)); 
+    require(lockTokens(_amountToLock, sigRequestID)); 
+    uint numSignatures = database.uintStorage(numSignaturesID);
+    database.setUint(numSignaturesID, numSignatures.add(_amountToLock)); 
+    return true; 
   }
 
+  function lockTokens(uint _amountToLock, bytes32 _sigRequestID)
+  internal 
+  returns (bool) { 
+    bytes32 storageID = keccak256(abi.encodePacked("tokenVotesLocked", _sigRequestID, msg.sender));
+    require(governanceToken.transferFrom(msg.sender, address(this), _amountToLock)); 
+    uint amountLocked = database.uintStorage(storageID);
+    database.setUint(storageID, amountLocked.add(_amountToLock)); 
+    return true; 
+  }
 
+  function unlockTokens(uint _amountToUnlock, bytes32 _sigRequestID)
+  external 
+  returns (bool) { 
+    bytes32 storageID = keccak256(abi.encodePacked("tokenVotesLocked", _sigRequestID, msg.sender));
+    require(database.uintStorage(keccak256(abi.encodePacked("numberOfSignatures", _sigRequestID))) == 0 || governanceEnded); 
+    governanceToken.transfer(msg.sender, _amountToUnlock); 
+    return true; 
+  }
+
+  function delegateVotes(address _delegate)
+  external 
+  returns (bool) { 
+
+    return true; 
+  }
+
+  function endGovernance()
+  external 
+  isRestricted(msg.sig, keccak256(""))
+  returns (bool) { 
+    return true; 
+  }
 
   //------------------------------------------------------------------------------------------------------------------
   //                                                Modifiers
   //------------------------------------------------------------------------------------------------------------------
 
 
-  //------------------------------------------------------------------------------------------------------------------
-  // Verifies that sender is an owners
-  //------------------------------------------------------------------------------------------------------------------
-  modifier anyOwner {
-    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
-    _;
-  }
-
   // @notice add this modifer to functions that you want multi-sig requirements for
   // @dev function can only be called after at least n >= quorumLevel owners have agreed to call it
   modifier isRestricted(bytes4 _methodID, bytes32 _parameterHash) { 
-      require(database.boolStorage(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash))));  // owners must have agreed on function + parameters
+      uint quorumLevel = database.uintStorage(keccak256(abi.encodePacked(address(this), _methodID))); 
+      require(database.uintStorage(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash))) > quorumLevel);  // owners must have agreed on function + parameters
     _;
-      database.deleteBool(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash)));  
+    // remove signatures from function call 
+    database.deleteUint(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash)));  
   }
 
   //------------------------------------------------------------------------------------------------------------------
