@@ -5,8 +5,9 @@ import '../math/SafeMath.sol';
 import '../interfaces/ERC20.sol'; 
 
 
-// @title A contract which allows for token holders to restrict/approve functions on the platform
-// @notice Two owners are required to agree on a function to be called
+// @title A contract which allows for token holders to vote for functions to be called
+// @notice Token holders must lock their tokens against a particular function 
+// @notice Token holders can unlock their tokens, removing their vote
 // @dev An owner has already been initialized when database is deployed
 // @author Kyle Dewhurst, MyBit Foundation
 // TODO: Lock tokens to avoid double voting from different accounts
@@ -23,10 +24,8 @@ contract TokenOwned {
   mapping (bytes32 => uint) public quorumLevel;     // Percentage of how many owners need to sign this function
 
   // @notice bytes32 key is sha3(contractAddress, methodID, sha3(parameter(s)))
-  mapping (bytes32 => bool) public functionCallAuthorized;     // has enough signatures for this contract to call that function
   mapping (bytes32 => uint) public numberOfSignatures; 
 
-  mapping (address => address) public delegate;    // user can authorize another address to vote for them
 
   // @notice creator of the contract sets the initial functions quorum level, dictating the level of consensus required for that function
   constructor(address _governanceToken, bytes32[] _restrictedFunctions, uint[] _quorumLevel)
@@ -60,6 +59,30 @@ contract TokenOwned {
     return true; 
   }
 
+  function unlockTokens(bytes32 _sigRequestID)
+  external 
+  returns (bool) { 
+    bytes32 storageID = keccak256(abi.encodePacked("tokenVotesLocked", _sigRequestID, msg.sender));
+    bytes32 numSignaturesID = keccak256(abi.encodePacked("numberOfSignatures", sigRequestID));
+    uint amountLocked = database.uintStorage(storageID);
+    uint numSignatures = database.uintStorage(numSignaturesID); 
+    database.setUint(numSignaturesID, numSignatures.sub(amountLocked)); 
+    governanceToken.transfer(msg.sender, amountLocked); 
+    return true; 
+  }
+
+
+  function endGovernance()
+  external 
+  isRestricted(msg.sig, keccak256(""))
+  returns (bool) { 
+    return true; 
+  }
+
+  //------------------------------------------------------------------------------------------------------------------
+  //                                                Internal Functions
+  //------------------------------------------------------------------------------------------------------------------
+
   function lockTokens(uint _amountToLock, bytes32 _sigRequestID)
   internal 
   returns (bool) { 
@@ -70,27 +93,16 @@ contract TokenOwned {
     return true; 
   }
 
-  function unlockTokens(uint _amountToUnlock, bytes32 _sigRequestID)
-  external 
-  returns (bool) { 
-    bytes32 storageID = keccak256(abi.encodePacked("tokenVotesLocked", _sigRequestID, msg.sender));
-    require(database.uintStorage(keccak256(abi.encodePacked("numberOfSignatures", _sigRequestID))) == 0 || governanceEnded); 
-    governanceToken.transfer(msg.sender, _amountToUnlock); 
-    return true; 
-  }
 
-  function delegateVotes(address _delegate)
-  external 
-  returns (bool) { 
+  //------------------------------------------------------------------------------------------------------------------
+  //                                                View Functions
+  //------------------------------------------------------------------------------------------------------------------
 
-    return true; 
-  }
-
-  function endGovernance()
+  function isQuorumReached(address _contractAddress, bytes4 _methodID, bytes32 _parameterHash)
   external 
-  isRestricted(msg.sig, keccak256(""))
+  view 
   returns (bool) { 
-    return true; 
+    
   }
 
   //------------------------------------------------------------------------------------------------------------------
