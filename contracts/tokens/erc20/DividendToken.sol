@@ -21,8 +21,8 @@ contract DividendToken is MintableToken {
 
 
     // @notice constructor: initialized
-    constructor(string _tokenURI, address _owner) 
-    public 
+    constructor(string _tokenURI, address _owner)
+    public
     MintableToken(_tokenURI, _owner){}
     // @notice Transfer _amount tokens to address _to.
     // @dev Sender must have enough tokens. Cannot send to 0x0.
@@ -89,6 +89,13 @@ contract DividendToken is MintableToken {
         assetIncome = assetIncome.add(msg.value);
         emit LogIncomeReceived(msg.sender, msg.value);
         return true;
+    }
+
+    function getERC20()
+    external
+    view
+    returns(address){
+      return address(0);
     }
 
     // Fallback function: receives Ether and updates income ledger

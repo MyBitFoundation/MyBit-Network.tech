@@ -98,6 +98,10 @@ interface DivToken {
     view
     returns (uint);
 
+    function getERC20()
+    external
+    view
+    returns (address);
 
     event LogIncomeReceived(address indexed _sender, uint _paymentAmount);
     event LogIncomeCollected(uint _block, address _address, uint _amount);

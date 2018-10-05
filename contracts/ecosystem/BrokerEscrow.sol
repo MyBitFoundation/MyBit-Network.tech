@@ -80,7 +80,7 @@
     // @notice investors can vote to call this function and burn the brokers escrow for negligence
     function burnEscrow(bytes32 _assetID)
     external
-    onlyOwner {
+    onlyInvestors(_assetID) {
       uint amountToBurn = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _assetID))).sub(database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", _assetID))));
       BurnableERC20 token = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
       require(token.burn(amountToBurn));
@@ -88,10 +88,8 @@
       database.deleteAddress(keccak256(abi.encodePacked("assetEscrower", _assetID)));
     }
 
-
-    // @notice Sender must be a registered owner
-    modifier onlyOwner {
-      require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
+    modifier onlyInvestors(bytes32 assetID) {
+      require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))) ;
       _;
     }
 
