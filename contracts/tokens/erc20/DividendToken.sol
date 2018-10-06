@@ -93,7 +93,7 @@ contract DividendToken is MintableToken {
 
     function getERC20()
     external
-    view
+    pure
     returns(address){
       return address(0);
     }
