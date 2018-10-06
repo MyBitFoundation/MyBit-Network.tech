@@ -14,7 +14,7 @@ const ownerTwo = web3.eth.accounts[1];
 const ownerThree = web3.eth.accounts[2]; 
 
 
-contract('TokenOwned', async() => {
+contract('TokenGovernance', async() => {
   let db;
   let cm;
 
