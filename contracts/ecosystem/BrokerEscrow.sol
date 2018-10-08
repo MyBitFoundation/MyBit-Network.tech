@@ -80,9 +80,21 @@
       return true;
     }
 
+    // @notice investors can vote to call this function and burn the brokers escrow for negligence
+    function burnEscrow(bytes32 _assetID)
+    external
+    onlyAssetGovernance
+    returns (bool) {
+      uint amountToBurn = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _assetID))).sub(database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", _assetID))));
+      BurnableERC20 token = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
+      require(token.burn(amountToBurn));
+      database.deleteUint(keccak256(abi.encodePacked("brokerEscrow", _assetID)));
+      database.deleteAddress(keccak256(abi.encodePacked("assetEscrower", _assetID)));
+      return true;
+    }
 
-    modifier onlyInvestors(bytes32 assetID) {
-      require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))));
+    modifier onlyAssetGovernance {
+      require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("contract", "AssetGovernance"))));
       _;
     }
 
