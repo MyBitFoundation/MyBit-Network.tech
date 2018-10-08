@@ -166,7 +166,7 @@ contract AssetExchange {
 
 
   //------------------------------------------------------------------------------------------------------------------
-  // Destroys contract and sends WEI to _holdingAddress
+  // @notice Destroys contract and sends WEI to _holdingAddress
   //------------------------------------------------------------------------------------------------------------------
   function destroy(address _functionInitiator, address _holdingAddress)
   anyOwner

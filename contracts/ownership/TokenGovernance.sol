@@ -38,7 +38,7 @@ contract TokenGovernance {
     database.setUint(functionID, _baseQuorum);   // the initial quorum level to set further quorum levels 
   }
 
-  // If restricted it will have to be called from address(this) using a voting proccess on signForFunctionCall
+  // @notice If restricted it will have to be called from address(this) using a voting proccess on signForFunctionCall
   function setQuorumLevel(address _contractAddress, bytes4 _methodID, uint256 _quorumLevel)
   external 
   isRestricted(msg.sig, keccak256(abi.encodePacked(_contractAddress, _methodID, _quorumLevel)))
