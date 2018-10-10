@@ -113,7 +113,7 @@ contract DividendTokenERC20 is MintableToken {
 
     // @notice Calculates how much value _user holds
     function getAmountOwed(address _user)
-    private
+    public
     view
     returns (uint) {
         uint valuePerTokenDifference = valuePerToken.sub(previousValuePerToken[_user]);

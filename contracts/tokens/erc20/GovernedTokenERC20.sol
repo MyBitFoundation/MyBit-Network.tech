@@ -1,9 +1,9 @@
 pragma solidity 0.4.24;
 
-// import "./DividendTokenERC20.sol";
-// import "../../ecosystem/BrokerAssets.sol";
+import "./DividendTokenERC20.sol";
+import "../../ecosystem/BrokerAssets.sol";
 
-// contract GovernedTokenERC20 is DividendTokenERC20{
+contract GovernedTokenERC20 is DividendTokenERC20{
 //   BrokerAssets brokerAssets;
 //   BrokerEscrow brokerEscrow;
 //   bytes32 assetID;
@@ -168,4 +168,4 @@ pragma solidity 0.4.24;
 //     require(votes[voteID].aye > votes[voteID].nay);
 //     _;
 //   }
-// }
+}

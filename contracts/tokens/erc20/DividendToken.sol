@@ -74,9 +74,9 @@ contract DividendToken is MintableToken {
     updateIncomeClaimed(msg.sender)
     returns (bool) {
         uint amount = incomeClaimed[msg.sender].div(scalingFactor);
+        emit LogIncomeCollected(now, msg.sender, amount);
         delete incomeClaimed[msg.sender];
         msg.sender.transfer(amount);
-        emit LogIncomeCollected(now, msg.sender, amount);
         return true;
     }
 
@@ -114,7 +114,7 @@ contract DividendToken is MintableToken {
 
     // @notice Calculates how much value _user holds
     function getAmountOwed(address _user)
-    private
+    public
     view
     returns (uint) {
         uint valuePerTokenDifference = valuePerToken.sub(previousValuePerToken[_user]);
