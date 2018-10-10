@@ -40,6 +40,9 @@ interface DivToken {
     external
     returns (bool success);
 
+    function withdraw()
+    external
+    returns (bool);
 
     // @notice Updates incomeClaimed, sends all wei to the token holder
     function collectOwedDividends()
@@ -52,10 +55,6 @@ interface DivToken {
     external
     view
     returns (uint);
-
-    function withdraw()
-    external 
-    returns (bool);
 
     // @notice Returns the number of tokens in circulation
     function totalSupply()
