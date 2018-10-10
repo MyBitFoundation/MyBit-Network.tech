@@ -22,13 +22,12 @@ contract AssetGovernance {
     database = DBInterface(_database); 
   }
 
-  // @notice initiates voting
-  // TODO: Who gets to call this function?  
+  // @notice initiates voting capabilities 
   function initiateGovernance(bytes32 _assetID)
   validAsset(_assetID)
   external 
   returns (bool) { 
-    // @dev need to store an _assetID => tokenAddress reference to restrict transfers while voting 
+    // need to store an _assetID => tokenAddress reference to restrict transfers while voting 
     GovToken assetToken = GovToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
     database.setBytes32(keccak256(abi.encodePacked("assetTokenID", address(assetToken))), _assetID); 
     return true; 
@@ -85,7 +84,7 @@ contract AssetGovernance {
   
 
 
-  // @notice  Checks that 2/3 or more of token holders agreed on function call
+  // @notice  Checks that 1/3 or more of token holders agreed on function call
   function isConsensusReached(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash)
   public 
   view 

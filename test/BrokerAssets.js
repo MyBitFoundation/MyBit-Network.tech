@@ -94,7 +94,7 @@ contract('Broker Assets', async() => {
   });
 
   it("Generate assetID", async() => {
-    assetID = await hash.getAssetID(assetURI, 100*ETH, operatorID, {from:broker});
+    assetID = await hash.getAssetID(assetURI, 10*ETH, operatorID, {from:broker});
   });
 
   it("Set asset variables", async() => {
@@ -108,22 +108,28 @@ contract('Broker Assets', async() => {
 
   it('Send money to token contract', async() => {
     //await web3.eth.sendTransaction({from:operator, to:divToken.address, value:10*ETH});
-    await divToken.issueDividends({from:operator, value:10*ETH});
+    await divToken.issueDividends({from:operator, value:1*ETH});
     console.log(await web3.eth.getBalance(divToken.address));
   });
 
   it("Withdraw dividends", async() => {
     let balanceBefore = await web3.eth.getBalance(user1);
-    console.log(balanceBefore);
+    console.log("withdraw dividends");
+    let amountOwed = await divToken.getAmountOwed(user1); 
     let tx = await divToken.withdraw({from:user1});
     let balanceAfter = await web3.eth.getBalance(user1);
-    console.log(balanceAfter);
-
+    console.log(tx);
+    // assert.equal(balanceBefore.plus(amountOwed).eq(balanceAfter), true); 
   });
 
   it('Withdraw from broker assets', async() => {
     let balanceBefore = await web3.eth.getBalance(broker);
-    let tx = await brokerAssets.withdraw([assetID], {from:broker, gas:100000000});
+    let amountOwed = await divToken.getAmountOwed(brokerAssets.address);
+    console.log(amountOwed); 
+    console.log(await divToken.balanceOf(brokerAssets.address));  
+    assert.notEqual(amountOwed, 0); 
+    let tx = await brokerAssets.withdraw([assetID], {from:broker});
+
     console.log(tx);
     //let balanceAfter = await web3.eth.getBalance(broker);
     //assert.equal(bn(balanceAfter).isGreaterThan(balanceBefore), true);

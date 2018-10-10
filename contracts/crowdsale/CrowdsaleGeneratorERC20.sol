@@ -40,6 +40,7 @@ contract CrowdsaleGeneratorERC20 {
     database.setUint(keccak256(abi.encodePacked("amountToRaise", assetID)), _amountToRaise);
     database.setUint(keccak256(abi.encodePacked("brokerFee", assetID)), brokerFee);
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), assetAddress);
+    database.setBytes32(keccak256(abi.encodePacked("assetTokenID", assetAddress)), assetID);
     database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
     database.setAddress(keccak256(abi.encodePacked("operator", assetID)), database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))));
     database.setAddress(keccak256(abi.encodePacked("fundingToken", assetID)), _fundingToken);
