@@ -53,6 +53,10 @@ interface DivToken {
     view
     returns (uint);
 
+    function withdraw()
+    external 
+    returns (bool);
+
     // @notice Returns the number of tokens in circulation
     function totalSupply()
     external
