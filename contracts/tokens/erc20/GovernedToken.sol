@@ -3,7 +3,6 @@ pragma solidity 0.4.24;
 import "./DividendToken.sol";
 import "../../math/SafeMath.sol"; 
 
-// import "../../ecosystem/BrokerAssets.sol";
 
 // @notice give GovernedToken access to view uint and bytes32 storage
 interface DBAccess { 
@@ -11,8 +10,7 @@ interface DBAccess {
   function bytes32Storage(bytes32 _key) external view returns (bytes32); 
 }
 
-// TODO: If this is causing out-of-gas errors we can move the lockTokens(), unlockTokens(), and blockAtLock into AssetGovernance and 
-// ...import a tiny interface with one function: function blockAtLock() external view returns (uint);  (must keep modifier though)
+
 contract GovernedToken is DividendToken { 
   using SafeMath for uint; 
 

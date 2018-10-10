@@ -24,6 +24,7 @@ contract DividendToken is MintableToken {
     constructor(string _tokenURI, address _owner)
     public
     MintableToken(_tokenURI, _owner){}
+
     // @notice Transfer _amount tokens to address _to.
     // @dev Sender must have enough tokens. Cannot send to 0x0.
     // @param (address) _to = The address which will receive the tokens
@@ -91,6 +92,7 @@ contract DividendToken is MintableToken {
         return true;
     }
 
+    // @notice returns null address to specify this token accepts only Ether payments
     function getERC20()
     external
     pure
