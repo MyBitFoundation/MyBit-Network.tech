@@ -17,10 +17,11 @@ contract Operators {
   function registerOperator(address _operatorAddress, string _operatorURI)
   external
   onlyOwner {
-    require(_operatorAddress != address(0)); 
+    require(_operatorAddress != address(0));
     bytes32 operatorID = keccak256(abi.encodePacked(_operatorURI));
     require(database.addressStorage(keccak256(abi.encodePacked("operator", operatorID))) == address(0));
     database.setAddress(keccak256(abi.encodePacked("operator", operatorID)), _operatorAddress);
+    //database.setBytes32(keccak256(abi.encodePacked("operator", _operatorAddress)), operatorID);
     emit LogOperatorRegistered(operatorID, _operatorURI);
   }
 
