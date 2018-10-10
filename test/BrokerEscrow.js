@@ -183,15 +183,19 @@ contract('Broker Escrow', async() => {
     assert.notEqual(err, undefined);
   });
 
-  // it("Unlock escrow", async() => {
-  //   web3.currentProvider.send({jsonrpc: "2.0", method: "evm_increaseTime", params: [20], id: 0});
+  it("Pay rest of ROI", async() => {
+    await divToken.issueDividends({from:operator, value:75*ETH});
+  });
 
-  //   let balanceBefore = await burnToken.balanceOf(broker);
-  //   await escrow.unlockEscrow(assetID, {from:broker});
-  //   let balanceAfter = await burnToken.balanceOf(broker);
-  //   let diff = bn(balanceAfter).minus(balanceBefore);
-  //   assert.equal(diff.isEqualTo(bn(ETH).multipliedBy(11).dividedBy(4)), true);
-  // });
+  it("Unlock escrow", async() => {
+    web3.currentProvider.send({jsonrpc: "2.0", method: "evm_increaseTime", params: [20], id: 0});
+
+    let balanceBefore = await burnToken.balanceOf(broker);
+    await escrow.unlockEscrow(assetID, {from:broker});
+    let balanceAfter = await burnToken.balanceOf(broker);
+    let diff = bn(balanceAfter).minus(balanceBefore);
+    assert.equal(diff.isEqualTo(bn(ETH).multipliedBy(11).dividedBy(4)), true);
+  });
 
   it("Fail to burn", async() => {
     let err;
@@ -204,15 +208,15 @@ contract('Broker Escrow', async() => {
     assert.notEqual(err, undefined);
   });
 
-  // it("BUUUUUURRRRNNNNN", async() => {
-  //   let escrowHash = await hash.stringBytes('brokerEscrow', assetID);
-  //   let redeemedHash = await hash.stringBytes('escrowRedeemed', assetID);
-  //   let escrowBefore = bn(await db.uintStorage(escrowHash)).minus(await db.uintStorage(redeemedHash));
-  //   assert.equal(escrowBefore.isEqualTo(bn(ETH).multipliedBy(11).dividedBy(4).multipliedBy(3)), true);
-  //   await escrow.burnEscrow(assetID);
-  //   let escrowAfter = await db.uintStorage(escrowHash);
-  //   assert.equal(escrowAfter, 0);
-  // });
+  it("BUUUUUURRRRNNNNN", async() => {
+    let escrowHash = await hash.stringBytes('brokerEscrow', assetID);
+    let redeemedHash = await hash.stringBytes('escrowRedeemed', assetID);
+    let escrowBefore = bn(await db.uintStorage(escrowHash)).minus(await db.uintStorage(redeemedHash));
+    assert.equal(escrowBefore.isEqualTo(bn(ETH).multipliedBy(11).dividedBy(4).multipliedBy(3)), true);
+    await escrow.burnEscrow(assetID);
+    let escrowAfter = await db.uintStorage(escrowHash);
+    assert.equal(escrowAfter, 0);
+  });
 
   it('Return ether to operator (So we do not have to restart ganache!)', async() => {
     let amount = 25*ETH/tokenHolders.length;

@@ -37,11 +37,19 @@
       return true;
     }
 
-    function cancelEscrow(bytes32 _assetID)
-    external 
-    returns (bool) { 
-      return true; 
-    }
+    // Can use unlock escrow
+    // function cancelEscrow(bytes32 _assetID)
+    // external 
+    // returns (bool) { 
+    //   require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("broker", _assetID)))); 
+    //   require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))) == 0);
+    //   bytes32 brokerEscrowID = keccak256(abi.encodePacked(_assetID, msg.sender));    
+    //   address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platformToken")));
+    //   uint amountEscrowed = database.uintStorage(keccak256(abi.encodePacked("brokerEscrowed", brokerEscrowID))); 
+    //   require(removeBroker(_assetID, brokerEscrowID)); 
+    //   BurnableERC20(tokenAddress).transfer(msg.sender, amountEscrowed); 
+    //   return true; 
+    // }
 
 
     // @notice broker can unlock his escrow here once funding fails or asset returns sufficient ROI 
@@ -55,10 +63,9 @@
       BurnableERC20 burnToken = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
       bytes32 brokerEscrowID = keccak256(abi.encodePacked(_assetID, msg.sender));
       uint escrowRedeemed = escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", brokerEscrowID)));
-      uint unlockAmount;
+      uint unlockAmount = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", brokerEscrowID))).sub(escrowRedeemed);
       if(!database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)))){
         //If we're past deadline but crowdsale did NOT finalize, release all escrow
-        unlockAmount = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", brokerEscrowID))).sub(escrowRedeemed);
         require(removeBroker(_assetID, brokerEscrowID)); 
       }
       else {
@@ -77,7 +84,7 @@
 
     // @notice investors can vote to call this function for the new broker to then call
     // @dev new broker must approve this contract to transfer in and lock _ amount of platform tokens 
-    function claimBroker(bytes32 _assetID, address _oldBroker, uint _amount, bool _burn)
+    function becomeBroker(bytes32 _assetID, address _oldBroker, uint _amount, bool _burn)
     external
     hasConsensus(_assetID, msg.sig, keccak256(abi.encodePacked(_assetID, _oldBroker, _amount, _burn)))
     returns (bool) {

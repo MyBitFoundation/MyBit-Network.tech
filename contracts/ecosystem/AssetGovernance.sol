@@ -84,7 +84,7 @@ contract AssetGovernance {
   
 
 
-  // @notice  Checks that 2/3 or more of token holders agreed on function call
+  // @notice  Checks that 1/3 or more of token holders agreed on function call
   function isConsensusReached(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash)
   public 
   view 
