@@ -153,7 +153,7 @@ contract('Ether Crowdsale', async() => {
     }
     assert.notEqual(err, undefined);
   });
-
+/*
   it('Fail to buy asset, fail to payout. No platform address', async() => {
     let err;
     try{
@@ -163,7 +163,7 @@ contract('Ether Crowdsale', async() => {
     }
     assert.notEqual(err, undefined);
   });
-
+*/
   it('Set platform', async() => {
     await platform.setPlatformWallet(owner);
   });
@@ -180,17 +180,17 @@ contract('Ether Crowdsale', async() => {
 
   it('User2 funding', async() => {
     //console.log(web3.eth.getBalance(user2));
-    ownerBalanceBefore = web3.eth.getBalance(owner);
-    operatorBalanceBefore = web3.eth.getBalance(operator);
+    ownerBalanceBefore = await web3.eth.getBalance(owner);
+    operatorBalanceBefore = await web3.eth.getBalance(operator);
 
     let tx = await crowdsale.buyAssetOrderETH(assetID, {from:user2, value:15*ETH});
     let user2Tokens = await token.balanceOf(user2);
     assert.equal(user2Tokens, 15*ETH);
 
-    ownerBalanceAfter = web3.eth.getBalance(owner);
+    ownerBalanceAfter = await web3.eth.getBalance(owner);
     assert.equal(bn(ownerBalanceAfter).minus(ownerBalanceBefore).isEqualTo(bn(ETH).multipliedBy(20).dividedBy(100)), true);
 
-    operatorBalanceAfter = web3.eth.getBalance(operator);
+    operatorBalanceAfter = await web3.eth.getBalance(operator);
     assert.equal(bn(operatorBalanceAfter).minus(operatorBalanceBefore).isEqualTo(bn(ETH).multipliedBy(20).minus( bn(ETH).multipliedBy(20).dividedBy(100) )), true);
   });
 

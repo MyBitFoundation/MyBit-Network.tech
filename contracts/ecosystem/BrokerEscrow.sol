@@ -24,35 +24,36 @@
     }
 
     // @dev assetID can be computed beforehand with sha3(msg.sender, _amountToRaise, _operatorID, _assetURI))
-    // @dev anybody can make the broker escrow if he leaves this contract with approval to transfer 
+    // @dev anybody can make the broker escrow if he leaves this contract with approval to transfer
     function lockEscrow(bytes32 _assetID, uint _amount)
     public
     returns (bool) {
       require(database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))) == address(0));
-      bytes32 brokerEscrowID = keccak256(abi.encodePacked(_assetID, msg.sender));    
+      bytes32 brokerEscrowID = keccak256(abi.encodePacked(_assetID, msg.sender));
       address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platformToken")));
       require(BurnableERC20(tokenAddress).transferFrom(msg.sender, address(this), _amount));
       database.setUint(keccak256(abi.encodePacked("brokerEscrow", brokerEscrowID)), _amount);
       database.setAddress(keccak256(abi.encodePacked("broker", _assetID)), msg.sender);
+      emit LogEscrowLocked(_assetID, brokerEscrowID, msg.sender, _amount);
       return true;
     }
 
     // Can use unlock escrow
     // function cancelEscrow(bytes32 _assetID)
-    // external 
-    // returns (bool) { 
-    //   require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("broker", _assetID)))); 
+    // external
+    // returns (bool) {
+    //   require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))));
     //   require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))) == 0);
-    //   bytes32 brokerEscrowID = keccak256(abi.encodePacked(_assetID, msg.sender));    
+    //   bytes32 brokerEscrowID = keccak256(abi.encodePacked(_assetID, msg.sender));
     //   address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platformToken")));
-    //   uint amountEscrowed = database.uintStorage(keccak256(abi.encodePacked("brokerEscrowed", brokerEscrowID))); 
-    //   require(removeBroker(_assetID, brokerEscrowID)); 
-    //   BurnableERC20(tokenAddress).transfer(msg.sender, amountEscrowed); 
-    //   return true; 
+    //   uint amountEscrowed = database.uintStorage(keccak256(abi.encodePacked("brokerEscrowed", brokerEscrowID)));
+    //   require(removeBroker(_assetID, brokerEscrowID));
+    //   BurnableERC20(tokenAddress).transfer(msg.sender, amountEscrowed);
+    //   return true;
     // }
 
 
-    // @notice broker can unlock his escrow here once funding fails or asset returns sufficient ROI 
+    // @notice broker can unlock his escrow here once funding fails or asset returns sufficient ROI
     // @dev asset must have fundingDeadline = 0 or have ROI > 25%
     // @dev returns escrow according to ROI. 25% ROI returns 25% of escrow, 50% ROI returns 50% of escrow etc...
     function unlockEscrow(bytes32 _assetID)
@@ -62,11 +63,11 @@
       require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))) < now);
       BurnableERC20 burnToken = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
       bytes32 brokerEscrowID = keccak256(abi.encodePacked(_assetID, msg.sender));
-      uint escrowRedeemed = escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", brokerEscrowID)));
+      uint escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", brokerEscrowID)));
       uint unlockAmount = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", brokerEscrowID))).sub(escrowRedeemed);
       if(!database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)))){
         //If we're past deadline but crowdsale did NOT finalize, release all escrow
-        require(removeBroker(_assetID, brokerEscrowID)); 
+        require(removeBroker(_assetID, brokerEscrowID));
       }
       else {
         //Past the deadline with a successful funding. Only pay back based on ROI
@@ -83,7 +84,7 @@
 
 
     // @notice investors can vote to call this function for the new broker to then call
-    // @dev new broker must approve this contract to transfer in and lock _ amount of platform tokens 
+    // @dev new broker must approve this contract to transfer in and lock _ amount of platform tokens
     function becomeBroker(bytes32 _assetID, address _oldBroker, uint _amount, bool _burn)
     external
     hasConsensus(_assetID, msg.sig, keccak256(abi.encodePacked(_assetID, _oldBroker, _amount, _burn)))
@@ -94,7 +95,7 @@
       require(removeBroker(_assetID, brokerEscrowID));
       if (_burn) { require(token.burn(oldEscrowRemaining)); }
       else { require(token.transfer(_oldBroker, oldEscrowRemaining));  }
-      require(lockEscrow(_assetID, _amount)); 
+      require(lockEscrow(_assetID, _amount));
       return true;
     }
 
@@ -105,8 +106,8 @@
 
 
     function removeBroker(bytes32 _assetID, bytes32 _brokerEscrowID)
-    internal 
-    returns (bool) { 
+    internal
+    returns (bool) {
         database.deleteAddress(keccak256(abi.encodePacked("broker", _assetID)));
         database.deleteUint(keccak256(abi.encodePacked("brokerEscrow", _brokerEscrowID)));
         database.deleteUint(keccak256(abi.encodePacked("escrowRedeemed", _brokerEscrowID)));
@@ -120,15 +121,15 @@
 
     // @notice add this modifer to functions that you want multi-sig requirements for
     // @dev function can only be called after at least n >= quorumLevel owners have agreed to call it
-    modifier hasConsensus(bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash) { 
+    modifier hasConsensus(bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash) {
       bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash))));
-      uint256 numTokens = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))).totalSupply(); 
-      require(database.uintStorage(numVotesID).mul(100).div(numTokens) >= 33); 
+      uint256 numTokens = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))).totalSupply();
+      require(database.uintStorage(numVotesID).mul(100).div(numTokens) >= 33);
       _;
     }
 
 
     event LogEscrowBurned(bytes32 indexed _assetID, address indexed _broker, uint _amountBurnt);
-    event LogEscrowLocked(bytes32 indexed _assetID, address indexed _broker, uint _amount);
+    event LogEscrowLocked(bytes32 indexed _assetID, bytes32 indexed _brokerEscrowID, address indexed _broker, uint _amount);
 
 }
