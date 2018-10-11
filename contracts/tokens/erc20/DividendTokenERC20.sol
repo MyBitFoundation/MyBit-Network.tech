@@ -17,13 +17,13 @@ contract DividendTokenERC20 is MintableToken {
     // @notice Token Income Information
     uint constant scalingFactor = 1e32;
 
-    uint private assetIncome;
-    uint private assetIncomeIssued;
-    uint private valuePerToken;
+    uint public assetIncome;
+    uint public assetIncomeIssued;
+    uint public valuePerToken;
 
 
-    mapping (address => uint) private incomeClaimed;
-    mapping (address => uint) private previousValuePerToken;
+    mapping (address => uint) public incomeClaimed;
+    mapping (address => uint) public previousValuePerToken;
 
 
     // @notice constructor: initialized
@@ -87,7 +87,7 @@ contract DividendTokenERC20 is MintableToken {
         delete incomeClaimed[msg.sender];
         assetIncomeIssued = assetIncomeIssued.add(_amount);
         erc20.transfer(msg.sender, _amount);
-        emit LogIncomeCollected(now, msg.sender, _amount);
+        emit LogIncomeCollected(msg.sender, _amount);
     }
 
     //In case a user transferred a token directly to this contract
@@ -112,7 +112,7 @@ contract DividendTokenERC20 is MintableToken {
     // ------------------------------------------------------------------------
 
     // @notice Calculates how much value _user holds
-    function getAmountOwed(address _user)
+    function collectLatestPayments(address _user)
     public
     view
     returns (uint) {
@@ -121,11 +121,11 @@ contract DividendTokenERC20 is MintableToken {
     }
 
     // @notice Calculates how much wei user is owed. (points + incomeClaimed) / 10**32
-    function getOwedDividends(address _user)
+    function getAmountOwed(address _user)
     public
-    constant
+    view
     returns (uint) {
-        return (getAmountOwed(_user).add(incomeClaimed[_user]).div(scalingFactor));
+        return (collectLatestPayments(_user).add(incomeClaimed[_user]).div(scalingFactor));
     }
 
     function getERC20()
@@ -142,7 +142,7 @@ contract DividendTokenERC20 is MintableToken {
     // Updates the amount owed to user while holding tokenSupply
     // @dev must be called before transfering tokens
     modifier updateIncomeClaimed(address _user) {
-        incomeClaimed[_user] = incomeClaimed[_user].add(getAmountOwed(_user));
+        incomeClaimed[_user] = incomeClaimed[_user].add(collectLatestPayments(_user));
         previousValuePerToken[_user] = valuePerToken;
         _;
     }
@@ -161,6 +161,6 @@ contract DividendTokenERC20 is MintableToken {
 
     event LogIncomeReceived(address indexed _sender, uint _paymentAmount);
     event LogCheckBalance(uint _difference);
-    event LogIncomeCollected(uint _block, address _address, uint _amount);
+    event LogIncomeCollected(address _address, uint _amount);
 
 }

@@ -40,7 +40,6 @@ contract CrowdsaleGeneratorETH {
     database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
     uint brokerFee = _amountToRaise.mul(uint(100).mul(scalingFactor).div(uint(100).sub(_brokerPerc)).sub(scalingFactor)).div(scalingFactor);
     database.setUint(keccak256(abi.encodePacked("amountToRaise", assetID)), _amountToRaise);
-    database.setUint(keccak256(abi.encodePacked("brokerFee", assetID)), brokerFee);
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), assetAddress);
     database.setBytes32(keccak256(abi.encodePacked("assetTokenID", assetAddress)), assetID);
     database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);  // Make this a require() if want to enforce escrow

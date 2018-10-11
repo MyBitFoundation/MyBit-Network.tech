@@ -121,7 +121,6 @@ contract CrowdsaleETH {
     // @param the ID of this asset.
     function finalizeCrowdsale(bytes32 _assetID)
     internal
-    whenNotPaused
     returns (bool) {
         database.setBool(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)), true);
         database.deleteUint(keccak256(abi.encodePacked("amountToRaise", _assetID)));

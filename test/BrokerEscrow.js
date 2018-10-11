@@ -19,7 +19,7 @@ const operator = web3.eth.accounts[5];
 const tokenHolders = [user1, user2, user3];
 
 const ETH = 1000000000000000000;
-const tokenPerAccount = 10*ETH;
+let tokenPerAccount;
 
 contract('Broker Escrow', async() => {
   let divToken;
@@ -109,10 +109,12 @@ contract('Broker Escrow', async() => {
 
   it("Lock escrow", async() => {
     let balanceBefore = await burnToken.balanceOf(broker);
+    let brokerID = await api.getBrokerEscrowID(assetID, broker);
     await burnToken.approve(escrow.address, 2*ETH, {from:broker});
     await escrow.lockEscrow(assetID, 2*ETH, {from:broker});
     let balanceAfter = await burnToken.balanceOf(broker);
     let diff = bn(balanceBefore).minus(balanceAfter);
+    assert.equal(await api.getBrokerEscrow(brokerID), 2*ETH);
     assert.equal(diff, 2*ETH);
   });
 
@@ -143,12 +145,15 @@ contract('Broker Escrow', async() => {
 
   it("Spread tokens to users", async() => {
     let userBalance;
+    let totalSupply = bn(8).times(ETH);
+    tokenPerAccount = totalSupply / tokenHolders.length;   // TODO: getting error with bignumber.js here
     for (var i = 0; i < tokenHolders.length; i++) {
       //console.log(web3.eth.accounts[i]);
       await divToken.mint(tokenHolders[i], tokenPerAccount);
       userBalance = await divToken.balanceOf(tokenHolders[i]);
       assert.equal(userBalance, tokenPerAccount);
     }
+    let currentSupply = await divToken.totalSupply();
     assert.equal(await divToken.balanceOf(owner), 0);
   });
 
@@ -163,8 +168,8 @@ contract('Broker Escrow', async() => {
     assert.notEqual(err, undefined);
   });
 
-  it("Pay quarter ROI", async() => {
-    await divToken.issueDividends({from:operator, value:2*ETH});
+  it("Pay half ROI", async() => {
+    await divToken.issueDividends({from:operator, value:4*ETH});
   });
 
   it("Fail to unlock escrow", async() => {
@@ -190,20 +195,85 @@ contract('Broker Escrow', async() => {
       err = e;
     }
     assert.notEqual(err, undefined);
+    await db.setUint(fundingHash, currentTime-10);
   });
+
+
+  it("Unlock half escrow", async() => {
+    let brokerID = await api.getBrokerEscrowID(assetID, broker);
+    let balanceBefore = await burnToken.balanceOf(broker);
+    await escrow.unlockEscrow(assetID, {from:broker});
+    assert.equal(await api.getBrokerEscrowRemaining(brokerID), 1*ETH);
+    let balanceAfter = await burnToken.balanceOf(broker);
+    let diff = bn(balanceAfter).minus(balanceBefore);
+    console.log(diff);
+    assert.equal(diff.isEqualTo(bn(ETH).multipliedBy(2).dividedBy(2)), true);
+  });
+
+  it("Fail to unlock more escrow without further income", async() => {
+    let err;
+    try{
+      await escrow.unlockEscrow(assetID, {from:broker});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it("Pay under a quarter of ROI", async() => {
+    await divToken.issueDividends({from:operator, value: 1*ETH});
+    let roi = await api.getAssetROI(assetID);
+    assert.equal(bn(roi).lt(75), true);
+  });
+
+
+  it("Fail to unlock more escrow without further income", async() => {
+    let err;
+    try{
+      await escrow.unlockEscrow(assetID, {from:broker});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
 
   it("Pay rest of ROI", async() => {
-    await divToken.issueDividends({from:operator, value:6*ETH});
+    await divToken.issueDividends({from:operator, value:3*ETH});
+    assert.equal(await divToken.assetIncome(), 8*ETH);
   });
 
-  it("Unlock escrow", async() => {
-    web3.currentProvider.send({jsonrpc: "2.0", method: "evm_increaseTime", params: [20], id: 0});
-
+  it("Unlock rest of escrow", async() => {
     let balanceBefore = await burnToken.balanceOf(broker);
     await escrow.unlockEscrow(assetID, {from:broker});
     let balanceAfter = await burnToken.balanceOf(broker);
     let diff = bn(balanceAfter).minus(balanceBefore);
-    assert.equal(diff.isEqualTo(bn(ETH).multipliedBy(2).dividedBy(4)), true);
+    assert.equal(diff.isEqualTo(bn(ETH).multipliedBy(2).dividedBy(2)), true);
+  });
+
+  it("Fail to unlock escrow after 100% ROI", async() => {
+    let err;
+    try{
+      await escrow.unlockEscrow(assetID, {from:broker});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it("More ROI !! ", async() => {
+    await divToken.issueDividends({from:operator, value:4*ETH});
+    assert.equal(await divToken.assetIncome(), 12*ETH);
+  });
+
+  it("Fail to unlock escrow after 150% ROI", async() => {
+    let err;
+    try{
+      await escrow.unlockEscrow(assetID, {from:broker});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
   });
 
   it("Fail to burn", async() => {
