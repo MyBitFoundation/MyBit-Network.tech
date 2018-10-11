@@ -14,7 +14,7 @@ contract API{
   }
 
 //Crowdsale + assets
-  function getAssetID(address _broker, uint _amountToRaise, bytes32 _operatorID, string _assetURI)
+  function generateAssetID(address _broker, uint _amountToRaise, bytes32 _operatorID, string _assetURI)
   external
   pure
   returns(bytes32) {
@@ -119,7 +119,7 @@ contract API{
     return operatorAddress;
   }
 
-  function getOperatorID(string _operatorURI)
+  function generateOperatorID(string _operatorURI)
   external
   pure
   returns(bytes32) {
@@ -143,7 +143,7 @@ contract API{
     return operatorAddress;
   }
 
-  function getOrderID(bytes32 _assetID, address _sender, uint _amount, uint _price, bool _buyOrder)
+  function generateOrderID(bytes32 _assetID, address _sender, uint _amount, uint _price, bool _buyOrder)
   external
   pure
   returns(bytes32) {
