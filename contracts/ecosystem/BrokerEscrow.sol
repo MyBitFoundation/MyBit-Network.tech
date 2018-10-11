@@ -38,20 +38,6 @@
       return true;
     }
 
-    // Can use unlock escrow
-    // function cancelEscrow(bytes32 _assetID)
-    // external
-    // returns (bool) {
-    //   require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))));
-    //   require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))) == 0);
-    //   bytes32 brokerEscrowID = keccak256(abi.encodePacked(_assetID, msg.sender));
-    //   address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platformToken")));
-    //   uint amountEscrowed = database.uintStorage(keccak256(abi.encodePacked("brokerEscrowed", brokerEscrowID)));
-    //   require(removeBroker(_assetID, brokerEscrowID));
-    //   BurnableERC20(tokenAddress).transfer(msg.sender, amountEscrowed);
-    //   return true;
-    // }
-
 
     // @notice broker can unlock his escrow here once funding fails or asset returns sufficient ROI
     // @dev asset must have fundingDeadline = 0 or have ROI > 25%
@@ -72,10 +58,13 @@
       else {
         //Past the deadline with a successful funding. Only pay back based on ROI
         DivToken assetToken = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-        uint assetIncome = assetToken.assetIncome();
-        uint quarter = assetToken.totalSupply().div(4);    // TODO: subtract broker fee as well?
-        unlockAmount = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", brokerEscrowID))).div(4);
-        require(assetIncome.sub(escrowRedeemed) >= quarter);
+        uint roi = assetToken.assetIncome().mul(100).div(assetToken.totalSupply());   // Scaled up by 10^2  (approaches 100 as asset income increases)
+        uint roiCheckpoints = roi.div(25);       // How many quarterly increments have been reached?
+        uint quarterEscrow = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", brokerEscrowID))).div(4);
+        require(roiCheckpoints <= 4 && roiCheckpoints > 0);    // Can't unlock escrow past 100% ROI
+        //  multiply the number of quarterly increments by a quarter of the escrow and subtract the escrow already redeemed.
+        unlockAmount = roiCheckpoints.mul(quarterEscrow).sub(escrowRedeemed);
+        require(unlockAmount > 0);
         database.setUint(keccak256(abi.encodePacked("escrowRedeemed", brokerEscrowID)), escrowRedeemed.add(unlockAmount));
       }
       require(burnToken.transfer(msg.sender, unlockAmount));

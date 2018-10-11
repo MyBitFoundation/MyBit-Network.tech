@@ -13,10 +13,10 @@ contract DividendToken is MintableToken {
 
     // @notice Token Income Information
     uint constant scalingFactor = 1e32;
-    uint public assetIncome;
     uint public valuePerToken;
+    uint public assetIncome;
 
-    mapping (address => uint) public incomeClaimed;
+    mapping (address => uint) public incomeOwed;
     mapping (address => uint) public previousValuePerToken;
 
 
@@ -74,9 +74,9 @@ contract DividendToken is MintableToken {
     public
     updateIncomeClaimed(msg.sender)
     returns (bool) {
-        uint amount = incomeClaimed[msg.sender].div(scalingFactor);
-        emit LogIncomeCollected(now, msg.sender, amount);
-        delete incomeClaimed[msg.sender];
+        uint amount = incomeOwed[msg.sender].div(scalingFactor);
+        delete incomeOwed[msg.sender];
+        emit LogIncomeCollected(msg.sender, amount);
         msg.sender.transfer(amount);
         return true;
     }
@@ -86,8 +86,8 @@ contract DividendToken is MintableToken {
     payable
     public
     returns (bool) {
-        valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
         assetIncome = assetIncome.add(msg.value);
+        valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
         emit LogIncomeReceived(msg.sender, msg.value);
         return true;
     }
@@ -104,8 +104,8 @@ contract DividendToken is MintableToken {
     function ()
     payable
     public {
-        valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
         assetIncome = assetIncome.add(msg.value);
+        valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
         emit LogIncomeReceived(msg.sender, msg.value);
     }
 
@@ -114,8 +114,8 @@ contract DividendToken is MintableToken {
     //                           View functions
     // ------------------------------------------------------------------------
 
-    // @notice Calculates how much value _user holds
-    function getAmountOwed(address _user)
+    // @notice Calculates how much more income is owed to user since last calculation
+    function collectLatestPayments(address _user)
     private
     view
     returns (uint) {
@@ -123,12 +123,12 @@ contract DividendToken is MintableToken {
         return valuePerTokenDifference.mul(balances[_user]);
     }
 
-    // @notice Calculates how much wei user is owed. (points + incomeClaimed) / 10**32
-    function getOwedDividends(address _user)
+    // @notice Calculates how much wei user is owed. (points + incomeOwed) / 10**32
+    function getAmountOwed(address _user)
     public
-    constant
+    view
     returns (uint) {
-        return (getAmountOwed(_user).add(incomeClaimed[_user]).div(scalingFactor));
+        return (collectLatestPayments(_user).add(incomeOwed[_user]).div(scalingFactor));
     }
 
     // ------------------------------------------------------------------------
@@ -138,7 +138,7 @@ contract DividendToken is MintableToken {
     // Updates the amount owed to user while holding tokenSupply
     // @dev must be called before transfering tokens
     modifier updateIncomeClaimed(address _user) {
-        incomeClaimed[_user] = incomeClaimed[_user].add(getAmountOwed(_user));
+        incomeOwed[_user] = incomeOwed[_user].add(collectLatestPayments(_user));
         previousValuePerToken[_user] = valuePerToken;
         _;
     }
@@ -148,6 +148,6 @@ contract DividendToken is MintableToken {
 
 
     event LogIncomeReceived(address indexed _sender, uint _paymentAmount);
-    event LogIncomeCollected(uint _block, address _address, uint _amount);
+    event LogIncomeCollected(address _address, uint _amount);
 
 }
