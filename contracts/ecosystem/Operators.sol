@@ -21,7 +21,7 @@ contract Operators {
     bytes32 operatorID = keccak256(abi.encodePacked(_operatorURI));
     require(database.addressStorage(keccak256(abi.encodePacked("operator", operatorID))) == address(0));
     database.setAddress(keccak256(abi.encodePacked("operator", operatorID)), _operatorAddress);
-    //database.setBytes32(keccak256(abi.encodePacked("operator", _operatorAddress)), operatorID);
+    database.setBytes32(keccak256(abi.encodePacked("operator", _operatorAddress)), operatorID);
     emit LogOperatorRegistered(operatorID, _operatorURI);
   }
 

@@ -115,24 +115,23 @@ contract('Broker Assets', async() => {
   it("Withdraw dividends", async() => {
     let balanceBefore = await web3.eth.getBalance(user1);
     console.log("withdraw dividends");
-    let amountOwed = await divToken.getAmountOwed(user1); 
+    let amountOwed = await divToken.getOwedDividends(user1);
     let tx = await divToken.withdraw({from:user1});
     let balanceAfter = await web3.eth.getBalance(user1);
-    console.log(tx);
-    // assert.equal(balanceBefore.plus(amountOwed).eq(balanceAfter), true); 
+    //console.log(tx);
+    //assert.equal(balanceBefore.plus(amountOwed).eq(balanceAfter), true);
   });
 
   it('Withdraw from broker assets', async() => {
     let balanceBefore = await web3.eth.getBalance(broker);
-    let amountOwed = await divToken.getAmountOwed(brokerAssets.address);
-    console.log(amountOwed); 
-    console.log(await divToken.balanceOf(brokerAssets.address));  
-    assert.notEqual(amountOwed, 0); 
+    let amountOwed = await divToken.getOwedDividends(brokerAssets.address);
+    console.log(amountOwed);
+    console.log(await divToken.balanceOf(brokerAssets.address));
+    assert.notEqual(amountOwed, 0);
     let tx = await brokerAssets.withdraw([assetID], {from:broker});
-
-    console.log(tx);
-    //let balanceAfter = await web3.eth.getBalance(broker);
-    //assert.equal(bn(balanceAfter).isGreaterThan(balanceBefore), true);
+    //console.log(tx);
+    let balanceAfter = await web3.eth.getBalance(broker);
+    assert.equal(bn(balanceAfter).isGreaterThan(balanceBefore), true);
   });
 
 
