@@ -27,7 +27,7 @@ const tokenSupply = 180000000000000000000000000;
 const tokenPerAccount = 1000000000000000000000;
 const brokerFee = tokenPerAccount/10;
 
-contract('Ether Crowdsale', async() => {
+contract('Asset Generator', async() => {
 
   let token;
   let platformToken;

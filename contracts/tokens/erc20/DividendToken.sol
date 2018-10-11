@@ -116,7 +116,7 @@ contract DividendToken is MintableToken {
 
     // @notice Calculates how much value _user holds
     function getAmountOwed(address _user)
-    public
+    private
     view
     returns (uint) {
         uint valuePerTokenDifference = valuePerToken.sub(previousValuePerToken[_user]);
