@@ -12,19 +12,19 @@ interface TokenView {
 }
 
 interface DBView {
-  function uintStorage(bytes32 _key) external returns (uint);
+  function uintStorage(bytes32 _key) external view returns (uint);
 
-  function stringStorage(bytes32 _key) external  returns (string);
+  function stringStorage(bytes32 _key) external  view returns (string);
 
-  function addressStorage(bytes32 _key) external  returns (address);
+  function addressStorage(bytes32 _key) external  view returns (address);
 
-  function bytesStorage(bytes32 _key) external  returns (bytes);
+  function bytesStorage(bytes32 _key) external view returns (bytes);
 
-  function bytes32Storage(bytes32 _key) external returns (bytes32);
+  function bytes32Storage(bytes32 _key) external view returns (bytes32);
 
-  function boolStorage(bytes32 _key) external returns (bool);
+  function boolStorage(bytes32 _key) external view returns (bool);
 
-  function intStorage(bytes32 _key) external returns (bool);
+  function intStorage(bytes32 _key) external view returns (bool);
 }
 
 
