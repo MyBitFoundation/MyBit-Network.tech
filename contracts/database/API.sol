@@ -1,21 +1,46 @@
 pragma solidity ^0.4.24;
 
-import "../interfaces/DBInterface.sol";
+
 import "../math/SafeMath.sol";
+
+interface TokenView {
+  function totalSupply() external view returns (uint);
+  function balanceOf() external view returns (uint);
+  function valuePerToken() external view returns (uint);
+  function scalingFactor() external view returns (uint);
+  function assetIncome() external view returns (uint);
+}
+
+interface DBView {
+  function uintStorage(bytes32 _key) external view returns (uint);
+
+  function stringStorage(bytes32 _key) external  view returns (string);
+
+  function addressStorage(bytes32 _key) external  view returns (address);
+
+  function bytesStorage(bytes32 _key) external view returns (bytes);
+
+  function bytes32Storage(bytes32 _key) external view returns (bytes32);
+
+  function boolStorage(bytes32 _key) external view returns (bool);
+
+  function intStorage(bytes32 _key) external view returns (bool);
+}
+
 
 contract API{
   using SafeMath for uint256;
 
-  DBInterface private database;
+  DBView private database;
 
   constructor(address _database)
   public {
-    database = DBInterface(_database);
+    database = DBView(_database);
   }
 
 //Crowdsale + assets
   function generateAssetID(address _broker, uint _amountToRaise, bytes32 _operatorID, string _assetURI)
-  external
+  public
   pure
   returns(bytes32) {
     bytes32 assetID = keccak256(abi.encodePacked(_broker, _amountToRaise, _operatorID, _assetURI));
@@ -23,7 +48,7 @@ contract API{
   }
 
   function getAssetID(address _tokenAddress)
-  external
+  public
   view
   returns(bytes32) {
     bytes32 assetID = database.bytes32Storage(keccak256(abi.encodePacked("assetTokenID", _tokenAddress)));
@@ -31,7 +56,7 @@ contract API{
   }
 
   function getAssetAddress(bytes32 _assetID)
-  external
+  public
   view
   returns(address) {
     address assetAddress = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)));
@@ -39,15 +64,33 @@ contract API{
   }
 
   function getAssetFundingToken(bytes32 _assetID)
-  external
+  public
   view
   returns(address) {
     address fundingTokenAddress = database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID)));
     return fundingTokenAddress;
   }
 
+  // IF we decide not to store assetIncome
+  // function getAssetIncome(bytes32 _assetID)
+  // public
+  // view
+  // returns (uint) {
+  //   TokenView asset = TokenView(getAssetAddress(_assetID));
+  //   uint valuePerToken =  asset.valuePerToken();
+  //   return (valuePerToken * (asset.totalSupply())) / asset.scalingFactor();
+  // }
+
+  function getAssetROI(bytes32 _assetID)
+  public
+  view
+  returns (uint) {
+    TokenView assetToken = TokenView(getAssetAddress(_assetID));
+    return (assetToken.assetIncome() * 100) /  assetToken.totalSupply();
+  }
+
   function getAssetFundingGoal(bytes32 _assetID)
-  external
+  public
   view
   returns(uint) {
     uint fundingGoal = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID)));
@@ -55,7 +98,7 @@ contract API{
   }
 
   function getAssetFundingDeadline(bytes32 _assetID)
-  external
+  public
   view
   returns(uint) {
     uint fundingDeadline = database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID)));
@@ -63,7 +106,7 @@ contract API{
   }
 
   function crowdsaleFinalized(bytes32 _assetID)
-  external
+  public
   view
   returns(bool) {
     bool status = database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)));
@@ -71,7 +114,7 @@ contract API{
   }
 
   function getAssetBroker(bytes32 _assetID)
-  external
+  public
   view
   returns(address) {
     address brokerAddress = database.addressStorage(keccak256(abi.encodePacked("broker", _assetID)));
@@ -79,7 +122,7 @@ contract API{
   }
 
   function getAssetBrokerFee(bytes32 _assetID)
-  external
+  public
   view
   returns(uint) {
     uint brokerFee = database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID)));
@@ -87,15 +130,22 @@ contract API{
   }
 
   function getBrokerEscrowID(bytes32 _assetID, address _broker)
-  external
+  public
   pure
   returns(bytes32) {
     bytes32 brokerEscrowID = keccak256(abi.encodePacked(_assetID, _broker));
     return brokerEscrowID;
   }
 
+  function getBrokerEscrow(bytes32 _brokerEscrowID)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _brokerEscrowID)));
+  }
+
   function getBrokerEscrowRemaining(bytes32 _brokerEscrowID)
-  external
+  public
   view
   returns(uint) {
     uint redeemed = getBrokerEscrowRedeemed(_brokerEscrowID);
@@ -112,7 +162,7 @@ contract API{
   }
 
   function getAssetOperator(bytes32 _assetID)
-  external
+  public
   view
   returns(address) {
     address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _assetID)));
@@ -120,7 +170,7 @@ contract API{
   }
 
   function generateOperatorID(string _operatorURI)
-  external
+  public
   pure
   returns(bytes32) {
     bytes32 operatorID = keccak256(abi.encodePacked(_operatorURI));
@@ -128,7 +178,7 @@ contract API{
   }
 
   function getOperatorID(address _operatorAddress)
-  external
+  public
   view
   returns(bytes32) {
     bytes32 operatorID = database.bytes32Storage(keccak256(abi.encodePacked("operator", _operatorAddress)));
@@ -136,7 +186,7 @@ contract API{
   }
 
   function getOperatorAddress(bytes32 _operatorID)
-  external
+  public
   view
   returns(address) {
     address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID)));
@@ -144,7 +194,7 @@ contract API{
   }
 
   function generateOrderID(bytes32 _assetID, address _sender, uint _amount, uint _price, bool _buyOrder)
-  external
+  public
   pure
   returns(bytes32) {
     bytes32 orderID = keccak256(abi.encodePacked(_assetID, _sender, _amount, _price, _buyOrder));
@@ -153,7 +203,7 @@ contract API{
 
 //Platform functions
   function getPlatformToken()
-  external
+  public
   view
   returns(address) {
     address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platformToken")));
@@ -161,7 +211,7 @@ contract API{
   }
 
   function getPlatformWallet()
-  external
+  public
   view
   returns(address) {
     address walletAddress = database.addressStorage(keccak256(abi.encodePacked("platformWallet")));
@@ -169,7 +219,7 @@ contract API{
   }
 
   function getContractAddress(string _contractName)
-  external
+  public
   view
   returns(address) {
     address contractAddress = database.addressStorage(keccak256(abi.encodePacked("contract", _contractName)));
@@ -185,7 +235,7 @@ contract API{
   }
 
   function getUserPermission(address _user)
-  external
+  public
   view
   returns(bool) {
     bool status = database.boolStorage(keccak256(abi.encodePacked(getCurrentState(), _user)));
@@ -193,7 +243,7 @@ contract API{
   }
 
   function getFunctionCost(bytes4 _sig, address _contract)
-  external
+  public
   view
   returns(uint) {
     uint cost = database.uintStorage(keccak256(abi.encodePacked(_sig, _contract)));
@@ -201,7 +251,7 @@ contract API{
   }
 
   function contractPaused(address _contract)
-  external
+  public
   view
   returns(bool) {
     bool status = database.boolStorage(keccak256(abi.encodePacked("paused", _contract)));
@@ -209,7 +259,7 @@ contract API{
   }
 
   function contractOwner(address _account)
-  external
+  public
   view
   returns(bool) {
     bool status = database.boolStorage(keccak256(abi.encodePacked("owner", _account)));

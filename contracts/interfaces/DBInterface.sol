@@ -57,29 +57,36 @@ interface DBInterface {
 
     function uintStorage(bytes32 _key)
     external
+    view
     returns (uint);
 
     function stringStorage(bytes32 _key)
     external
+    view
     returns (string);
 
     function addressStorage(bytes32 _key)
     external
+    view
     returns (address);
 
     function bytesStorage(bytes32 _key)
     external
+    view
     returns (bytes);
 
     function bytes32Storage(bytes32 _key)
     external
+    view
     returns (bytes32);
 
     function boolStorage(bytes32 _key)
     external
+    view
     returns (bool);
 
     function intStorage(bytes32 _key)
     external
+    view
     returns (bool);
 }
