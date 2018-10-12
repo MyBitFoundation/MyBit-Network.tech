@@ -19,6 +19,7 @@ const user2 = web3.eth.accounts[2];
 const user3 = web3.eth.accounts[3];
 const broker = web3.eth.accounts[4];
 const operator = web3.eth.accounts[5];
+const replacementBroker = web3.eth.accounts[6];
 const tokenHolders = [user1, user2, user3];
 
 const ETH = 1000000000000000000;
@@ -30,18 +31,22 @@ contract('AssetGovernance', async() => {
   let cm;
   let operators;
   let platform;
+  let escrow;
   let api;
   let hash;
   let govToken;
   let burnToken;
   let governance;
 
+  let methodID;
+  let parameterHash;
+  let executionID;
   let brokerEscrowID;
   let operatorID;
   let assetID;
   let assetURI = 'https://alocationforassetdetails';
 
-  it('Deploy hash contract', async() => {
+  it('Deploy HashFunctions', async() => {
     hash = await HashFunctions.new();
   });
 
@@ -56,7 +61,8 @@ contract('AssetGovernance', async() => {
   });
 
   it('Deploy asset governance contract', async() => {
-    governance = AssetGovernance.new(db.address);
+    governance = await AssetGovernance.new(db.address);
+    await cm.addContract("AssetGovernance", governance.address);
   });
 
   it("Deploy standard token", async() => {
@@ -146,7 +152,6 @@ contract('AssetGovernance', async() => {
       userBalance = await govToken.balanceOf(tokenHolders[i]);
       assert.equal(userBalance, tokenPerAccount);
     }
-    let currentSupply = await govToken.totalSupply();
     assert.equal(await govToken.balanceOf(owner), 0);
   });
 
@@ -156,5 +161,62 @@ contract('AssetGovernance', async() => {
     assert.equal(brokerBalance, tokenPerAccount);
   });
 
-  // TODO: start voting 
+  it("Vote for Broker to be fired", async() => {
+    await govToken.approve(escrow.address, 10*ETH, {from: replacementBroker});
+    let methodString = "becomeBroker(bytes32, address, uint256, uint256)";
+    methodID = await api.getMethodID(methodString);
+    parameterHash = await api.getBecomeBrokerParameterHash(assetID, broker, replacementBroker, 10*ETH, true);
+    executionID = await api.getExecutionID(escrow.address, assetID, methodID, parameterHash);
+    await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount, {from: user1});
+
+  });
+
+  it("Try to transfer tokens", async() => {
+    let err;
+    //Fail because tokens are locked in vote for firing broker
+    console.log(await api.getNumTokensAvailable(assetID, user1)); 
+    try{
+      await govToken.transfer(user2, tokenPerAccount, {from: user1});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  })
+
+  it("Fail voting again from same user", async() => {
+    let err;
+    //Fail because user already locked all tokens in past vote
+    try{
+      await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount, {from: user1});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  })
+
+
+  it("Fail executing new broker", async() => {
+    let err;
+    let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
+    assert.equal(bn(consensusProgress).lt(50), true);
+    // assert.equal(await govToken.allowance(replacementBroker, escrow.address), 10*ETH);
+    //Fail because consensus is not yet reached
+    try{
+      await escrow.becomeBroker(assetID, broker, 10*ETH, true, {from:replacementBroker});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it("Vote for Broker to be fired with half of tokens", async() => {
+    await govToken.approve(escrow.address, 10*ETH, {from: replacementBroker});
+    let methodString = "becomeBroker(bytes32, address, uint256, uint256)";
+    methodID = await api.getMethodID(methodString);
+    parameterHash = await api.getBecomeBrokerParameterHash(assetID, broker, replacementBroker, 10*ETH, true);
+    assert.equal(tokenPerAccount, ( (tokenPerAccount / 2) + (tokenPerAccount / 2) ));
+    await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount / 2, {from: user2});
+    await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount / 2, {from: user2});
+  });
+
 });
