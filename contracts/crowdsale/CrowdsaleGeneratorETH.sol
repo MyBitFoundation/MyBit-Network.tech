@@ -39,6 +39,7 @@ contract CrowdsaleGeneratorETH {
     address assetAddress = address(new DividendToken(_assetURI, database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleETH")))));   // Gives this contract all new asset tokens
     database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
     uint brokerFee = _amountToRaise.mul(uint(100).mul(scalingFactor).div(uint(100).sub(_brokerPerc)).sub(scalingFactor)).div(scalingFactor);
+    database.setUint(keccak256(abi.encodePacked("brokerFee", assetID)), brokerFee); 
     database.setUint(keccak256(abi.encodePacked("amountToRaise", assetID)), _amountToRaise);
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), assetAddress);
     database.setBytes32(keccak256(abi.encodePacked("assetTokenID", assetAddress)), assetID);

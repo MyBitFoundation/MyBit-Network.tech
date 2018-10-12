@@ -171,19 +171,19 @@ contract('AssetGovernance', async() => {
 
   });
 
-  // TODO: this is failing
-  // it("Try to transfer tokens", async() => {
-  //   let err;
-  //   //Fail because tokens are locked in vote for firing broker
-  //   assert.equal(0, await api.getNumTokensAvailable(assetID, user1));
-  //   assert.equal(await govToken.balanceOf(user1), tokenPerAccount);
-  //   try{
-  //     await govToken.transfer(user2, tokenPerAccount, {from: user1});
-  //   } catch(e){
-  //     err = e;
-  //   }
-  //   assert.notEqual(err, undefined);
-  // })
+
+  it("Try to transfer tokens", async() => {
+    let err;
+    //Fail because tokens are locked in vote for firing broker
+    assert.equal(0, await api.getNumTokensAvailable(assetID, user1));
+    assert.equal(await govToken.balanceOf(user1), tokenPerAccount);
+    try{
+      await govToken.transfer(user2, tokenPerAccount, {from: user1});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  })
 
   it("Fail voting again from same user", async() => {
     let err;

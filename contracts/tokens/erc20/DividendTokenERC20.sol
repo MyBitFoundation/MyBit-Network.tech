@@ -70,24 +70,27 @@ contract DividendTokenERC20 is MintableToken {
     }
 
     function issueDividends(uint _amount)
-    public {
+    public
+    returns (bool){
         require(_amount > 0);
-        erc20.transferFrom(msg.sender, address(this), _amount);
+        require(erc20.transferFrom(msg.sender, address(this), _amount));
         valuePerToken = valuePerToken.add(_amount.mul(scalingFactor).div(supply));
         assetIncome = assetIncome.add(_amount);
         emit LogIncomeReceived(msg.sender, _amount);
+        return true;
     }
 
     // @notice Updates incomeClaimed, sends all wei to the token holder
     function withdraw()
     public
     updateIncomeClaimed(msg.sender)
-    returns (uint _amount) {
-        _amount = incomeClaimed[msg.sender].div(scalingFactor);
+    returns (bool) {
+        uint amount = incomeClaimed[msg.sender].div(scalingFactor);
         delete incomeClaimed[msg.sender];
-        assetIncomeIssued = assetIncomeIssued.add(_amount);
-        erc20.transfer(msg.sender, _amount);
-        emit LogIncomeCollected(msg.sender, _amount);
+        assetIncomeIssued = assetIncomeIssued.add(amount);
+        require(erc20.transfer(msg.sender, amount));
+        emit LogIncomeCollected(msg.sender, amount);
+        return true;
     }
 
     //In case a user transferred a token directly to this contract
