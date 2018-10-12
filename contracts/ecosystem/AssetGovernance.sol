@@ -1,105 +1,110 @@
 pragma solidity 0.4.24;
 
 import "../math/SafeMath.sol";
-import "../interfaces/DBInterface.sol";
-import "../interfaces/GovToken.sol";
 interface Burner { function burnEscrow(bytes32 _assetID) external returns (bool); }
 interface Escrow { function unlockEscrow(bytes32 _assetID) external returns (bool); }
-
-
+interface DB {
+  function addressStorage(bytes32 _key) external  view returns (address);
+  function uintStorage(bytes32 _key) external view returns (uint);
+  function setUint(bytes32 _key, uint _value) external;
+}
+interface TokenView {
+  function totalSupply() external view returns (uint);
+  function balanceOf(address _tokenHolder) external view returns (uint);
+}
 
 // @title A contract to manage the governance of assets on the platform
 // @author Kyle Dewhurst, MyBit Foundation
 // @notice All token holders of an asset can vote here
+// TODO: don't need to store numTokensLocked for asset  (duplicate of totalVotes(assetID))
 contract AssetGovernance {
   using SafeMath for uint256;
 
-  DBInterface public database; 
+  DB public database;
 
 
   constructor(address _database)
-  public { 
-    database = DBInterface(_database); 
+  public {
+    database = DB(_database);
   }
 
-  // @notice initiates voting capabilities 
-  function initiateGovernance(bytes32 _assetID)
-  validAsset(_assetID)
-  external 
-  returns (bool) { 
-    // need to store an _assetID => tokenAddress reference to restrict transfers while voting 
-    GovToken assetToken = GovToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-    database.setBytes32(keccak256(abi.encodePacked("assetTokenID", address(assetToken))), _assetID); 
-    return true; 
-  }
 
-  // @param (bytes32) _parameterHash = The hash of the exact parameter to be called for function...ie sha3(_assetID) or sha3(_assetID, someAddress)
-  function voteForExecution(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash, uint _amount)
-  external 
+  // @param (bytes32) _parameterHash = The hash of the exact parameter to be called for function...
+  // @dev ie sha3(_assetID) or sha3(_assetID, someAddress)
+  function voteForExecution(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash, uint _amountToLock)
+  external
   validAsset(_assetID)
   returns (bool) {
-    GovToken assetToken = GovToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-    bytes32 executionID = keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash)); 
-    bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", executionID)); 
-    bytes32 userVotesID = keccak256(abi.encodePacked("userVotes", executionID, msg.sender)); 
+    bytes32 executionID = keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash));
+    bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", executionID));
+    bytes32 userVotesID = keccak256(abi.encodePacked("userVotes", executionID, msg.sender));
     uint256 numVotes = database.uintStorage(numVotesID);
-    uint256 userVotes = database.uintStorage(userVotesID); 
-    require(lockTokens(_assetID, msg.sender, _amount)); 
-    database.setUint(numVotesID, numVotes.add(_amount)); 
-    database.setUint(userVotesID, userVotes.add(_amount)); 
-    return true; 
+    uint256 userVotes = database.uintStorage(userVotesID);
+    require(lockTokens(_assetID, msg.sender, _amountToLock));
+    database.setUint(numVotesID, numVotes.add(_amountToLock));
+    database.setUint(userVotesID, userVotes.add(_amountToLock));
+    return true;
   }
 
 
   // @notice unlock tokens, removing them from the vote
   // @dev _executionID should be looked up in event logs. it is equal to sha3(_assetID, _methodID, _parameterHash)
-  function unlockToken(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash, uint _amount)
-  external 
+  function unlockToken(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash, uint _amountToUnlock)
+  external
   validAsset(_assetID)
-  returns (bool) { 
-    GovToken assetToken = GovToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-    bytes32 executionID = keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash)); 
-    bytes32 lockedTokensID = keccak256(abi.encodePacked("tokensLocked", _assetID)); 
-    bytes32 userVotesID = keccak256(abi.encodePacked("userVotes", executionID)); 
-    uint amountLocked = database.uintStorage(lockedTokensID); 
+  returns (bool) {
+    bytes32 executionID = keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash));
+    bytes32 voteTotalID = keccak256(abi.encodePacked("voteTotal", executionID));
+    bytes32 userVotesID = keccak256(abi.encodePacked("userVotes", executionID));
     uint userVotes = database.uintStorage(userVotesID);
-    uint totalVotes = database.uintStorage(keccak256(abi.encodePacked("voteTotal", executionID)));
-    require(userVotes <= _amount);   // 1 vote = 1 token
-    database.setUint(keccak256(abi.encodePacked("voteTotal", executionID)), totalVotes.sub(_amount)); 
-    database.setUint(lockedTokensID, amountLocked.sub(_amount)); 
-    database.setUint(userVotesID, userVotes.sub(_amount)); 
-    return true; 
-  }
-
-  // @notice lock asset tokens to be able to vote 
-  function lockTokens(bytes32 _assetID, address _user, uint _amount)
-  internal
-  returns (bool) { 
-    GovToken assetToken = GovToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", _assetID))); 
-    require(_amount <= assetToken.balanceOf(_user).sub(amountLocked)); 
-    database.setUint(keccak256(abi.encodePacked("tokensLocked", address(assetToken))), amountLocked.add(_amount)); 
+    uint totalVotes = database.uintStorage(voteTotalID);
+    require(userVotes <= _amountToUnlock);   // 1 vote = 1 token
+    database.setUint(voteTotalID, totalVotes.sub(_amountToUnlock));
+    database.setUint(userVotesID, userVotes.sub(_amountToUnlock));
     return true;
   }
-  
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                            Public Functions
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // @notice  Checks that 1/3 or more of token holders agreed on function call
   function isConsensusReached(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash)
-  public 
-  view 
-  returns (bool) { 
-    GovToken assetToken = GovToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-    bytes32 executionID = keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash)); 
+  public
+  view
+  returns (bool) {
+    TokenView assetToken = TokenView(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+    bytes32 executionID = keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash));
     bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", executionID));
-    uint256 numTokens = assetToken.totalSupply(); 
-    return database.uintStorage(numVotesID).mul(100).div(numTokens) >= 33; 
+    uint256 numTokens = assetToken.totalSupply();
+    return database.uintStorage(numVotesID).mul(100).div(numTokens) >= 33;
   }
 
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                            Internal Functions
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // @notice lock asset tokens to be able to vote
+  // @dev keeps track of how many assetTokens this user has locked (for GovernedToken checks)
+  function lockTokens(bytes32 _assetID, address _user, uint _amount)
+  internal
+  returns (bool) {
+    TokenView assetToken = TokenView(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+    uint numTokensLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", _assetID, _user)));
+    require(_amount <= assetToken.balanceOf(_user).sub(numTokensLocked));
+    database.setUint(keccak256(abi.encodePacked("tokensLocked", _assetID, _user)), numTokensLocked.add(_amount));
+    return true;
+  }
+
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                            Modifiers
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   // @notice add this modifer to functions that you want multi-sig requirements for
   // @dev function can only be called after at least n >= quorumLevel owners have agreed to call it
-  modifier hasConsensus(bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash) { 
+  modifier hasConsensus(bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash) {
     require(isConsensusReached(address(this), _assetID, _methodID, _parameterHash));   // owners must have agreed on function + parameters
     _;
   }
@@ -114,9 +119,9 @@ contract AssetGovernance {
   // TODO: Possibly create functionality to mint more tokens to cover repair costs
   //       -------> would need to restructure minting authority
   // function mintTokens(bytes32 _assetID)
-  // external 
-  // returns (bool) { 
-  //   return true; 
+  // external
+  // returns (bool) {
+  //   return true;
   // }
 
 }

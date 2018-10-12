@@ -22,18 +22,45 @@ contract BrokerAssets {
     database = DBInterface(_database);
   }
 
+  function withdraw(bytes32 _assetID)
+  external
+  returns (bool) {
+    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))));
+    DToken token = DToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+    require(address(token) != address(0));
+    uint amountOwed;
+    uint balanceBefore;
+    if (token.getERC20() == address(0)){
+      balanceBefore = address(this).balance;
+      amountOwed = token.getAmountOwed(address(this));
+      require(amountOwed > 0);
+      uint balanceAfter = balanceBefore.add(amountOwed);
+      require(token.withdraw());
+      require(address(this).balance == balanceAfter);
+      msg.sender.transfer(amountOwed);
+    }
+    else {
+      amountOwed = token.getAmountOwed(address(this));
+      require(amountOwed > 0);
+      balanceBefore = token.balanceOf(address(this));
+      require(token.withdraw());
+      require(token.balanceOf(address(this)).sub(amountOwed) == balanceBefore);
+      token.transfer(msg.sender, amountOwed);
+    }
+    return true;
+  }
 
   function retrieveBrokerTokens(bytes32[] _assetID)
   external
   returns (bool) {
     require(_assetID.length < 50);
+    uint[] memory payoutAmounts = new uint[](_assetID.length);
+    address[] memory tokenAddresses = new address[](_assetID.length);
+    uint8 numEntries;
     for(uint8 i = 0; i < _assetID.length; i++){
       require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("broker", _assetID[i]))) );
       DToken token = DToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID[i]))));
       require(address(token) != address(0));
-      uint[] memory payoutAmounts = new uint[](_assetID.length);
-      address[] memory tokenAddresses = new address[](_assetID.length);
-      uint8 numEntries;
       uint tokensOwed = token.getAmountOwed(address(this));
       require(tokensOwed > 0);
       uint balanceBefore = token.balanceOf(address(this));
@@ -45,7 +72,7 @@ contract BrokerAssets {
         numEntries++;
       }
       require(token.withdraw());
-      require(token.balanceOf(address(this)).sub(tokensOwed) == balanceBefore);
+      // require(token.balanceOf(address(this)).sub(tokensOwed) == balanceBefore);
     }
 
     for(i = 0; i <= numEntries; i++){

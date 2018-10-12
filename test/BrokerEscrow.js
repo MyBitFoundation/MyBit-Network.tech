@@ -29,11 +29,12 @@ contract('Broker Escrow', async() => {
   let api;
   let hash;
   let escrow;
-  let assetID;
-  let brokerEscrowID;
   let platform;
   let operators;
+
+  let brokerEscrowID;
   let operatorID;
+  let assetID;
   let assetURI = 'NewAsset';
 
   it('Deploy hash contract', async() => {
