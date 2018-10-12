@@ -76,8 +76,10 @@
     // @dev new broker must approve this contract to transfer in and lock _ amount of platform tokens
     function becomeBroker(bytes32 _assetID, address _oldBroker, uint _amount, bool _burn)
     external
-    hasConsensus(_assetID, msg.sig, keccak256(abi.encodePacked(_assetID, _oldBroker, _amount, _burn)))
+    hasConsensus(_assetID, msg.sig, keccak256(abi.encodePacked(_assetID, _oldBroker, msg.sender, _amount, _burn)))
     returns (bool) {
+      address currentBroker = database.addressStorage(keccak256(abi.encodePacked("broker", _assetID)));
+      require(currentBroker != msg.sender && currentBroker == _oldBroker);
       bytes32 brokerEscrowID = keccak256(abi.encodePacked(_assetID, _oldBroker));
       uint oldEscrowRemaining = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", brokerEscrowID))).sub(database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", brokerEscrowID))));
       BurnableERC20 token = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));

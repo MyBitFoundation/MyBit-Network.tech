@@ -5,7 +5,7 @@ import "../math/SafeMath.sol";
 
 interface TokenView {
   function totalSupply() external view returns (uint);
-  function balanceOf() external view returns (uint);
+  function balanceOf(address _user) external view returns (uint);
   function valuePerToken() external view returns (uint);
   function scalingFactor() external view returns (uint);
   function assetIncome() external view returns (uint);
@@ -28,7 +28,7 @@ interface DBView {
 }
 
 
-contract API{
+contract API {
   using SafeMath for uint256;
 
   DBView private database;
@@ -38,7 +38,84 @@ contract API{
     database = DBView(_database);
   }
 
-//Crowdsale + assets
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                            Governance + Function ID's
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+  // @notice returns the amount of tokens unlocked and free to spend for _ser
+  function getNumTokensAvailable(bytes32 _assetID, address _user)
+  public
+  view
+  returns (uint) {
+    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", _assetID, _user)));
+    address assetToken = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)));
+    uint balance = TokenView(assetToken).balanceOf(_user);
+    return balance.sub(amountLocked);
+  }
+
+  function getUserVotes(bytes32 _executionID, address _user)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256(abi.encodePacked("userVotes", _executionID, _user)));
+  }
+
+  function getTotalVotes(bytes32 _executionID)
+  public
+  view
+  returns (uint) {
+  return database.uintStorage(keccak256(abi.encodePacked("voteTotal", _executionID)));
+  }
+
+  function getCurrentConsensus(bytes32 _executionID, address _assetToken)
+  public
+  view
+  returns (uint) {
+    uint totalVotes = getTotalVotes(_executionID);
+    return (totalVotes * 100) / TokenView(_assetToken).totalSupply();
+  }
+
+  function getBecomeBrokerParameterHash(bytes32 _assetID, address _oldBroker, address _newBroker, uint _amount, bool _burn)
+  public
+  pure
+  returns (bytes32){
+    return keccak256(abi.encodePacked(_assetID, _oldBroker, _newBroker, _amount, _burn));
+  }
+
+  function getExecutionID(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash)
+  public
+  pure
+  returns (bytes32) {
+    return keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash));
+  }
+
+  function getMethodID(string _functionString)
+  public
+  pure
+  returns (bytes4) {
+    return bytes4(keccak256(abi.encodePacked(_functionString)));
+  }
+
+  function getAssetID(address _broker, string _assetURI, uint _amountToRaise, bytes32 _operatorID)
+  public
+  pure
+  returns(bytes32) {
+    return keccak256(abi.encodePacked(_broker, _amountToRaise, _operatorID, _assetURI));
+  }
+
+  function getOrderID(bytes _assetID, address _user, uint _amount, uint _price, bool _buyOrder)
+  external
+  pure
+  returns(bytes32) {
+    return keccak256(abi.encodePacked(_assetID, _user, _amount, _price, _buyOrder));
+  }
+
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                        Crowdsale and Assets
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   function generateAssetID(address _broker, uint _amountToRaise, bytes32 _operatorID, string _assetURI)
   public
   pure
@@ -112,6 +189,11 @@ contract API{
     bool status = database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)));
     return status;
   }
+
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                        Broker and Operator
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   function getAssetBroker(bytes32 _assetID)
   public
@@ -193,6 +275,10 @@ contract API{
     return operatorAddress;
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                        Stakeholders
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   function generateOrderID(bytes32 _assetID, address _sender, uint _amount, uint _price, bool _buyOrder)
   public
   pure
@@ -201,6 +287,10 @@ contract API{
     return orderID;
   }
 
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                        Platform and Contract State
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Platform functions
   function getPlatformToken()
   public
@@ -257,6 +347,10 @@ contract API{
     bool status = database.boolStorage(keccak256(abi.encodePacked("paused", _contract)));
     return status;
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                        Ownership
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   function contractOwner(address _account)
   public
