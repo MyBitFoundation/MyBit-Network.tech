@@ -118,7 +118,6 @@ contract('AssetGovernance', async() => {
     assert.equal(diff, 2*ETH);
   });
 
-
   it("Finish funding", async() => {
     let finishHash = await hash.stringBytes('crowdsaleFinalized', assetID);
     await db.setBool(finishHash, true);
@@ -135,9 +134,11 @@ contract('AssetGovernance', async() => {
 
   it("Set asset variables", async() => {
     let tokenHash = await hash.stringBytes("tokenAddress", assetID);
+    let tokenIDHash = await hash.stringAddress("assetTokenID", govToken.address);
     let brokerHash = await hash.stringBytes("broker", assetID);
     let operatorHash = await hash.stringBytes("operator", assetID);
     await db.setAddress(tokenHash, govToken.address);
+    await db.setBytes32(tokenIDHash, assetID);
     await db.setAddress(brokerHash, broker);
     await db.setAddress(operatorHash, operator);
   });
@@ -168,9 +169,7 @@ contract('AssetGovernance', async() => {
     executionID = await api.getExecutionID(escrow.address, assetID, methodID, parameterHash);
     await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount, {from: user1});
     await govToken.approve(escrow.address, 10*ETH, {from: replacementBroker});
-
   });
-
 
   it("Try to transfer tokens", async() => {
     let err;

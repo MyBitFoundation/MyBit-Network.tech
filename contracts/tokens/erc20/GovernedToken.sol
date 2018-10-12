@@ -48,8 +48,9 @@ contract GovernedToken is DividendToken {
   returns (uint) {
     bytes32 assetID = database.bytes32Storage(keccak256(abi.encodePacked("assetTokenID", address(this))));
     uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", assetID, _user)));
-    return super.balanceOf(_user).sub(amountLocked);
+    uint balance = balances[_user];
+    uint available = balance.sub(amountLocked);
+    return available;
   }
-
 
 }
