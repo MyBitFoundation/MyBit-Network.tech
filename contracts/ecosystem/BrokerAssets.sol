@@ -67,7 +67,7 @@ contract BrokerAssets {
       uint8 tokenIndex = containsAddress(tokenAddresses, address(token));
       if (tokenIndex < _assetID.length) {  payoutAmounts[tokenIndex] = payoutAmounts[tokenIndex].add(tokensOwed); }
       else {
-        tokenAddresses[numEntries] = address(token);
+        tokenAddresses[numEntries] = token.getERC20();
         payoutAmounts[numEntries] = tokensOwed;
         numEntries++;
       }
@@ -75,8 +75,8 @@ contract BrokerAssets {
       // require(token.balanceOf(address(this)).sub(tokensOwed) == balanceBefore);
     }
 
-    for(i = 0; i <= numEntries; i++){
-      require(DToken(tokenAddresses[i]).transfer(msg.sender, payoutAmounts[i]));
+    for(i = 0; i < numEntries; i++){
+      require(ERC20(tokenAddresses[i]).transfer(msg.sender, payoutAmounts[i]));
     }
     return true;
   }
