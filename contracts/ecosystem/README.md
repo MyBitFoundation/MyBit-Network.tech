@@ -1,4 +1,4 @@
-#Ecosystem
+# Ecosystem
 
 ## Contracts
 
@@ -12,4 +12,4 @@ Anyone from the ecosystem can on-board an already existing asset here. The Asset
 PlatformFunds lets the platform owners set the platform token and platform wallet where the owner(s) receives their share of the crowdsale income.
 
 ### Staking
-Staking allows an assetManager to borrow MYB to be put up as escrow. This functionality hasn't been implemented yet.
+Staking allows an AssetManager to borrow MYB to be put up as escrow. This functionality hasn't been implemented yet.
