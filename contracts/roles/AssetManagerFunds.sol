@@ -12,7 +12,10 @@ interface DToken {
   function getERC20() external  view returns (address);
 }
 
-contract BrokerAssets {
+// @title A dividend-token holding contract that locks tokens and retrieves dividends for assetManagers
+// @notice This contract receives newly minted tokens and retrieves Ether or ERC20 tokens received from the asset
+// @dev Tokens
+contract AssetManagerFunds {
   using SafeMath for uint256;
 
   DBInterface public database;
@@ -25,7 +28,7 @@ contract BrokerAssets {
   function withdraw(bytes32 _assetID)
   external
   returns (bool) {
-    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))));
+    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))));
     DToken token = DToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
     require(address(token) != address(0));
     uint amountOwed;
@@ -50,7 +53,7 @@ contract BrokerAssets {
     return true;
   }
 
-  function retrieveBrokerTokens(bytes32[] _assetID)
+  function retrieveAssetManagerTokens(bytes32[] _assetID)
   external
   returns (bool) {
     require(_assetID.length < 50);
@@ -58,21 +61,22 @@ contract BrokerAssets {
     address[] memory tokenAddresses = new address[](_assetID.length);
     uint8 numEntries;
     for(uint8 i = 0; i < _assetID.length; i++){
-      require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("broker", _assetID[i]))) );
+      require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID[i]))) );
       DToken token = DToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID[i]))));
       require(address(token) != address(0));
       uint tokensOwed = token.getAmountOwed(address(this));
       require(tokensOwed > 0);
-      uint balanceBefore = token.balanceOf(address(this));
+      DToken fundingToken = DToken(token.getERC20());
+      uint balanceBefore = fundingToken.balanceOf(address(this));
       uint8 tokenIndex = containsAddress(tokenAddresses, address(token));
       if (tokenIndex < _assetID.length) {  payoutAmounts[tokenIndex] = payoutAmounts[tokenIndex].add(tokensOwed); }
       else {
-        tokenAddresses[numEntries] = token.getERC20();
+        tokenAddresses[numEntries] = address(fundingToken);
         payoutAmounts[numEntries] = tokensOwed;
         numEntries++;
       }
       require(token.withdraw());
-      // require(token.balanceOf(address(this)).sub(tokensOwed) == balanceBefore);
+      require(fundingToken.balanceOf(address(this)).sub(tokensOwed) == balanceBefore);
     }
 
     for(i = 0; i < numEntries; i++){
@@ -82,13 +86,13 @@ contract BrokerAssets {
   }
 
 
-  function retrieveBrokerETH(bytes32[] _assetID)
+  function retrieveAssetManagerETH(bytes32[] _assetID)
   external
   returns (bool) {
     require(_assetID.length < 50);
     uint weiOwed;
     for(uint8 i = 0; i < _assetID.length; i++){
-      require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("broker", _assetID[i]))));
+      require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID[i]))));
       DToken token = DToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID[i]))));
       uint balanceBefore = address(this).balance;
       uint amountOwed = token.getAmountOwed(address(this));

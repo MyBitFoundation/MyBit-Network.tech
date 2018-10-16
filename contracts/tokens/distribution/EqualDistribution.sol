@@ -1,13 +1,12 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 import '../../math/SafeMath.sol';
 import '../../interfaces/PullPayment.sol';
 
 // @title A contract made to equally distribute payments amongs a list of beneficiaries
-// @author Kyle Dewhurst, MyBit Foundation
+// @author Kyle Dewhurst & Peter Phillips MyBit Foundation
 // @notice This contract allows someone to leave ETH for a beneficiary
 // @notice assumes each beneficiary receives equal amount
-// TODO: Test for rounding errors
 contract EqualDistribution {
   using SafeMath for uint;
 

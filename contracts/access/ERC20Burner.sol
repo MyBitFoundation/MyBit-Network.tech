@@ -15,11 +15,11 @@ contract ERC20Burner {
 
   // @notice constructor: initializes database and the MYB token
   // @param: the address for the database contract used by this platform
-  // @param (address) _myBitTokenAddress = The MyBit token address
   constructor(address _database)
   public {
     database = DBInterface(_database);
     token = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
+    require(address(token) != address(0));
   }
 
   // @notice authorized contracts can burn mybit tokens here if the user has approved this contract to do so
@@ -33,14 +33,6 @@ contract ERC20Burner {
     require(token.burnFrom(_tokenHolder, _amount));
     emit LogMYBBurned(_tokenHolder, msg.sender, _amount);
     return true;
-  }
-
-  function givePermission()
-  external
-  returns (bool) {
-   bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));
-   database.setBool(keccak256(abi.encodePacked(currentState, msg.sender)), true);
-   return true;
   }
 
   // @notice owners can set the cost of functionality on the platform here.

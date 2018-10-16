@@ -1,4 +1,4 @@
-  pragma solidity ^0.4.24;
+  pragma solidity 0.4.24;
 
   import "../math/SafeMath.sol";
   import "../database/Database.sol";
@@ -7,9 +7,9 @@
 
 
 
-  // @title A contract for investors to loan ERC20 tokens to brokers who require escrow
+  // @title A contract for investors to loan ERC20 tokens to assetManagers who require escrow
   // @author Kyle Dewhurst, MyBit Foundation
-  // @notice Broker can lock his escrow in this contract and retrieve it if asset funding fails or successfully returns ROI
+  // @notice AssetManager can lock his escrow in this contract and retrieve it if asset funding fails or successfully returns ROI
   contract Staking {
 
     Database public database;
@@ -20,7 +20,7 @@
       database = Database(_database);
     }
 
-    // @notice broker can request for a staker to lend tokens to cover escrow
+    // @notice AssetManager can request for a staker to lend tokens to cover escrow
     function requestStaking(string _tokenURI, bytes32 _assetID, uint _amount, uint _sharePercentage)
     external
     returns (bool) {
@@ -41,6 +41,7 @@
       MintableDistribution distributionToken = MintableDistribution(database.addressStorage(keccak256(abi.encodePacked("stakingMint", _assetID))));
       bytes32 finalAgreement = keccak256(abi.encodePacked(msg.sender, agreementHash));
       database.setBytes32(_assetID, finalAgreement);
+      require(stakingToken.transfer(_requester, _amount));
       require(distributionToken.mint(msg.sender, _amount));
       require(distributionToken.finishMinting());
       return true;

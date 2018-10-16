@@ -1,17 +1,13 @@
 pragma solidity ^0.4.24;
 
 
-// ---------------------------------------------------------------------------------
 // @title A shared storage contract for platform contracts to store and retrieve data
 // @notice This contract holds all long-term data for smart-contract systems
 // @dev The bytes32 hashes are derived from keccak256(variableName, uniqueID) => value
 // @dec Can enable upgradeable contracts by setting a contract manager
-// ---------------------------------------------------------------------------------
 contract Database{
 
-    // --------------------------------------------------------------------------------------
     // Storage Variables
-    // --------------------------------------------------------------------------------------
     mapping(bytes32 => uint) public uintStorage;
     mapping(bytes32 => string) public stringStorage;
     mapping(bytes32 => address) public addressStorage;
@@ -22,10 +18,8 @@ contract Database{
 
 
 
-    // --------------------------------------------------------------------------------------
     // @notice Constructor: Sets the owners of the platform
     // @dev Owners must set the contract manager to add more contracts
-    // --------------------------------------------------------------------------------------
     constructor(address[] _owners, bool _upgradeable) public {
       for(uint i=0; i<_owners.length; i++){
         boolStorage[keccak256(abi.encodePacked("owner", _owners[i]))] = true;
@@ -37,10 +31,8 @@ contract Database{
     }
 
 
-    // --------------------------------------------------------------------------------------
     // @notice ContractManager will be the only contract that can add/remove contracts on the platform.
     // @param (address) _contractManager is the contract which can upgrade/remove contracts to platform
-    // --------------------------------------------------------------------------------------
     function enableContractManagement(address _contractManager)
     external {
         require(boolStorage[keccak256("upgradeable")]);
@@ -51,10 +43,7 @@ contract Database{
         boolStorage[keccak256(abi.encodePacked("contract", _contractManager))] = true;
     }
 
-    // --------------------------------------------------------------------------------------
-    //  Storage functions
-    // --------------------------------------------------------------------------------------
-
+    // @notice Storage functions
     function setAddress(bytes32 _key, address _value)
     onlyApprovedContract
     external {
@@ -98,10 +87,7 @@ contract Database{
     }
 
 
-    // --------------------------------------------------------------------------------------
     // Deletion functions: Can alternatively use setter functions and set to null value (ie. uint = 0)
-    // --------------------------------------------------------------------------------------
-
     function deleteAddress(bytes32 _key)
     onlyApprovedContract
     external {
@@ -145,17 +131,18 @@ contract Database{
     }
 
 
+    // --------------------------------------------------------------------------------------
+    //                                     Modifiers
+    // --------------------------------------------------------------------------------------
 
-    // --------------------------------------------------------------------------------------
     // Caller must be registered as a contract through ContractManager.sol
-    // --------------------------------------------------------------------------------------
     modifier onlyApprovedContract() {
         require(boolStorage[keccak256(abi.encodePacked("contract", msg.sender))]);
         _;
     }
 
     // --------------------------------------------------------------------------------------
-    // Events
+    //                                     Events
     // --------------------------------------------------------------------------------------
     event LogInitialized(address _owner, bool _upgradeable);
 }

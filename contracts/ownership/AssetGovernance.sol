@@ -16,7 +16,6 @@ interface TokenView {
 // @title A contract to manage the governance of assets on the platform
 // @author Kyle Dewhurst, MyBit Foundation
 // @notice All token holders of an asset can vote here
-// TODO: don't need to store numTokensLocked for asset  (duplicate of totalVotes(assetID))
 contract AssetGovernance {
   using SafeMath for uint256;
 
@@ -115,12 +114,4 @@ contract AssetGovernance {
     _;
   }
 
-
-  // TODO: Possibly create functionality to mint more tokens to cover repair costs
-  //       -------> would need to restructure minting authority
-  // function mintTokens(bytes32 _assetID)
-  // external
-  // returns (bool) {
-  //   return true;
-  // }
 }

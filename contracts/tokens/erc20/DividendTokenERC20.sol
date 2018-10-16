@@ -7,8 +7,8 @@ import '../../interfaces/ApproveAndCallFallback.sol';
 
 // @title ERC20 token contract with shared revenue distribution functionality.
 // @notice This token contract can receive ERC20 tokens as payments and token owners receive their share when transferring tokens.
+// @author Kyle Dewhurst & Peter Phillips, MyBit Foundation
 // Credit goes to Nick Johnson for the dividend token https://medium.com/@weka/dividend-bearing-tokens-on-ethereum-42d01c710657
-// TODO: Suicide function
 contract DividendTokenERC20 is MintableToken {
     using SafeMath for uint;
 

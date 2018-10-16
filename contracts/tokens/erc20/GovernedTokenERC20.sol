@@ -1,171 +1,61 @@
 pragma solidity 0.4.24;
 
 import "./DividendTokenERC20.sol";
-import "../../ecosystem/BrokerAssets.sol";
+import "../../math/SafeMath.sol";
 
+// @notice give GovernedToken access to view uint and bytes32 storage
+interface DBAccess {
+  function uintStorage(bytes32 _key) external view returns (uint);
+  function bytes32Storage(bytes32 _key) external view returns (bytes32);
+}
+
+// @title A Dividend token that has governance features and receives ERC20 tokens as payment
+// @notice This token contract can receive ERC20 tokens as payments and token owners can lock tokens while submitting votes
+// @author Kyle Dewhurst & Peter Phillips, MyBit Foundation
+// @dev Dividend tokens aren't actually locked, but restricted from transferring to avoid locking contravt having to distribute dividends.
 contract GovernedTokenERC20 is DividendTokenERC20{
-//   BrokerAssets brokerAssets;
-//   BrokerEscrow brokerEscrow;
-//   bytes32 assetID;
+  DBAccess public database;
 
-//   mapping(address => uint) public amountLocked;
-//   mapping(address => uint) public timeFree;
-//   uint public totalLocked;
 
-//   uint public lockTime = 15724800; //6 months - time that tokens are locked, time is reset each vote
-//   uint public voteTime = 1209600; //2 weeks - time votes last for
-//   uint public voteBreak = 2419200; //4 weeks - enforce time between voting sessions, no spamming
+  // @notice constructor: initializes database and DividendTokenERC20
+  // @param (address) _database = the address of the platform database
+  // @param (string) _tokenURI = The URI where details of the token (asse) can be found
+  // @param (address) _owner = The minting authority for this token
+  // @param (address) _erc20Address = The address of the erc20 token to be sent for dividends
+  constructor(address _database, string _tokenURI, address _owner, address _erc20Address)
+  public
+  DividendTokenERC20(_tokenURI, _owner, _erc20Address){
+    database = DBAccess(_database);
+  }
 
-//   struct Vote{
-//     uint public aye,
-//     uint public nay,
-//     uint public voteEnd,
-//     uint public referenceAddress
-//   }
+  // @notice Standard DividendToke transfer function, which checks for locked tokens before sending
+  function transfer(address _to, uint _amount)
+  public
+  returns (bool success) {
+      require(_amount <= getAmountAvailable(msg.sender));
+      super.transfer(_to, _amount);
+      return true;
+  }
 
-//   mapping(bytes4 => Vote) public votes;
+  // @notice Standard DividendToke transferFrom function, which checks for locked tokens before sending
+  function transferFrom(address _from, address _to, uint _amount)
+  public
+  returns (bool success) {
+      require(_amount <= getAmountAvailable(_from));
+      super.transferFrom(_from, _to, _amount);
+      return true;
+  }
 
-//   // @notice constructor: initialized
-//   constructor(string _tokenURI, address _owner, bytes32 _assetID, address _brokerAssets, address _brokerEscrow)
-//   public
-//   DividendToken(_tokenURI, _owner){
-//     assetID = _assetID;
-//     brokerAssets = BrokerAssets(_brokerAssets);
-//     brokerEscrow = BrokerEscrow(_brokerEscrow)
-//   }
+  // @notice returns the amount of tokens _investor has locked for this asset
+  function getAmountAvailable(address _investor)
+  public
+  view
+  returns (uint) {
+    bytes32 assetID = database.bytes32Storage(keccak256(abi.encodePacked("assetTokenID", address(this))));
+    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", assetID, _investor)));
+    uint balance = balances[_investor];
+    uint available = balance.sub(amountLocked);
+    return available;
+  }
 
-//   // @notice Person who initiates vote simultaneously vote Aye using the _amount of tokens stipulated
-//   function initiateBrokerChange(uint _amount, address _newBrokerAddress)
-//   notVoting(msg.sig)
-//   confirmLock(_amount)
-//   external
-//   returns(bytes4){
-//     bytes4 voteID = msg.sig;
-//     votes[voteID].voteEnd = now + voteTime;
-//     votes[voteID].aye = _amount;
-//     votes[voteID].nay = 0;
-//     votes[voteID].referenceAddress = _newBrokerAddress;
-//     return voteID;
-//   }
-
-//   // @notice Person who initiates vote simultaneously vote Aye using the _amount of tokens stipulated
-//   function initiateEscrowBurn(uint _amount)
-//   notVoting(msg.sig)
-//   confirmLock(_amount)
-//   external
-//   returns(bytes4){
-//     bytes4 voteID = msg.sig;
-//     votes[voteID].voteEnd = now + voteTime;
-//     votes[voteID].aye = _amount;
-//     votes[voteID].nay = 0;
-//     return voteID;
-//   }
-
-//   function triggerBrokerChange(bytes4 _voteID)
-//   confirmSuccess(_voteID)
-//   external
-//   returns (bool){
-//     require(_voteID == ''); //Prevent someone passing a different type of vote that has passed
-//     brokerAssets.changeBroker(assetID, votes[voteID].referenceAddress);
-//     return true;
-//   }
-
-//   function triggerEscrowBurn(bytes4 _voteID)
-//   confirmSuccess(_voteID)
-//   external
-//   returns (bool){
-//     require(_voteID == ''); //Prevent someone passing a different type of vote that has passed
-//     brokerEscrow.burnEscrow(assetID);
-//     return true;
-//   }
-
-//   function voteAye(bytes4 _voteID, uint _amount)
-//   voting(_voteID)
-//   confirmLock(_amount)
-//   external
-//   returns(bool){
-//     votes[voteID].aye += _amount;
-//   }
-
-//   function voteNay(bytes4 _voteID, uint _amount)
-//   voting(_voteID)
-//   confirmLock(_amount)
-//   external
-//   returns(bool){
-//     votes[voteID].nay += _amount;
-//   }
-
-//   function lockTokens(uint _amount)
-//   private{
-//     require(_amount <= balances[msg.sender]);
-//     totalLocked -= amountLocked[msg.sender];
-//     amountLocked[msg.sender] = _amount;
-//     totalLocked += _amount;
-//     updateLockTime();
-//   }
-
-//   function unlockTokens()
-//   private {
-//     require(timeFree[msg.sender] < now, 'Tokens are still locked');
-//     totalLocked -= amountLocked[msg.sender];
-//     amountLocked[msg.sender] = 0;
-//   }
-
-//   function updateLockTime()
-//   private{
-//     timeFree[msg.sender] = now + lockTime;
-//   }
-
-//   //Restrict transfers on locked tokens
-//   function transfer(address _to, uint _amount)
-//   restrictLockedTokens
-//   public
-//   returns (bool success) {
-//       super.transfer(_to, _amount);
-//       return true;
-//   }
-
-//   function transferFrom(address _from, address _to, uint _amount)
-//   public
-//   restrictLockedTokens
-//   returns (bool success) {
-//       super.transferFrom(_from, _to, _amount);
-//       return true;
-//   }
-
-//   modifier restrictLockedTokens(amount){
-//     // @notice If the user has enough tokens not locked, the tranfer continues as normal.
-//     //         Otherwise, we attempt to unlock the tokens
-//     if((balances[msg.sender] - amountLocked[msg.sender]) < amount){
-//       unlockTokens();
-//     }
-//     _;
-//   }
-
-//   modifier notVoting(voteID){
-//     require(votes[voteID].voteEnd.add(voteBreak) < now);
-//     _;
-//   }
-
-//   modifier voting(voteID){
-//     require(votes[voteID].voteEnd > now);
-//     _;
-//   }
-
-//   modifier confirmLock(amount){
-//     if(amountLocked[msg.sender] >= _amount){
-//       updateLockTime();
-//     } else {
-//       lockTokens(_amount);
-//     }
-//     _;
-//   }
-
-//   modifier confirmSuccess(voteID){
-//     require(votes[voteID].voteEnd < now);
-//     uint totalVotes = votes[voteID].aye.add(votes[voteID].nay);
-//     require(totalLocked.sub(totalVotes) < totalVotes);
-//     require(votes[voteID].aye > votes[voteID].nay);
-//     _;
-//   }
 }

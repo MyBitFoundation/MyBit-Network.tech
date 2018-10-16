@@ -1,5 +1,5 @@
 pragma solidity ^0.4.24;
-library Storable{
+library HashEncode {
   //Overloaded functions
   function encode(string _label, bytes32 _arg1) pure public returns(bytes32){
     return keccak256(abi.encodePacked(_label, _arg1));

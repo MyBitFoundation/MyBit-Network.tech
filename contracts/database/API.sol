@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 
 import "../math/SafeMath.sol";
@@ -77,11 +77,11 @@ contract API {
     return (totalVotes * 100) / TokenView(_assetToken).totalSupply();
   }
 
-  function getBecomeBrokerParameterHash(bytes32 _assetID, address _oldBroker, address _newBroker, uint _amount, bool _burn)
+  function getAssetManagerParameterHash(bytes32 _assetID, address _oldAssetManager, address _newAssetManager, uint _amount, bool _burn)
   public
   pure
   returns (bytes32){
-    return keccak256(abi.encodePacked(_assetID, _oldBroker, _newBroker, _amount, _burn));
+    return keccak256(abi.encodePacked(_assetID, _oldAssetManager, _newAssetManager, _amount, _burn));
   }
 
   function getExecutionID(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash)
@@ -98,11 +98,11 @@ contract API {
     return bytes4(keccak256(abi.encodePacked(_functionString)));
   }
 
-  function getAssetID(address _broker, string _assetURI, uint _amountToRaise, bytes32 _operatorID)
+  function getAssetID(address _assetManager, string _assetURI, uint _amountToRaise, bytes32 _operatorID)
   public
   pure
   returns(bytes32) {
-    return keccak256(abi.encodePacked(_broker, _amountToRaise, _operatorID, _assetURI));
+    return keccak256(abi.encodePacked(_assetManager, _amountToRaise, _operatorID, _assetURI));
   }
 
   function getOrderID(bytes _assetID, address _user, uint _amount, uint _price, bool _buyOrder)
@@ -116,11 +116,11 @@ contract API {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                        Crowdsale and Assets
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  function generateAssetID(address _broker, uint _amountToRaise, bytes32 _operatorID, string _assetURI)
+  function generateAssetID(address _assetManager, uint _amountToRaise, bytes32 _operatorID, string _assetURI)
   public
   pure
   returns(bytes32) {
-    bytes32 assetID = keccak256(abi.encodePacked(_broker, _amountToRaise, _operatorID, _assetURI));
+    bytes32 assetID = keccak256(abi.encodePacked(_assetManager, _amountToRaise, _operatorID, _assetURI));
     return assetID;
   }
 
@@ -192,54 +192,54 @@ contract API {
 
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //                                        Broker and Operator
+  //                                        AssetManager and Operator
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function getAssetBroker(bytes32 _assetID)
+  function getAssetManager(bytes32 _assetID)
   public
   view
   returns(address) {
-    address brokerAddress = database.addressStorage(keccak256(abi.encodePacked("broker", _assetID)));
-    return brokerAddress;
+    address assetManagerAddress = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID)));
+    return assetManagerAddress;
   }
 
-  function getAssetBrokerFee(bytes32 _assetID)
+  function getAssetManagerFee(bytes32 _assetID)
   public
   view
   returns(uint) {
-    uint brokerFee = database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID)));
-    return brokerFee;
+    uint assetManagerFee = database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID)));
+    return assetManagerFee;
   }
 
-  function getBrokerEscrowID(bytes32 _assetID, address _broker)
+  function getAssetManagerEscrowID(bytes32 _assetID, address _assetManager)
   public
   pure
   returns(bytes32) {
-    bytes32 brokerEscrowID = keccak256(abi.encodePacked(_assetID, _broker));
-    return brokerEscrowID;
+    bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetID, _assetManager));
+    return assetManagerEscrowID;
   }
 
-  function getBrokerEscrow(bytes32 _brokerEscrowID)
+  function getAssetManagerEscrow(bytes32 _assetManagerEscrowID)
   public
   view
   returns (uint) {
-    return database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _brokerEscrowID)));
+    return database.uintStorage(keccak256(abi.encodePacked("assetManagerEscrow", _assetManagerEscrowID)));
   }
 
-  function getBrokerEscrowRemaining(bytes32 _brokerEscrowID)
+  function getAssetManagerEscrowRemaining(bytes32 _assetManagerEscrowID)
   public
   view
   returns(uint) {
-    uint redeemed = getBrokerEscrowRedeemed(_brokerEscrowID);
-    uint brokerEscrow = database.uintStorage(keccak256(abi.encodePacked("brokerEscrow", _brokerEscrowID))).sub(redeemed);
-    return brokerEscrow;
+    uint redeemed = getAssetManagerEscrowRedeemed(_assetManagerEscrowID);
+    uint assetManagerEscrow = database.uintStorage(keccak256(abi.encodePacked("assetManagerEscrow", _assetManagerEscrowID))).sub(redeemed);
+    return assetManagerEscrow;
   }
 
-  function getBrokerEscrowRedeemed(bytes32 _brokerEscrowID)
+  function getAssetManagerEscrowRedeemed(bytes32 _assetManagerEscrowID)
   public
   view
   returns(uint) {
-    uint escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", _brokerEscrowID)));
+    uint escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", _assetManagerEscrowID)));
     return escrowRedeemed;
   }
 

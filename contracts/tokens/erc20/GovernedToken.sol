@@ -10,7 +10,10 @@ interface DBAccess {
   function bytes32Storage(bytes32 _key) external view returns (bytes32);
 }
 
-
+// @title A Dividend token that has governance features .
+// @notice This token contract can receive ERC20 tokens as payments and token owners can lock tokens while submitting votes
+// @dev Dividend tokens aren't actually locked, but restricted from transferring to avoid locking contravt having to distribute dividends.
+// @author Kyle Dewhurst & Peter Phillips, MyBit Foundation
 contract GovernedToken is DividendToken {
   using SafeMath for uint;
 
@@ -24,7 +27,7 @@ contract GovernedToken is DividendToken {
     database = DBAccess(_database);
   }
 
-  // @notice Restrict transfers on locked tokens
+  // @notice Standard DividendToke transfer function, which checks for locked tokens before sending
   function transfer(address _to, uint _amount)
   public
   returns (bool success) {
@@ -33,6 +36,7 @@ contract GovernedToken is DividendToken {
       return true;
   }
 
+  // @notice Standard DividendToke transferFrom function, which checks for locked tokens before sending
   function transferFrom(address _from, address _to, uint _amount)
   public
   returns (bool success) {

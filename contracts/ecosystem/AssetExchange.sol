@@ -1,15 +1,14 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 import '../database/Database.sol';
 import '../math/SafeMath.sol';
 import '../interfaces/DivToken.sol';
-import "./ERC20Burner.sol";
+import "../access/ERC20Burner.sol";
 
 
-//------------------------------------------------------------------------------------------------------------------
-// Note: Users can only have 1 sell order and 1 buy order for each individual asset
-// The orders are stored as as sha3 hash of critical parameters to save storage costs
-// InVariants: Users must withdraw available funds from asset before trading
-//------------------------------------------------------------------------------------------------------------------
+// @title Simple decentralized exchange contract
+// @notice A sample contract to implement rudimentary asset-token trading
+// @dev Note: Users can only have 1 sell order and 1 buy order for each individual asset
+// @dev The orders are stored as as sha3 hash of critical parameters to save storage costs
 contract AssetExchange {
   using SafeMath for uint;
 
@@ -20,29 +19,23 @@ contract AssetExchange {
 
   mapping (address => uint) public weiDeposited;
   mapping (address => uint) public weiOwed;
-  uint private decimals = 1e18;
+  uint private decimals = uint256(1e18);
 
 
-  //------------------------------------------------------------------------------------------------------------------
   // @notice constructor: initializes database
   // @param: the address for the database contract used by this platform
-  //------------------------------------------------------------------------------------------------------------------
   constructor(address _database)
   public {
     database = Database(_database);
     burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
-  //------------------------------------------------------------------------------------------------------------------
   // Gives Ether sent to initatior of this sellOrder and transfers ownership units of asset to purchaser
   // Note: Check if creator of sell order has enough ownership units left
   // @Param: ID of the asset, which these ownershipUnits belong to
   // @Param: Address of the user who created SellOrder
   // @Param: Number of ownershipUnits being traded
   // @Param: The WEI cost per unit
-  // TODO: log amounts?
-  //------------------------------------------------------------------------------------------------------------------
-
   function buyAsset(bytes32 _assetID, address _seller, uint _amount, uint _price)
   external
   payable
@@ -61,14 +54,11 @@ contract AssetExchange {
     return true;
   }
 
-  //------------------------------------------------------------------------------------------------------------------
   // Settles an open SellOrder, giving the deposited ether to sender and sender tokens to initiator of BuyOrder
   // @Param: ID of the asset, which senders ownershipUnits belong to
   // @Param: Address of the user who created BuyOrder
   // @Param: Number of ownershipUnits being sold
   // @Param: The WEI cost per unit
-  // TODO: log amounts?
-  //------------------------------------------------------------------------------------------------------------------
   function sellAsset(bytes32 _assetID, address _buyer, uint _amount, uint _price)
   public
   whenNotPaused
@@ -86,12 +76,10 @@ contract AssetExchange {
     return true;
   }
 
-  //------------------------------------------------------------------------------------------------------------------
   // Create a BuyOrder and leave WEI as a deposit for user that picks up order
   // @Param: ID of the asset, which the sender wants to purchase ownershipUnits of
   // @Param: Number of ownershipUnits being bought
   // @Param: The WEI cost per unit
-  //------------------------------------------------------------------------------------------------------------------
   function createBuyOrder(bytes32 _assetID, uint _amount, uint _price)
   external
   payable
@@ -110,13 +98,10 @@ contract AssetExchange {
     return true;
   }
 
-  //------------------------------------------------------------------------------------------------------------------
   // Create a BuyOrder and leave WEI as a deposit for user that picks up order
   // @Param: ID of the asset, which sender is trying to sell
   // @Param: Number of ownershipUnits being sold
   // @Param: The WEI cost per unit
-  // NOTE: This will re-write previous sell orders
-  //------------------------------------------------------------------------------------------------------------------
   function createSellOrder(bytes32 _assetID, uint _amount, uint _price)
   external
   aboveZero(_amount, _price)
