@@ -8,7 +8,6 @@ import "../tokens/distribution/FixedDistribution.sol";
 
 // @title An asset generator contract for onboarding existing real-world assets
 // @author Kyle Dewhurst, MyBit Foundation
-// TODO: Add governance feature
 contract AssetGenerator {
   using SafeMath for uint256;
 

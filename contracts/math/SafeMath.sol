@@ -2,9 +2,8 @@ pragma solidity 0.4.24;
 
 // https://github.com/OpenZeppelin/zeppelin-solidity/blob/master/contracts/math/SafeMath.sol
 
-  //--------------------------------------------------------------------------------------------------
-  // Math operations with safety checks that throw on error
-  //--------------------------------------------------------------------------------------------------
+// @title SafeMath: overflow/underflow checks
+// @notice Math operations with safety checks that throw on error
 library SafeMath {
 
   // @notice Multiplies two numbers, throws on overflow.

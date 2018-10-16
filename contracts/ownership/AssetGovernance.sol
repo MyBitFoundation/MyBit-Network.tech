@@ -114,12 +114,4 @@ contract AssetGovernance {
     _;
   }
 
-
-  // TODO: Possibly create functionality to mint more tokens to cover repair costs
-  //       -------> would need to restructure minting authority
-  // function mintTokens(bytes32 _assetID)
-  // external
-  // returns (bool) {
-  //   return true;
-  // }
 }
