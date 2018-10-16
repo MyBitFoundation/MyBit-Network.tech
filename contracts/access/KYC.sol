@@ -9,7 +9,7 @@ import './AccessHierarchy.sol';
 contract KYC is AccessHierarchy {
 
   constructor(address _database) public AccessHierarchy(_database){}
-    
+
   // @notice Owner can approve KYC for user
   function approveKYC(address _user)
   onlyOwner
@@ -18,7 +18,7 @@ contract KYC is AccessHierarchy {
     emit LogKYCApproved(msg.sender, _user);
   }
 
-  // Owner can approve KYC for user
+  // @notice Owner can approve KYC for user
   function revokeKYC(address _user)
   onlyOwner
   external  {

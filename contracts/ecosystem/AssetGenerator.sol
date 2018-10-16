@@ -33,7 +33,7 @@ contract AssetGenerator {
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _tokenURI));
     require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))) == address(0));
     FixedDistribution assetInstance = new FixedDistribution(_tokenURI, _tokenHolders, _amount);
-    database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
+    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetInstance));
     emit LogAssetCreated(assetID, address(assetInstance), msg.sender, _tokenURI);
     return true;
@@ -54,7 +54,7 @@ contract AssetGenerator {
       assetInstance.mint(_tokenHolders[i], _amount[i]);
     }
     assetInstance.finishMinting();
-    database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
+    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetInstance));
     emit LogTradeableAssetCreated(assetID, address(assetInstance), msg.sender, _tokenURI);
     return true;
@@ -69,8 +69,8 @@ contract AssetGenerator {
   }
 
 
-  event LogAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _broker, string _tokenURI);
-  event LogTradeableAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _broker, string _tokenURI);
+  event LogAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
+  event LogTradeableAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
 
 
 }

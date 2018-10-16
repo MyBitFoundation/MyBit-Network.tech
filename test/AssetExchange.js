@@ -114,7 +114,7 @@ contract('Asset Exchange', async() => {
 
   it('Give platform burning permission', async() => {
     for(var i=1; i<web3.eth.accounts.length; i++){
-      await burner.givePermission({from:web3.eth.accounts[i]});
+      await cm.setContractStatePreferences(true, true, {from: web3.eth.accounts[i]});
       await platformToken.approve(burner.address, tokenSupply, {from:web3.eth.accounts[i]});
     }
   });

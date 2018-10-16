@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 import '../database/Database.sol';
 import '../math/SafeMath.sol';
 import '../interfaces/DivToken.sol';
@@ -20,7 +20,7 @@ contract AssetExchange {
 
   mapping (address => uint) public weiDeposited;
   mapping (address => uint) public weiOwed;
-  uint private decimals = 1e18;
+  uint private decimals = uint256(1e18);
 
 
   //------------------------------------------------------------------------------------------------------------------

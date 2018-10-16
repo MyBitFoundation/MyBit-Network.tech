@@ -7,9 +7,9 @@
 
 
 
-  // @title A contract for investors to loan ERC20 tokens to brokers who require escrow
+  // @title A contract for investors to loan ERC20 tokens to assetManagers who require escrow
   // @author Kyle Dewhurst, MyBit Foundation
-  // @notice Broker can lock his escrow in this contract and retrieve it if asset funding fails or successfully returns ROI
+  // @notice AssetManager can lock his escrow in this contract and retrieve it if asset funding fails or successfully returns ROI
   contract Staking {
 
     Database public database;
@@ -20,7 +20,7 @@
       database = Database(_database);
     }
 
-    // @notice broker can request for a staker to lend tokens to cover escrow
+    // @notice AssetManager can request for a staker to lend tokens to cover escrow
     function requestStaking(string _tokenURI, bytes32 _assetID, uint _amount, uint _sharePercentage)
     external
     returns (bool) {

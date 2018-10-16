@@ -40,11 +40,11 @@ contract CrowdsaleERC20{
     uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
     if (_amount >= tokensRemaining) {
       require(fundingToken.transferFrom(msg.sender, address(this), tokensRemaining));    // transfer investors tokens into contract
-      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))), database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID))) ));
+      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID))) ));
       require(finalizeCrowdsale(_assetID));
       require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens to investor
-      // Give broker his portion of tokens
-      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))), database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID))) ));
+      // Give assetManager his portion of tokens
+      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID))) ));
       require(assetToken.finishMinting());
       require(payoutERC20(_assetID, amountToRaise));          // 1 token = 1 wei
     }
@@ -72,7 +72,7 @@ contract CrowdsaleERC20{
     ERC20DividendInterface assetToken = ERC20DividendInterface(tokenAddress);
     ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
     uint refundValue = assetToken.totalSupply(); //token=wei
-    // @dev We don't want to mark a refund 'finalized' because then the broker
+    // @dev We don't want to mark a refund 'finalized' because then the assetManager
     //      would never be able to pull out their escrowed funds
     //require(finalizeCrowdsale(_assetID));
     fundingToken.approve(tokenAddress, refundValue);
@@ -84,7 +84,7 @@ contract CrowdsaleERC20{
   //                                            Internal Functions
   //------------------------------------------------------------------------------------------------------------------
 
-  // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where operator/broker can withdraw
+  // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where operator/assetManager can withdraw
   // @dev The contract manager needs to know  the address PlatformDistribution contract
   function payoutERC20(bytes32 _assetID, uint _amount)
   private
@@ -132,7 +132,7 @@ contract CrowdsaleERC20{
   returns (bool) {
       database.setBool(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)), true);
       database.deleteUint(keccak256(abi.encodePacked("amountToRaise", _assetID)));
-      database.deleteUint(keccak256(abi.encodePacked("brokerFee", _assetID)));
+      database.deleteUint(keccak256(abi.encodePacked("assetManagerFee", _assetID)));
       return true;
   }
 

@@ -17,9 +17,9 @@ const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
 const user2 = web3.eth.accounts[2];
 const user3 = web3.eth.accounts[3];
-const broker = web3.eth.accounts[4];
+const assetManager = web3.eth.accounts[4];
 const operator = web3.eth.accounts[5];
-const tokenHolders = [user1, user2, user3, broker, operator];
+const tokenHolders = [user1, user2, user3, assetManager, operator];
 
 
 const ETH = 1000000000000000000;
@@ -37,7 +37,7 @@ contract('ERC20 Crowdsale', async() => {
   let cm;
   let hash;
   let platform;
-  let brokerFee;
+  let assetManagerFee;
   let operators;
   let operatorID;
   let assetID;
@@ -133,7 +133,7 @@ contract('ERC20 Crowdsale', async() => {
 
   it('Give platform burning permission', async() => {
     for(var i=1; i<web3.eth.accounts.length; i++){
-      await burner.givePermission({from:web3.eth.accounts[i]});
+      await cm.setContractStatePreferences(true, true, {from: web3.eth.accounts[i]});
       await platformToken.approve(burner.address, tokenSupply, {from:web3.eth.accounts[i]});
     }
   });
@@ -148,8 +148,8 @@ contract('ERC20 Crowdsale', async() => {
   //Start successful funding
   it('Start funding', async() => {
     assetURI = 'ipfs.io/F3b2854A9';
-    brokerFee = 5;
-    let tx = await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 100, 20*ETH, brokerFee, erc20.address, {from:broker});
+    assetManagerFee = 5;
+    let tx = await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 100, 20*ETH, assetManagerFee, erc20.address, {from:assetManager});
     // console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
     assetTokenAddress = tx.logs[0].args._tokenAddress;
@@ -173,10 +173,10 @@ contract('ERC20 Crowdsale', async() => {
 
   it('Asset already exists fail', async() => {
     let err;
-    let brokerFee = 2;
+    let assetManagerFee = 2;
     //Fail because asset already exists
     try{
-      await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 10, 20*ETH, brokerFee, erc20.address, {from:broker});
+      await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 10, 20*ETH, assetManagerFee, erc20.address, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -201,7 +201,7 @@ contract('ERC20 Crowdsale', async() => {
   it('Fail to set platform wallet', async() => {
     let err;
     try{
-      await platform.setPlatformWallet(broker, {from:broker});
+      await platform.setPlatformWallet(assetManager, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -241,7 +241,7 @@ contract('ERC20 Crowdsale', async() => {
   it('Fail to refund', async() => {
     let err;
     try{
-      await crowdsale.refund(assetID, {from:broker});
+      await crowdsale.refund(assetID, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -277,9 +277,9 @@ contract('ERC20 Crowdsale', async() => {
 
     await operators.removeOperator(operatorID);
     assetURI = 'Fail: No operator';
-    brokerFee = 10;
+    assetManagerFee = 10;
     try{
-      await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 10, 20*ETH, brokerFee, erc20.address, {from:broker});
+      await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 10, 20*ETH, assetManagerFee, erc20.address, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -294,8 +294,8 @@ contract('ERC20 Crowdsale', async() => {
 
   it('Start funding that does not reach goal', async() => {
     assetURI = 'Goooooooaaallllllll';
-    brokerFee = 20;
-    tx = await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 1, 20*ETH, brokerFee, erc20.address, {from:broker});
+    assetManagerFee = 20;
+    tx = await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 1, 20*ETH, assetManagerFee, erc20.address, {from:assetManager});
     //console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
     assetTokenAddress = tx.logs[0].args._tokenAddress;

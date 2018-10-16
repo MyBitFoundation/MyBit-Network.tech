@@ -35,14 +35,6 @@ contract ERC20Burner {
     return true;
   }
 
-  function givePermission()
-  external
-  returns (bool) {
-   bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));
-   database.setBool(keccak256(abi.encodePacked(currentState, msg.sender)), true);
-   return true;
-  }
-
   // @notice owners can set the cost of functionality on the platform here.
   // @dev _amount will be how many platformTokens are burned to call the method at _contractAddress
   // @param (bytes4) _methodID: the methodID of the function which is to require a burning fee

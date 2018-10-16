@@ -17,7 +17,7 @@ const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
 const user2 = web3.eth.accounts[2];
 const user3 = web3.eth.accounts[3];
-const broker = web3.eth.accounts[4];
+const assetManager = web3.eth.accounts[4];
 const operator = web3.eth.accounts[5];
 const tokenHolders = [user1, user2, user3];
 
@@ -26,7 +26,7 @@ const ETH = 1000000000000000000;
 const scaling = 1000000000000000000000000000000000000;
 const tokenSupply = 180000000000000000000000000;
 const tokenPerAccount = 1000000000000000000000;
-const brokerFee = 5;
+const assetManagerFee = 5;
 
 contract('Ether Crowdsale', async() => {
 
@@ -114,7 +114,7 @@ contract('Ether Crowdsale', async() => {
 
   it('Give platform burning permission', async() => {
     for(var i=1; i<web3.eth.accounts.length; i++){
-      await burner.givePermission({from:web3.eth.accounts[i]});
+      await cm.setContractStatePreferences(true, true, {from: web3.eth.accounts[i]});
       await platformToken.approve(burner.address, tokenSupply, {from:web3.eth.accounts[i]});
     }
   });
@@ -128,7 +128,7 @@ contract('Ether Crowdsale', async() => {
   //Start successful funding
   it('Start funding', async() => {
     assetURI = 'BTC ATM';
-    let tx = await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 1, 20*ETH, brokerFee, {from:broker});
+    let tx = await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 1, 20*ETH, assetManagerFee, {from:assetManager});
     //console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
     tokenAddress = tx.logs[0].args._tokenAddress;
@@ -147,7 +147,7 @@ contract('Ether Crowdsale', async() => {
     let err;
     //Fail because asset already exists
     try{
-      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 20*ETH, brokerFee, {from:broker});
+      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 20*ETH, assetManagerFee, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -171,7 +171,7 @@ contract('Ether Crowdsale', async() => {
   it('Fail to set platform wallet', async() => {
     let err;
     try{
-      await platform.setPlatformWallet(broker, {from:broker});
+      await platform.setPlatformWallet(assetManager, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -208,7 +208,7 @@ contract('Ether Crowdsale', async() => {
   it('Fail to refund', async() => {
     let err;
     try{
-      await crowdsale.refund(assetID, {from:broker});
+      await crowdsale.refund(assetID, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -242,7 +242,7 @@ contract('Ether Crowdsale', async() => {
     await operators.removeOperator(operatorID);
     assetURI = 'Fail: No operator';
     try{
-      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 20*ETH, brokerFee, {from:broker});
+      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 20*ETH, assetManagerFee, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -257,7 +257,7 @@ contract('Ether Crowdsale', async() => {
 
   it('Start funding that does not reach goal', async() => {
     assetURI = 'No Goal';
-    let tx = await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 2, 20*ETH, brokerFee, {from:broker});
+    let tx = await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 2, 20*ETH, assetManagerFee, {from:assetManager});
     //console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
     tokenAddress = tx.logs[0].args._tokenAddress;
@@ -325,7 +325,7 @@ contract('Ether Crowdsale', async() => {
     assert.equal(bn(user3BalanceAfter).isGreaterThan(user3BalanceBefore), true);
   });
 
-  // TODO: try to create asset with broker fee = 0
+  // TODO: try to create asset with assetManager fee = 0
 
   it('Fail to send money to contract', async() => {
     let err;

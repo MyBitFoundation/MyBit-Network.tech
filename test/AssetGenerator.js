@@ -16,16 +16,16 @@ const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
 const user2 = web3.eth.accounts[2];
 const user3 = web3.eth.accounts[3];
-const broker = web3.eth.accounts[4];
+const assetManager = web3.eth.accounts[4];
 const operator = web3.eth.accounts[5];
-const tokenHolders = [broker, user1, user2, user3];
+const tokenHolders = [assetManager, user1, user2, user3];
 
 
 const ETH = 1000000000000000000;
 const scaling = 1000000000000000000000000000000000000;
 const tokenSupply = 180000000000000000000000000;
 const tokenPerAccount = 1000000000000000000000;
-const brokerFee = tokenPerAccount/10;
+const assetManagerFee = tokenPerAccount/10;
 
 contract('Asset Generator', async() => {
 
@@ -93,21 +93,21 @@ contract('Asset Generator', async() => {
 
   it('Give platform burning permission', async() => {
     for(var i=1; i<web3.eth.accounts.length; i++){
-      await burner.givePermission({from:web3.eth.accounts[i]});
+      await cm.setContractStatePreferences(true, true, {from: web3.eth.accounts[i]});
       await platformToken.approve(burner.address, tokenSupply, {from:web3.eth.accounts[i]});
     }
   });
 
   it('Create Non-transferable Asset', async() => {
     assetURI = 'ASSET';
-    let tx = await assetGen.createAsset(assetURI, tokenHolders, [brokerFee, tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:broker});
+    let tx = await assetGen.createAsset(assetURI, tokenHolders, [assetManagerFee, tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
     console.log(tx.logs[0].args);
     token = FixedDistribution.at(tx.logs[0].args._tokenAddress);
-    brokerBalance = await token.balanceOf(broker);
+    assetManagerBalance = await token.balanceOf(assetManager);
     user1Balance = await token.balanceOf(user1);
     user2Balance = await token.balanceOf(user2);
     user3Balance = await token.balanceOf(user3);
-    console.log(Number(brokerBalance));
+    console.log(Number(assetManagerBalance));
     console.log(Number(user1Balance));
     console.log(Number(user2Balance));
     console.log(Number(user3Balance));
@@ -118,7 +118,7 @@ contract('Asset Generator', async() => {
     //Fail because user tokenHolder != amount
     try{
       assetURI = 'ASSETFail';
-      await assetGen.createAsset(assetURI, tokenHolders, [tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:broker});
+      await assetGen.createAsset(assetURI, tokenHolders, [tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -127,14 +127,14 @@ contract('Asset Generator', async() => {
 
   it('Create Tradeable Asset', async() => {
     assetURI = 'ASSETASSET';
-    let tx = await assetGen.createTradeableAsset(assetURI, tokenHolders, [brokerFee, tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:broker});
+    let tx = await assetGen.createTradeableAsset(assetURI, tokenHolders, [assetManagerFee, tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
     console.log(tx.logs[0].args);
     token = FixedDistribution.at(tx.logs[0].args._tokenAddress);
-    brokerBalance = await token.balanceOf(broker);
+    assetManagerBalance = await token.balanceOf(assetManager);
     user1Balance = await token.balanceOf(user1);
     user2Balance = await token.balanceOf(user2);
     user3Balance = await token.balanceOf(user3);
-    console.log(Number(brokerBalance));
+    console.log(Number(assetManagerBalance));
     console.log(Number(user1Balance));
     console.log(Number(user2Balance));
     console.log(Number(user3Balance));
@@ -145,7 +145,7 @@ contract('Asset Generator', async() => {
     //Fail because user tokenHolder != amount
     try{
       assetURI = 'ASSETASSETFail';
-      await assetGen.createTradeableAsset(assetURI, tokenHolders, [tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:broker});
+      await assetGen.createTradeableAsset(assetURI, tokenHolders, [tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
     } catch(e){
       err = e;
     }

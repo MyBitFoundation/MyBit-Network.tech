@@ -2,8 +2,8 @@ var bn = require('bignumber.js');
 
 
 const AssetGovernance = artifacts.require("./ecosystem/AssetGovernance.sol");
-const BrokerEscrow = artifacts.require("./ecosystem/BrokerEscrow.sol");
-const BrokerAssets = artifacts.require("./ecosystem/BrokerAssets.sol");
+const AssetManagerEscrow = artifacts.require("./ecosystem/AssetManagerEscrow.sol");
+const AssetManagerFunds = artifacts.require("./ecosystem/AssetManagerFunds.sol");
 const Database = artifacts.require("./database/Database.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const Operators = artifacts.require("./ecosystem/Operators.sol");
@@ -17,15 +17,15 @@ const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
 const user2 = web3.eth.accounts[2];
 const user3 = web3.eth.accounts[3];
-const broker = web3.eth.accounts[4];
+const assetManager = web3.eth.accounts[4];
 const operator = web3.eth.accounts[5];
-const replacementBroker = web3.eth.accounts[6];
+const newAssetManager = web3.eth.accounts[6];
 const tokenHolders = [user1, user2, user3];
 
 const ETH = 1000000000000000000;
 let tokenPerAccount;
 
-// This test will check that the voting mechanisms are working properly and will test the functionality of changing brokers
+// This test will check that the voting mechanisms are working properly and will test the functionality of changing assetManagers
 contract('AssetGovernance', async() => {
   let db;
   let cm;
@@ -41,7 +41,7 @@ contract('AssetGovernance', async() => {
   let methodID;
   let parameterHash;
   let executionID;
-  let brokerEscrowID;
+  let assetManagerEscrowID;
   let operatorID;
   let assetID;
   let assetURI = 'https://alocationforassetdetails';
@@ -69,10 +69,10 @@ contract('AssetGovernance', async() => {
     burnToken = await PlatformToken.new('MyB', 180000000*ETH);
   });
 
-  it("Transfer token to broker", async() => {
-    await burnToken.transfer(broker, 100*ETH);
-    brokerBalance = await burnToken.balanceOf(broker);
-    assert.equal(brokerBalance, 100*ETH);
+  it("Transfer token to assetManager", async() => {
+    await burnToken.transfer(assetManager, 100*ETH);
+    assetManagerBalance = await burnToken.balanceOf(assetManager);
+    assert.equal(assetManagerBalance, 100*ETH);
   });
 
   it('Deploy api', async() => {
@@ -87,14 +87,14 @@ contract('AssetGovernance', async() => {
     await platform.setPlatformToken(burnToken.address);
   });
 
-  it('Deploy broker escrow', async() => {
-    escrow = await BrokerEscrow.new(db.address);
-    await cm.addContract('BrokerEscrow', escrow.address);
+  it('Deploy assetManager escrow', async() => {
+    escrow = await AssetManagerEscrow.new(db.address);
+    await cm.addContract('AssetManagerEscrow', escrow.address);
   });
 
-  it('Deploy broker assets', async() => {
-    brokerAssets = await BrokerAssets.new(db.address);
-    await cm.addContract('BrokerAssets', brokerAssets.address);
+  it('Deploy assetManager assets', async() => {
+    assetManagerFunds = await AssetManagerFunds.new(db.address);
+    await cm.addContract('AssetManagerFunds', assetManagerFunds.address);
   });
 
   it('Set operator', async() => {
@@ -105,15 +105,15 @@ contract('AssetGovernance', async() => {
   });
 
   it("Generate assetID", async() => {
-    assetID = await hash.getAssetID(assetURI, 8*ETH, operatorID, {from:broker});
+    assetID = await hash.getAssetID(assetURI, 8*ETH, operatorID, {from:assetManager});
   });
 
   it("Lock escrow", async() => {
-    let balanceBefore = await burnToken.balanceOf(broker);
-    await burnToken.approve(escrow.address, 2*ETH, {from:broker});
-    tx = await escrow.lockEscrow(assetID, 2*ETH, {from:broker});
-    brokerEscrowID = tx.logs[0].args._brokerEscrowID;
-    let balanceAfter = await burnToken.balanceOf(broker);
+    let balanceBefore = await burnToken.balanceOf(assetManager);
+    await burnToken.approve(escrow.address, 2*ETH, {from:assetManager});
+    tx = await escrow.lockEscrow(assetID, 2*ETH, {from:assetManager});
+    assetManagerEscrowID = tx.logs[0].args._assetManagerEscrowID;
+    let balanceAfter = await burnToken.balanceOf(assetManager);
     let diff = bn(balanceBefore).minus(balanceAfter);
     assert.equal(diff, 2*ETH);
   });
@@ -135,11 +135,11 @@ contract('AssetGovernance', async() => {
   it("Set asset variables", async() => {
     let tokenHash = await hash.stringBytes("tokenAddress", assetID);
     let tokenIDHash = await hash.stringAddress("assetTokenID", govToken.address);
-    let brokerHash = await hash.stringBytes("broker", assetID);
+    let assetManagerHash = await hash.stringBytes("assetManager", assetID);
     let operatorHash = await hash.stringBytes("operator", assetID);
     await db.setAddress(tokenHash, govToken.address);
     await db.setBytes32(tokenIDHash, assetID);
-    await db.setAddress(brokerHash, broker);
+    await db.setAddress(assetManagerHash, assetManager);
     await db.setAddress(operatorHash, operator);
   });
 
@@ -156,24 +156,24 @@ contract('AssetGovernance', async() => {
     assert.equal(await govToken.balanceOf(owner), 0);
   });
 
-  it("Transfer token to broker assets", async() => {
-    await govToken.mint(brokerAssets.address, tokenPerAccount);
-    brokerBalance = await govToken.balanceOf(brokerAssets.address);
-    assert.equal(brokerBalance, tokenPerAccount);
+  it("Transfer token to assetManager assets", async() => {
+    await govToken.mint(assetManagerFunds.address, tokenPerAccount);
+    assetManagerBalance = await govToken.balanceOf(assetManagerFunds.address);
+    assert.equal(assetManagerBalance, tokenPerAccount);
   });
 
-  it("Vote for Broker to be fired", async() => {
-    let methodString = "becomeBroker(bytes32, address, uint256, uint256)";
+  it("Vote for AssetManager to be fired", async() => {
+    let methodString = "becomeAssetManager(bytes32, address, uint256, uint256)";
     methodID = await api.getMethodID(methodString);
-    parameterHash = await api.getBecomeBrokerParameterHash(assetID, broker, replacementBroker, 10*ETH, true);
+    parameterHash = await api.getAssetManagerParameterHash(assetID, assetManager, newAssetManager, 10*ETH, true);
     executionID = await api.getExecutionID(escrow.address, assetID, methodID, parameterHash);
     await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount, {from: user1});
-    await govToken.approve(escrow.address, 10*ETH, {from: replacementBroker});
+    await govToken.approve(escrow.address, 10*ETH, {from: newAssetManager});
   });
 
   it("Try to transfer tokens", async() => {
     let err;
-    //Fail because tokens are locked in vote for firing broker
+    //Fail because tokens are locked in vote for firing assetManager
     assert.equal(0, await api.getNumTokensAvailable(assetID, user1));
     assert.equal(await govToken.balanceOf(user1), tokenPerAccount);
     try{
@@ -196,25 +196,25 @@ contract('AssetGovernance', async() => {
   })
 
 
-  it("Fail executing new broker", async() => {
+  it("Fail executing new assetManager", async() => {
     let err;
     let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
     assert.equal(bn(consensusProgress).lt(50), true);
-    // assert.equal(await govToken.allowance(replacementBroker, escrow.address), 10*ETH);
+    // assert.equal(await govToken.allowance(newAssetManager, escrow.address), 10*ETH);
     //Fail because consensus is not yet reached
     try{
-      await escrow.becomeBroker(assetID, broker, 10*ETH, true, {from:replacementBroker});
+      await escrow.becomeAssetManager(assetID, assetManager, 10*ETH, true, {from:newAssetManager});
     } catch(e){
       err = e;
     }
     assert.notEqual(err, undefined);
   });
 
-  it("Vote for Broker to be fired with half of tokens", async() => {
-    await govToken.approve(escrow.address, 10*ETH, {from: replacementBroker});
-    let methodString = "becomeBroker(bytes32, address, uint256, uint256)";
+  it("Vote for AssetManager to be fired with half of tokens", async() => {
+    await govToken.approve(escrow.address, 10*ETH, {from: newAssetManager});
+    let methodString = "becomeAssetManager(bytes32, address, uint256, uint256)";
     methodID = await api.getMethodID(methodString);
-    parameterHash = await api.getBecomeBrokerParameterHash(assetID, broker, replacementBroker, 10*ETH, true);
+    parameterHash = await api.getAssetManagerParameterHash(assetID, assetManager, newAssetManager, 10*ETH, true);
     assert.equal(tokenPerAccount, ( (tokenPerAccount / 2) + (tokenPerAccount / 2) ));
     await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount / 2, {from: user2});
     await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount / 2, {from: user2});
