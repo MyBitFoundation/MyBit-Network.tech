@@ -1,6 +1,7 @@
 pragma solidity 0.4.24;
 
 import "./DividendTokenERC20.sol";
+import "../../math/SafeMath.sol"; 
 
 // @notice give GovernedToken access to view uint and bytes32 storage
 interface DBAccess {

@@ -2,7 +2,7 @@
 
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
-import "../ecosystem/ERC20Burner.sol";
+import "../access/ERC20Burner.sol";
 import "../tokens/erc20/DividendTokenERC20.sol";
 
 // @title An asset crowdsale contract.

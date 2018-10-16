@@ -1,12 +1,12 @@
 var bn = require('bignumber.js');
 
-const AssetManagerEscrow = artifacts.require("./ecosystem/AssetManagerEscrow.sol");
+const AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
 const Database = artifacts.require("./database/Database.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const DivToken = artifacts.require("./tokens/ERC20/DividendToken.sol");
 const BurnableToken = artifacts.require("./tokens/ERC20/BurnableToken.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
-const Operators = artifacts.require("./ecosystem/Operators.sol");
+const Operators = artifacts.require("./roles/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
 const API = artifacts.require("./database/API.sol");
 

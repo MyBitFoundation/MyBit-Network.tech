@@ -5,9 +5,9 @@ const Database = artifacts.require("./database/Database.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const DivToken = artifacts.require("./tokens/ERC20/DividendToken.sol");
 const PlatformToken = artifacts.require("./tokens/erc20/BurnableToken.sol");
-const ERC20Burner = artifacts.require("./ecosystem/ERC20Burner.sol");
+const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
-const Operators = artifacts.require("./ecosystem/Operators.sol");
+const Operators = artifacts.require("./roles/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
 const Pausible = artifacts.require("./ownership/Pausible.sol");
 

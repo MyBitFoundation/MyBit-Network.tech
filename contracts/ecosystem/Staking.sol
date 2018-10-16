@@ -1,4 +1,4 @@
-  pragma solidity ^0.4.24;
+  pragma solidity 0.4.24;
 
   import "../math/SafeMath.sol";
   import "../database/Database.sol";
@@ -41,6 +41,7 @@
       MintableDistribution distributionToken = MintableDistribution(database.addressStorage(keccak256(abi.encodePacked("stakingMint", _assetID))));
       bytes32 finalAgreement = keccak256(abi.encodePacked(msg.sender, agreementHash));
       database.setBytes32(_assetID, finalAgreement);
+      require(stakingToken.transfer(_requester, _amount));
       require(distributionToken.mint(msg.sender, _amount));
       require(distributionToken.finishMinting());
       return true;

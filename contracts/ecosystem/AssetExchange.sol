@@ -2,7 +2,7 @@ pragma solidity 0.4.24;
 import '../database/Database.sol';
 import '../math/SafeMath.sol';
 import '../interfaces/DivToken.sol';
-import "./ERC20Burner.sol";
+import "../access/ERC20Burner.sol";
 
 
 //------------------------------------------------------------------------------------------------------------------

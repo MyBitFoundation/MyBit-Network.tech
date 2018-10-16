@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
-import "../ecosystem/ERC20Burner.sol";
+import "../access/ERC20Burner.sol";
 import "../tokens/erc20/DividendToken.sol";
 
 // @title An asset crowdsale contract.

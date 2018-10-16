@@ -4,7 +4,7 @@ import "../math/SafeMath.sol";
 import "../interfaces/ERC20.sol";
 import "../interfaces/DBInterface.sol";
 import "../interfaces/ERC20DividendInterface.sol";
-import "../ecosystem/ERC20Burner.sol";
+import "../access/ERC20Burner.sol";
 
 // @title An asset crowdsale contract.
 // @author Kyle Dewhurst, MyBit Foundation

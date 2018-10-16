@@ -4,7 +4,6 @@
   import "../interfaces/DBInterface.sol";
   import "../interfaces/DivToken.sol";
   import "../interfaces/BurnableERC20.sol";
-  import "./ERC20Burner.sol";
 
   interface Governance { function isConsensusReached(address _thisContract, bytes4 _methodID, bytes32 _parameterHash) external view returns (bool); }
 
