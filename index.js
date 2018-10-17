@@ -46,9 +46,9 @@ module.exports = {
     return OperatorsJSON;
   },
 
-  BrokerEscrow: function(){
-    var BrokerEscrowJSON = JSON.parse(fs.readFileSync(appRoot + '/build/contracts/BrokerEscrow.json'));
-    return BrokerEscrowJSON;
+  AssetManager: function(){
+    var AssetManagerJSON = JSON.parse(fs.readFileSync(appRoot + '/build/contracts/AssetManager.json'));
+    return AssetManagerJSON;
   },
 
   CrowdsaleETH: function(){
