@@ -69,7 +69,7 @@ contract('Dividend Token ERC20', async() => {
   });
 
   it('View dividends owed', async() => {
-    let owed = new bn(await token.getOwedDividends(user1));
+    let owed = new bn(await token.getAmountOwed(user1));
     let expected = new bn(10).multipliedBy(ETH).multipliedBy(tokenPerAccount).dividedBy(tokenSupply).integerValue(bn.ROUND_FLOOR);
     assert.equal(owed.isEqualTo(expected), true);
   });

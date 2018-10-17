@@ -1,20 +1,20 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
-import "../ecosystem/ERC20Burner.sol";
+import "../access/ERC20Burner.sol";
 import "../tokens/erc20/DividendToken.sol";
 
-// @title An asset crowdsale contract.
+// @title A crowdsale generator contract
 // @author Kyle Dewhurst, MyBit Foundation
-// @notice handles the funding and refunding of asset crowdsales
+// @notice AssetManagers can initiate a crowdsale that accepts Ether as payment here
 contract CrowdsaleGeneratorETH {
   using SafeMath for uint256;
 
-  DBInterface private database;
-  ERC20Burner private burner;
+  DBInterface public database;
+  ERC20Burner public burner;
 
-  uint constant scalingFactor = 1e32;
+  uint constant scalingFactor = 1e32;   // Used to avoid rounding errors
 
   // @notice This contract
   // @param: The address for the database contract used by this platform
@@ -24,12 +24,16 @@ contract CrowdsaleGeneratorETH {
       burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
-  // @notice brokers can initiate a crowdfund for a new asset here
-  // @dev this crowdsale contract is granted the whole supply to distribute to investors
-  // @dev can lookup the amount of escrow in the database with sha3("brokerEscrow", assetID)
-  function createAssetOrderETH(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, uint _brokerPerc)
+  // @notice AssetManagers can initiate a crowdfund for a new asset here
+  // @dev the crowdsaleETH contract is granted rights to mint asset-tokens as it receives funding
+  // @param (string) _assetURI = The location where information about the asset can be found
+  // @param (bytes32) _operatorID = The ID of the operator who is to create and install this asset
+  // @param (uint) _fundingLength = The number of seconds this crowdsale is to go on for until it fails
+  // @param (uint) _amountToRaise = The amount of WEI required to raise for the crowdsale to be a success
+  // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
+  function createAssetOrderETH(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, uint _assetManagerPerc)
   external
-  isTrue(_brokerPerc < 100)
+  isTrue(_assetManagerPerc < 100)
   isTrue(database.boolStorage(keccak256(abi.encodePacked("acceptsEther", _operatorID))))
   burnRequired
   returns (bool) {
@@ -38,11 +42,12 @@ contract CrowdsaleGeneratorETH {
     require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
     address assetAddress = address(new DividendToken(_assetURI, database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleETH")))));   // Gives this contract all new asset tokens
     database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
-    uint brokerFee = _amountToRaise.mul(uint(100).mul(scalingFactor).div(uint(100).sub(_brokerPerc)).sub(scalingFactor)).div(scalingFactor);
+    uint assetManagerFee = _amountToRaise.mul(uint(100).mul(scalingFactor).div(uint(100).sub(_assetManagerPerc)).sub(scalingFactor)).div(scalingFactor);
+    database.setUint(keccak256(abi.encodePacked("assetManagerFee", assetID)), assetManagerFee);
     database.setUint(keccak256(abi.encodePacked("amountToRaise", assetID)), _amountToRaise);
-    database.setUint(keccak256(abi.encodePacked("brokerFee", assetID)), brokerFee);
-    database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetAddress));
-    database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
+    database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), assetAddress);
+    database.setBytes32(keccak256(abi.encodePacked("assetTokenID", assetAddress)), assetID);
+    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);  // Make this a require() if want to enforce escrow
     database.setAddress(keccak256(abi.encodePacked("operator", assetID)), database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))));
     emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, address(assetAddress));
     return true;
@@ -68,6 +73,7 @@ contract CrowdsaleGeneratorETH {
   //                                            Events
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _broker, string _assetURI, address indexed _tokenAddress);
+  event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _assetManager, string _assetURI, address indexed _tokenAddress);
   event LogSig(bytes4 _sig);
+
 }

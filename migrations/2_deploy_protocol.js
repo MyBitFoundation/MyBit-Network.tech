@@ -3,13 +3,14 @@ var fs = require('fs');
 var BurnableToken = artifacts.require("./tokens/erc20/BurnableToken.sol");
 var Database = artifacts.require("./database/Database.sol");
 var ContractManager = artifacts.require("./database/ContractManager.sol");
+var API = artifacts.require("./database/API.sol");
 var SingleOwned = artifacts.require("./ownership/SingleOwned.sol");
 var Pausible = artifacts.require("./ownership/Pausible.sol");
-var ERC20Burner = artifacts.require("./ecosystem/ERC20Burner.sol");
+var ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 var AccessHierarchy = artifacts.require("./access/AccessHierarchy.sol");
 var PlatformFunds = artifacts.require("./ecosystem/PlatformFunds.sol");
-var Operators = artifacts.require("./ecosystem/Operators.sol");
-var BrokerEscrow = artifacts.require("./ecosystem/BrokerEscrow.sol");
+var Operators = artifacts.require("./roles/Operators.sol");
+var AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
 var CrowdsaleGeneratorETH = artifacts.require("./crowdsale/CrowdsaleGeneratorETH.sol");
 var CrowdsaleETH = artifacts.require("./crowdsale/CrowdsaleETH.sol");
 var CrowdsaleGeneratorERC20 = artifacts.require("./crowdsale/CrowdsaleGeneratorERC20.sol");
@@ -21,7 +22,7 @@ var decimals = 1000000000000000000;
 var tokenSupply = 100000*decimals;
 var tokenPerAccount = 100*decimals;
 
-var safemath, MyB, db, cm, owned, pausible, burner, access,
+var safemath, MyB, db, cm, api, owned, pausible, burner, access,
     platform, operators, escrow, crowdsaleETH, crowdsaleGeneratorETH,
     crowdsaleERC20, crowdsaleGeneratorERC20, dax;
 
@@ -34,8 +35,9 @@ module.exports = function(deployer, network, accounts) {
 
     //Link safemath library
     deployer.link(SafeMath,
+                  API,
                   BurnableToken,
-                  BrokerEscrow,
+                  AssetManagerEscrow,
                   Operators,
                   CrowdsaleETH,
                   CrowdsaleGeneratorETH,
@@ -69,6 +71,14 @@ module.exports = function(deployer, network, accounts) {
     console.log('ContractManager.sol: ' + cm.address);
     db.enableContractManagement(cm.address);
     cm.addContract('Owner', accounts[0]); //Give acounts[0] ability to write to database
+
+    return API.new(db.address);
+
+  }).then(function(instance) {
+
+    api = instance;
+    console.log('API.sol: ' + api.address);
+    cm.addContract('API', api.address);
 
     return SingleOwned.new(db.address);
 
@@ -127,13 +137,13 @@ module.exports = function(deployer, network, accounts) {
     console.log('AccessHierarchy.sol: ' + access.address);
     cm.addContract('AccessHierarchy', access.address);
 
-    return BrokerEscrow.new(db.address);
+    return AssetManagerEscrow.new(db.address);
 
   }).then(function(instance) {
 
     escrow = instance;
-    console.log('BrokerEscrow.sol: ' + escrow.address);
-    cm.addContract('BrokerEscrow', escrow.address);
+    console.log('AssetManagerEscrow.sol: ' + escrow.address);
+    cm.addContract('AssetManagerEscrow', escrow.address);
 
     return CrowdsaleGeneratorETH.new(db.address);
 
@@ -197,12 +207,13 @@ module.exports = function(deployer, network, accounts) {
       "ERC20Burner" : burner.address,
       "Database" : db.address,
       "ContractManager" : cm.address,
+      "API" : api.address,
       "SingleOwned" : owned.address,
       "Pausible" : pausible.address,
       "AccessHierarchy" : access.address,
       "PlatformFunds" : platform.address,
       "Operators" : operators.address,
-      "BrokerEscrow" : escrow.address,
+      "AssetManagerEscrow" : escrow.address,
       "CrowdsaleETH" : crowdsaleETH.address,
       "CrowdsaleGeneratorETH" : crowdsaleGeneratorETH.address,
       "CrowdsaleERC20" : crowdsaleERC20.address,

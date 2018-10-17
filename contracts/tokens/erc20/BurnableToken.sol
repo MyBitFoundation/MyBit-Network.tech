@@ -1,10 +1,11 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 import "./StandardToken.sol";
 import "../../interfaces/BurnableERC20.sol";
 import "../../math/SafeMath.sol";
 
-
+// @title ERC20 token contract with burning capabilities
+// @notice Standard ERC20 contract with a deflationary supply.
 contract BurnableToken is BurnableERC20 {
   using SafeMath for uint256;
 
@@ -18,6 +19,8 @@ contract BurnableToken is BurnableERC20 {
 
 
     // @notice constructor: initialized
+    // @param (string) _tokenURI = The URI where information about this token can be found
+    // @param (uint) _totalSupply = The initial supply of the token
     constructor(string _tokenURI, uint _totalSupply)
     public {
         supply = _totalSupply;                        // Update total supply
@@ -122,7 +125,7 @@ contract BurnableToken is BurnableERC20 {
 
   // ------------------------------------------------------------------------
   // Removes senders tokens from supply.
-  // Lowers user balance and totalSupply by _amount
+  // Lowers investor balance and totalSupply by _amount
   // ------------------------------------------------------------------------
   function burn(uint _amount)
   public
@@ -135,8 +138,8 @@ contract BurnableToken is BurnableERC20 {
   }
 
   // ------------------------------------------------------------------------
-  // An approved sender can burn _amount tokens of user _from
-  // Lowers user balance and supply by _amount
+  // An approved sender can burn _amount tokens of investor _from
+  // Lowers investor balance and supply by _amount
   // ------------------------------------------------------------------------
   function burnFrom(address _from, uint _amount)
   public

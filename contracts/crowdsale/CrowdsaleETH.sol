@@ -4,17 +4,17 @@ import "../math/SafeMath.sol";
 import "../interfaces/ERC20.sol";
 import "../interfaces/DBInterface.sol";
 import "../interfaces/EtherDividendInterface.sol";
-import "../ecosystem/ERC20Burner.sol";
+import "../access/ERC20Burner.sol";
 
-// @title An asset crowdsale contract.
+// @title An asset crowdsale contract, which accepts Ether for funding.
 // @author Kyle Dewhurst & Peter Phillips, MyBit Foundation
-// @notice handles the funding and refunding of a newly created asset crowdsale.
-// @dev this contract only accepts Ether
+// @notice Starts a new crowdsale and returns asset dividend tokens for Wei received.
+// @dev The AssetManager
 contract CrowdsaleETH {
     using SafeMath for uint256;
 
     DBInterface public database;
-    ERC20Burner private burner;
+    ERC20Burner public burner;
 
     // @notice Constructor: Initiates the database
     // @param: The address for the database contract
@@ -25,7 +25,8 @@ contract CrowdsaleETH {
     }
 
 
-    // @notice Users can send Ether here to fund asset if the deadline has not already passed.
+    // @notice Investors can send Ether here to fund asset, receiving an equivalent number of asset-tokens.
+    // @param (bytes32) _assetID = The ID of the asset which completed the crowdsale
     function buyAssetOrderETH(bytes32 _assetID)
     external
     payable
@@ -39,10 +40,10 @@ contract CrowdsaleETH {
       uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID)));
       uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
       if (msg.value >= tokensRemaining) {
-        require(finalizeCrowdsale(_assetID));
+        // Give assetManager his portion of tokens
+        require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID)))));
+        require(finalizeCrowdsale(_assetID));    // delete unnecessary variables
         require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens
-        // Give broker his portion of tokens
-        require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))), database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID))) ));
         require(assetToken.finishMinting());
         require(payoutETH(_assetID, amountToRaise));          // 1 token = 1 wei
         msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI after cost of tokens calculated and subtracted from msg.value
@@ -55,8 +56,8 @@ contract CrowdsaleETH {
     }
 
 
-    // @notice Contributors can retrieve their funds here if crowdsale has paased deadline
-    // TODO: call this on receiveApproval() so we can do it in a single transaction?
+    // @notice Contributors can retrieve their funds here if crowdsale has paased deadline and not reached its goal
+    // @param (bytes32) _assetID = The ID of the asset which completed the crowdsale
     function refund(bytes32 _assetID)
     external
     whenNotPaused
@@ -101,8 +102,10 @@ contract CrowdsaleETH {
     //                                            Internal Functions
     //------------------------------------------------------------------------------------------------------------------
 
-    // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where operator/broker can withdraw
+    // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where operator & assetManager can withdraw
     // @dev The contract manager needs to know  the address PlatformDistribution contract
+    // @param (bytes32) _assetID = The ID of the asset which completed the crowdsale
+    // @param (uint) _amount = The amount of WEI to be sent to the platform + the operator
     function payoutETH(bytes32 _assetID, uint _amount)
     internal
     returns (bool) {
@@ -121,11 +124,10 @@ contract CrowdsaleETH {
     // @param the ID of this asset.
     function finalizeCrowdsale(bytes32 _assetID)
     internal
-    whenNotPaused
     returns (bool) {
         database.setBool(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)), true);
-        database.deleteUint(keccak256(abi.encodePacked("amountToRaise", _assetID)));
-        database.deleteUint(keccak256(abi.encodePacked("investorSupply", _assetID)));
+        database.deleteUint(keccak256(abi.encodePacked("amountToRaise", _assetID)));     // This is now represented as totalSupply in the asset-token
+        database.deleteUint(keccak256(abi.encodePacked("assetManagerFee", _assetID)));   // This is now represented as tokens in AssetManagerFunds.sol
         return true;
     }
 
@@ -147,9 +149,8 @@ contract CrowdsaleETH {
       _;
     }
 
-    // @notice reverts if user hasn't approved burner to burn platform token
+    // @notice reverts if investor hasn't approved burner to burn platform token
     modifier burnRequired {
-      //emit LogSig(msg.sig);
       require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
       _;
     }
@@ -192,5 +193,4 @@ contract CrowdsaleETH {
     event LogRefund(bytes32 indexed _assetID, address indexed _funder, uint _amount);
     event LogAssetPayout(bytes32 indexed _assetID, address indexed _distributionContract, uint _amount);
     event LogDestruction(uint _amountSent, address indexed _caller);
-    event LogSig(bytes4 _sig);
   }

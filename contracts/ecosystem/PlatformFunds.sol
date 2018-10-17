@@ -12,7 +12,7 @@ contract PlatformFunds {
     database = Database(_database);
   }
 
-  // @notice owners can set the wallet to receive payments here
+  // @notice owners must set the wallet to receive payments here before initiating crowdsale
   // @dev will overwrite old wallet address
   function setPlatformWallet(address _walletAddress)
   external
@@ -21,6 +21,7 @@ contract PlatformFunds {
     emit LogPlatformWallet(_walletAddress);
   }
 
+  // @notice
   function setPlatformToken(address _tokenAddress)
   external
   onlyOwner {

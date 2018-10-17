@@ -12,3 +12,6 @@ Contract stores data variables as uniques hashes in 7 mappings for each data typ
 
 ### Events.sol
 Events in other contracts are passed here and sent out from this contract so the event log for the history of the platform is centralized in one place.
+
+### HashEncode.sol
+A helper library that is used to avoid typing keccak256(abi.encodePacked()) for all the database entries

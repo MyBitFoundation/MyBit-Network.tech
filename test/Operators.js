@@ -1,6 +1,6 @@
 const Database = artifacts.require("./database/Database.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
-const Operators = artifacts.require("./ecosystem/Operators.sol");
+const Operators = artifacts.require("./roles/Operators.sol");
 
 
 const owner = web3.eth.accounts[0];

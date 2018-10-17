@@ -10,6 +10,15 @@ contract HashFunctions {
     assembly { mstore(add(b, 32), x) }
   }
 
+
+
+  function getMethodID(string _functionString)
+  public
+  pure
+  returns (bytes4) {
+    return bytes4(keccak256(abi.encodePacked(_functionString)));
+  }
+
   function getAssetID(string _assetURI, uint _amountToRaise, bytes32 _operatorID)
   public
   view
@@ -30,7 +39,7 @@ contract HashFunctions {
   returns(bytes32) {
     return keccak256(abi.encodePacked(_param1, _param2, "destroy", _param3));
   }
-  
+
   function uintHash(uint _param)
   external
   pure

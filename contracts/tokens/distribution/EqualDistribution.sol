@@ -1,13 +1,12 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 import '../../math/SafeMath.sol';
 import '../../interfaces/PullPayment.sol';
 
 // @title A contract made to equally distribute payments amongs a list of beneficiaries
-// @author Kyle Dewhurst, MyBit Foundation
+// @author Kyle Dewhurst & Peter Phillips MyBit Foundation
 // @notice This contract allows someone to leave ETH for a beneficiary
-// @notice assumes each beneficiary receives equal amount
-// TODO: Test for rounding errors
+// @dev assumes each beneficiary receives equal amount
 contract EqualDistribution {
   using SafeMath for uint;
 
@@ -22,6 +21,7 @@ contract EqualDistribution {
   // @param (address) _beneficiary = The ETH address of who is to receive the income. Could be a distribution contract.
   constructor(address[] _beneficiaries)
   public{
+    require(_beneficiaries.length < 200); 
     beneficiaries = _beneficiaries;
   }
 
@@ -60,12 +60,12 @@ contract EqualDistribution {
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // @notice check if the address is one of the beneficiaries
-  function isBeneficiary(address _user)
+  function isBeneficiary(address _beneficiary)
   public
   view
   returns (bool) {
     for (uint i = 0; i < beneficiaries.length; i++){
-      if (beneficiaries[i] == _user) { return true; }
+      if (beneficiaries[i] == _beneficiary) { return true; }
     }
     return false;
   }
