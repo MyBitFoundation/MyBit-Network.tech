@@ -69,9 +69,4 @@ contract('SafeMath', async() => {
       assert.equal(total, 11);
     });
 
-    it('Bytes to Uint', async() => {
-      let total = await sf.bToU('100');
-      console.log(total);
-      assert.equal(total, 100);
-    });
 });
