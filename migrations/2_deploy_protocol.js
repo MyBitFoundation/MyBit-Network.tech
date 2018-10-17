@@ -9,8 +9,8 @@ var Pausible = artifacts.require("./ownership/Pausible.sol");
 var ERC20Burner = artifacts.require("./ecosystem/ERC20Burner.sol");
 var AccessHierarchy = artifacts.require("./access/AccessHierarchy.sol");
 var PlatformFunds = artifacts.require("./ecosystem/PlatformFunds.sol");
-var Operators = artifacts.require("./ecosystem/Operators.sol");
-var BrokerEscrow = artifacts.require("./ecosystem/BrokerEscrow.sol");
+var Operators = artifacts.require("./roles/Operators.sol");
+var Escrow = artifacts.require("./roles/AssetManagerEscrow.sol");
 var CrowdsaleGeneratorETH = artifacts.require("./crowdsale/CrowdsaleGeneratorETH.sol");
 var CrowdsaleETH = artifacts.require("./crowdsale/CrowdsaleETH.sol");
 var CrowdsaleGeneratorERC20 = artifacts.require("./crowdsale/CrowdsaleGeneratorERC20.sol");
@@ -37,7 +37,7 @@ module.exports = function(deployer, network, accounts) {
     deployer.link(SafeMath,
                   API,
                   BurnableToken,
-                  BrokerEscrow,
+                  Escrow,
                   Operators,
                   CrowdsaleETH,
                   CrowdsaleGeneratorETH,
@@ -137,13 +137,13 @@ module.exports = function(deployer, network, accounts) {
     console.log('AccessHierarchy.sol: ' + access.address);
     cm.addContract('AccessHierarchy', access.address);
 
-    return BrokerEscrow.new(db.address);
+    return Escrow.new(db.address);
 
   }).then(function(instance) {
 
     escrow = instance;
-    console.log('BrokerEscrow.sol: ' + escrow.address);
-    cm.addContract('BrokerEscrow', escrow.address);
+    console.log('AssetManagerEscrow.sol: ' + escrow.address);
+    cm.addContract('AssetManagerEscrow', escrow.address);
 
     return CrowdsaleGeneratorETH.new(db.address);
 
@@ -213,7 +213,7 @@ module.exports = function(deployer, network, accounts) {
       "AccessHierarchy" : access.address,
       "PlatformFunds" : platform.address,
       "Operators" : operators.address,
-      "BrokerEscrow" : escrow.address,
+      "AssetManagerEscrow" : escrow.address,
       "CrowdsaleETH" : crowdsaleETH.address,
       "CrowdsaleGeneratorETH" : crowdsaleGeneratorETH.address,
       "CrowdsaleERC20" : crowdsaleERC20.address,
