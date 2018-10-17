@@ -72,7 +72,7 @@ contract API {
     return (totalVotes * 100) / TokenView(_assetToken).totalSupply();
   }
 
-  function getBecomeBrokerParameterHash(bytes32 _assetID, address _oldBroker, address _newBroker, uint _amount, bool _burn)
+  function getAssetManagerParameterHash(bytes32 _assetID, address _oldBroker, address _newBroker, uint _amount, bool _burn)
   public
   pure
   returns (bytes32){

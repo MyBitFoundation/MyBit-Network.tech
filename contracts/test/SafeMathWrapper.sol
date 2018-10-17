@@ -26,8 +26,4 @@ contract SafeMathWrapper {
     return a.getFractionalAmount(b);
   }
 
-  function bToU(bytes a) external pure returns (uint256) {
-    return a.bytesToUint();
-  }
-
 }
