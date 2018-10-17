@@ -5,7 +5,7 @@ import "../math/SafeMath.sol";
 
 interface TokenView {
   function totalSupply() external view returns (uint);
-  function balanceOf(address _user) external view returns (uint);
+  function balanceOf(address _investor) external view returns (uint);
   function valuePerToken() external view returns (uint);
   function scalingFactor() external view returns (uint);
   function assetIncome() external view returns (uint);
@@ -13,21 +13,16 @@ interface TokenView {
 
 interface DBView {
   function uintStorage(bytes32 _key) external view returns (uint);
-
   function stringStorage(bytes32 _key) external  view returns (string);
-
   function addressStorage(bytes32 _key) external  view returns (address);
-
   function bytesStorage(bytes32 _key) external view returns (bytes);
-
   function bytes32Storage(bytes32 _key) external view returns (bytes32);
-
   function boolStorage(bytes32 _key) external view returns (bool);
-
   function intStorage(bytes32 _key) external view returns (bool);
 }
 
-
+// @title A contract that gets variables from the _database
+// @notice The API contract can only view the database. It has no write privileges
 contract API {
   using SafeMath for uint256;
 
@@ -45,21 +40,21 @@ contract API {
 
 
   // @notice returns the amount of tokens unlocked and free to spend for _ser
-  function getNumTokensAvailable(bytes32 _assetID, address _user)
+  function getNumTokensAvailable(bytes32 _assetID, address _investor)
   public
   view
   returns (uint) {
-    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", _assetID, _user)));
+    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", _assetID, _investor)));
     address assetToken = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)));
-    uint balance = TokenView(assetToken).balanceOf(_user);
+    uint balance = TokenView(assetToken).balanceOf(_investor);
     return balance.sub(amountLocked);
   }
 
-  function getUserVotes(bytes32 _executionID, address _user)
+  function getInvestorVotes(bytes32 _executionID, address _investor)
   public
   view
   returns (uint) {
-    return database.uintStorage(keccak256(abi.encodePacked("userVotes", _executionID, _user)));
+    return database.uintStorage(keccak256(abi.encodePacked("investorVotes", _executionID, _investor)));
   }
 
   function getTotalVotes(bytes32 _executionID)
@@ -77,7 +72,7 @@ contract API {
     return (totalVotes * 100) / TokenView(_assetToken).totalSupply();
   }
 
-  function getBecomeBrokerParameterHash(bytes32 _assetID, address _oldBroker, address _newBroker, uint _amount, bool _burn)
+  function getAssetManagerParameterHash(bytes32 _assetID, address _oldBroker, address _newBroker, uint _amount, bool _burn)
   public
   pure
   returns (bytes32){
@@ -105,11 +100,11 @@ contract API {
     return keccak256(abi.encodePacked(_broker, _amountToRaise, _operatorID, _assetURI));
   }
 
-  function getOrderID(bytes _assetID, address _user, uint _amount, uint _price, bool _buyOrder)
+  function getOrderID(bytes _assetID, address _investor, uint _amount, uint _price, bool _buyOrder)
   external
   pure
   returns(bytes32) {
-    return keccak256(abi.encodePacked(_assetID, _user, _amount, _price, _buyOrder));
+    return keccak256(abi.encodePacked(_assetID, _investor, _amount, _price, _buyOrder));
   }
 
 
@@ -324,11 +319,11 @@ contract API {
     return currentState;
   }
 
-  function getUserPermission(address _user)
+  function getUserPermission(address _investor)
   public
   view
   returns(bool) {
-    bool status = database.boolStorage(keccak256(abi.encodePacked(getCurrentState(), _user)));
+    bool status = database.boolStorage(keccak256(abi.encodePacked(getCurrentState(), _investor)));
     return status;
   }
 

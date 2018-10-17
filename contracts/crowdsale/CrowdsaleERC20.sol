@@ -6,16 +6,17 @@ import "../interfaces/DBInterface.sol";
 import "../interfaces/ERC20DividendInterface.sol";
 import "../access/ERC20Burner.sol";
 
-// @title An asset crowdsale contract.
+// @title An asset crowdsale contract which accepts funding from ERC20 tokens.
+// @notice Begins a crowdfunding period for a digital asset, minting asset dividend tokens to investors when particular ERC20 token is received
 // @author Kyle Dewhurst, MyBit Foundation
 // @notice creates a dividend token to represent the newly created asset.
 contract CrowdsaleERC20{
   using SafeMath for uint256;
 
-  DBInterface private database;
-  ERC20Burner private burner;
+  DBInterface public database;
+  ERC20Burner public burner;
 
-  // @notice This contract
+  // @notice Constructor: initializes database instance
   // @param: The address for the platform database
   constructor(address _database)
   public{
@@ -24,8 +25,9 @@ contract CrowdsaleERC20{
   }
 
 
-  // @notice Users can send ERC20 here to fund asset if the deadline has not already passed.
-  // @param (bytes32) _assetID = The ID of the asset tokens, user wishes to purchase
+  // @notice Investors can send ERC20 tokens here to fund an asset, receiving an equivalent number of asset-tokens.
+  // @dev investor must approve this contract to transfer tokens
+  // @param (bytes32) _assetID = The ID of the asset tokens, investor wishes to purchase
   // @param (uint) _amount = The amount to spend purchasing this asset
   function buyAssetOrderERC20(bytes32 _assetID, uint _amount)
   external
@@ -44,7 +46,6 @@ contract CrowdsaleERC20{
       require(finalizeCrowdsale(_assetID));
       require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens to investor
       // Give assetManager his portion of tokens
-      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID))) ));
       require(assetToken.finishMinting());
       require(payoutERC20(_assetID, amountToRaise));          // 1 token = 1 wei
     }
@@ -72,9 +73,6 @@ contract CrowdsaleERC20{
     ERC20DividendInterface assetToken = ERC20DividendInterface(tokenAddress);
     ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
     uint refundValue = assetToken.totalSupply(); //token=wei
-    // @dev We don't want to mark a refund 'finalized' because then the assetManager
-    //      would never be able to pull out their escrowed funds
-    //require(finalizeCrowdsale(_assetID));
     fundingToken.approve(tokenAddress, refundValue);
     assetToken.issueDividends(refundValue);
     return true;
@@ -152,7 +150,7 @@ contract CrowdsaleERC20{
     _;
   }
 
-  // @notice reverts if user hasn't approved burner to burn platform token
+  // @notice reverts if investor hasn't approved burner to burn platform token
   modifier burnRequired {
     require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
     _;
