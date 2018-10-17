@@ -2,7 +2,7 @@ pragma solidity 0.4.24;
 
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
-import "./ERC20Burner.sol";
+import "../access/ERC20Burner.sol";
 import "../tokens/erc20/DividendToken.sol";
 import "../tokens/distribution/FixedDistribution.sol";
 
@@ -32,18 +32,7 @@ contract AssetGenerator {
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _tokenURI));
     require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))) == address(0));
     FixedDistribution assetInstance = new FixedDistribution(_tokenURI, _tokenHolders, _amount);
-    database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
-    //Get broker fee, but is this info needed at all?
-    /*
-    uint brokerFee = 0;
-    for(uint i=0; i<_tokenHolders.length; i++){
-      if(_tokenHolders[i] == msg.sender){
-        brokerFee = _amount[i];
-        break;
-      }
-    }
-    database.setUint(keccak256(abi.encodePacked("brokerFee", assetID)), brokerFee);
-    */
+    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetInstance));
     emit LogAssetCreated(assetID, address(assetInstance), msg.sender, _tokenURI);
     return true;
@@ -60,16 +49,11 @@ contract AssetGenerator {
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _tokenURI));
     require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))) == address(0));
     DividendToken assetInstance = new DividendToken(_tokenURI, assetGeneratorAddress);   // Gives this contract all new asset tokens
-    //uint brokerFee = 0;
     for (uint8 i = 0; i < _tokenHolders.length; i++) {
-      /*if(_tokenHolders[i] == msg.sender){
-        brokerFee = _amount[i];
-      }*/
       assetInstance.mint(_tokenHolders[i], _amount[i]);
     }
     assetInstance.finishMinting();
-    database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
-    //database.setUint(keccak256(abi.encodePacked("brokerFee", assetID)), brokerFee);
+    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetInstance));
     emit LogTradeableAssetCreated(assetID, address(assetInstance), msg.sender, _tokenURI);
     return true;
@@ -78,18 +62,14 @@ contract AssetGenerator {
 
   // @notice reverts if user hasn't approved burner to burn platform token
   modifier burnRequired {
-    //emit LogSig(msg.sig);
     ERC20Burner burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
     require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
     _;
   }
 
 
-  event LogAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _broker, string _tokenURI);
-  event LogTradeableAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _broker, string _tokenURI);
-  event LogSig(bytes4 _sig);
+  event LogAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
+  event LogTradeableAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
 
-  // TODO: add functionality for asset with no broker
-  // function createSelfGovernedAsset()
 
 }

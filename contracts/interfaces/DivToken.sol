@@ -40,6 +40,9 @@ interface DivToken {
     external
     returns (bool success);
 
+    function withdraw()
+    external
+    returns (bool);
 
     // @notice Updates incomeClaimed, sends all wei to the token holder
     function collectOwedDividends()
@@ -98,6 +101,10 @@ interface DivToken {
     view
     returns (uint);
 
+    function getERC20()
+    external
+    view
+    returns (address);
 
     event LogIncomeReceived(address indexed _sender, uint _paymentAmount);
     event LogIncomeCollected(uint _block, address _address, uint _amount);

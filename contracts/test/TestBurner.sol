@@ -1,39 +1,39 @@
 pragma solidity 0.4.24;
 
-import '../ecosystem/ERC20Burner.sol'; 
-import '../database/Database.sol'; 
+import '../access/ERC20Burner.sol'; 
+import '../database/Database.sol';
 
 contract TestBurner {
 
-  ERC20Burner public burner; 
+  ERC20Burner public burner;
   Database public database;
 
-  uint public amountBurnt; 
+  uint public amountBurnt;
 
   constructor(address _database, address _burner)
   public {
-    burner = ERC20Burner(_burner); 
-    database = Database(_database); 
+    burner = ERC20Burner(_burner);
+    database = Database(_database);
   }
 
   function burnTokensManualFee(uint _amount)
-  external { 
+  external {
     require(burner.burn(msg.sender, _amount));
   }
 
   // Must set fee in ERC20Burner first
   function burnTokens()
-  external { 
+  external {
     bytes4 methodID = bytes4(keccak256(abi.encodePacked("burnTokens()")));
-    uint amountToBurn = database.uintStorage(keccak256(abi.encodePacked(methodID, address(this)))); 
+    uint amountToBurn = database.uintStorage(keccak256(abi.encodePacked(methodID, address(this))));
     require(burner.burn(msg.sender, amountToBurn));
-    amountBurnt += amountToBurn; 
+    amountBurnt += amountToBurn;
   }
 
   function getMethodID()
-  external 
-  pure 
-  returns (bytes4) { 
+  external
+  pure
+  returns (bytes4) {
     return bytes4(keccak256(abi.encodePacked("burnTokens()")));
   }
 
