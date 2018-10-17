@@ -46,7 +46,6 @@ contract CrowdsaleERC20{
       require(finalizeCrowdsale(_assetID));
       require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens to investor
       // Give assetManager his portion of tokens
-      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID))) ));
       require(assetToken.finishMinting());
       require(payoutERC20(_assetID, amountToRaise));          // 1 token = 1 wei
     }
@@ -74,9 +73,6 @@ contract CrowdsaleERC20{
     ERC20DividendInterface assetToken = ERC20DividendInterface(tokenAddress);
     ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
     uint refundValue = assetToken.totalSupply(); //token=wei
-    // @dev We don't want to mark a refund 'finalized' because then the assetManager
-    //      would never be able to pull out their escrowed funds
-    //require(finalizeCrowdsale(_assetID));
     fundingToken.approve(tokenAddress, refundValue);
     assetToken.issueDividends(refundValue);
     return true;
