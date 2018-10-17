@@ -14,7 +14,7 @@ contract FixedDistribution is StandardDistribution {
   // @notice constructor: initialized
   constructor(string _tokenURI, address[] _tokenHolders, uint[] _amount)
   public {
-    require(_tokenHolders.length < 250 && _tokenHolders.length == _amount.length);
+    require(_tokenHolders.length < 200 && _tokenHolders.length == _amount.length);
     uint _totalSupply;
     tokenURI = _tokenURI;
     for (uint8 i = 0; i < _tokenHolders.length; i++) {

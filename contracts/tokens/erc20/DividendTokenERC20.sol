@@ -93,7 +93,7 @@ contract DividendTokenERC20 is MintableToken {
         return true;
     }
 
-    //In case a user transferred a token directly to this contract
+    //In case a investor transferred a token directly to this contract
     //anyone can run this function to clean up the balances
     //and distribute the difference to token holders
     function checkForTransfers()
@@ -114,21 +114,21 @@ contract DividendTokenERC20 is MintableToken {
     //                           View functions
     // ------------------------------------------------------------------------
 
-    // @notice Calculates how much value _user holds
-    function collectLatestPayments(address _user)
+    // @notice Calculates how much value _investor holds
+    function collectLatestPayments(address _investor)
     public
     view
     returns (uint) {
-        uint valuePerTokenDifference = valuePerToken.sub(previousValuePerToken[_user]);
-        return valuePerTokenDifference.mul(balances[_user]);
+        uint valuePerTokenDifference = valuePerToken.sub(previousValuePerToken[_investor]);
+        return valuePerTokenDifference.mul(balances[_investor]);
     }
 
-    // @notice Calculates how much wei user is owed. (points + incomeClaimed) / 10**32
-    function getAmountOwed(address _user)
+    // @notice Calculates how much wei investor is owed. (points + incomeClaimed) / 10**32
+    function getAmountOwed(address _investor)
     public
     view
     returns (uint) {
-        return (collectLatestPayments(_user).add(incomeClaimed[_user]).div(scalingFactor));
+        return (collectLatestPayments(_investor).add(incomeClaimed[_investor]).div(scalingFactor));
     }
 
     function getERC20()
@@ -142,11 +142,11 @@ contract DividendTokenERC20 is MintableToken {
     //                            Modifiers
     // ------------------------------------------------------------------------
 
-    // Updates the amount owed to user while holding tokenSupply
+    // Updates the amount owed to investor while holding tokenSupply
     // @dev must be called before transfering tokens
-    modifier updateIncomeClaimed(address _user) {
-        incomeClaimed[_user] = incomeClaimed[_user].add(collectLatestPayments(_user));
-        previousValuePerToken[_user] = valuePerToken;
+    modifier updateIncomeClaimed(address _investor) {
+        incomeClaimed[_investor] = incomeClaimed[_investor].add(collectLatestPayments(_investor));
+        previousValuePerToken[_investor] = valuePerToken;
         _;
     }
 

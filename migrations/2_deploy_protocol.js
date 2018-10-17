@@ -6,11 +6,11 @@ var ContractManager = artifacts.require("./database/ContractManager.sol");
 var API = artifacts.require("./database/API.sol");
 var SingleOwned = artifacts.require("./ownership/SingleOwned.sol");
 var Pausible = artifacts.require("./ownership/Pausible.sol");
-var ERC20Burner = artifacts.require("./ecosystem/ERC20Burner.sol");
+var ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 var AccessHierarchy = artifacts.require("./access/AccessHierarchy.sol");
 var PlatformFunds = artifacts.require("./ecosystem/PlatformFunds.sol");
 var Operators = artifacts.require("./roles/Operators.sol");
-var Escrow = artifacts.require("./roles/AssetManagerEscrow.sol");
+var AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
 var CrowdsaleGeneratorETH = artifacts.require("./crowdsale/CrowdsaleGeneratorETH.sol");
 var CrowdsaleETH = artifacts.require("./crowdsale/CrowdsaleETH.sol");
 var CrowdsaleGeneratorERC20 = artifacts.require("./crowdsale/CrowdsaleGeneratorERC20.sol");
@@ -37,7 +37,7 @@ module.exports = function(deployer, network, accounts) {
     deployer.link(SafeMath,
                   API,
                   BurnableToken,
-                  Escrow,
+                  AssetManagerEscrow,
                   Operators,
                   CrowdsaleETH,
                   CrowdsaleGeneratorETH,
@@ -137,7 +137,7 @@ module.exports = function(deployer, network, accounts) {
     console.log('AccessHierarchy.sol: ' + access.address);
     cm.addContract('AccessHierarchy', access.address);
 
-    return Escrow.new(db.address);
+    return AssetManagerEscrow.new(db.address);
 
   }).then(function(instance) {
 

@@ -8,7 +8,6 @@ import '../../interfaces/PullPayment.sol';
 // @notice This token contract can receive payments in the fallback function and token owners can withdraw their share
 // @author Kyle Dewhurst, MyBitFoundation
 // Credit goes to Nick Johnson for the dividend token https://medium.com/@weka/dividend-bearing-tokens-on-ethereum-42d01c710657
-
 contract StandardDistribution{
   using SafeMath for uint;
 
