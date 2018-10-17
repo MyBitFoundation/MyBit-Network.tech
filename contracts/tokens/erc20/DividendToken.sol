@@ -39,7 +39,7 @@ contract DividendToken is MintableToken {
         return true;
     }
 
-    // @notice A 3rd party can transfer tokens if user approves them to do so
+    // @notice A 3rd party can transfer tokens if investor approves them to do so
     // @dev Transfer _amount of tokens if _from has allowed msg.sender to do so.
     // @param (address) _from = The address who approved msg.sender to spend tokens
     // @param (address) _to = The address who will receive the tokens
@@ -114,32 +114,32 @@ contract DividendToken is MintableToken {
     //                           View functions
     // ------------------------------------------------------------------------
 
-    // @notice Calculates how much more income is owed to user since last calculation
-    function collectLatestPayments(address _user)
+    // @notice Calculates how much more income is owed to investor since last calculation
+    function collectLatestPayments(address _investor)
     private
     view
     returns (uint) {
-        uint valuePerTokenDifference = valuePerToken.sub(previousValuePerToken[_user]);
-        return valuePerTokenDifference.mul(balances[_user]);
+        uint valuePerTokenDifference = valuePerToken.sub(previousValuePerToken[_investor]);
+        return valuePerTokenDifference.mul(balances[_investor]);
     }
 
-    // @notice Calculates how much wei user is owed. (points + incomeOwed) / 10**32
-    function getAmountOwed(address _user)
+    // @notice Calculates how much wei investor is owed. (points + incomeOwed) / 10**32
+    function getAmountOwed(address _investor)
     public
     view
     returns (uint) {
-        return (collectLatestPayments(_user).add(incomeOwed[_user]).div(scalingFactor));
+        return (collectLatestPayments(_investor).add(incomeOwed[_investor]).div(scalingFactor));
     }
 
     // ------------------------------------------------------------------------
     //                            Modifiers
     // ------------------------------------------------------------------------
 
-    // Updates the amount owed to user while holding tokenSupply
+    // Updates the amount owed to investor while holding tokenSupply
     // @dev must be called before transfering tokens
-    modifier updateIncomeClaimed(address _user) {
-        incomeOwed[_user] = incomeOwed[_user].add(collectLatestPayments(_user));
-        previousValuePerToken[_user] = valuePerToken;
+    modifier updateIncomeClaimed(address _investor) {
+        incomeOwed[_investor] = incomeOwed[_investor].add(collectLatestPayments(_investor));
+        previousValuePerToken[_investor] = valuePerToken;
         _;
     }
 

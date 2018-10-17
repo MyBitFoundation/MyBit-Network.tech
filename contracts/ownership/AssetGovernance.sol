@@ -36,12 +36,12 @@ contract AssetGovernance {
   returns (bool) {
     bytes32 executionID = keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash));
     bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", executionID));
-    bytes32 userVotesID = keccak256(abi.encodePacked("userVotes", executionID, msg.sender));
+    bytes32 investorVotesID = keccak256(abi.encodePacked("investorVotes", executionID, msg.sender));
     uint256 numVotes = database.uintStorage(numVotesID);
-    uint256 userVotes = database.uintStorage(userVotesID);
+    uint256 investorVotes = database.uintStorage(investorVotesID);
     require(lockTokens(_assetID, msg.sender, _amountToLock));
     database.setUint(numVotesID, numVotes.add(_amountToLock));
-    database.setUint(userVotesID, userVotes.add(_amountToLock));
+    database.setUint(investorVotesID, investorVotes.add(_amountToLock));
     return true;
   }
 
@@ -54,12 +54,12 @@ contract AssetGovernance {
   returns (bool) {
     bytes32 executionID = keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash));
     bytes32 voteTotalID = keccak256(abi.encodePacked("voteTotal", executionID));
-    bytes32 userVotesID = keccak256(abi.encodePacked("userVotes", executionID));
-    uint userVotes = database.uintStorage(userVotesID);
+    bytes32 investorVotesID = keccak256(abi.encodePacked("investorVotes", executionID));
+    uint investorVotes = database.uintStorage(investorVotesID);
     uint totalVotes = database.uintStorage(voteTotalID);
-    require(userVotes <= _amountToUnlock);   // 1 vote = 1 token
+    require(investorVotes <= _amountToUnlock);   // 1 vote = 1 token
     database.setUint(voteTotalID, totalVotes.sub(_amountToUnlock));
-    database.setUint(userVotesID, userVotes.sub(_amountToUnlock));
+    database.setUint(investorVotesID, investorVotes.sub(_amountToUnlock));
     return true;
   }
 
@@ -85,14 +85,14 @@ contract AssetGovernance {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // @notice lock asset tokens to be able to vote
-  // @dev keeps track of how many assetTokens this user has locked (for GovernedToken checks)
-  function lockTokens(bytes32 _assetID, address _user, uint _amount)
+  // @dev keeps track of how many assetTokens this investor has locked (for GovernedToken checks)
+  function lockTokens(bytes32 _assetID, address _investor, uint _amount)
   internal
   returns (bool) {
     TokenView assetToken = TokenView(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-    uint numTokensLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", _assetID, _user)));
-    require(_amount <= assetToken.balanceOf(_user).sub(numTokensLocked));
-    database.setUint(keccak256(abi.encodePacked("tokensLocked", _assetID, _user)), numTokensLocked.add(_amount));
+    uint numTokensLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", _assetID, _investor)));
+    require(_amount <= assetToken.balanceOf(_investor).sub(numTokensLocked));
+    database.setUint(keccak256(abi.encodePacked("tokensLocked", _assetID, _investor)), numTokensLocked.add(_amount));
     return true;
   }
 

@@ -5,9 +5,9 @@ import "../interfaces/DBInterface.sol";
 import "../access/ERC20Burner.sol";
 import "../tokens/erc20/DividendTokenERC20.sol";
 
-// @title An asset crowdsale contract.
+// @title A crowdsale generator contract
 // @author Kyle Dewhurst & Peter Phillips, MyBit Foundation
-// @notice handles the funding and refunding of asset crowdsales
+// @notice AssetManagers can initiate a crowdsale that accepts ERC20 tokens as payment here
 contract CrowdsaleGeneratorERC20 {
   using SafeMath for uint256;
 
@@ -24,8 +24,14 @@ contract CrowdsaleGeneratorERC20 {
       burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
-  // @notice assetManagers can initiate a crowdfund for a new asset here
-  // @dev this crowdsale contract is granted the whole supply to distribute to investors
+  // @notice AssetManagers can initiate a crowdfund for a new asset here
+  // @dev the crowdsaleERC20 contract is granted rights to mint asset-tokens as it receives funding
+  // @param (string) _assetURI = The location where information about the asset can be found
+  // @param (bytes32) _operatorID = The ID of the operator who is to create and install this asset
+  // @param (uint) _fundingLength = The number of seconds this crowdsale is to go on for until it fails
+  // @param (uint) _amountToRaise = The amount of tokens required to raise for the crowdsale to be a success
+  // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
+  // @param (address) _fundingToken = The ERC20 token to be used to fund the crowdsale (Operator must accept this token as payment)
   function createAssetOrderERC20(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, uint _assetManagerPerc, address _fundingToken)
   external
   isTrue(_assetManagerPerc < 100)
@@ -58,7 +64,7 @@ contract CrowdsaleGeneratorERC20 {
     _;
   }
 
-  // @notice reverts if user hasn't approved burner to burn platform token
+  // @notice reverts if AssetManager hasn't approved burner to burn platform token
   modifier burnRequired {
     //emit LogSig(msg.sig);
     require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));

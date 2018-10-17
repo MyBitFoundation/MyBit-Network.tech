@@ -45,14 +45,14 @@ contract GovernedToken is DividendToken {
       return true;
   }
 
-  // @notice returns the amount of tokens _user has locked for this asset
-  function getAmountAvailable(address _user)
+  // @notice returns the amount of tokens _investor has locked for this asset
+  function getAmountAvailable(address _investor)
   public
   view
   returns (uint) {
     bytes32 assetID = database.bytes32Storage(keccak256(abi.encodePacked("assetTokenID", address(this))));
-    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", assetID, _user)));
-    uint balance = balances[_user];
+    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", assetID, _investor)));
+    uint balance = balances[_investor];
     uint available = balance.sub(amountLocked);
     return available;
   }

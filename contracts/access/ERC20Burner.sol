@@ -6,7 +6,7 @@ import "../interfaces/DBInterface.sol";
 /// @title A contract for burning ERC20 tokens as usage fee for dapps
 /// @author Kyle Dewhurst & Peter Phillips MyBit Foundation
 /// @notice Allows Dapps to call this contract to burn ERC20 tokens as a usage fee
-/// @dev This contract does not accept tokens. It only burns tokens from users wallets when approved to do so
+/// @dev This contract does not accept tokens. It only burns tokens from investors wallets to run platform functionality
 contract ERC20Burner {
 
   BurnableERC20 public token;  // The instance of the ERC20 burner contract
@@ -22,7 +22,7 @@ contract ERC20Burner {
     require(address(token) != address(0));
   }
 
-  // @notice authorized contracts can burn mybit tokens here if the user has approved this contract to do so
+  // @notice authorized contracts can burn mybit tokens here if the investor has approved this contract to do so
   // @param (address) _tokenHolder = the address of the mybit token holder who wishes to burn _amount of tokens
   // @param (uint) _amount = the amount of tokens to be burnt (must include decimal places)
   function burn(address _tokenHolder, uint _amount)
@@ -73,10 +73,10 @@ contract ERC20Burner {
     _;
   }
 
-  // @notice reverts if user hasn't accepted current contract state or if he doesn't ignore state changes entirely
-  modifier acceptedState(address _user) {
+  // @notice reverts if investor hasn't accepted current contract state or if he doesn't ignore state changes entirely
+  modifier acceptedState(address _investor) {
     bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));
-    require(database.boolStorage(keccak256(abi.encodePacked(currentState, _user))) || database.boolStorage(keccak256(abi.encodePacked("ignoreStateChanges", _user))));
+    require(database.boolStorage(keccak256(abi.encodePacked(currentState, _investor))) || database.boolStorage(keccak256(abi.encodePacked("ignoreStateChanges", _investor))));
     _;
   }
 
