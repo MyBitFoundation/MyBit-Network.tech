@@ -219,7 +219,7 @@ contract('AssetManagerFunds', async() => {
     assert.equal(await divTokenERC20.assetIncome(), 5*ETH);
     assert.equal(await burnToken.balanceOf(divTokenERC20.address), 5*ETH);
   });
-
+/*
   it("Add multiple assets", async() => {
     var number = 41; //We can test multiple assets to find the limit, the limit is 42 (41 + 1 from 'Generate assetID')
     for(var i=0; i<number; i++){
@@ -248,7 +248,7 @@ contract('AssetManagerFunds', async() => {
       await testToken.issueDividends(0.1*ETH, {from:operator});
     }
   });
-
+*/
   it("Withdraw dividends ERC20", async() => {
     let balanceBefore = await burnToken.balanceOf(user1);
     let amountOwed = await divTokenERC20.getAmountOwed(user1);
