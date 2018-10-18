@@ -403,7 +403,7 @@ contract('Ether Crowdsale', async() => {
   // amountToRaise == 1
   it('Start funding with small amount to raise', async() => {
     assetURI = 'lowgoals.com';
-    assetManagerFee = 10;
+    assetManagerFee = 50;
     let tx = await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 1, assetManagerFee, {from:assetManager});
     //console.log(tx.logs[0].args._assetID);
     assetID = tx.logs[0].args._assetID;
@@ -412,15 +412,16 @@ contract('Ether Crowdsale', async() => {
   });
 
 
-  it('user3 funding', async() => {
+  // Note it's possible for asset-token supply to be larger than wei received due to rounding error
+  // This example makes 2 asset tokens, but only receives 1 WEI as it mints a token for the assetmanager
+  it('user3 funding 1 wei', async() => {
     let balanceBefore = web3.eth.getBalance(user3);
-    let tx = await crowdsale.buyAssetOrderETH(assetID, {from:user3, value:2*ETH, gas: 300000, gasPrice: 1});
+    let tx = await crowdsale.buyAssetOrderETH(assetID, {from:user3, value:2*ETH});
     let balanceAfter = web3.eth.getBalance(user3);
-    console.log(balanceBefore);
-    console.log(balanceAfter);
     let user3Tokens = await token.balanceOf(user3);
     let tokenSupply = await token.totalSupply()
     assert.equal(user3Tokens.eq(1), true);
+    assert.equal(await token.balanceOf(assetManager), 1);
     assert.equal(await token.mintingFinished(), true);
     assert.equal(await api.crowdsaleFinalized(assetID), true);
   });
