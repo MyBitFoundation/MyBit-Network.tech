@@ -63,7 +63,7 @@ contract AssetManagerFunds {
   external
   nonReentrant
   returns (bool) {
-    require(_assetID.length < 50);
+    require(_assetID.length <= 42);
     uint[] memory payoutAmounts = new uint[](_assetID.length);
     address[] memory tokenAddresses = new address[](_assetID.length);
     uint8 numEntries;
@@ -97,7 +97,7 @@ contract AssetManagerFunds {
   external
   nonReentrant
   returns (bool) {
-    require(_assetID.length < 50);
+    require(_assetID.length <= 93);
     uint weiOwed;
     for(uint8 i = 0; i < _assetID.length; i++){
       require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID[i]))));
