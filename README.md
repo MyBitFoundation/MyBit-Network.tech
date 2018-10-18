@@ -9,9 +9,9 @@
 # MyBit-Network: Contract SDK
 [![CircleCI](https://circleci.com/gh/MyBitFoundation/MyBit-Network.tech.svg?style=shield)](https://circleci.com/gh/MyBitFoundation/MyBit-Network.tech) [![Coverage Status](https://coveralls.io/repos/github/MyBitFoundation/MyBit-Network.tech/badge.svg)](https://coveralls.io/github/MyBitFoundation/MyBit-Network.tech)
 
-A software development kit for the automated machine economy.
+A software development kit for building wealth management use cases on the Ethereum network.
 
-The SDK's contain a local blockchain and smart-contracts for developers to run and deploy dapps that allow for the funding and distribution of virtual assets represented by ERC tokens on the Ethereum blockchain. The contracts can be combined in different ways to customize the crowdfunding and re-distribution details, or plug into a local MyBitChain to test already operating assets.
+The SDK contains a local blockchain and smart-contracts for developers to run and deploy dapps that allow for the funding and distribution of virtual assets represented by ERC tokens on the Ethereum blockchain. The contracts can be combined in different ways to customize the crowdfunding and re-distribution details, or plug into a local MyBitChain to test already operating assets.
 
 ## Getting Started
 
