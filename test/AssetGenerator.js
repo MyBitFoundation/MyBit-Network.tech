@@ -91,7 +91,7 @@ contract('Asset Generator', async() => {
     await burner.setFee('0x4e38c7f4', assetGen.address,  250);
   });
 
-  it('Give platform burning permission', async() => {
+  it('Give permission to contract state', async() => {
     for(var i=1; i<web3.eth.accounts.length; i++){
       await cm.setContractStatePreferences(true, true, {from: web3.eth.accounts[i]});
       await platformToken.approve(burner.address, tokenSupply, {from:web3.eth.accounts[i]});

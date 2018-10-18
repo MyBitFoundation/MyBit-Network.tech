@@ -45,7 +45,6 @@ contract CrowdsaleERC20{
       require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID))) ));
       require(finalizeCrowdsale(_assetID));
       require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens to investor
-      // Give assetManager his portion of tokens
       require(assetToken.finishMinting());
       require(payoutERC20(_assetID, amountToRaise));          // 1 token = 1 wei
     }

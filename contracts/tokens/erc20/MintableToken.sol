@@ -10,7 +10,7 @@ import "./StandardToken.sol";
  */
 contract MintableToken is StandardToken {
 
-  bool internal mintingFinished;
+  bool public mintingFinished;
   address internal minter;
   string internal tokenURI;                 // A reference to a URI containing further token information
 
