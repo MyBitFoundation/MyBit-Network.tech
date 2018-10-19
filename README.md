@@ -74,14 +74,14 @@ Before creating assets, certain variables and parameters have to be set:
 Basic functionality for these critical operations are outlined below:
 
 ### [Database](contracts/database)
-Contracts in the SDK store all long-term data in a non-upgradeable database contract. This allows for contracts to be upgraded without losing valuable data. The Database stores all data in a simple key:value manner. The key is always of bytes32 type, as they are the keccak256 hash of the variableName, ID, address etc:
+Contracts in the SDK store all long-term data in a database contract, which allows for contracts to be upgraded without losing valuable data. The Database stores all data using a bytes32 type, which is often the keccak256 hash of the variableName, ID, address that make up that variable.
 
 Storing an unsigned integer looks like this:
 ```javascript
   database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), 20000000);
 ```
 
-The [Database](contracts/database/Database.sol) then stores this with the function. `key = sha3("fundingDeadline", assetID)`, `value = tokenAddress`
+The [Database](contracts/database/Database.sol) stores this with `key = sha3("fundingDeadline", assetID)` and `value = 20000000`
 ```javascript
 function setUint(bytes32 _key, address _value)
 onlyApprovedContract
@@ -102,7 +102,7 @@ The API contract can be used to easily fetch variables from the database
   }
 ```
 
-### [ContractManager](contracts/database/ContractManager.sol)
+### [ContractManagement](contracts/database/ContractManager.sol)
 To give a contract write access to the database, you must call `addContract(contractName, contractAddress)` from a platform owner account
 ```javascript
   function addContract(string _name, address _contractAddress)
