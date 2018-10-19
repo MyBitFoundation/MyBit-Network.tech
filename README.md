@@ -4,9 +4,10 @@
   </a>
 </p>
 
+ [![MyBit Logo](https://files.mybit.io/mybit-icon-28x28.png)](https://mybit.io/) [MyBit Developer Portal](https://developer.mybit.io/portal/) &gt; [Contracts](https://developer.mybit.io/web)
 
+## MyBit Network - Contract SDK
 
-# MyBit-Network: Contract SDK
 [![CircleCI](https://circleci.com/gh/MyBitFoundation/MyBit-Network.tech.svg?style=shield)](https://circleci.com/gh/MyBitFoundation/MyBit-Network.tech) [![Coverage Status](https://coveralls.io/repos/github/MyBitFoundation/MyBit-Network.tech/badge.svg)](https://coveralls.io/github/MyBitFoundation/MyBit-Network.tech)
 
 :factory: A software development kit for the automated machine economy.
@@ -35,8 +36,6 @@ Done in 5.69s.
 ```
 
 Then get a local test blockchain running using [Ganache](https://truffleframework.com/ganache)
-
-:heavy_exclamation_mark: Make sure no other applications are running on port 8545
 
 ```bash
 yarn blockchain
@@ -355,18 +354,16 @@ yarn build
 
 To publish to GitHub Pages
 
-```
+```text
 cd docs/website
 GIT_USER=<GIT_USER> \
   USE_SSH=true \
   yarn run publish-gh-pages
 ```
 
+## Live example test-net contracts
 
 
 ⚠️ This application is unstable and has not undergone any rigorous security audits. Use at your own risk.
 
-
-<p align="center">
-MyBit Platform™ CHE-177.186.963<br/>
-</p>
+ MyBit Platform™ CHE-177.186.963  
