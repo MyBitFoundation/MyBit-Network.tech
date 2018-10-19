@@ -148,6 +148,19 @@ To create new asset orders, or purchase existing asset orders, users must provab
 
 * spender in this case should be the address of the ERC20Burner contract. value should be placed high enough to avoid needing to approve the burner every use
 
+Tokens are burnt before the function runs due to the modifier `burnRequired` which calls `burn()` at the [burner](contracts/access/ERC20Burner.sol) contract:
+```javascript
+  function burn(address _tokenHolder, uint _amount)
+  external
+  onlyPlatformContracts(msg.sender)
+  acceptedState(_tokenHolder)
+  returns (bool) {
+    require(token.burnFrom(_tokenHolder, _amount));
+    emit LogMYBBurned(_tokenHolder, msg.sender, _amount);
+    return true;
+  }
+```
+
 Functions that require burning:
 - `CrowdsaleGeneratorETH.createAssetOrderETH()`
 - `CrowdsaleETH.buyAssetOrderETH()`
@@ -215,6 +228,7 @@ returns (bool) {
   return true;
 }
 ```
+:heavy_exclamation_mark: The Operator can choose to accept Ether and an unlimited number of ERC20 tokens if they choose.
 
 ## Creating Assets
 To create assets you will use [CrowdsaleGeneratorETH](contracts/crowdsale/CrowdsaleGeneratorETH) or [CrowdsaleGeneratorERC20](contracts/crowdsale/CrowdsaleGeneratorERC20)
