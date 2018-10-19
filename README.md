@@ -63,7 +63,7 @@ The MYB SDK's have 4 fundamental roles:
 Investors can contribute ETH or Erc20 tokens to invest in new asset crowdsales. The assets are managed by the AssetManager, who receives a fee for his work and escrows tokens as collateral to investors. The Operator receives funds from the crowdsale and produces and install the asset. Platform owners can choose how assets are governed, and whether or not a contract upgrade should happen. The platform owner can be a single account or a contract governed by many accounts.
 
 
-## [Contract Usage](contracts)
+## Setting Up The Platform
 Before creating assets, certain variables and parameters have to be set:
 * All contracts must be registered in ContractManager before writing to database
 * All users must approve the current contract state, which changes everytime a contract is added/updated
@@ -228,7 +228,7 @@ returns (bool) {
   return true;
 }
 ```
-:heavy_exclamation_mark: The Operator can choose to accept Ether and an unlimited number of ERC20 tokens if they choose.
+:heavy_exclamation_mark: The Operator can choose to accept Ether and an unlimited number of ERC20 tokens if they want.
 
 ## Creating Assets
 To create assets you will use [CrowdsaleGeneratorETH](contracts/crowdsale/CrowdsaleGeneratorETH) or [CrowdsaleGeneratorERC20](contracts/crowdsale/CrowdsaleGeneratorERC20)
@@ -364,7 +364,7 @@ GIT_USER=<GIT_USER> \
 
 
 
-### ⚠️ This application is unstable and has not undergone any rigorous security audits. Use at your own risk.
+⚠️ This application is unstable and has not undergone any rigorous security audits. Use at your own risk.
 
 
 <p align="center">
