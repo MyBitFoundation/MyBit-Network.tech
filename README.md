@@ -39,24 +39,6 @@ yarn blockchain
 
 You should see 20 accounts load up and see the local chain info:
 
-```
-HD Wallet
-==================
-Mnemonic:      fetch detect turtle medal cabin desk dish quality swap call shaft curtain
-Base HD Path:  m/44'/60'/0'/0/{account_index}
-
-Gas Price
-==================
-20000000000
-
-Gas Limit
-==================
-6721975
-
-Listening on 127.0.0.1:8545
-```
-
-
 If you see this error:
 
 ```
@@ -85,7 +67,8 @@ yarn coverage
 ```
 
 ## [Contracts](contracts)
-The contracts in the SDK abstract storage into a non-upgradeable Database. All users of the platform must agree to the current state, and signal whether they wish to accept future upgrades by default. To run key functionality on the platform users must burn MYB tokens, using the [erc20 burner](contracts/access/ERC20Burner.sol)
+:no_entry_sign: The SDK contracts can be upgradeable and thus before using variables and permissions must be set in the Database, Contract Manager, Platform Funds, Operator and approval for the ERC20Burner before use
+Contracts in the SDK abstract storage into a non-upgradeable Database. All users of the platform must agree to the current state, and signal whether they wish to accept future upgrades by default. To run key functionality on the platform users must burn MYB tokens, using the [erc20 burner](contracts/access/ERC20Burner.sol).
 
 ### [Database](contracts/database)
 Contracts in the SDK store all long-term data in a non-upgradeable database contract. This allows for contracts to be upgraded without losing valuable data. The Database stores all data in a simple key:value manner. The key is always of bytes32 type, as they are the keccak256 hash of the variableName, ID, address etc:
@@ -95,7 +78,7 @@ Storing an unsigned integer looks like this:
   database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), 20000000);
 ```
 
-The database then stores this with the function. `key = sha3("fundingDeadline", assetID)`, `value = tokenAddress`
+The [Database](contracts/database/Database.sol) then stores this with the function. `key = sha3("fundingDeadline", assetID)`, `value = tokenAddress`
 ```javascript
 function setUint(bytes32 _key, address _value)
 onlyApprovedContract
@@ -115,15 +98,117 @@ The [API](contracts/database/API.sol) can be used to easily fetch variables from
   }
 ```
 
-### [Access](contracts/access)
+### [ContractManager](contracts/database/ContractManager.sol)
+To give a contract write access to the database, you must call `addContract(contractName, contractAddress)` from a platform owner account
+```javascript
+  function addContract(string _name, address _contractAddress)
+  external
+  isTrue(_contractAddress != address(0))
+  isTrue(bytes(_name).length != uint(0))
+  anyOwner {
+    require(!database.boolStorage(keccak256(abi.encodePacked("contract", _contractAddress))));
+    require(database.addressStorage(keccak256(abi.encodePacked("contract", _name))) == address(0));
+    database.setAddress(keccak256(abi.encodePacked("contract", _name)), _contractAddress);
+    database.setBool(keccak256(abi.encodePacked("contract", _contractAddress)), true);
+    bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));      //Update currentState
+    bytes32 newState = keccak256(abi.encodePacked(currentState, _contractAddress));
+    database.setBytes32(keccak256(abi.encodePacked("currentState")), newState);
+    emit LogContractAdded(_contractAddress, _name, block.number);
+  }
+```
 
+Everytime a contract is added or updated the contract state will change, requiring approval from users before they interact with the platform. This can be done by calling the following function:
+
+```javascript
+  function setContractStatePreferences(bool _acceptCurrentState, bool _ignoreStateChanges)
+  external
+  returns (bool) {
+    bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));
+    database.setBool(keccak256(abi.encodePacked(currentState, msg.sender)), _acceptCurrentState);
+    database.setBool(keccak256(abi.encodePacked("ignoreStateChanges", msg.sender)), _ignoreStateChanges);
+    emit LogContractStatePreferenceChanged(msg.sender, _acceptCurrentState, _ignoreStateChanges);
+    return true;
+  }
+```
+
+### [ERC20Burner](contracts/access/ERC20Burner.sol)
+To create new asset orders, or purchase existing asset orders, users must provably burn MYB using the burner. To do this each user must approve the burner contract to burn tokens by calling the MYB contract:
+
+```javascript
+  function approve(address _spender, uint256 _value) public returns (bool) {
+    allowed[msg.sender][_spender] = _value;
+    emit Approval(msg.sender, _spender, _value);
+    return true;
+  }
+```
+
+:interrobang: `_spender in this case is the address of the ERC20Burner contract. _value should be placed high enough to avoid needing to approve the burner every use`
+
+### [Platform-Variables](contracts/ecosystem/PlatformFunds.sol)
+Before assets can be funded the platform owners must set the `platform token` and the `platform wallet` by using:
+```javascript
+  function setPlatformWallet(address _walletAddress)
+  external
+  onlyOwner {
+    database.setAddress(keccak256(abi.encodePacked("platformWallet")), _walletAddress);
+    emit LogPlatformWallet(_walletAddress);
+  }
+```
+:heavy_plus_sign:
+
+```javascript
+  // @notice
+  function setPlatformToken(address _tokenAddress)
+  external
+  onlyOwner {
+    database.setAddress(keccak256(abi.encodePacked("platformToken")), _tokenAddress);
+    emit LogPlatformToken(_tokenAddress);
+  }
+```
+### [Operator](contracts/roles/Operator.sol)
+The Operator must be registered and define what currencies they are willing to receive as payment. To set the operators you can call:
+
+```javascript
+function registerOperator(address _operatorAddress, string _operatorURI)
+external
+onlyOwner {
+  require(_operatorAddress != address(0));
+  bytes32 operatorID = keccak256(abi.encodePacked(_operatorURI));
+  require(database.addressStorage(keccak256(abi.encodePacked("operator", operatorID))) == address(0));
+  database.setAddress(keccak256(abi.encodePacked("operator", operatorID)), _operatorAddress);
+  database.setBytes32(keccak256(abi.encodePacked("operator", _operatorAddress)), operatorID);
+  emit LogOperatorRegistered(operatorID, _operatorURI);
+}
+```
+
+To choose which currencies the operator would like to accept they can call:
+
+```javascript
+function acceptERC20Token(bytes32 _operatorID, address _tokenAddress, bool _accept)
+external
+onlyOperator(_operatorID)
+returns (bool) {
+  database.setBool(keccak256(abi.encodePacked("acceptsToken", _operatorID, _tokenAddress)), _accept);
+  return true;
+}
+```
+OR
+```javascript
+function acceptEther(bytes32 _operatorID, bool _accept)
+external
+onlyOperator(_operatorID)
+returns (bool) {
+  database.setBool(keccak256(abi.encodePacked("acceptsEther", _operatorID)), _accept);
+  return true;
+}
+```
 
 ## [Roles](contracts/roles)
 The MYB SDK's have 4 fundamental roles:
 
-* Investor
-* AssetManager
-* Operator
+* Investor `must burn MYB to participate`
+* AssetManager  `must burn MYB to participate`
+* Operator `must be registered by owners`
 * Platform Owner(s)
 
 Investors can contribute ETH or Erc20 tokens to invest in new asset crowdsales. The assets are managed by the AssetManager, who receives a fee for his work and escrows tokens as collateral to investors. The Operator receives funds from the crowdsale and produces and install the asset. Platform owners can choose how assets are governed, and whether or not a contract upgrade should happen. The platform owner can be a single account or a contract governed by many accounts.
@@ -137,7 +222,7 @@ Investors can contribute ETH or Erc20 tokens to invest in new asset crowdsales. 
 
 
 ## Documentation
-
+Documentation is created using Zeppelins [Solidity-Docgen](https://github.com/OpenZeppelin/solidity-docgen)
 ```
 cd docs/website
 yarn build
@@ -153,14 +238,6 @@ GIT_USER=<GIT_USER> \
 ```
 
 
-# Live example test-net contracts
-* [InitialVariables](https://ropsten.etherscan.io/address/0x9e6606dedcf9d4960f8652abe2d624a048231841#code)
-* [UserAccess](https://ropsten.etherscan.io/address/0xb14c50bb7530c71e14f28498bad1f65d10b5b3a9#code)
-* [API](https://ropsten.etherscan.io/address/0x139ebd700b089f51a9dd90c0403e5326b1426f3b#code)
-* [AssetCreation](https://ropsten.etherscan.io/address/0x011d426358f1982e327648506d3fdae01d054297#code)
-* [FundingHub](https://ropsten.etherscan.io/address/0xb94bd7c5ca000beeff27db7cebb9c03749901f19#code)
-* [MyBitToken](https://ropsten.etherscan.io/address/0xbb07c8c6e7cd15e2e6f944a5c2cac056c5476151#code)
-* [TokenFaucet](https://ropsten.etherscan.io/address/0x564a7464b6ea98259aae1ad4aa8a11ca9b502cf8#code)
 
 ### ⚠️ Warning
 This application is unstable and has not undergone any rigorous security audits. Use at your own risk.
