@@ -11,8 +11,9 @@
 
 :factory: A software development kit for the automated machine economy.
 
-The SDK's contain contracts that can be deployed to create varied decentralized asset management platforms. The contracts enable for the crowdsale of digital assets, which are represented as ERC20 dividend tokens. Crowdsales can receive ETH or ERC20 tokens, depending on the preferences of the operator and asset dividends can be paid in ETH or ERC20 tokens depending on the preferences of the investors.
+The SDK's which contain all the functional logic of [MyBit-Go](https://github.com/MyBitFoundation/MyBit-Go.app). These contracts allow developers to create crowdsales for digital assets, which are represented on the Ethereum blockchain as ERC20 dividend tokens. Crowdsales can receive ETH or ERC20 tokens, and the asset-tokens they produce and receive dividends in ETH or any ERC20 token depending on the preferences of the investors.
 
+If you would like to try a simple example see [Hello-Network](https://github.com/MyBitFoundation/hello-network) or if you would like to import the SDK contracts into your project as an NPM package see [Network.js](https://github.com/MyBitFoundation/network.js)
 
 ## Getting Started
 First install dependencies using [Yarn](https://yarnpkg.com/lang/en/docs/install/#debian-stable):
@@ -21,14 +22,14 @@ First install dependencies using [Yarn](https://yarnpkg.com/lang/en/docs/install
 yarn
 ```
 
-You should see an output similar to below:
+If successful you should see output similar to below:
 
 ```
 [1/4] Resolving packages...
 [2/4] Fetching packages...
 [3/4] Linking dependencies...
 [4/4] Building fresh packages...
-Done in 0.66s.
+Done in 5.69s.
 ```
 
 Then get a local test blockchain running using [Ganache](https://truffleframework.com/ganache)
@@ -38,37 +39,35 @@ yarn blockchain
 ````
 
 You should see 20 accounts load up and see the local chain info:
-
-If you see this error:
-
 ```
-Error: listen EADDRINUSE 127.0.0.1:8545
-    at Server.setupListenHandle [as _listen2] (net.js:1360:14)
-    at listenInCluster (net.js:1401:12)
-    at doListen (net.js:1510:7)
-    at _combinedTickCallback (internal/process/next_tick.js:142:11)
-    at process._tickCallback (internal/process/next_tick.js:181:9)
-    at Function.Module.runMain (module.js:696:11)
-    at startup (bootstrap_node.js:204:16)
-    at bootstrap_node.js:625:3
-error Command failed with exit code 1.
+Available Accounts
+==================
+(0) 0x1395e096348847e656c0d6b699087c47996235c0 (~100 ETH)
+(1) 0x0c317c12a25eb6ef6e0e12583bf6ef6cb75cfb5f (~100 ETH)
+(2) 0x1e195348e46184fc67bb23c8dfe1dd58f96c551c (~100 ETH)
+(3) 0x3b699ce55888f4001d44eab5c205f371a336e535 (~100 ETH)
+(4) 0x9c8bc949b634697c98efd275db97cc87d936c790 (~100 ETH)
+(5) 0x345632ec32e459da68c62ae967216e7253d676c2 (~100 ETH)
+(6) 0x2643f91ba26332d19136a5769a52ebba45664206 (~100 ETH)
+(7) 0x9e6636b30928d72ee17788410b2e222bc9f6025d (~100 ETH)
+(8) 0x31e98e2a637fc6289196947781361f1ca6437c49 (~100 ETH)
+(9) 0x32282c09f837a1b9f4a74ebdd234172438442e95 (~100 ETH)
+(20) 0x......
 ```
-You need to first close any other processes that are using this port and start (ie. Geth, Parity, Ganache-cli, TestRPC etc..)
 
-
-You can now run the tests:
+In another terminal window, you can now run the tests:
 ```
 yarn tests
 ```
 
-You can run code-coverage tests:
+To see code-coverage run:
 ```
 yarn coverage
 ```
 
 ## [Contracts](contracts)
 The SDK contracts can be upgradeable and thus before using variables and permissions must be set in the Database, Contract Manager, Platform Funds, Operator and approval for the ERC20Burner before use
-Contracts in the SDK abstract storage into a non-upgradeable Database. All users of the platform must agree to the current state, and signal whether they wish to accept future upgrades by default. To run key functionality on the platform users must burn MYB tokens, using the [erc20 burner](contracts/access/ERC20Burner.sol).
+Contracts in the SDK abstract storage into a non-upgradeable Database. All users of the platform must agree to the current state, and signal whether they wish to accept future upgrades by default. To run key functionality on the platform users must burn MYB tokens, using the ERC20Burner
 
 ### [Database](contracts/database)
 Contracts in the SDK store all long-term data in a non-upgradeable database contract. This allows for contracts to be upgraded without losing valuable data. The Database stores all data in a simple key:value manner. The key is always of bytes32 type, as they are the keccak256 hash of the variableName, ID, address etc:
