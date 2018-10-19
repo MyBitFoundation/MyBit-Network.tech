@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://mybit.io/">
-    <img alt="MyBit Logo" src="https://files.mybit.io/favicons/favicon-96x96.png" width="70">
+    <img alt="MyBit Logo" src="https://files.mybit.io/favicons/favicon-96x96.png" width="90">
   </a>
 </p>
 
@@ -9,7 +9,7 @@
 # MyBit-Network: Contract SDK
 [![CircleCI](https://circleci.com/gh/MyBitFoundation/MyBit-Network.tech.svg?style=shield)](https://circleci.com/gh/MyBitFoundation/MyBit-Network.tech) [![Coverage Status](https://coveralls.io/repos/github/MyBitFoundation/MyBit-Network.tech/badge.svg)](https://coveralls.io/github/MyBitFoundation/MyBit-Network.tech)
 
-A software development kit for the automated machine economy.
+:factory: A software development kit for the automated machine economy.
 
 The SDK's contain contracts that can be deployed to create varied decentralized asset management platforms. The contracts enable for the crowdsale of digital assets, which are represented as ERC20 dividend tokens. Crowdsales can receive ETH or ERC20 tokens, depending on the preferences of the operator and asset dividends can be paid in ETH or ERC20 tokens depending on the preferences of the investors.
 
@@ -67,7 +67,7 @@ yarn coverage
 ```
 
 ## [Contracts](contracts)
-:no_entry_sign: The SDK contracts can be upgradeable and thus before using variables and permissions must be set in the Database, Contract Manager, Platform Funds, Operator and approval for the ERC20Burner before use
+The SDK contracts can be upgradeable and thus before using variables and permissions must be set in the Database, Contract Manager, Platform Funds, Operator and approval for the ERC20Burner before use
 Contracts in the SDK abstract storage into a non-upgradeable Database. All users of the platform must agree to the current state, and signal whether they wish to accept future upgrades by default. To run key functionality on the platform users must burn MYB tokens, using the [erc20 burner](contracts/access/ERC20Burner.sol).
 
 ### [Database](contracts/database)
@@ -142,7 +142,15 @@ To create new asset orders, or purchase existing asset orders, users must provab
   }
 ```
 
-:interrobang: `_spender in this case is the address of the ERC20Burner contract. _value should be placed high enough to avoid needing to approve the burner every use`
+* spender in this case is the address of the ERC20Burner contract. value should be placed high enough to avoid needing to approve the burner every use
+
+The functions that require burning are:
+- CrowdsaleGeneratorETH.createAssetOrderETH()
+- CrowdsaleETH.buyAssetOrderETH()
+- CrowdsaleGeneratorERC20.createAssetOrderERC20()
+- CrowdsaleERC20.buyAssetOrderERC20()
+- AssetExchange.buyAsset()
+- AssetExchange.createBuyOrder()
 
 ### [Platform-Variables](contracts/ecosystem/PlatformFunds.sol)
 Before assets can be funded the platform owners must set the `platform token` and the `platform wallet` by using:
@@ -214,6 +222,33 @@ The MYB SDK's have 4 fundamental roles:
 Investors can contribute ETH or Erc20 tokens to invest in new asset crowdsales. The assets are managed by the AssetManager, who receives a fee for his work and escrows tokens as collateral to investors. The Operator receives funds from the crowdsale and produces and install the asset. Platform owners can choose how assets are governed, and whether or not a contract upgrade should happen. The platform owner can be a single account or a contract governed by many accounts.
 
 
+## In-Development
+:construction: The SDK's are a work in progress and we hope to implement more features such as asset-governance, platform-governance and obfuscated asset authentication.
+
+### [Governance](contracts/ownership)
+We are working on giving investors governance tools to vote for new AssetManagers if the need arises. Voting is based on token holdings and can be accomplished by approving a function call at a particular contract:
+```javascript
+  function voteForExecution(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash, uint _amountToLock)
+  external
+  validAsset(_assetID)
+  returns (bool) {
+    bytes32 executionID = keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash));
+    bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", executionID));
+    bytes32 investorVotesID = keccak256(abi.encodePacked("investorVotes", executionID, msg.sender));
+    uint256 numVotes = database.uintStorage(numVotesID);
+    uint256 investorVotes = database.uintStorage(investorVotesID);
+    require(lockTokens(_assetID, msg.sender, _amountToLock));
+    database.setUint(numVotesID, numVotes.add(_amountToLock));
+    database.setUint(investorVotesID, investorVotes.add(_amountToLock));
+    return true;
+  }
+```
+
+* executingContract = The address of the contract, where the function is to be called
+* assetID = The ID of the asset in question
+* methodID = The function signature of the funtion to be called ie. `bytes4(sha3("exampleFunction(address, uint256, bool)"))`
+* parameterHash = The sha3 hash of the exact parameters to be called at that function
+* amountToLock - The number of asset-tokens this investor wishes to lock towards this function call
 
 ✏️ All contracts are written in [Solidity](https://solidity.readthedocs.io/en/v0.4.24/) version 0.4.24.
 
