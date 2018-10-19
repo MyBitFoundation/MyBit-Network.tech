@@ -11,7 +11,7 @@
 
 :factory: A software development kit for the automated machine economy.
 
-The SDK's are a group of contracts that contain all the functional logic of [MyBit-Go](https://github.com/MyBitFoundation/MyBit-Go.app). These contracts allow developers to create crowdsales and receive dividends from assets. Crowdsales are essentially ICO's that produce dividend-tokens representing a particular asset. Crowdsales can receive ETH or ERC20 tokens, and the asset-tokens they produce can receive dividends in ETH or any ERC20 token depending on the preferences of the investors.
+The SDK's are a group of contracts that contain all the functional logic of [MyBit-Go](https://github.com/MyBitFoundation/MyBit-Go.app). These contracts allow developers to generate crowdsales to create revenue producing assets. The crowdsale produces a dividend-tokens which can directly receive payment and distribute it to token holders. Crowdsales can take Ether or ERC20 tokens, and the asset-tokens produced can receive dividends in ETH or any ERC20 token depending on the preferences of the investors.
 
 If you would like to try a simple example see [Hello-Network](https://github.com/MyBitFoundation/hello-network)
 
@@ -79,7 +79,8 @@ external {
 }
 ```
 
-The [API](contracts/database/API.sol) can be used to easily fetch variables from the database
+### [API](contracts/database/API.sol)
+The API contract can be used to easily fetch variables from the database
 ```javascript
   function getAssetFundingDeadline(bytes32 _assetID)
   public
@@ -123,7 +124,7 @@ Everytime a contract is added or updated the contract state will change, requiri
   }
 ```
 
-### [ERC20Burner](contracts/access/ERC20Burner.sol)
+### [TokenBurning](contracts/access/ERC20Burner.sol)
 To create new asset orders, or purchase existing asset orders, users must provably burn MYB using the burner. To do this each user must approve the burner contract to burn tokens by calling the MYB contract:
 
 ```javascript
@@ -165,7 +166,7 @@ Before assets can be funded the platform owners must set the `platform token` an
     emit LogPlatformToken(_tokenAddress);
   }
 ```
-### [Operator](contracts/roles/Operator.sol)
+### [Onboarding Operators](contracts/roles/Operator.sol)
 The Operator must be registered and define what currencies they are willing to receive as payment. To set the operators you can call:
 
 ```javascript
