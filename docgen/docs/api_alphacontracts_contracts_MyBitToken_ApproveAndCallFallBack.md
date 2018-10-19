@@ -1,6 +1,0 @@
----
-id: alphacontracts_contracts_MyBitToken_ApproveAndCallFallBack
-title: ApproveAndCallFallBack
----
-
-<div class="contract-doc"><div class="contract"><h2 class="contract-header"><span class="contract-kind">contract</span> ApproveAndCallFallBack</h2><div class="source">Source: <a href="https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.0.0/contracts/alphacontracts/contracts/MyBitToken.sol" target="_blank">alphacontracts/contracts/MyBitToken.sol</a></div></div><div class="index"><h2>Index</h2><ul><li><a href="alphacontracts_contracts_MyBitToken_ApproveAndCallFallBack.html#receiveApproval">receiveApproval</a></li></ul></div><div class="reference"><h2>Reference</h2><div class="functions"><h3>Functions</h3><ul><li><div class="item function"><span id="receiveApproval" class="anchor-marker"></span><h4 class="name">receiveApproval</h4><div class="body"><code class="signature"><span>abstract </span>function <strong>receiveApproval</strong><span>(address from, uint tokens, address token, bytes data) </span><span>public </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>from</code> - address</div><div><code>tokens</code> - uint</div><div><code>token</code> - address</div><div><code>data</code> - bytes</div></dd></dl></div></div></li></ul></div></div></div>

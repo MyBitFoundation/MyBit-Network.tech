@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://mybit.io/">
-    <img alt="MyBit Logo" src="https://files.mybit.io/mybit-icon-28x28.png" width="70">
+    <img alt="MyBit Logo" src="https://files.mybit.io/favicons/favicon-96x96.png" width="70">
   </a>
 </p>
 
@@ -11,62 +11,130 @@
 
 A software development kit for the automated machine economy.
 
-The SDK's contain a local blockchain and smart-contracts for developers to run and deploy dapps that allow for the funding and distribution of virtual assets represented by ERC tokens on the Ethereum blockchain. The contracts can be combined in different ways to customize the crowdfunding and re-distribution details, or plug into a local MyBitChain to test already operating assets.
+The SDK's contain contracts that can be deployed to create varied decentralized asset management platforms. The contracts enable for the crowdsale of digital assets, which are represented as ERC20 dividend tokens. Crowdsales can receive ETH or ERC20 tokens, depending on the preferences of the operator and asset dividends can be paid in ETH or ERC20 tokens depending on the preferences of the investors.
+
 
 ## Getting Started
+First install dependencies using [Yarn](https://yarnpkg.com/lang/en/docs/install/#debian-stable):
 
-## Roles
-The tokenized asset management structure is made up of different actors who have specific incentives to participate in the creation and management of tokenized assets within the ecosystem. The assets are managed by the AssetManager, who receives a fee for his work and escrows tokens as collateral to investors. The tokens remain in escrow until the asset tokens returns sufficient income. The platform owners can choose how assets are governed, whether by asset token holders or designated ownership roles.  
+```bash
+yarn
+```
 
-AssetManagers interact with the AssetManagerEscrow, AssetManagerFunds and Crowdsale Generators contracts, while Investors interact with the Crowdsale and DividendTokens contracts.
+You should see an output similar to below:
 
-#### Platform Owner(s)
-The owners of the platform are in charge of deciding high level upgrades and authorization changes made in the platform. Ownership can be decided by one owner, a multi-sig, or token holders themselves.
+```
+[1/4] Resolving packages...
+[2/4] Fetching packages...
+[3/4] Linking dependencies...
+[4/4] Building fresh packages...
+Done in 0.66s.
+```
 
-#### Investor
-The investor is any user that holds asset tokens through participating in an asset crowdsale or by means of purchasing them on an exchange.
+Then get a local test blockchain running using [Ganache](https://truffleframework.com/ganache)
 
-#### AssetManager
-The AssetManager is a user that initiates a crowdfunding period for an asset. After the funding period, the AssetManager is in charge of handling real world operations between the asset operator and the investors. The role of the AssetManager varies depending on the type of asset, but they are responsible for the asset operating properly if the conditions allow it. The AssetManager can put down tokens in escrow, which is at stake to get burned if the owners of the asset find negligence.
+```bash
+yarn blockchain
+````
 
-#### Operator
-The operator is the producer of the asset, physical or digital. They are in charge of receiving the crowdfunding funds and producing, delivering and installing the asset. AssetManagers will deal with Operators to ensure continued functioning of the asset.
+You should see 20 accounts load up and see the local chain info:
+
+```
+HD Wallet
+==================
+Mnemonic:      fetch detect turtle medal cabin desk dish quality swap call shaft curtain
+Base HD Path:  m/44'/60'/0'/0/{account_index}
+
+Gas Price
+==================
+20000000000
+
+Gas Limit
+==================
+6721975
+
+Listening on 127.0.0.1:8545
+```
+
+
+If you see this error:
+
+```
+Error: listen EADDRINUSE 127.0.0.1:8545
+    at Server.setupListenHandle [as _listen2] (net.js:1360:14)
+    at listenInCluster (net.js:1401:12)
+    at doListen (net.js:1510:7)
+    at _combinedTickCallback (internal/process/next_tick.js:142:11)
+    at process._tickCallback (internal/process/next_tick.js:181:9)
+    at Function.Module.runMain (module.js:696:11)
+    at startup (bootstrap_node.js:204:16)
+    at bootstrap_node.js:625:3
+error Command failed with exit code 1.
+```
+You need to first close any other processes that are using this port and start (ie. Geth, Parity, Ganache-cli, TestRPC etc..)
+
+
+You can now run the tests:
+```
+yarn tests
+```
+
+You can run code-coverage tests:
+```
+yarn coverage
+```
+
+## [Contracts](contracts)
+The contracts in the SDK abstract storage into a non-upgradeable Database. All users of the platform must agree to the current state, and signal whether they wish to accept future upgrades by default. To run key functionality on the platform users must burn MYB tokens, using the [erc20 burner](contracts/access/ERC20Burner.sol)
+
+### [Database](contracts/database)
+Contracts in the SDK store all long-term data in a non-upgradeable database contract. This allows for contracts to be upgraded without losing valuable data. The Database stores all data in a simple key:value manner. The key is always of bytes32 type, as they are the keccak256 hash of the variableName, ID, address etc:
+
+Storing an unsigned integer looks like this:
+```javascript
+  database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), 20000000);
+```
+
+The database then stores this with the function. `key = sha3("fundingDeadline", assetID)`, `value = tokenAddress`
+```javascript
+function setUint(bytes32 _key, address _value)
+onlyApprovedContract
+external {
+    uintStorage[_key] = _value;
+}
+```
+
+The [API](contracts/database/API.sol) can be used to easily fetch variables from the database
+```javascript
+  function getAssetFundingDeadline(bytes32 _assetID)
+  public
+  view
+  returns(uint) {
+    uint fundingDeadline = database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID)));
+    return fundingDeadline;
+  }
+```
+
+### [Access](contracts/access)
+
+
+## [Roles](contracts/roles)
+The MYB SDK's have 4 fundamental roles:
+
+* Investor
+* AssetManager
+* Operator
+* Platform Owner(s)
+
+Investors can contribute ETH or Erc20 tokens to invest in new asset crowdsales. The assets are managed by the AssetManager, who receives a fee for his work and escrows tokens as collateral to investors. The Operator receives funds from the crowdsale and produces and install the asset. Platform owners can choose how assets are governed, and whether or not a contract upgrade should happen. The platform owner can be a single account or a contract governed by many accounts.
+
 
 
 ✏️ All contracts are written in [Solidity](https://solidity.readthedocs.io/en/v0.4.24/) version 0.4.24.
 
 
-## Setup
 
-Install dependencies.
 
-`yarn`
-
-## Testing
-
-Bootstrap [Ganache](https://truffleframework.com/ganache)
-
-`yarn blockchain`
-
-Run tests
-
-`yarn test`
-
-## Compiling
-
-`yarn compile`
-
-## Code Coverage
-
-Download solidity-coverage locally
-
-`npm install --save-dev solidity-coverage`
-
-Run solidity-coverage
-
-`./node_modules/.bin/solidity-coverage`
-
-Coverage reports can be accessed at 'coverage/index.html'
 
 ## Documentation
 

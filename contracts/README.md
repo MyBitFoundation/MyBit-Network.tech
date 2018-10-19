@@ -7,10 +7,10 @@ MyBit SDK allows developers to create personalized platforms which create and di
 
 ## Contract Categories
 
-### Access
-Access is where user access is managed. KYC restrictions can be applied across the platform using KYC.sol. Requirements can be set here, restricting access to users who can probably burn platform tokens, or pay for a time-based subscription.  
+### [Access](access)
+Access is where user access is managed. KYC access restriction can be applied to users who can probably burn platform tokens, or pay for a time-based subscription.  
 
-### Crowdsale
+### [Crowdsale](crowdsale)
 In the crowdsale folder you can find all the contracts involved in funding new assets. Funds can be received in either Ether or any ERC20 token the operator agrees to accept. Each base unit of the received tokens or Wei represent 1 share of the asset. The total supply of each asset is determined by the amount raised plus the Asset Managers fee.
 
 ### Database
