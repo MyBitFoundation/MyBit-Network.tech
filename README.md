@@ -37,8 +37,6 @@ Done in 5.69s.
 
 Then get a local test blockchain running using [Ganache](https://truffleframework.com/ganache)
 
-:heavy_exclamation_mark: Make sure no other applications are running on port 8545
-
 ```bash
 yarn blockchain
 ````
