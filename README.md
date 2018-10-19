@@ -60,7 +60,7 @@ Before creating assets, certain variables and parameters have to be set:
 * Platform wallet and platform token must be set
 * Operators must be registered and choose which currencies they wish to accept
 
-Basic functionality for these critical operations are found below:
+Basic functionality for these critical operations are outlined below:
 
 ### [Database](contracts/database)
 Contracts in the SDK store all long-term data in a non-upgradeable database contract. This allows for contracts to be upgraded without losing valuable data. The Database stores all data in a simple key:value manner. The key is always of bytes32 type, as they are the keccak256 hash of the variableName, ID, address etc:
@@ -125,7 +125,7 @@ Everytime a contract is added or updated the contract state will change, requiri
 ```
 
 ### [TokenBurning](contracts/access/ERC20Burner.sol)
-To create new asset orders, or purchase existing asset orders, users must provably burn MYB using the burner. To do this each user must approve the burner contract to burn tokens by calling the MYB contract:
+To create new asset orders, or purchase existing asset orders, users must provably burn MYB using the [burner](contracts/access/ERC20Burner.sol). To do this each user must approve the burner contract to burn tokens by calling the MYB contract:
 
 ```javascript
   function approve(address _spender, uint256 _value) public returns (bool) {
@@ -147,6 +147,7 @@ Functions that require burning:
 
 ### [Platform-Variables](contracts/ecosystem/PlatformFunds.sol)
 Before assets can be funded the platform owners must set the `platform token` and the `platform wallet` by using:
+
 ```javascript
   function setPlatformWallet(address _walletAddress)
   external
@@ -155,7 +156,7 @@ Before assets can be funded the platform owners must set the `platform token` an
     emit LogPlatformWallet(_walletAddress);
   }
 ```
-                                          :heavy_plus_sign:
+:heavy_plus_sign:
 
 ```javascript
   // @notice
