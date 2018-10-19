@@ -11,9 +11,11 @@
 
 :factory: A software development kit for the automated machine economy.
 
-The SDK's which contain all the functional logic of [MyBit-Go](https://github.com/MyBitFoundation/MyBit-Go.app). These contracts allow developers to create crowdsales for digital assets, which are represented on the Ethereum blockchain as ERC20 dividend tokens. Crowdsales can receive ETH or ERC20 tokens, and the asset-tokens they produce and receive dividends in ETH or any ERC20 token depending on the preferences of the investors.
+The SDK's are a group of contracts that contain all the functional logic of [MyBit-Go](https://github.com/MyBitFoundation/MyBit-Go.app). These contracts allow developers to create crowdsales and receive dividends from assets. Crowdsales are essentially ICO's that produce dividend-tokens representing a particular asset. Crowdsales can receive ETH or ERC20 tokens, and the asset-tokens they produce can receive dividends in ETH or any ERC20 token depending on the preferences of the investors.
 
-If you would like to try a simple example see [Hello-Network](https://github.com/MyBitFoundation/hello-network) or if you would like to import the SDK contracts into your project as an NPM package see [Network.js](https://github.com/MyBitFoundation/network.js)
+If you would like to try a simple example see [Hello-Network](https://github.com/MyBitFoundation/hello-network)
+
+If you would like to import the SDK contracts into your project as an NPM package see [Network.js](https://github.com/MyBitFoundation/network.js)
 
 ## Getting Started
 First install dependencies using [Yarn](https://yarnpkg.com/lang/en/docs/install/#debian-stable):
@@ -39,21 +41,6 @@ yarn blockchain
 ````
 
 You should see 20 accounts load up and see the local chain info:
-```
-Available Accounts
-==================
-(0) 0x1395e096348847e656c0d6b699087c47996235c0 (~100 ETH)
-(1) 0x0c317c12a25eb6ef6e0e12583bf6ef6cb75cfb5f (~100 ETH)
-(2) 0x1e195348e46184fc67bb23c8dfe1dd58f96c551c (~100 ETH)
-(3) 0x3b699ce55888f4001d44eab5c205f371a336e535 (~100 ETH)
-(4) 0x9c8bc949b634697c98efd275db97cc87d936c790 (~100 ETH)
-(5) 0x345632ec32e459da68c62ae967216e7253d676c2 (~100 ETH)
-(6) 0x2643f91ba26332d19136a5769a52ebba45664206 (~100 ETH)
-(7) 0x9e6636b30928d72ee17788410b2e222bc9f6025d (~100 ETH)
-(8) 0x31e98e2a637fc6289196947781361f1ca6437c49 (~100 ETH)
-(9) 0x32282c09f837a1b9f4a74ebdd234172438442e95 (~100 ETH)
-(20) 0x......
-```
 
 In another terminal window, you can now run the tests:
 ```
@@ -66,8 +53,14 @@ yarn coverage
 ```
 
 ## [Contracts](contracts)
-The SDK contracts can be upgradeable and thus before using variables and permissions must be set in the Database, Contract Manager, Platform Funds, Operator and approval for the ERC20Burner before use
-Contracts in the SDK abstract storage into a non-upgradeable Database. All users of the platform must agree to the current state, and signal whether they wish to accept future upgrades by default. To run key functionality on the platform users must burn MYB tokens, using the ERC20Burner
+Before creating assets, certain variables and parameters have to be set:
+* All contracts must be registered in ContractManager before writing to database
+* All users must approve the current contract state, which changes everytime a contract is added/updated
+* Users must approve ERC20Burner to burn platform tokens before using key functionality
+* Platform wallet and platform token must be set
+* Operators must be registered and choose which currencies they wish to accept
+
+Basic functionality for these critical operations are found below:
 
 ### [Database](contracts/database)
 Contracts in the SDK store all long-term data in a non-upgradeable database contract. This allows for contracts to be upgraded without losing valuable data. The Database stores all data in a simple key:value manner. The key is always of bytes32 type, as they are the keccak256 hash of the variableName, ID, address etc:
@@ -109,14 +102,14 @@ To give a contract write access to the database, you must call `addContract(cont
     require(database.addressStorage(keccak256(abi.encodePacked("contract", _name))) == address(0));
     database.setAddress(keccak256(abi.encodePacked("contract", _name)), _contractAddress);
     database.setBool(keccak256(abi.encodePacked("contract", _contractAddress)), true);
-    bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));      //Update currentState
+    bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));    
     bytes32 newState = keccak256(abi.encodePacked(currentState, _contractAddress));
     database.setBytes32(keccak256(abi.encodePacked("currentState")), newState);
     emit LogContractAdded(_contractAddress, _name, block.number);
   }
 ```
 
-Everytime a contract is added or updated the contract state will change, requiring approval from users before they interact with the platform. This can be done by calling the following function:
+Everytime a contract is added or updated the contract state will change, requiring approval from users before they interact with the platform. Users can also choose to ignore future state changes. This can be done by calling the following function:
 
 ```javascript
   function setContractStatePreferences(bool _acceptCurrentState, bool _ignoreStateChanges)
@@ -141,15 +134,15 @@ To create new asset orders, or purchase existing asset orders, users must provab
   }
 ```
 
-* spender in this case is the address of the ERC20Burner contract. value should be placed high enough to avoid needing to approve the burner every use
+* spender in this case should be the address of the ERC20Burner contract. value should be placed high enough to avoid needing to approve the burner every use
 
-The functions that require burning are:
-- CrowdsaleGeneratorETH.createAssetOrderETH()
-- CrowdsaleETH.buyAssetOrderETH()
-- CrowdsaleGeneratorERC20.createAssetOrderERC20()
-- CrowdsaleERC20.buyAssetOrderERC20()
-- AssetExchange.buyAsset()
-- AssetExchange.createBuyOrder()
+Functions that require burning:
+- `CrowdsaleGeneratorETH.createAssetOrderETH()`
+- `CrowdsaleETH.buyAssetOrderETH()`
+- `CrowdsaleGeneratorERC20.createAssetOrderERC20()`
+- `CrowdsaleERC20.buyAssetOrderERC20()`
+- `AssetExchange.buyAsset()`
+- `AssetExchange.createBuyOrder()`
 
 ### [Platform-Variables](contracts/ecosystem/PlatformFunds.sol)
 Before assets can be funded the platform owners must set the `platform token` and the `platform wallet` by using:
@@ -161,7 +154,7 @@ Before assets can be funded the platform owners must set the `platform token` an
     emit LogPlatformWallet(_walletAddress);
   }
 ```
-:heavy_plus_sign:
+                                          :heavy_plus_sign:
 
 ```javascript
   // @notice
@@ -256,7 +249,7 @@ We are working on giving investors governance tools to vote for new AssetManager
 
 
 ## Documentation
-Documentation is created using Zeppelins [Solidity-Docgen](https://github.com/OpenZeppelin/solidity-docgen)
+Documentation is created using [Solidity-Docgen](https://github.com/OpenZeppelin/solidity-docgen)
 ```
 cd docs/website
 yarn build
@@ -273,8 +266,7 @@ GIT_USER=<GIT_USER> \
 
 
 
-### ⚠️ Warning
-This application is unstable and has not undergone any rigorous security audits. Use at your own risk.
+### ⚠️ This application is unstable and has not undergone any rigorous security audits. Use at your own risk.
 
 
 <p align="center">
