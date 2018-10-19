@@ -71,7 +71,7 @@ Before creating assets, certain variables and parameters have to be set:
 * Platform wallet and platform token must be set
 * Operators must be registered and choose which currencies they wish to accept
 
-Basic functionality for these critical operations are outlined below:
+Basic functionality for these critical operations are outlined below. All contracts are found [here](contracts)
 
 ### [Database](contracts/database)
 Contracts in the SDK store all long-term data in a database contract, which allows for contracts to be upgraded without losing valuable data. The Database stores all data using a bytes32 type, which is often the keccak256 hash of the variableName, ID, address that make up that variable.
