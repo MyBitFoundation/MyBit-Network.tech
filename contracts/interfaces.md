@@ -1,4 +1,4 @@
-# README
+# Interfaces
 
 Contract interfaces set out the basic functionality that other contracts must adhere to.
 

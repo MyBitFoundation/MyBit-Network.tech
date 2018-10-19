@@ -1,4 +1,4 @@
-# README
+# Access
 
 Authorization is where contracts restricting user access levels are stored. Add these to your Dapp to restrict access based on roles. Users can choose to have multi-sig permissions for particular functions or contracts.
 

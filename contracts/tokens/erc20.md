@@ -1,4 +1,4 @@
-# README
+# ERC20
 
 ## Contracts
 

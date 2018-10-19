@@ -1,4 +1,4 @@
-# README
+# Crowdsale
 
 Contracts involved with funding new assets and generating new ERC tokens to represent shares of the asset resulting from a crowdsale.
 

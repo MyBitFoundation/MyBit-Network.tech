@@ -1,4 +1,4 @@
-# README
+# Database
 
 Contract related to the storing of data on the blockchain. All essential data for the ecosystem is stored here, thus allowing other contracts to be upgraded without losing data.
 

@@ -1,2 +1,2 @@
-# docgen
+# API Documentation
 

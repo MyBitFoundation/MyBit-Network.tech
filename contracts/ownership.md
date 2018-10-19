@@ -1,4 +1,4 @@
-# README
+# Ownership
 
 Contracts that control the ownership of all the contracts on the platform. This restricts access to the upgrading of contracts and which contracts have access to the database.
 

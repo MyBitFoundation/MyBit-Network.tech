@@ -1,4 +1,4 @@
-# README
+# Tokens
 
 This folder contains all ERC20 tokens used by the platform and non-transferable tokens for custom distribution scenarios.
 
