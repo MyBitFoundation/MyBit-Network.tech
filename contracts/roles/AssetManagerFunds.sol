@@ -14,19 +14,25 @@ interface DToken {
 
 // @title A dividend-token holding contract that locks tokens and retrieves dividends for assetManagers
 // @notice This contract receives newly minted tokens and retrieves Ether or ERC20 tokens received from the asset
-// @dev Tokens
+// @author Kyle Dewhurst & Peter Phillips, MyBit Foundation
 contract AssetManagerFunds {
   using SafeMath for uint256;
 
   DBInterface public database;
 
+  uint256 private transactionNumber;
+
+  // @notice constructor: initializes database
   constructor(address _database)
   public {
     database = DBInterface(_database);
   }
 
+  // @notice asset manager can withdraw his dividend fee from assets here
+  // @param : bytes32 _assetID = the ID of this asset on the platform 
   function withdraw(bytes32 _assetID)
   external
+  nonReentrant
   returns (bool) {
     require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))));
     DToken token = DToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
@@ -55,8 +61,9 @@ contract AssetManagerFunds {
 
   function retrieveAssetManagerTokens(bytes32[] _assetID)
   external
+  nonReentrant
   returns (bool) {
-    require(_assetID.length < 50);
+    require(_assetID.length <= 42);
     uint[] memory payoutAmounts = new uint[](_assetID.length);
     address[] memory tokenAddresses = new address[](_assetID.length);
     uint8 numEntries;
@@ -88,8 +95,9 @@ contract AssetManagerFunds {
 
   function retrieveAssetManagerETH(bytes32[] _assetID)
   external
+  nonReentrant
   returns (bool) {
-    require(_assetID.length < 50);
+    require(_assetID.length <= 93);
     uint weiOwed;
     for(uint8 i = 0; i < _assetID.length; i++){
       require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID[i]))));
@@ -106,6 +114,7 @@ contract AssetManagerFunds {
     return true;
   }
 
+  // @notice returns the index if the address is in the list, otherwise returns list length + 1
   function containsAddress(address[] _addressList, address _addr)
   internal
   pure
@@ -114,6 +123,15 @@ contract AssetManagerFunds {
       if (_addressList[i] == _addr) return i;
     }
     return uint8(_addressList.length + 1);
+  }
+
+
+  // @notice prevents calls from re-entering contract
+  modifier nonReentrant() {
+    transactionNumber += 1;
+    uint256 localCounter = transactionNumber;
+    _;
+    require(localCounter == transactionNumber);
   }
 
   function ()

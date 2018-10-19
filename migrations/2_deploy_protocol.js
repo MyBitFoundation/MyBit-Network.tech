@@ -11,6 +11,7 @@ var AccessHierarchy = artifacts.require("./access/AccessHierarchy.sol");
 var PlatformFunds = artifacts.require("./ecosystem/PlatformFunds.sol");
 var Operators = artifacts.require("./roles/Operators.sol");
 var AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
+var AssetManagerFunds = artifacts.require("./roles/AssetManagerFunds.sol");
 var CrowdsaleGeneratorETH = artifacts.require("./crowdsale/CrowdsaleGeneratorETH.sol");
 var CrowdsaleETH = artifacts.require("./crowdsale/CrowdsaleETH.sol");
 var CrowdsaleGeneratorERC20 = artifacts.require("./crowdsale/CrowdsaleGeneratorERC20.sol");
@@ -145,8 +146,14 @@ module.exports = function(deployer, network, accounts) {
     console.log('AssetManagerEscrow.sol: ' + escrow.address);
     cm.addContract('AssetManagerEscrow', escrow.address);
 
-    return CrowdsaleGeneratorETH.new(db.address);
+    return AssetManagerFunds.new(db.address);
 
+  }).then(function(instance) {
+    var managerFunds = instance;
+    cm.addContract('AssetManagerFunds', managerFunds.address);
+
+    return CrowdsaleGeneratorETH.new(db.address);
+    
   }).then(function(instance) {
 
     crowdsaleGeneratorETH = instance;

@@ -11,6 +11,7 @@ const Operators = artifacts.require("./roles/Operators.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Pausible = artifacts.require("./ownership/Pausible.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
+const API = artifacts.require("./database/API.sol");
 
 
 const owner = web3.eth.accounts[0];
@@ -26,7 +27,7 @@ const ETH = 1000000000000000000;
 const scaling = 1000000000000000000000000000000000000;
 const tokenSupply = 180000000000000000000000000;
 const tokenPerAccount = 1000000000000000000000;
-const assetManagerFee = 5;
+let assetManagerFee = 5;
 
 contract('Ether Crowdsale', async() => {
 
@@ -37,6 +38,7 @@ contract('Ether Crowdsale', async() => {
   let db;
   let cm;
   let hash;
+  let api;
   let platform;
   let operators;
   let operatorID;
@@ -57,6 +59,10 @@ contract('Ether Crowdsale', async() => {
   it('Deploy contract manager contract', async() => {
     cm = await ContractManager.new(db.address);
     await db.enableContractManagement(cm.address);
+  });
+
+  it('Deploy api contract', async() => {
+    api = await API.new(db.address);
   });
 
   it('Deploy MyB token', async() => {
@@ -325,7 +331,103 @@ contract('Ether Crowdsale', async() => {
     assert.equal(bn(user3BalanceAfter).isGreaterThan(user3BalanceBefore), true);
   });
 
-  // TODO: try to create asset with assetManager fee = 0
+  //Start successful funding with no manager fee
+  it('Start funding', async() => {
+    assetURI = 'Free Management';
+    assetManagerFee = 0;
+    let tx = await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 1, 2*ETH, assetManagerFee, {from:assetManager});
+    //console.log(tx.logs[0].args._assetID);
+    assetID = tx.logs[0].args._assetID;
+    tokenAddress = tx.logs[0].args._tokenAddress;
+    token = await Token.at(tokenAddress);
+  });
+
+  it('User1 funding', async() => {
+    let tokenSupply = await token.totalSupply()
+    console.log('Token Supply: ' + tokenSupply);
+    let tx = await crowdsale.buyAssetOrderETH(assetID, {from:user1, value:2*ETH});
+    let user1Tokens = await token.balanceOf(user1);
+    console.log(user1Tokens);
+    console.log(2*ETH);
+    assert.equal(user1Tokens.eq(2*ETH), true);
+    assert.equal(await token.mintingFinished(), true);
+    assert.equal(await token.balanceOf(assetManager), 0);
+    assert.equal(await api.crowdsaleFinalized(assetID), true);
+  });
+
+
+  it('Fail funding with 100% manager fee', async() => {
+    assetURI = 'Free Management';
+    assetManagerFee = 100;
+    let err;
+    try { let tx = await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 1, 2*ETH, assetManagerFee, {from:assetManager}); }
+    catch(e) {
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  //Start successful funding with 99% manager fee
+  it('Start funding', async() => {
+    assetURI = '99%managementfee.com';
+    assetManagerFee = 99;
+    let tx = await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 2*ETH, assetManagerFee, {from:assetManager});
+    //console.log(tx.logs[0].args._assetID);
+    assetID = tx.logs[0].args._assetID;
+    tokenAddress = tx.logs[0].args._tokenAddress;
+    token = await Token.at(tokenAddress);
+  });
+
+
+  it('user2 funding ', async() => {
+    let tx = await crowdsale.buyAssetOrderETH(assetID, {from:user2, value:2*ETH});
+    let user2Tokens = await token.balanceOf(user2);
+    let tokenSupply = await token.totalSupply()
+    assert.equal(user2Tokens.eq(2*ETH), true);
+    assert.equal(await token.mintingFinished(), true);
+    assert.equal(await api.crowdsaleFinalized(assetID), true);
+  });
+
+  it('Fail asset crowdsale with 0 amount to raise', async() => {
+    assetURI = 'raisenothing.com';
+    assetManagerFee = 42;
+    let err;
+    try{
+      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 0, assetManagerFee, {from:assetManager});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  // amountToRaise == 1
+  it('Start funding with small amount to raise', async() => {
+    assetURI = 'lowgoals.com';
+    assetManagerFee = 50;
+    let tx = await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 1, assetManagerFee, {from:assetManager});
+    //console.log(tx.logs[0].args._assetID);
+    assetID = tx.logs[0].args._assetID;
+    tokenAddress = tx.logs[0].args._tokenAddress;
+    token = await Token.at(tokenAddress);
+  });
+
+
+  // Note it's possible for asset-token supply to be larger than wei received due to rounding error
+  // This example makes 2 asset tokens, but only receives 1 WEI as it mints a token for the assetmanager
+  it('user3 funding 1 wei', async() => {
+    let balanceBefore = web3.eth.getBalance(user3);
+    let tx = await crowdsale.buyAssetOrderETH(assetID, {from:user3, value:2*ETH});
+    let balanceAfter = web3.eth.getBalance(user3);
+    let user3Tokens = await token.balanceOf(user3);
+    let tokenSupply = await token.totalSupply()
+    assert.equal(user3Tokens.eq(1), true);
+    assert.equal(await token.balanceOf(assetManager), 1);
+    assert.equal(await token.mintingFinished(), true);
+    assert.equal(await api.crowdsaleFinalized(assetID), true);
+  });
+
+
+    // TODO: try to force integer rounding
 
   it('Fail to send money to contract', async() => {
     let err;
