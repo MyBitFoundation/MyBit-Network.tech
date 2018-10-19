@@ -11,6 +11,7 @@ const Pausible = artifacts.require("./ownership/Pausible.sol");
 const CrowdsaleGenerator = artifacts.require("./crowdsale/CrowdsaleGeneratorERC20.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
+const API = artifacts.require("./database/API.sol");
 
 
 const owner = web3.eth.accounts[0];
@@ -36,6 +37,7 @@ contract('ERC20 Crowdsale', async() => {
   let db;
   let cm;
   let hash;
+  let api;
   let platform;
   let assetManagerFee;
   let operators;
@@ -56,6 +58,10 @@ contract('ERC20 Crowdsale', async() => {
 
   it('Deploy hashing contract', async() => {
     hash = await HashFunctions.new(db.address);
+  });
+
+  it('Deploy api contract', async() => {
+    api = await API.new(db.address);
   });
 
   it('Deploy MyB token', async() => {
@@ -360,8 +366,45 @@ contract('ERC20 Crowdsale', async() => {
     assert.notEqual(err, undefined);
   });
 
+  // start funding with 0 assetmanager fee
+  it('Start funding with no fee', async() => {
+    assetURI = 'ipfs.io/F3b285ABA9';
+    assetManagerFee = 0;
+    let tx = await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 100, 2*ETH, assetManagerFee, erc20.address, {from:assetManager});
+    assetID = tx.logs[0].args._assetID;
+    assetTokenAddress = tx.logs[0].args._tokenAddress;
+    console.log('Token Address: ' + tokenAddress);
+    assetToken = await AssetToken.at(assetTokenAddress);
+  });
 
+  it('Fully fund no fee asset', async() => {
+    await erc20.approve(crowdsale.address, 2*ETH, {from:user1});
+    let platformWalletBalance = await erc20.balanceOf(owner);
+    let tx = await crowdsale.buyAssetOrderERC20(assetID, 2*ETH, {from:user1});
+    let user1AssetTokens = await assetToken.balanceOf(user1);
+    let assetTokenSupply = await assetToken.totalSupply()
+    assert.equal(assetTokenSupply.eq(user1AssetTokens), true);
+    assert.equal(user1AssetTokens, 2*ETH);
+    assert.equal(await assetToken.mintingFinished(), true);
+    assert.equal(await assetToken.balanceOf(assetManager), 0);
+    assert.equal(await api.crowdsaleFinalized(assetID), true);
+    // Check payout to platform and operator
+    console.log(platformWalletBalance);
+    console.log(await erc20.balanceOf(owner));
+    // assert.equal(bn(platformWalletBalance).gt(await erc20.balanceOf(owner)), true);
+  });
 
+  it('Fail to create asset with 0 amount to raise', async() => {
+    let err;
+    assetURI = 'ipfs.io/F3b285ABCA9';
+    assetManagerFee = 12;
+    try{
+      await await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 100, 0, assetManagerFee, erc20.address, {from:assetManager});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
 
   /*
   it('Fail to destroy', async() => {

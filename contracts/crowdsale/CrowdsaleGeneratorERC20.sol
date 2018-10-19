@@ -34,9 +34,10 @@ contract CrowdsaleGeneratorERC20 {
   // @param (address) _fundingToken = The ERC20 token to be used to fund the crowdsale (Operator must accept this token as payment)
   function createAssetOrderERC20(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, uint _assetManagerPerc, address _fundingToken)
   external
-  isTrue(_assetManagerPerc < 100)
-  isTrue(database.boolStorage(keccak256(abi.encodePacked("acceptsToken", _operatorID, _fundingToken))))
   burnRequired {
+    require(_amountToRaise > 0);
+    require(_assetManagerPerc < 100);
+    require(database.boolStorage(keccak256(abi.encodePacked("acceptsToken", _operatorID, _fundingToken))));
     require(database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))) != address(0));
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
     require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
@@ -57,12 +58,6 @@ contract CrowdsaleGeneratorERC20 {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                            Modifiers
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  // @notice reverts if _conditional isn't true
-  modifier isTrue(bool _conditional){
-    require(_conditional);
-    _;
-  }
 
   // @notice reverts if AssetManager hasn't approved burner to burn platform token
   modifier burnRequired {

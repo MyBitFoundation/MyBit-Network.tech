@@ -33,10 +33,11 @@ contract CrowdsaleGeneratorETH {
   // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
   function createAssetOrderETH(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, uint _assetManagerPerc)
   external
-  isTrue(_assetManagerPerc < 100)
-  isTrue(database.boolStorage(keccak256(abi.encodePacked("acceptsEther", _operatorID))))
   burnRequired
   returns (bool) {
+    require(_amountToRaise > 0);
+    require(_assetManagerPerc < 100);
+    require(database.boolStorage(keccak256(abi.encodePacked("acceptsEther", _operatorID))));
     require(database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))) != address(0));
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
     require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
@@ -47,7 +48,7 @@ contract CrowdsaleGeneratorETH {
     database.setUint(keccak256(abi.encodePacked("amountToRaise", assetID)), _amountToRaise);
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), assetAddress);
     database.setBytes32(keccak256(abi.encodePacked("assetTokenID", assetAddress)), assetID);
-    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);  // Make this a require() if want to enforce escrow
+    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
     database.setAddress(keccak256(abi.encodePacked("operator", assetID)), database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))));
     emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, address(assetAddress));
     return true;
@@ -57,12 +58,8 @@ contract CrowdsaleGeneratorETH {
   //                                            Modifiers
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  modifier isTrue(bool _conditional){
-    require(_conditional);
-    _;
-  }
 
-
+  // @notice reverts if asset manager is unable to burn pp
   modifier burnRequired {
     //emit LogSig(msg.sig);
     require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
