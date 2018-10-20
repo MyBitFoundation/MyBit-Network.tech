@@ -59,13 +59,13 @@ The MYB SDK's have 4 fundamental roles:
 * Operator `must be registered by owners`
 * Platform Owner(s)
 
-Investors can contribute ETH or Erc20 tokens to invest in new asset crowdsales. The assets are managed by the AssetManager, who receives a fee for his work and escrows tokens as collateral to investors. The Operator receives funds from the crowdsale and produces and install the asset. Platform owners can choose how assets are governed, and whether or not a contract upgrade should happen. The platform owner can be a single account or a contract governed by many accounts.
+Investors can contribute ETH or Erc20 tokens to invest in new asset crowdsales. The assets are managed by the AssetManager, who receives a fee for his work and escrows tokens as collateral to investors. The Operator receives funds from the crowdsale and produces and installs the asset. Platform owners can choose how assets are governed, and whether or not a contract upgrade should happen. The platform owner can be a single account or a contract governed by many accounts.
 
 
 ## Setting Up The Platform
 Before creating assets, certain variables and parameters have to be set:
 * All contracts must be registered in ContractManager before writing to database
-* All users must approve the current contract state, which changes everytime a contract is added/updated
+* All users must approve the current contract state, which changes everytime a contract is added/updated in ContractManager
 * Users must approve ERC20Burner to burn platform tokens before using key functionality
 * Platform wallet and platform token must be set
 * Operators must be registered and choose which currencies they wish to accept
@@ -217,7 +217,7 @@ returns (bool) {
   return true;
 }
 ```
-OR
+AND/OR
 ```javascript
 function acceptEther(bytes32 _operatorID, bool _accept)
 external
@@ -295,9 +295,9 @@ For Ether based crowdsales you would call `buyAssetOrderETH()` from the investor
 If the funding fails you can call `refund()` , which sends all funds to the asset-token contract to be redistributed to investors
 
 ## Distributing Revenue
-By default all assets generated on the platform are able to receive payments and distribute revenue equally to token holders. It accomplishes this by keeping track of how much value (WEI/Token) is contained in each asset-token. The token contract can receive payment in it's fallback function or by calling `issueDividends()`
+By default all assets generated on the platform are able to receive payments and distribute revenue according to tokens held by investors. It accomplishes this by keeping track of how much value (WEI/Token) is contained in each asset-token. The token contract can receive payment in it's fallback function or by calling `issueDividends()`
 
-Investors an withdraw income by calling `withdraw()` which updates their personal ledger:
+Investors can withdraw income by calling `withdraw()` which updates their personal ledger:
 ```javascript
   function withdraw()
   public
