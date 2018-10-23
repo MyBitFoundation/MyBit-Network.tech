@@ -50,16 +50,16 @@ yarn coverage
 ## [Roles](contracts/roles)
 To understand the SDK, it's important to understand the 4 fundamental roles on the network:
 
-### Investor
+#### Investor
 Investors can contribute ETH or ERC20 tokens to invest in asset orders, receiving asset-tokens in return. To invest they must approve the burner contract.
 
-### AssetManager  
+#### AssetManager  
 The assets are managed and created by the AssetManager, who receives a fee for his work and escrows tokens as collateral to investors. The AssetManager must approve the burner contract to burn platform tokens.
 
-### Operator
+#### Operator
 The Operator is responsible for producing and installing the asset. They receive 99% of the crowdsale income as a fee for doing so. Platform owners must approve each Operator.
 
-### Platform Owner(s)
+#### Platform Owner(s)
 Platform owners can choose how assets are governed, and whether or not a contract upgrade should happen. The platform owner can be a single account or a contract governed by many accounts. Platform owners receive 1% of crowdsale income as a fee.
 
 
@@ -313,7 +313,7 @@ Investors an withdraw income by calling `withdraw()` which updates their persona
 ```
 
 ## In-Development
-:construction: The SDK's are a work in progress and we hope to implement more features such as asset-governance, platform-governance and obfuscated asset authentication. 
+:construction: The SDK's are a work in progress and we hope to implement more features such as asset-governance, platform-governance and obfuscated asset authentication.
 
 ### [Governance](contracts/ownership)
 We are working on giving investors governance tools to vote for new AssetManagers if the need arises. Voting is based on token holdings and can be accomplished by approving a function call at a particular contract:
