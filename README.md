@@ -312,6 +312,48 @@ Investors an withdraw income by calling `withdraw()` which updates their persona
   }
 ```
 
+## Onboarding Assets
+Using the AssetGenerator contract, users are able to create already funded assets and manage them using the SDK's.
+
+To create a funded asset call:
+```javascript
+function createAsset(string _tokenURI, address[] _tokenHolders, uint[] _amount)
+external
+burnRequired
+returns (bool) {
+  require (_tokenHolders.length == _amount.length && _tokenHolders.length <= 100);
+  bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _tokenURI));
+  require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))) == address(0));
+  FixedDistribution assetInstance = new FixedDistribution(_tokenURI, _tokenHolders, _amount);
+  database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
+  database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetInstance));
+  emit LogAssetCreated(assetID, address(assetInstance), msg.sender, _tokenURI);
+  return true;
+}
+```
+
+If you want the asset to be tradeable on ERC20 exchanges call:
+```javascript
+function createTradeableAsset(string _tokenURI, address[] _tokenHolders, uint[] _amount)
+external
+burnRequired
+returns (bool) {
+  require (_tokenHolders.length == _amount.length && _tokenHolders.length <= uint8(100));
+  address assetGeneratorAddress = database.addressStorage(keccak256(abi.encodePacked("contract", "AssetGenerator")));
+  bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _tokenURI));
+  require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))) == address(0));
+  DividendToken assetInstance = new DividendToken(_tokenURI, assetGeneratorAddress);   // Gives this contract all new asset tokens
+  for (uint8 i = 0; i < _tokenHolders.length; i++) {
+    assetInstance.mint(_tokenHolders[i], _amount[i]);
+  }
+  assetInstance.finishMinting();
+  database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
+  database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetInstance));
+  emit LogTradeableAssetCreated(assetID, address(assetInstance), msg.sender, _tokenURI);
+  return true;
+}
+```
+
 ## In-Development
 :construction: The SDK's are a work in progress and we hope to implement more features such as asset-governance, platform-governance and obfuscated asset authentication.
 
