@@ -67,7 +67,7 @@ contract AssetGovernance {
   //                                            Public Functions
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // @notice  Checks that 1/3 or more of token holders agreed on function call
+  // @notice  Checks that 2/3 or more of token holders agreed on function call
   function isConsensusReached(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash)
   public
   view
@@ -76,7 +76,7 @@ contract AssetGovernance {
     bytes32 executionID = keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash));
     bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", executionID));
     uint256 numTokens = assetToken.totalSupply();
-    return database.uintStorage(numVotesID).mul(100).div(numTokens) >= 33;
+    return database.uintStorage(numVotesID).mul(100).div(numTokens) >= 66;
   }
 
 
