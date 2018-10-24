@@ -1,0 +1,6 @@
+---
+id: roles_AssetManagerEscrow_Governance
+title: Governance
+---
+
+<div class="contract-doc"><div class="contract"><h2 class="contract-header"><span class="contract-kind">interface</span> Governance</h2><div class="source">Source: <a href="https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.1.9/contracts/roles/AssetManagerEscrow.sol" target="_blank">roles/AssetManagerEscrow.sol</a></div></div><div class="index"><h2>Index</h2><ul><li><a href="roles_AssetManagerEscrow_Governance.html#isConsensusReached">isConsensusReached</a></li></ul></div><div class="reference"><h2>Reference</h2><div class="functions"><h3>Functions</h3><ul><li><div class="item function"><span id="isConsensusReached" class="anchor-marker"></span><h4 class="name">isConsensusReached</h4><div class="body"><code class="signature"><span>abstract </span>function <strong>isConsensusReached</strong><span>(address _thisContract, bytes4 _methodID, bytes32 _parameterHash) </span><span>external </span><span>view </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_thisContract</code> - address</div><div><code>_methodID</code> - bytes4</div><div><code>_parameterHash</code> - bytes32</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li></ul></div></div></div>

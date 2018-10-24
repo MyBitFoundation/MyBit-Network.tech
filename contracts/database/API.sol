@@ -90,7 +90,7 @@ contract API {
   public
   pure
   returns (bytes4) {
-    return bytes4(keccak256(abi.encodePacked(_functionString)));
+    return bytes4(keccak256(_functionString));
   }
 
   function getAssetID(address _broker, string _assetURI, uint _amountToRaise, bytes32 _operatorID)
