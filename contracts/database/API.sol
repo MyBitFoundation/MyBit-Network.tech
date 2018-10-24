@@ -72,11 +72,11 @@ contract API {
     return (totalVotes * 100) / TokenView(_assetToken).totalSupply();
   }
 
-  function getAssetManagerParameterHash(bytes32 _assetID, address _oldBroker, address _newBroker, uint _amount, bool _burn)
+  function getAssetManagerParameterHash(bytes32 _assetID, address _oldAssetManager, address _newAssetManager, uint _amount, bool _burn)
   public
   pure
   returns (bytes32){
-    return keccak256(abi.encodePacked(_assetID, _oldBroker, _newBroker, _amount, _burn));
+    return keccak256(abi.encodePacked(_assetID, _oldAssetManager, _newAssetManager, _amount, _burn));
   }
 
   function getExecutionID(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash)
@@ -90,7 +90,7 @@ contract API {
   public
   pure
   returns (bytes4) {
-    return bytes4(keccak256(abi.encodePacked(_functionString)));
+    return bytes4(keccak256(_functionString));
   }
 
   function getAssetID(address _broker, string _assetURI, uint _amountToRaise, bytes32 _operatorID)

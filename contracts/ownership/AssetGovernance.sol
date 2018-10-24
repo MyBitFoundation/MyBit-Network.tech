@@ -70,12 +70,12 @@ contract AssetGovernance {
   // @notice  Checks that 1/3 or more of token holders agreed on function call
   function isConsensusReached(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash)
   public
-  view
   returns (bool) {
     TokenView assetToken = TokenView(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
     bytes32 executionID = keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash));
     bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", executionID));
     uint256 numTokens = assetToken.totalSupply();
+    emit LogConsensus(numVotesID, database.uintStorage(numVotesID), numTokens, executionID, database.uintStorage(numVotesID).mul(100).div(numTokens));
     return database.uintStorage(numVotesID).mul(100).div(numTokens) >= 33;
   }
 
@@ -103,10 +103,12 @@ contract AssetGovernance {
 
   // @notice add this modifer to functions that you want multi-sig requirements for
   // @dev function can only be called after at least n >= quorumLevel owners have agreed to call it
+  /*
   modifier hasConsensus(bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash) {
     require(isConsensusReached(address(this), _assetID, _methodID, _parameterHash));   // owners must have agreed on function + parameters
     _;
   }
+  */
 
   // @notice reverts if the asset does not have a token address set in the database
   modifier validAsset(bytes32 _assetID) {
@@ -114,4 +116,5 @@ contract AssetGovernance {
     _;
   }
 
+  event LogConsensus(bytes32 votesID, uint votes, uint tokens, bytes32 executionID, uint quorum);
 }
