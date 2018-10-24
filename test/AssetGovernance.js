@@ -12,6 +12,16 @@ const API = artifacts.require("./database/API.sol");
 const GovernedToken = artifacts.require("./tokens/ERC20/GovernedToken.sol");
 const PlatformToken = artifacts.require("./tokens/ERC20/BurnableToken.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
+const Promisify = (inner) =>
+    new Promise((resolve, reject) =>
+        inner((err, res) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(res);
+            }
+        })
+    );
 
 const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
@@ -163,7 +173,7 @@ contract('AssetGovernance', async() => {
   });
 
   it("Vote for AssetManager to be fired", async() => {
-    let methodString = "becomeAssetManager(bytes32, address, uint256, uint256)";
+    let methodString = "becomeAssetManager(bytes32,address,uint256,bool)";
     methodID = await api.getMethodID(methodString);
     parameterHash = await api.getAssetManagerParameterHash(assetID, assetManager, newAssetManager, 10*ETH, true);
     executionID = await api.getExecutionID(escrow.address, assetID, methodID, parameterHash);
@@ -212,12 +222,28 @@ contract('AssetGovernance', async() => {
 
   it("Vote for AssetManager to be fired with half of tokens", async() => {
     await govToken.approve(escrow.address, 10*ETH, {from: newAssetManager});
-    let methodString = "becomeAssetManager(bytes32, address, uint256, uint256)";
+    let methodString = "becomeAssetManager(bytes32,address,uint256,bool)";
     methodID = await api.getMethodID(methodString);
     parameterHash = await api.getAssetManagerParameterHash(assetID, assetManager, newAssetManager, 10*ETH, true);
     assert.equal(tokenPerAccount, ( (tokenPerAccount / 2) + (tokenPerAccount / 2) ));
     await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount / 2, {from: user2});
     await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount / 2, {from: user2});
+  });
+
+  it("Change AssetManager", async() => {
+    let methodString = "becomeAssetManager(bytes32,address,uint256,bool)";
+    methodID = await api.getMethodID(methodString);
+    console.log('MethodID: ', methodID);
+    parameterHash = await api.getAssetManagerParameterHash(assetID, assetManager, newAssetManager, 10*ETH, true);
+    let consensus = await governance.isConsensusReached(escrow.address, assetID, methodID, parameterHash);
+    let e = await governance.LogConsensus({}, {fromBlock: 0, toBlock: 'latest'});
+    let logs = await Promisify(callback => e.get(callback));
+    console.log('Consensus: ', consensus);
+    console.log(logs[0].args);
+    await escrow.becomeAssetManager(assetID, assetManager, 10*ETH, true, {from:newAssetManager});
+    let e2 = await escrow.LogConsensus({}, {fromBlock: 0, toBlock: 'latest'});
+    let logs2 = await Promisify(callback => e2.get(callback));
+    console.log(logs2[0].args);
   });
 
 });

@@ -73,10 +73,11 @@
 
     // @notice investors can vote to call this function for the new assetManager to then call
     // @dev new assetManager must approve this contract to transfer in and lock _ amount of platform tokens
-    function becomeAssetManager(bytes32 _assetID, address _oldAssetManager, uint _amount, bool _burn)
+    function becomeAssetManager(bytes32 _assetID, address _oldAssetManager, uint256 _amount, bool _burn)
     external
     hasConsensus(_assetID, msg.sig, keccak256(abi.encodePacked(_assetID, _oldAssetManager, msg.sender, _amount, _burn)))
     returns (bool) {
+      /*
       address currentAssetManager = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID)));
       require(currentAssetManager != msg.sender && currentAssetManager == _oldAssetManager);
       bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetID, _oldAssetManager));
@@ -86,9 +87,9 @@
       if (_burn) { require(token.burn(oldEscrowRemaining)); }
       else { require(token.transfer(_oldAssetManager, oldEscrowRemaining));  }
       require(lockEscrow(_assetID, _amount));
+      */
       return true;
     }
-
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //                                            Internal Functions
@@ -114,11 +115,12 @@
     modifier hasConsensus(bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash) {
       bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash))));
       uint256 numTokens = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))).totalSupply();
-      require(database.uintStorage(numVotesID).mul(100).div(numTokens) >= 33);
+      emit LogConsensus(numVotesID, database.uintStorage(numVotesID), numTokens, keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash)), database.uintStorage(numVotesID).mul(100).div(numTokens));
+      //require(database.uintStorage(numVotesID).mul(100).div(numTokens) >= 33, 'Consensus not reached');
       _;
     }
 
-
+    event LogConsensus(bytes32 votesID, uint votes, uint tokens, bytes32 executionID, uint quorum);
     event LogEscrowBurned(bytes32 indexed _assetID, address indexed _assetManager, uint _amountBurnt);
     event LogEscrowLocked(bytes32 indexed _assetID, bytes32 indexed _assetManagerEscrowID, address indexed _assetManager, uint _amount);
 
