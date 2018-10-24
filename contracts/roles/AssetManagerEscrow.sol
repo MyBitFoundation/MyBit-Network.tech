@@ -82,7 +82,7 @@
       require(removeAssetManager(_assetID, oldAssetManagerEscrowID));
       if (_burn) { require(token.burn(oldEscrowRemaining)); }
       else { require(token.transfer(_oldAssetManager, oldEscrowRemaining));  }
-      // require(lockEscrowInternal(msg.sender, _assetID, _amount));
+      require(lockEscrowInternal(msg.sender, _assetID, _amount));
       return true;
     }
 

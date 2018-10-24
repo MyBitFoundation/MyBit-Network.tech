@@ -78,7 +78,6 @@ contract AssetGovernance {
     bytes32 executionID = keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash));
     bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", executionID));
     uint256 numTokens = assetToken.totalSupply();
-    emit LogConsensus(numVotesID, database.uintStorage(numVotesID), numTokens, executionID, database.uintStorage(numVotesID).mul(100).div(numTokens));
     return database.uintStorage(numVotesID).mul(scalingFactor).mul(100).div(numTokens).div(scalingFactor) >= consensus;
   }
 

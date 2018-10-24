@@ -45,7 +45,7 @@ contract('AssetGovernance', async() => {
   let api;
   let hash;
   let govToken;
-  let burnToken;
+  let platformToken;
   let governance;
 
   let methodID;
@@ -77,13 +77,16 @@ contract('AssetGovernance', async() => {
   });
 
   it("Deploy standard token", async() => {
-    burnToken = await PlatformToken.new('MyB', 180000000*ETH);
+    platformToken = await PlatformToken.new('MyB', 180000000*ETH);
   });
 
-  it("Transfer token to assetManager", async() => {
-    await burnToken.transfer(assetManager, 100*ETH);
-    assetManagerBalance = await burnToken.balanceOf(assetManager);
+  it("Transfer token to assetManagers", async() => {
+    await platformToken.transfer(assetManager, 100*ETH);
+    assetManagerBalance = await platformToken.balanceOf(assetManager);
     assert.equal(assetManagerBalance, 100*ETH);
+    await platformToken.transfer(newAssetManager, 100*ETH);
+    newAssetManagerBalance = await platformToken.balanceOf(newAssetManager);
+    assert.equal(newAssetManagerBalance, 100*ETH);
   });
 
   it('Deploy api', async() => {
@@ -95,7 +98,7 @@ contract('AssetGovernance', async() => {
     platform = await Platform.new(db.address);
     await cm.addContract('PlatformFunds', platform.address);
     await platform.setPlatformWallet(owner);
-    await platform.setPlatformToken(burnToken.address);
+    await platform.setPlatformToken(platformToken.address);
   });
 
   it('Deploy assetManager escrow', async() => {
@@ -120,11 +123,11 @@ contract('AssetGovernance', async() => {
   });
 
   it("Lock escrow", async() => {
-    let balanceBefore = await burnToken.balanceOf(assetManager);
-    await burnToken.approve(escrow.address, 2*ETH, {from:assetManager});
+    let balanceBefore = await platformToken.balanceOf(assetManager);
+    await platformToken.approve(escrow.address, 2*ETH, {from:assetManager});
     tx = await escrow.lockEscrow(assetID, 2*ETH, {from:assetManager});
     assetManagerEscrowID = tx.logs[0].args._assetManagerEscrowID;
-    let balanceAfter = await burnToken.balanceOf(assetManager);
+    let balanceAfter = await platformToken.balanceOf(assetManager);
     let diff = bn(balanceBefore).minus(balanceAfter);
     assert.equal(diff, 2*ETH);
   });
@@ -219,7 +222,7 @@ contract('AssetGovernance', async() => {
     assert.notEqual(err, undefined);
   })
 
-  
+
   it("Fail executing new assetManager", async() => {
     let err;
     let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
@@ -259,7 +262,7 @@ contract('AssetGovernance', async() => {
 
 
   it("Change AssetManager", async() => {
-    await govToken.approve(escrow.address, 10*ETH, {from: newAssetManager});
+    await platformToken.approve(escrow.address, 10*ETH, {from: newAssetManager});
     let consensus = await governance.isConsensusReached(escrow.address, assetID, methodID, parameterHash);
     console.log("consensus is reached?  ", consensus);
     // let e = await governance.LogConsensus({}, {fromBlock: 0, toBlock: 'latest'});
