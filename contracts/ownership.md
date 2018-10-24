@@ -22,5 +22,4 @@ Consensus based ownership. Token holders must agree on parameters, address, and 
 
 ## AssetGovernance
 
-Investors can vote on whether or not to change/fire the current AssetManager here. Voting power is determined by how many tokens the investor wishes to lock into a particular vote. Each vote is made up of a function call at a particular address, inputting particular parameters. Investors must come to a consensus on 1.\) who the new AssetManager is going to be, 2.\) how much the new AssetManager needs to escrow and 3.\) whether they should burn the previous AssetManagers tokens.
-
+Investors can vote on whether or not to change/fire the current AssetManager here. Voting power is determined by how many tokens the investor wishes to lock into a particular vote. Each vote is made up of a function call at a particular address, inputting particular parameters. Investors must come to a consensus on 1.) who the new AssetManager is going to be, 2.) how much the new AssetManager needs to escrow and 3.) whether they should burn the previous AssetManagers tokens.
