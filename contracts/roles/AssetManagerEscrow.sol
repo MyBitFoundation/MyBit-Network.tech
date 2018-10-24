@@ -15,6 +15,8 @@
 
     DBInterface public database;
 
+    uint public consensus = 66;
+
     // @notice constructor: initializes database
     // @param: the address for the database contract used by this platform
     constructor(address _database)
@@ -27,15 +29,10 @@
     function lockEscrow(bytes32 _assetID, uint _amount)
     public
     returns (bool) {
-      require(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))) == address(0));
-      bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetID, msg.sender));
-      address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platformToken")));
-      require(BurnableERC20(tokenAddress).transferFrom(msg.sender, address(this), _amount));
-      database.setUint(keccak256(abi.encodePacked("assetManagerEscrow", assetManagerEscrowID)), _amount);
-      database.setAddress(keccak256(abi.encodePacked("assetManager", _assetID)), msg.sender);
-      emit LogEscrowLocked(_assetID, assetManagerEscrowID, msg.sender, _amount);
+      require(lockEscrowInternal(msg.sender, _assetID, _amount));
       return true;
     }
+
 
 
     // @notice assetManager can unlock his escrow here once funding fails or asset returns sufficient ROI
@@ -77,17 +74,15 @@
     external
     hasConsensus(_assetID, msg.sig, keccak256(abi.encodePacked(_assetID, _oldAssetManager, msg.sender, _amount, _burn)))
     returns (bool) {
-      /*
       address currentAssetManager = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID)));
       require(currentAssetManager != msg.sender && currentAssetManager == _oldAssetManager);
-      bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetID, _oldAssetManager));
-      uint oldEscrowRemaining = database.uintStorage(keccak256(abi.encodePacked("assetManagerEscrow", assetManagerEscrowID))).sub(database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", assetManagerEscrowID))));
+      bytes32 oldAssetManagerEscrowID = keccak256(abi.encodePacked(_assetID, _oldAssetManager));
+      uint oldEscrowRemaining = database.uintStorage(keccak256(abi.encodePacked("assetManagerEscrow", oldAssetManagerEscrowID))).sub(database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", oldAssetManagerEscrowID))));
       BurnableERC20 token = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
-      require(removeAssetManager(_assetID, assetManagerEscrowID));
+      require(removeAssetManager(_assetID, oldAssetManagerEscrowID));
       if (_burn) { require(token.burn(oldEscrowRemaining)); }
       else { require(token.transfer(_oldAssetManager, oldEscrowRemaining));  }
-      require(lockEscrow(_assetID, _amount));
-      */
+      // require(lockEscrowInternal(msg.sender, _assetID, _amount));
       return true;
     }
 
@@ -106,6 +101,21 @@
     }
 
 
+    function lockEscrowInternal(address _assetManager, bytes32 _assetID, uint _amount)
+    internal
+    returns (bool) {
+      require(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))) == address(0));
+      bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetID, _assetManager));
+      address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platformToken")));
+      require(BurnableERC20(tokenAddress).transferFrom(_assetManager, address(this), _amount));
+      database.setUint(keccak256(abi.encodePacked("assetManagerEscrow", assetManagerEscrowID)), _amount);
+      database.setAddress(keccak256(abi.encodePacked("assetManager", _assetID)), _assetManager);
+      emit LogEscrowLocked(_assetID, assetManagerEscrowID, _assetManager, _amount);
+      return true;
+    }
+
+
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                            Modifiers
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -116,7 +126,7 @@
       bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash))));
       uint256 numTokens = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))).totalSupply();
       emit LogConsensus(numVotesID, database.uintStorage(numVotesID), numTokens, keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash)), database.uintStorage(numVotesID).mul(100).div(numTokens));
-      //require(database.uintStorage(numVotesID).mul(100).div(numTokens) >= 33, 'Consensus not reached');
+      require(database.uintStorage(numVotesID).mul(100).div(numTokens) >= consensus, 'Consensus not reached');
       _;
     }
 

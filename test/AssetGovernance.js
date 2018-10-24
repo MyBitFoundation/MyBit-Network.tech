@@ -55,6 +55,7 @@ contract('AssetGovernance', async() => {
   let operatorID;
   let assetID;
   let assetURI = 'https://alocationforassetdetails';
+  let totalSupply;
 
   it('Deploy HashFunctions', async() => {
     hash = await HashFunctions.new();
@@ -153,17 +154,22 @@ contract('AssetGovernance', async() => {
     await db.setAddress(operatorHash, operator);
   });
 
+  // Each token holder has 25% of total supply  (assetmanager has 25%)
   it("Spread tokens to users", async() => {
     let userBalance;
-    let totalSupply = bn(8).times(ETH);
+    let totalSupply = 999999999999999999999999999999999999;
+    let supplyCheck;
     tokenPerAccount = totalSupply / tokenHolders.length;   // TODO: getting error with bignumber.js here
     for (var i = 0; i < tokenHolders.length; i++) {
       //console.log(web3.eth.accounts[i]);
       await govToken.mint(tokenHolders[i], tokenPerAccount);
+      supplyCheck += tokenPerAccount;
       userBalance = await govToken.balanceOf(tokenHolders[i]);
       assert.equal(userBalance, tokenPerAccount);
     }
     assert.equal(await govToken.balanceOf(owner), 0);
+    console.log("each user has a potential vote percentage of ", (tokenPerAccount * 100) / await govToken.totalSupply());
+    // assert.equal(supplyCheck, await govToken.totalSupply());
   });
 
   it("Transfer token to assetManager assets", async() => {
@@ -175,10 +181,18 @@ contract('AssetGovernance', async() => {
   it("Vote for AssetManager to be fired", async() => {
     let methodString = "becomeAssetManager(bytes32,address,uint256,bool)";
     methodID = await api.getMethodID(methodString);
+    // set the new asset manager with a requirement of 10 token escrow and burn old managers escrow
     parameterHash = await api.getAssetManagerParameterHash(assetID, assetManager, newAssetManager, 10*ETH, true);
     executionID = await api.getExecutionID(escrow.address, assetID, methodID, parameterHash);
     await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount, {from: user1});
-    await govToken.approve(escrow.address, 10*ETH, {from: newAssetManager});
+    let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
+    console.log("First vote received, consensus is : " , Number(consensusProgress));
+    console.log("First user voted with : ", tokenPerAccount);
+    console.log("Votes for execution from user1 is : ", Number(await api.getInvestorVotes(executionID, user1)));
+    console.log("Total votes for execution are: ", Number(await api.getTotalVotes(executionID)));
+    console.log("Total token supply is: ", Number(await govToken.totalSupply()));
+    assert.equal(consensusProgress, 25);
+
   });
 
   it("Try to transfer tokens", async() => {
@@ -205,11 +219,12 @@ contract('AssetGovernance', async() => {
     assert.notEqual(err, undefined);
   })
 
-
+  
   it("Fail executing new assetManager", async() => {
     let err;
     let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
-    assert.equal(bn(consensusProgress).lt(50), true);
+    console.log("fail executing new asset manager, consensus is : " , Number(consensusProgress));
+    assert.equal(bn(consensusProgress).lt(66), true);
     // assert.equal(await govToken.allowance(newAssetManager, escrow.address), 10*ETH);
     //Fail because consensus is not yet reached
     try{
@@ -220,26 +235,37 @@ contract('AssetGovernance', async() => {
     assert.notEqual(err, undefined);
   });
 
-  it("Vote for AssetManager to be fired with half of tokens", async() => {
-    await govToken.approve(escrow.address, 10*ETH, {from: newAssetManager});
-    let methodString = "becomeAssetManager(bytes32,address,uint256,bool)";
-    methodID = await api.getMethodID(methodString);
-    parameterHash = await api.getAssetManagerParameterHash(assetID, assetManager, newAssetManager, 10*ETH, true);
-    assert.equal(tokenPerAccount, ( (tokenPerAccount / 2) + (tokenPerAccount / 2) ));
-    await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount / 2, {from: user2});
-    await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount / 2, {from: user2});
+  it("Vote for AssetManager with 2nd token holder ", async() => {
+    await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount, {from: user2});
+    let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
+    console.log("Second vote received, consensus is : " , Number(consensusProgress));
+    console.log("Second user voted with : ", tokenPerAccount);
+    console.log("Votes for execution from user2 is : ", Number(await api.getInvestorVotes(executionID, user2)));
+    console.log("Total votes for execution are: ", Number(await api.getTotalVotes(executionID)));
+    console.log("Total token supply is: ", Number(await govToken.totalSupply()));
+    assert.equal(consensusProgress, 50);
   });
 
+  it("Vote for AssetManager with 3rd token holder ", async() => {
+    await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount, {from: user3});
+    let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
+    console.log("Third vote received, consensus is : " , Number(consensusProgress));
+    console.log("Third user voted with : ", tokenPerAccount);
+    console.log("Votes for execution from user3 is : ", Number(await api.getInvestorVotes(executionID, user3)));
+    console.log("Total votes for execution are: ", Number(await api.getTotalVotes(executionID)));
+    console.log("Total token supply is: ", Number(await govToken.totalSupply()));
+    assert.equal(bn(consensusProgress).gt(66), true);
+  });
+
+
   it("Change AssetManager", async() => {
-    let methodString = "becomeAssetManager(bytes32,address,uint256,bool)";
-    methodID = await api.getMethodID(methodString);
-    console.log('MethodID: ', methodID);
-    parameterHash = await api.getAssetManagerParameterHash(assetID, assetManager, newAssetManager, 10*ETH, true);
+    await govToken.approve(escrow.address, 10*ETH, {from: newAssetManager});
     let consensus = await governance.isConsensusReached(escrow.address, assetID, methodID, parameterHash);
-    let e = await governance.LogConsensus({}, {fromBlock: 0, toBlock: 'latest'});
-    let logs = await Promisify(callback => e.get(callback));
-    console.log('Consensus: ', consensus);
-    console.log(logs[0].args);
+    console.log("consensus is reached?  ", consensus);
+    // let e = await governance.LogConsensus({}, {fromBlock: 0, toBlock: 'latest'});
+    // let logs = await Promisify(callback => e.get(callback));
+    // console.log('Consensus: ', consensus);
+    // console.log(logs[0].args);
     await escrow.becomeAssetManager(assetID, assetManager, 10*ETH, true, {from:newAssetManager});
     let e2 = await escrow.LogConsensus({}, {fromBlock: 0, toBlock: 'latest'});
     let logs2 = await Promisify(callback => e2.get(callback));
