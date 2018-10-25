@@ -48,22 +48,11 @@ yarn coverage
 ```
 
 ## [Roles](contracts/roles)
-To understand the SDK, it's important to understand the 4 fundamental roles on the network:
-
-#### Investor
-Investors can contribute ETH or ERC20 tokens to invest in asset orders, receiving asset-tokens in return. To invest they must approve the burner contract.
-
-#### AssetManager  
-The assets are managed and created by the AssetManager, who receives a fee for his work and escrows tokens as collateral to investors. The AssetManager must approve the burner contract to burn platform tokens.
-
-#### Operator
-The Operator is responsible for producing and installing the asset. They receive 99% of the crowdsale income as a fee for doing so. Platform owners must approve each Operator.
-
-#### Platform Owner(s)
-Platform owners can choose how assets are governed, and whether or not a contract upgrade should happen. The platform owner can be a single account or a contract governed by many accounts. Platform owners receive 1% of crowdsale income as a fee.
+There are generally 4 different roles on the platform. The `Investor`, the `AssetManager`, the `Operator`, and the `PlatformOwners`. `Investors` can contribute ETH or Erc20 tokens to invest in new asset crowdsales. The continued functioning of the asset is ensured by the `AssetManager`, who receives a fee for his work and escrows tokens as collateral to investors. The `Operator` receives funds from the crowdsale and produces and installs the asset. `PlatformOwners` can choose how assets are governed, and whether or not a contract upgrade should happen. The platform owner can be a single account or a contract governed by many accounts.
 
 
-## Setting Up The Platform
+
+## Contract overview
 Before creating assets, certain variables and parameters have to be set:
 * All contracts must be registered in ContractManager before writing to database
 * All users must approve the current contract state, which changes everytime a contract is added/updated in ContractManager
@@ -71,12 +60,14 @@ Before creating assets, certain variables and parameters have to be set:
 * Platform wallet and platform token must be set
 * Operators must be registered and choose which currencies they wish to accept
 
-Basic functionality for these critical operations are outlined below. All contracts are found [here](contracts)
+Basic functionality for these critical operations are outlined below.
+
+All contracts are found [here](contracts)
 
 ### [Database](contracts/database)
 Contracts in the SDK store all long-term data in a database contract, which allows for contracts to be upgraded without losing valuable data. The Database stores all data using a bytes32 type, which is often the keccak256 hash of the variableName, ID, address that make up that variable.
 
-Storing an unsigned integer looks like this:
+Storing an integer looks like this:
 ```javascript
   database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), 20000000);
 ```
@@ -121,7 +112,7 @@ To give a contract write access to the database, you must call `addContract(cont
   }
 ```
 
-Everytime a contract is added or updated the contract state will change, requiring approval from users before they interact with the platform. Users can also choose to ignore future state changes. This can be done by calling the following function:
+Every time a contract is added or updated the contract state will change, requiring approval from users before they interact with the platform. Users can also choose to ignore future state changes. This can be done by calling the following function:
 
 ```javascript
   function setContractStatePreferences(bool _acceptCurrentState, bool _ignoreStateChanges)
@@ -180,7 +171,7 @@ Before assets can be funded the platform owners must set the `platform token` an
     emit LogPlatformWallet(_walletAddress);
   }
 ```
-:heavy_plus_sign:
+AND
 
 ```javascript
   // @notice
