@@ -7,6 +7,7 @@ import "../tokens/erc20/DividendToken.sol";
 import "../tokens/distribution/FixedDistribution.sol";
 
 // @title An asset generator contract for onboarding existing real-world assets
+// @notice This contract creates ERC20 dividend tokens and give sthem to the _tokenHolders provided
 // @author Kyle Dewhurst, MyBit Foundation
 contract AssetGenerator {
   using SafeMath for uint256;
@@ -28,7 +29,7 @@ contract AssetGenerator {
   external
   burnRequired
   returns (bool) {
-    require (_tokenHolders.length == _amount.length && _tokenHolders.length <= 200);
+    require (_tokenHolders.length == _amount.length && _tokenHolders.length <= 100);
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _tokenURI));
     require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))) == address(0));
     FixedDistribution assetInstance = new FixedDistribution(_tokenURI, _tokenHolders, _amount);
@@ -44,7 +45,7 @@ contract AssetGenerator {
   external
   burnRequired
   returns (bool) {
-    require (_tokenHolders.length == _amount.length && _tokenHolders.length <= uint8(200));
+    require (_tokenHolders.length == _amount.length && _tokenHolders.length <= uint8(100));
     address assetGeneratorAddress = database.addressStorage(keccak256(abi.encodePacked("contract", "AssetGenerator")));
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _tokenURI));
     require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))) == address(0));
