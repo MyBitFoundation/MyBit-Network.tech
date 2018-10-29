@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for tokens/erc20/DividendToken.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">all files</a> / <a href="index.html">tokens/erc20/</a> DividendToken.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">95.83% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>23/24</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>4/4</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">90.91% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>10/11</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">96.55% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>28/29</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">36×</span>
+<span class="cline-any cline-yes">36×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">32×</span>
+<span class="cline-any cline-yes">32×</span>
+<span class="cline-any cline-yes">32×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity 0.4.24;
+&nbsp;
+import './MintableToken.sol';
+import '../../math/SafeMath.sol';
+import '../../interfaces/ApproveAndCallFallback.sol';
+&nbsp;
+// @title ERC20 token contract with shared revenue distribution functionality.
+// @notice This token contract can receive payments in the fallback function and token owners receive their share when transferring tokens.
+// @author Kyle Dewhurst &amp; Peter Phillips MyBit Foundation
+// Credit goes to Nick Johnson for the dividend token https://medium.com/@weka/dividend-bearing-tokens-on-ethereum-42d01c710657
+contract DividendToken is MintableToken {
+    using SafeMath for uint;
+&nbsp;
+    // @notice Token Income Information
+    uint constant scalingFactor = 1e32;
+    uint public valuePerToken;
+    uint public assetIncome;
+&nbsp;
+    mapping (address =&gt; uint) public incomeOwed;
+    mapping (address =&gt; uint) public previousValuePerToken;
+&nbsp;
+&nbsp;
+    // @notice constructor: initialized
+    constructor(string _tokenURI, address _owner)
+    public
+    MintableToken(_tokenURI, _owner){}
+&nbsp;
+    // @notice Transfer _amount tokens to address _to.
+    // @dev Sender must have enough tokens. Cannot send to 0x0.
+    // @param (address) _to = The address which will receive the tokens
+    // @param (uint) _amount = The amount of tokens to send
+    function transfer(address _to, uint _amount)
+    public
+    updateIncomeClaimed(msg.sender)
+    updateIncomeClaimed(_to)
+    returns (bool success) {
+        require(_to != address(this));
+        super.transfer(_to, _amount);
+        return true;
+    }
+&nbsp;
+    // @notice A 3rd party can transfer tokens if investor approves them to do so
+    // @dev Transfer _amount of tokens if _from has allowed msg.sender to do so.
+    // @param (address) _from = The address who approved msg.sender to spend tokens
+    // @param (address) _to = The address who will receive the tokens
+    // @param (uint) _amount = The number of tokens to send
+    function transferFrom(address _from, address _to, uint _amount)
+    public
+    updateIncomeClaimed(_from)
+    updateIncomeClaimed(_to)
+    returns (bool success) {
+        require(_to != address(this));
+        super.transferFrom(_from, _to, _amount);
+        return true;
+    }
+&nbsp;
+    // @notice Token holder can notify a contract that it has been approved to spend _amount of tokens
+    // @param (address) _spender = The contract to call after approval is done
+    // @param (uint) _amount = Number of tokens to send
+    // @param (bytes) _data = Bytes data to send along with the contract call
+    function approveAndCall(address _spender, uint _amount, bytes _data)
+    public
+    updateIncomeClaimed(msg.sender)
+    updateIncomeClaimed(_spender)
+    returns (bool success) {
+        allowed[msg.sender][_spender] = _amount;
+        emit Approval(msg.sender, _spender, _amount);
+        ApproveAndCallFallBack(_spender).receiveApproval(msg.sender, _amount, address(this), _data);
+        return true;
+    }
+&nbsp;
+    // @notice token holders can withdraw income here
+    function withdraw()
+    public
+    updateIncomeClaimed(msg.sender)
+    returns (bool) {
+        uint amount = incomeOwed[msg.sender].div(scalingFactor);
+        delete incomeOwed[msg.sender];
+        emit LogIncomeCollected(msg.sender, amount);
+        msg.sender.transfer(amount);
+        return true;
+    }
+&nbsp;
+    // @notice assets can send their income here to be collected by investors
+    function issueDividends()
+    payable
+    public
+    returns (bool) {
+        assetIncome = assetIncome.add(msg.value);
+        valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
+        emit LogIncomeReceived(msg.sender, msg.value);
+        return true;
+    }
+&nbsp;
+    // @notice returns null address to specify this token accepts only Ether payments
+<span class="fstat-no" title="function not covered" >    function getERC20()</span>
+    external
+    pure
+    returns(address){
+<span class="cstat-no" title="statement not covered" >      return address(0);</span>
+    }
+&nbsp;
+    // Fallback function: receives Ether and updates income ledger
+    function ()
+    payable
+    public {
+        assetIncome = assetIncome.add(msg.value);
+        valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
+        emit LogIncomeReceived(msg.sender, msg.value);
+    }
+&nbsp;
+&nbsp;
+    // ------------------------------------------------------------------------
+    //                           View functions
+    // ------------------------------------------------------------------------
+&nbsp;
+    // @notice Calculates how much more income is owed to investor since last calculation
+    function collectLatestPayments(address _investor)
+    private
+    view
+    returns (uint) {
+        uint valuePerTokenDifference = valuePerToken.sub(previousValuePerToken[_investor]);
+        return valuePerTokenDifference.mul(balances[_investor]);
+    }
+&nbsp;
+    // @notice Calculates how much wei investor is owed. (points + incomeOwed) / 10**32
+    function getAmountOwed(address _investor)
+    public
+    view
+    returns (uint) {
+        return (collectLatestPayments(_investor).add(incomeOwed[_investor]).div(scalingFactor));
+    }
+&nbsp;
+    // ------------------------------------------------------------------------
+    //                            Modifiers
+    // ------------------------------------------------------------------------
+&nbsp;
+    // Updates the amount owed to investor while holding tokenSupply
+    // @dev must be called before transfering tokens
+    modifier updateIncomeClaimed(address _investor) {
+        incomeOwed[_investor] = incomeOwed[_investor].add(collectLatestPayments(_investor));
+        previousValuePerToken[_investor] = valuePerToken;
+        _;
+    }
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+    event LogIncomeReceived(address indexed _sender, uint _paymentAmount);
+    event LogIncomeCollected(address _address, uint _amount);
+&nbsp;
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Oct 17 2018 13:57:31 GMT-0700 (PDT)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>

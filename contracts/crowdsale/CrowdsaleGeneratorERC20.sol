@@ -1,9 +1,10 @@
- pragma solidity 0.4.24;
+ pragma solidity ^0.4.24;
 
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
 import "../access/ERC20Burner.sol";
 import "../tokens/erc20/DividendTokenERC20.sol";
+import "../database/Events.sol";
 
 // @title A crowdsale generator contract
 // @author Kyle Dewhurst & Peter Phillips, MyBit Foundation
@@ -12,15 +13,17 @@ contract CrowdsaleGeneratorERC20 {
   using SafeMath for uint256;
 
   DBInterface private database;
+  Events private events;
   ERC20Burner private burner;
 
   uint constant scalingFactor = 1e32;
 
   // @notice This contract
   // @param: The address for the database contract used by this platform
-  constructor(address _database)
+  constructor(address _database, address _events)
   public{
       database = DBInterface(_database);
+      events = Events(_events);
       burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
@@ -51,7 +54,8 @@ contract CrowdsaleGeneratorERC20 {
     database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
     database.setAddress(keccak256(abi.encodePacked("operator", assetID)), database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))));
     database.setAddress(keccak256(abi.encodePacked("fundingToken", assetID)), _fundingToken);
-    emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, assetAddress);
+    events.asset('Asset funding started', _assetURI, assetID, assetAddress, msg.sender);
+    //emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, assetAddress);
   }
 
 

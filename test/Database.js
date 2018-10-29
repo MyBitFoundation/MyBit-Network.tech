@@ -1,23 +1,39 @@
 var BigNumber = require('bignumber.js');
 
 const Database = artifacts.require('./database/Database.sol');
+const Events = artifacts.require('./database/Events.sol');
 const ContractManager = artifacts.require('./database/ContractManager.sol');
+const Promisify = (inner) =>
+    new Promise((resolve, reject) =>
+        inner((err, res) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(res);
+            }
+        })
+    );
 
 contract('Database', async (accounts) => {
   const manager1 = web3.eth.accounts[0];
   const manager2 = web3.eth.accounts[1];
 
   let database;
+  let events;
   let contractManager;
 
   it('Deploy Database', async() => {
     database = await Database.new([manager1], false);
   });
 
+  it('Deploy Events', async() => {
+    events = await Events.new(database.address);
+  });
+
   it('Fail to add contract manager', async() => {
     let err;
     try{
-      contractManager = await ContractManager.new(database.address);
+      contractManager = await ContractManager.new(database.address, events.address);
       await database.enableContractManagement(contractManager.address);
     } catch(e){
       err = e;
@@ -29,8 +45,13 @@ contract('Database', async (accounts) => {
     database = await Database.new([manager1], true);
   });
 
+  it('Deploy Events', async() => {
+    events = await Events.new(database.address);
+    console.log("Events address: ", events.address);
+  });
+
   it('Deploy contract manage contract', async() => {
-    contractManager = await ContractManager.new(database.address);
+    contractManager = await ContractManager.new(database.address, events.address);
   });
 
   it('Fail to set contract manager', async() => {
@@ -88,7 +109,11 @@ contract('Database', async (accounts) => {
   });
 
   it('Add user to manager', async() => {
+    let block = await web3.eth.getBlock('latest');
     await contractManager.addContract('User', manager1);
+    let e = events.LogContractChange({}, {fromBlock: block.number, toBlock: 'latest'});
+    let logs = await Promisify(callback => e.get(callback));
+    console.log(logs[0].args);
     //assert.equal(await contractManager.contractExists(manager1), true);
   });
 

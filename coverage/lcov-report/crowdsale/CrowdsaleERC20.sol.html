@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for crowdsale/CrowdsaleERC20.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">crowdsale/</a> CrowdsaleERC20.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>0/43</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/36</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/14</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>0/59</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity ^0.4.24;
+&nbsp;
+import "../math/SafeMath.sol";
+import "../interfaces/ERC20.sol";
+import "../interfaces/DBInterface.sol";
+import "../interfaces/ERC20DividendInterface.sol";
+import "../access/ERC20Burner.sol";
+&nbsp;
+// @title An asset crowdsale contract which accepts funding from ERC20 tokens.
+// @notice Begins a crowdfunding period for a digital asset, minting asset dividend tokens to investors when particular ERC20 token is received
+// @author Kyle Dewhurst, MyBit Foundation
+// @notice creates a dividend token to represent the newly created asset.
+contract CrowdsaleERC20{
+  using SafeMath for uint256;
+&nbsp;
+  DBInterface public database;
+  ERC20Burner public burner;
+&nbsp;
+  // @notice Constructor: initializes database instance
+  // @param: The address for the platform database
+<span class="fstat-no" title="function not covered" >  constructor(address _database)</span>
+  public{
+<span class="cstat-no" title="statement not covered" >      database = DBInterface(_database)</span>;
+<span class="cstat-no" title="statement not covered" >      burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))))</span>;
+  }
+&nbsp;
+&nbsp;
+  // @notice Investors can send ERC20 tokens here to fund an asset, receiving an equivalent number of asset-tokens.
+  // @dev investor must approve this contract to transfer tokens
+  // @param (bytes32) _assetID = The ID of the asset tokens, investor wishes to purchase
+  // @param (uint) _amount = The amount to spend purchasing this asset
+<span class="fstat-no" title="function not covered" >  function buyAssetOrderERC20(bytes32 _assetID, uint _amount)</span>
+  external
+  validAsset(_assetID)
+  beforeDeadline(_assetID)
+  notFinalized(_assetID)
+  burnRequired
+  returns (bool) {
+<span class="cstat-no" title="statement not covered" >    ERC20DividendInterface assetToken = ERC20DividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))))</span>;
+<span class="cstat-no" title="statement not covered" >    ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))))</span>;
+<span class="cstat-no" title="statement not covered" >    uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID)))</span>;
+<span class="cstat-no" title="statement not covered" >    uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply())</span>;
+<span class="cstat-no" title="statement not covered" >    if (_amount &gt;= tokensRemaining) {</span>
+<span class="cstat-no" title="statement not covered" >      require(fundingToken.transferFrom(msg.sender, address(this), tokensRemaining))</span>;    // transfer investors tokens into contract
+<span class="cstat-no" title="statement not covered" >      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID))) ))</span>;
+<span class="cstat-no" title="statement not covered" >      require(finalizeCrowdsale(_assetID))</span>;
+<span class="cstat-no" title="statement not covered" >      require(assetToken.mint(msg.sender, tokensRemaining))</span>;   // Send remaining asset tokens to investor
+<span class="cstat-no" title="statement not covered" >      require(assetToken.finishMinting())</span>;
+<span class="cstat-no" title="statement not covered" >      require(payoutERC20(_assetID, amountToRaise))</span>;          // 1 token = 1 wei
+    }
+    else {
+<span class="cstat-no" title="statement not covered" >      require(fundingToken.transferFrom(msg.sender, address(this), _amount))</span>;
+<span class="cstat-no" title="statement not covered" >      require(assetToken.mint(msg.sender, _amount))</span>;
+    }
+<span class="cstat-no" title="statement not covered" >    emit LogAssetPurchased(_assetID, msg.sender, _amount);</span> //Should amount listed be how much they spent or how much they received?
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+  }
+&nbsp;
+&nbsp;
+  // @notice Contributors can retrieve their funds here if crowdsale has paased deadline
+  // @param (bytes32) _assetID =  The ID of the asset which didn't reach it's crowdfunding goals
+<span class="fstat-no" title="function not covered" >  function refund(bytes32 _assetID)</span>
+  external
+  whenNotPaused
+  validAsset(_assetID)
+  afterDeadline(_assetID)
+  notFinalized(_assetID)
+  returns (bool) {
+<span class="cstat-no" title="statement not covered" >    require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))) != 0)</span>;
+    database.deleteUint(keccak256(abi.encodePacked("fundingDeadline", _assetID)));
+<span class="cstat-no" title="statement not covered" >    address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))</span>;
+<span class="cstat-no" title="statement not covered" >    ERC20DividendInterface assetToken = ERC20DividendInterface(tokenAddress)</span>;
+<span class="cstat-no" title="statement not covered" >    ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))))</span>;
+<span class="cstat-no" title="statement not covered" >    uint refundValue = assetToken.totalSupply()</span>; //token=wei
+    fundingToken.approve(tokenAddress, refundValue);
+    assetToken.issueDividends(refundValue);
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+  }
+&nbsp;
+  //------------------------------------------------------------------------------------------------------------------
+  //                                            Internal Functions
+  //------------------------------------------------------------------------------------------------------------------
+&nbsp;
+  // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where operator/assetManager can withdraw
+  // @dev The contract manager needs to know  the address PlatformDistribution contract
+<span class="fstat-no" title="function not covered" >  function payoutERC20(bytes32 _assetID, uint _amount)</span>
+  private
+  whenNotPaused
+  returns (bool) {
+<span class="cstat-no" title="statement not covered" >    ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))))</span>;
+<span class="cstat-no" title="statement not covered" >    address operator = database.addressStorage(keccak256(abi.encodePacked("operator", _assetID)))</span>;
+<span class="cstat-no" title="statement not covered" >    address platformWallet = database.addressStorage(keccak256(abi.encodePacked("platformWallet")))</span>;
+<span class="cstat-no" title="statement not covered" >    require(operator != address(0) &amp;&amp; platformWallet != address(0))</span>;
+<span class="cstat-no" title="statement not covered" >    uint operatorPortion = _amount.mul(99).div(100)</span>;
+<span class="cstat-no" title="statement not covered" >    uint platformPortion = _amount.sub(operatorPortion)</span>;
+    fundingToken.transfer(platformWallet, platformPortion);
+    fundingToken.transfer(operator, operatorPortion);
+<span class="cstat-no" title="statement not covered" >    emit LogAssetPayout(_assetID, operator, _amount);</span>
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+  }
+&nbsp;
+  // @notice platform owners can recover tokens here
+<span class="fstat-no" title="function not covered" >  function recoverTokens(address _erc20Token)</span>
+  onlyOwner
+  external {
+<span class="cstat-no" title="statement not covered" >    ERC20 thisToken = ERC20(_erc20Token)</span>;
+<span class="cstat-no" title="statement not covered" >    uint contractBalance = thisToken.balanceOf(address(this))</span>;
+    thisToken.transfer(msg.sender, contractBalance);
+  }
+&nbsp;
+  // @notice platform owners can destroy contract here
+<span class="fstat-no" title="function not covered" >  function destroy()</span>
+  onlyOwner
+  external {
+<span class="cstat-no" title="statement not covered" >    emit LogDestruction(address(this).balance, msg.sender);</span>
+<span class="cstat-no" title="statement not covered" >    selfdestruct(msg.sender)</span>;
+  }
+&nbsp;
+&nbsp;
+  //------------------------------------------------------------------------------------------------------------------
+  //                                            Internal functions
+  //------------------------------------------------------------------------------------------------------------------
+&nbsp;
+  // @notice internal function for freeing up storage after crowdsale finishes
+  // @param the ID of this asset.
+<span class="fstat-no" title="function not covered" >  function finalizeCrowdsale(bytes32 _assetID)</span>
+  internal
+  whenNotPaused
+  returns (bool) {
+      database.setBool(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)), true);
+      database.deleteUint(keccak256(abi.encodePacked("amountToRaise", _assetID)));
+      database.deleteUint(keccak256(abi.encodePacked("assetManagerFee", _assetID)));
+<span class="cstat-no" title="statement not covered" >      return true;</span>
+  }
+&nbsp;
+  //------------------------------------------------------------------------------------------------------------------
+  //                                            Modifiers
+  //------------------------------------------------------------------------------------------------------------------
+&nbsp;
+  // @notice Sender must be a registered owner
+<span class="fstat-no" title="function not covered" >  modifier onlyOwner </span>{
+<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))))</span>;
+    _;
+  }
+&nbsp;
+  // @notice function won't run if owners have paused this contract
+<span class="fstat-no" title="function not covered" >  modifier whenNotPaused </span>{
+<span class="cstat-no" title="statement not covered" >    require(!database.boolStorage(keccak256(abi.encodePacked("paused", address(this)))))</span>;
+    _;
+  }
+&nbsp;
+  // @notice reverts if investor hasn't approved burner to burn platform token
+<span class="fstat-no" title="function not covered" >  modifier burnRequired </span>{
+<span class="cstat-no" title="statement not covered" >    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))))</span>;
+    _;
+  }
+&nbsp;
+      // @notice reverts if the asset does not have a token address set in the database
+<span class="fstat-no" title="function not covered" >  modifier validAsset(bytes32 _assetID) </span>{
+<span class="cstat-no" title="statement not covered" >    require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))) != address(0))</span>;
+    _;
+  }
+&nbsp;
+  // @notice reverts if the funding deadline has already past
+<span class="fstat-no" title="function not covered" >  modifier beforeDeadline(bytes32 _assetID) </span>{
+<span class="cstat-no" title="statement not covered" >    require(now &lt;= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))))</span>;
+    _;
+  }
+&nbsp;
+  // @notice reverts if the funding deadline has already past
+<span class="fstat-no" title="function not covered" >  modifier afterDeadline(bytes32 _assetID) </span>{
+<span class="cstat-no" title="statement not covered" >    require(now &gt; database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))))</span>;
+    _;
+  }
+&nbsp;
+  // @notice returns true if crowdsale is not finshed
+<span class="fstat-no" title="function not covered" >  modifier notFinalized(bytes32 _assetID) </span>{
+<span class="cstat-no" title="statement not covered" >    require( !database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID))) )</span>;
+    _;
+  }
+&nbsp;
+  //------------------------------------------------------------------------------------------------------------------
+  //                                            Events
+  //------------------------------------------------------------------------------------------------------------------
+&nbsp;
+  event LogAssetPurchased(bytes32 indexed _assetID, address indexed _sender, uint _amount);
+  event LogAssetPayout(bytes32 indexed _assetID, address indexed _operator, uint _amount);
+  event LogDestruction(uint _amountSent, address indexed _caller);
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Oct 22 2018 16:43:42 GMT-0700 (PDT)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

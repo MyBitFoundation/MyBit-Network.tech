@@ -2,6 +2,7 @@ var bn = require('bignumber.js');
 
 const AssetExchange = artifacts.require("./ecosystem/AssetExchange.sol");
 const Database = artifacts.require("./database/Database.sol");
+const Events = artifacts.require('./database/Events.sol');
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const DivToken = artifacts.require("./tokens/ERC20/DividendToken.sol");
 const PlatformToken = artifacts.require("./tokens/erc20/BurnableToken.sol");
@@ -10,6 +11,16 @@ const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
 const Pausible = artifacts.require("./ownership/Pausible.sol");
+const Promisify = (inner) =>
+    new Promise((resolve, reject) =>
+        inner((err, res) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(res);
+            }
+        })
+    );
 
 const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
@@ -31,6 +42,7 @@ const token2PerAccount = 2*ETH;
 contract('Asset Exchange', async() => {
   let dax;
   let db;
+  let events;
   let cm;
   let burner;
   let hash;
@@ -56,8 +68,12 @@ contract('Asset Exchange', async() => {
     db = await Database.new([owner, owner2], true);
   });
 
+  it('Deploy Events', async() => {
+    events = await Events.new(db.address);
+  });
+
   it('Deploy contract manager contract', async() => {
-    cm = await ContractManager.new(db.address);
+    cm = await ContractManager.new(db.address, events.address);
     await db.enableContractManagement(cm.address);
     await cm.addContract('Owner', owner);
   });
@@ -89,7 +105,7 @@ contract('Asset Exchange', async() => {
   });
 
   it('Deploy burner contract', async() => {
-    burner = await ERC20Burner.new(db.address);
+    burner = await ERC20Burner.new(db.address, events.address);
     await cm.addContract("ERC20Burner", burner.address);
   });
 
@@ -99,7 +115,7 @@ contract('Asset Exchange', async() => {
   });
 
   it('Deploy exchange', async() => {
-    dax = await AssetExchange.new(db.address);
+    dax = await AssetExchange.new(db.address, events.address);
     await cm.addContract('AssetExchange', dax.address);
     await burner.setFee('0xf08fa7b0', dax.address,  250);
     await burner.setFee('0xf5e20d6f', dax.address,  250);
@@ -207,9 +223,13 @@ contract('Asset Exchange', async() => {
     let tokenAmount = 2*ETH;
     let tokenPrice = 0.05*ETH;
     await asset1Token.approve(dax.address, tokenAmount, {from:user1});
-    let tx = await dax.createSellOrder(asset1ID, tokenAmount, tokenPrice, {from:user1});
-    //order1ID = tx.logs[0].args._orderID;
-    order1Creator = tx.logs[0].args._creator;
+    let block = await web3.eth.getBlock('latest');
+    await dax.createSellOrder(asset1ID, tokenAmount, tokenPrice, {from:user1});
+    let e = events.LogExchange({message: 'Sell order created', origin: user1}, {fromBlock: block.number, toBlock: 'latest'});
+    let logs = await Promisify(callback => e.get(callback));
+    order1Creator = logs[0].args.account;
+    assert.equal(order1Creator, user1);
+    //console.log(order1Creator);
   });
 
   it("Fail to create sell order", async() => {
@@ -393,8 +413,13 @@ contract('Asset Exchange', async() => {
     let tokenAmount = 0.5*ETH;
     let tokenPrice = 0.1*ETH;
     let amount = Number(bn(tokenAmount).multipliedBy(tokenPrice).dividedBy(ETH));
-    let tx = await dax.createBuyOrder(asset2ID, tokenAmount, tokenPrice, {from:user2, value:amount});
-    order2Creator = tx.logs[0].args._creator;
+    let block = await web3.eth.getBlock('latest');
+    await dax.createBuyOrder(asset2ID, tokenAmount, tokenPrice, {from:user2, value:amount});
+    let e = events.LogExchange({message: 'Buy order created', origin: user2}, {fromBlock: block.number, toBlock: 'latest'});
+    let logs = await Promisify(callback => e.get(callback));
+    console.log(logs);
+    order2Creator = logs[0].args.account;
+    assert.equal(order2Creator, user2);
   });
 
   it("Fail to create buy order", async() => {
@@ -445,8 +470,13 @@ contract('Asset Exchange', async() => {
     let tokenAmount = 10*ETH;
     let tokenPrice = 0.1*ETH;
     let amount = Number(bn(tokenAmount).multipliedBy(tokenPrice).dividedBy(ETH));
-    let tx = await dax.createBuyOrder(asset2ID, tokenAmount, tokenPrice, {from:user2, value:amount});
-    order3Creator = tx.logs[0].args._creator;
+    let block = await web3.eth.getBlock('latest');
+    console.log(block.number);
+    await dax.createBuyOrder(asset2ID, tokenAmount, tokenPrice, {from:user2, value:amount});
+    let e = events.LogExchange({message: 'Buy order created', origin: user2}, {fromBlock: block.number, toBlock: 'latest'});
+    let logs = await Promisify(callback => e.get(callback));
+    console.log(logs);
+    order3Creator = logs[0].args.account;
   });
 
   it("Fail to delete order", async() => {

@@ -72,8 +72,8 @@ contract DividendTokenERC20 is MintableToken {
     function issueDividends(uint _amount)
     public
     returns (bool){
-        require(_amount > 0);
-        require(erc20.transferFrom(msg.sender, address(this), _amount));
+        require(_amount > 0, "Cannot send zero");
+        require(erc20.transferFrom(msg.sender, address(this), _amount), "Transfer failed");
         valuePerToken = valuePerToken.add(_amount.mul(scalingFactor).div(supply));
         assetIncome = assetIncome.add(_amount);
         emit LogIncomeReceived(msg.sender, _amount);

@@ -1,7 +1,8 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import '../interfaces/BurnableERC20.sol';
 import "../interfaces/DBInterface.sol";
+import "../database/Events.sol";
 
 /// @title A contract for burning ERC20 tokens as usage fee for dapps
 /// @author Kyle Dewhurst & Peter Phillips MyBit Foundation
@@ -11,13 +12,15 @@ contract ERC20Burner {
 
   BurnableERC20 public token;  // The instance of the ERC20 burner contract
   DBInterface public database;   // The datbase instance
+  Events public events; //Events contract
 
 
   // @notice constructor: initializes database and the MYB token
   // @param: the address for the database contract used by this platform
-  constructor(address _database)
+  constructor(address _database, address _events)
   public {
     database = DBInterface(_database);
+    events = Events(_events);
     token = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
     require(address(token) != address(0));
   }
@@ -31,7 +34,8 @@ contract ERC20Burner {
   acceptedState(_tokenHolder)
   returns (bool) {
     require(token.burnFrom(_tokenHolder, _amount));
-    emit LogMYBBurned(_tokenHolder, msg.sender, _amount);
+    events.transaction('Platform Token Burnt', _tokenHolder, msg.sender, _amount, '');
+    //emit LogMYBBurned(_tokenHolder, msg.sender, _amount);
     return true;
   }
 

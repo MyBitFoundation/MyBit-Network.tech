@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for alphacontracts/contracts/AssetCreation.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">all files</a> / <a href="index.html">alphacontracts/contracts/</a> AssetCreation.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>0/40</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/36</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/11</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>0/57</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity 0.4.24;
+import './Database.sol';
+import './SafeMath.sol';
+&nbsp;
+//----------------------------------------------------------------------------------------------------------------------------------------
+// This contract is where users can initite funding periods for new assets.
+// Stores asset information in Database. Owners can modify funding variables here.
+//----------------------------------------------------------------------------------------------------------------------------------------
+contract AssetCreation {
+  using SafeMath for uint;
+&nbsp;
+  Database public database;
+  uint public fundingTime = uint(3000);        // TODO: Testing number
+&nbsp;
+<span class="fstat-no" title="function not covered" >  constructor(address _database)</span>
+  public  {
+<span class="cstat-no" title="statement not covered" >      database = Database(_database)</span>;
+  }
+&nbsp;
+  //----------------------------------------------------------------------------------------------------------------------------------------
+  // This begins the funding period for an asset. If asset is success it will be added to the assets variable here in AssetCreation
+  // @Param: The amount of USD required for asset to achieve successfull funding
+  // @Param: The percentage of revenue the asset manager will require to run the asset
+  // @Param: The amount the asset manager has decided to escrow
+  // @Param: The ID of the installer of this asset  (ie. Sha3("ATMInstallersAG"))
+  // @Param: The type of asset being created. (ie. Sha3("BitcoinATM")) 
+  // @Param: The block when the escrow request was created. If no escrow request was made, then any unique number will work
+  //----------------------------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >  function newAsset(uint _amountToBeRaised, uint _managerPercentage, uint _amountToEscrow, bytes32 _installerID, bytes32 _assetType, uint _blockAtCreation, bytes32 _ipfsHash)</span>
+  external
+  whenNotPaused
+  noEmptyBytes(_installerID)
+  noEmptyBytes(_assetType)
+  noEmptyBytes(_ipfsHash)
+  returns (bool){
+    // TODO: uncomment when inner-alpha done 
+    // require(database.uintStorage(keccak256(abi.encodePacked("userAccess", msg.sender))) &gt;= uint(1), "user does not have high enough access level");
+    // require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiration", msg.sender))) &gt; now , "User access has expired");
+<span class="cstat-no" title="statement not covered" >    require(_managerPercentage &lt; uint(100) &amp;&amp; _managerPercentage &gt; uint(0) , "manager percentage is too high or too low")</span>;
+<span class="cstat-no" title="statement not covered" >    require(_amountToBeRaised &gt; uint(100), "amountToBeRaised is too low")</span>;           // Minimum asset price
+<span class="cstat-no" title="statement not covered" >    bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToEscrow, _managerPercentage, _amountToBeRaised, _installerID, _assetType, _blockAtCreation))</span>;
+<span class="cstat-no" title="statement not covered" >    require(database.uintStorage(keccak256(abi.encodePacked("fundingStage", assetID))) == uint(0), "AssetID already exists.")</span>;    // This ensures the asset isn't currently live or being funded
+    database.setUint(keccak256(abi.encodePacked("fundingStage", assetID)), uint(1));       // Allow this asset to receive funding
+<span class="cstat-no" title="statement not covered" >    address staker = database.addressStorage(keccak256(abi.encodePacked("assetStaker", assetID)))</span>;
+<span class="cstat-no" title="statement not covered" >    if (staker != address(0)) { </span>
+<span class="cstat-no" title="statement not covered" >      assert (database.uintStorage(keccak256(abi.encodePacked("stakingExpiration", assetID))) &gt; now)</span>; 
+      database.deleteUint(keccak256(abi.encodePacked("stakingExpiration", assetID)));  
+    }
+    else { <span class="cstat-no" title="statement not covered" >require(lockAssetEscrow(assetID, _amountToEscrow, msg.sender), "locking asset escrow failed")</span>; }
+    database.setUint(keccak256(abi.encodePacked("amountToBeRaised", assetID)), _amountToBeRaised);
+    database.setUint(keccak256(abi.encodePacked("managerPercentage", assetID)), _managerPercentage);
+    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
+    database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), fundingTime.add(now));
+<span class="cstat-no" title="statement not covered" >    emit LogAssetFundingStarted(assetID, _installerID, _assetType, _ipfsHash);</span>    // assetType and installer ID are already indexed
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+  }
+&nbsp;
+  //----------------------------------------------------------------------------------------------------------------------------------------
+  // This function locks MyBit tokens to the asset for the length of it's lifecycle
+  //----------------------------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >  function lockAssetEscrow(bytes32 _assetID, uint _amountToEscrow, address _escrowDepositer)</span>
+  internal
+  returns (bool) {
+<span class="cstat-no" title="statement not covered" >    if (_amountToEscrow == 0) { <span class="cstat-no" title="statement not covered" >return true;</span> }</span>
+<span class="cstat-no" title="statement not covered" >    uint escrowedMYB = database.uintStorage(keccak256(abi.encodePacked("escrowedMYB", _escrowDepositer)))</span>;
+<span class="cstat-no" title="statement not covered" >    uint depositedMYB = database.uintStorage(keccak256(abi.encodePacked("depositedMYB", _escrowDepositer)))</span>;
+    // assert (_amountToEscrow &lt;= depositedMYB);    // TODO: Safemath should throw here if this isn't the case
+    database.setUint(keccak256(abi.encodePacked("depositedMYB", _escrowDepositer)), depositedMYB.sub(_amountToEscrow)); 
+    database.setUint(keccak256(abi.encodePacked("escrowedMYB", _escrowDepositer)), escrowedMYB.add(_amountToEscrow));
+    database.setUint(keccak256(abi.encodePacked("escrowedForAsset", _assetID)), _amountToEscrow);
+<span class="cstat-no" title="statement not covered" >    emit LogLockAssetEscrow(_escrowDepositer, _assetID, _amountToEscrow);</span>
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+  }
+&nbsp;
+  //----------------------------------------------------------------------------------------------------------------------------------------
+  // This removes asset functionality by setting it to an invalid stage. Must leave variables as users may need to withdrawl income.
+  // Other owner must have approved the function to be called in Owned.sol (authorizeFunction())
+  //----------------------------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >  function removeAsset(bytes32 _assetID, address _functionSigner)</span>
+  external
+  anyOwner
+  noEmptyBytes(_assetID)
+  whenNotPaused
+  returns(bool) {
+<span class="cstat-no" title="statement not covered" >    require (_functionSigner != msg.sender)</span>;
+<span class="cstat-no" title="statement not covered" >    require(database.uintStorage(keccak256(abi.encodePacked("fundingStage", _assetID))) &gt; uint(0))</span>;
+<span class="cstat-no" title="statement not covered" >    bytes32 functionHash = keccak256(abi.encodePacked(address(this), _functionSigner, "removeAsset", _assetID))</span>;
+<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(functionHash))</span>;
+    database.setBool(functionHash, false);
+    database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(5));   // Asset won't receive income &amp; ownership won't be able to be traded.
+<span class="cstat-no" title="statement not covered" >    emit LogAssetRemoved(_assetID, msg.sender);</span>
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+  }
+&nbsp;
+  //----------------------------------------------------------------------------------------------------------------------------------------
+  // Change the default funding time for new assets
+  // Invariants: Only owner[0] can call  |  new funding time is not 0
+  //----------------------------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >  function changeFundingTime(uint _newTimeGivenForFunding)</span>
+  external
+  anyOwner
+  notZero(_newTimeGivenForFunding)
+  returns (bool) {
+<span class="cstat-no" title="statement not covered" >    fundingTime = _newTimeGivenForFunding</span>;
+<span class="cstat-no" title="statement not covered" >    emit LogFundingTimeChanged(msg.sender, _newTimeGivenForFunding);</span>
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+  }
+&nbsp;
+  //----------------------------------------------------------------------------------------------------------------------------------------
+  // Changes the platform fees received from funded assets
+  // Requires multi-sig verification. With sha3() of the agreed percentages as the beneficiary parameter
+  //----------------------------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >  function changeFundingPercentages(uint _myBitFoundationPercentage, uint _installerPercentage, address _functionSigner)</span>
+  external
+  anyOwner
+  notZero(_myBitFoundationPercentage)
+  notZero(_installerPercentage)
+  returns (bool) {
+<span class="cstat-no" title="statement not covered" >    bytes32 functionHash = keccak256(abi.encodePacked(address(this), _functionSigner, "changeFundingPercentages", keccak256(abi.encodePacked(_myBitFoundationPercentage, _installerPercentage))))</span>;
+<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(functionHash))</span>;
+<span class="cstat-no" title="statement not covered" >    require(_myBitFoundationPercentage.add(_installerPercentage) == uint(100))</span>;
+    database.setBool(functionHash, false);
+    database.setUint(keccak256(abi.encodePacked("myBitFoundationPercentage")), _myBitFoundationPercentage);
+    database.setUint(keccak256(abi.encodePacked("installerPercentage")), _installerPercentage);
+<span class="cstat-no" title="statement not covered" >    emit LogFundingPercentageChanged(_myBitFoundationPercentage, _installerPercentage);</span>
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+  }
+&nbsp;
+  //----------------------------------------------------------------------------------------------------------------------------------------
+  // Must be authorized by 1 of the 3 owners and then can be called by any of the other 2
+  // @Param: The address of the owner who authorized this function to be called in
+  // Invariants: Must be 1 of 3 owners. Cannot be called by same owner who authorized the function to be called.
+  //----------------------------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >  function destroy(address _functionInitiator, address _holdingAddress)</span>
+  anyOwner
+  public {
+<span class="cstat-no" title="statement not covered" >    require(_functionInitiator != msg.sender)</span>;
+<span class="cstat-no" title="statement not covered" >    bytes32 functionHash = keccak256(abi.encodePacked(address(this), _functionInitiator, "destroy", keccak256(abi.encodePacked(_holdingAddress))))</span>;
+<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(functionHash))</span>;
+    database.setBool(functionHash, false);
+<span class="cstat-no" title="statement not covered" >    emit LogDestruction(_holdingAddress, address(this).balance, msg.sender);</span>
+<span class="cstat-no" title="statement not covered" >    selfdestruct(_holdingAddress)</span>;
+  }
+&nbsp;
+&nbsp;
+&nbsp;
+  //------------------------------------------------------------------------------------------------------------------
+  //                                            Modifiers
+  //------------------------------------------------------------------------------------------------------------------
+&nbsp;
+  //------------------------------------------------------------------------------------------------------------------
+  // Makes sure function won't run when contract has been paused
+  //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >  modifier whenNotPaused </span>{
+<span class="cstat-no" title="statement not covered" >    require(!database.boolStorage(keccak256(abi.encodePacked("pause", address(this)))))</span>;
+    _;
+  }
+&nbsp;
+  //------------------------------------------------------------------------------------------------------------------
+  // Don't accept null value for bytes32 parameter
+  //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >  modifier noEmptyBytes(bytes32 _data) </span>{
+<span class="cstat-no" title="statement not covered" >    require(_data != bytes32(0))</span>;
+    _;
+  }
+&nbsp;
+  //------------------------------------------------------------------------------------------------------------------
+  // Don't accept null value for uint
+  //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >  modifier notZero(uint _uint) </span>{
+<span class="cstat-no" title="statement not covered" >    require(_uint != 0)</span>;
+    _;
+  }
+&nbsp;
+  //------------------------------------------------------------------------------------------------------------------
+  // Sender must be a registered owner
+  //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >  modifier anyOwner </span>{
+<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))))</span>;
+    _;
+  }
+&nbsp;
+  //------------------------------------------------------------------------------------------------------------------
+  //                                            Events
+  //------------------------------------------------------------------------------------------------------------------
+&nbsp;
+  event LogAssetFundingStarted(bytes32 indexed _assetID, bytes32 indexed _installerID, bytes32 indexed _assetType, bytes32 _ipfsHash);
+  event LogLockAssetEscrow(address _from, bytes32 _assetID, uint _amountOf);
+  event LogAssetRemoved(bytes32 indexed _assetID, address _remover);
+  event LogFundingTimeChanged(address _sender, uint _newTimeForFunding);
+  event LogFundingPercentageChanged(uint _myBitFoundationPercentage, uint _installerPercentage);
+  event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sat Sep 08 2018 07:28:40 GMT-0700 (PDT)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>

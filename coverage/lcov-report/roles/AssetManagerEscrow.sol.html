@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for roles/AssetManagerEscrow.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">roles/</a> AssetManagerEscrow.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>0/39</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/32</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/6</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>0/44</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">  pragma solidity ^0.4.24;
+&nbsp;
+  import "../math/SafeMath.sol";
+  import "../interfaces/DBInterface.sol";
+  import "../interfaces/DivToken.sol";
+  import "../interfaces/BurnableERC20.sol";
+&nbsp;
+  interface Governance { function isConsensusReached(address _thisContract, bytes4 _methodID, bytes32 _parameterHash) external view returns (bool); }
+&nbsp;
+  // @title A contract to hold escrow as collateral against assets
+  // @author Kyle Dewhurst, MyBit Foundation
+  // @notice AssetManager can lock his escrow in this contract and retrieve it if asset funding fails or successfully returns ROI
+  contract AssetManagerEscrow {
+    using SafeMath for uint256;
+&nbsp;
+    DBInterface public database;
+&nbsp;
+    // @notice constructor: initializes database
+    // @param: the address for the database contract used by this platform
+<span class="fstat-no" title="function not covered" >    constructor(address _database)</span>
+    public {
+<span class="cstat-no" title="statement not covered" >      database = DBInterface(_database)</span>;
+    }
+&nbsp;
+    // @dev assetID can be computed beforehand with sha3(msg.sender, _amountToRaise, _operatorID, _assetURI))
+    // @dev anybody can make the assetManager escrow if he leaves this contract with approval to transfer
+<span class="fstat-no" title="function not covered" >    function lockEscrow(bytes32 _assetID, uint _amount)</span>
+    public
+    returns (bool) {
+<span class="cstat-no" title="statement not covered" >      require(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))) == address(0))</span>;
+<span class="cstat-no" title="statement not covered" >      bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetID, msg.sender))</span>;
+<span class="cstat-no" title="statement not covered" >      address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platformToken")))</span>;
+<span class="cstat-no" title="statement not covered" >      require(BurnableERC20(tokenAddress).transferFrom(msg.sender, address(this), _amount))</span>;
+      database.setUint(keccak256(abi.encodePacked("assetManagerEscrow", assetManagerEscrowID)), _amount);
+      database.setAddress(keccak256(abi.encodePacked("assetManager", _assetID)), msg.sender);
+<span class="cstat-no" title="statement not covered" >      emit LogEscrowLocked(_assetID, assetManagerEscrowID, msg.sender, _amount);</span>
+<span class="cstat-no" title="statement not covered" >      return true;</span>
+    }
+&nbsp;
+&nbsp;
+    // @notice assetManager can unlock his escrow here once funding fails or asset returns sufficient ROI
+    // @dev asset must have fundingDeadline = 0 or have ROI &gt; 25%
+    // @dev returns escrow according to ROI. 25% ROI returns 25% of escrow, 50% ROI returns 50% of escrow etc...
+<span class="fstat-no" title="function not covered" >    function unlockEscrow(bytes32 _assetID)</span>
+    public
+    returns (bool) {
+<span class="cstat-no" title="statement not covered" >      require(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))) == msg.sender)</span>;
+<span class="cstat-no" title="statement not covered" >      require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))) &lt; now)</span>;
+<span class="cstat-no" title="statement not covered" >      BurnableERC20 burnToken = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))))</span>;
+<span class="cstat-no" title="statement not covered" >      bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetID, msg.sender))</span>;
+<span class="cstat-no" title="statement not covered" >      uint escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", assetManagerEscrowID)))</span>;
+<span class="cstat-no" title="statement not covered" >      uint unlockAmount = database.uintStorage(keccak256(abi.encodePacked("assetManagerEscrow", assetManagerEscrowID))).sub(escrowRedeemed)</span>;
+<span class="cstat-no" title="statement not covered" >      if(!database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)))){</span>
+        //If we're past deadline but crowdsale did NOT finalize, release all escrow
+<span class="cstat-no" title="statement not covered" >        require(removeAssetManager(_assetID, assetManagerEscrowID))</span>;
+      }
+      else {
+        //Past the deadline with a successful funding. Only pay back based on ROI
+<span class="cstat-no" title="statement not covered" >        DivToken assetToken = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))))</span>;
+<span class="cstat-no" title="statement not covered" >        uint roi = assetToken.assetIncome().mul(100).div(assetToken.totalSupply())</span>;   // Scaled up by 10^2  (approaches 100 as asset income increases)
+<span class="cstat-no" title="statement not covered" >        uint roiCheckpoints = roi.div(25)</span>;       // How many quarterly increments have been reached?
+<span class="cstat-no" title="statement not covered" >        uint quarterEscrow = database.uintStorage(keccak256(abi.encodePacked("assetManagerEscrow", assetManagerEscrowID))).div(4)</span>;
+<span class="cstat-no" title="statement not covered" >        require(roiCheckpoints &lt;= 4 &amp;&amp; roiCheckpoints &gt; 0)</span>;    // Can't unlock escrow past 100% ROI
+        //  multiply the number of quarterly increments by a quarter of the escrow and subtract the escrow already redeemed.
+<span class="cstat-no" title="statement not covered" >        unlockAmount = roiCheckpoints.mul(quarterEscrow).sub(escrowRedeemed)</span>;
+<span class="cstat-no" title="statement not covered" >        require(unlockAmount &gt; 0)</span>;
+        database.setUint(keccak256(abi.encodePacked("escrowRedeemed", assetManagerEscrowID)), escrowRedeemed.add(unlockAmount));
+      }
+<span class="cstat-no" title="statement not covered" >      require(burnToken.transfer(msg.sender, unlockAmount))</span>;
+<span class="cstat-no" title="statement not covered" >      return true;</span>
+    }
+&nbsp;
+&nbsp;
+    // @notice investors can vote to call this function for the new assetManager to then call
+    // @dev new assetManager must approve this contract to transfer in and lock _ amount of platform tokens
+<span class="fstat-no" title="function not covered" >    function becomeAssetManager(bytes32 _assetID, address _oldAssetManager, uint _amount, bool _burn)</span>
+    external
+    hasConsensus(_assetID, msg.sig, keccak256(abi.encodePacked(_assetID, _oldAssetManager, msg.sender, _amount, _burn)))
+    returns (bool) {
+<span class="cstat-no" title="statement not covered" >      address currentAssetManager = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID)))</span>;
+<span class="cstat-no" title="statement not covered" >      require(currentAssetManager != msg.sender &amp;&amp; currentAssetManager == _oldAssetManager)</span>;
+<span class="cstat-no" title="statement not covered" >      bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetID, _oldAssetManager))</span>;
+<span class="cstat-no" title="statement not covered" >      uint oldEscrowRemaining = database.uintStorage(keccak256(abi.encodePacked("assetManagerEscrow", assetManagerEscrowID))).sub(database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", assetManagerEscrowID))))</span>;
+<span class="cstat-no" title="statement not covered" >      BurnableERC20 token = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))))</span>;
+<span class="cstat-no" title="statement not covered" >      require(removeAssetManager(_assetID, assetManagerEscrowID))</span>;
+<span class="cstat-no" title="statement not covered" >      if (_burn) { <span class="cstat-no" title="statement not covered" >require(token.burn(oldEscrowRemaining))</span>; }</span>
+      else { <span class="cstat-no" title="statement not covered" >require(token.transfer(_oldAssetManager, oldEscrowRemaining))</span>;  }
+<span class="cstat-no" title="statement not covered" >      require(lockEscrow(_assetID, _amount))</span>;
+<span class="cstat-no" title="statement not covered" >      return true;</span>
+    }
+&nbsp;
+&nbsp;
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //                                            Internal Functions
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+&nbsp;
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function removeAssetManager(bytes32 _assetID, bytes32 _assetManagerEscrowID)</span>
+    internal
+    returns (bool) {
+        database.deleteAddress(keccak256(abi.encodePacked("assetManager", _assetID)));
+        database.deleteUint(keccak256(abi.encodePacked("assetManagerEscrow", _assetManagerEscrowID)));
+        database.deleteUint(keccak256(abi.encodePacked("escrowRedeemed", _assetManagerEscrowID)));
+<span class="cstat-no" title="statement not covered" >        return true;</span>
+    }
+&nbsp;
+&nbsp;
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                            Modifiers
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+&nbsp;
+    // @notice add this modifer to functions that you want multi-sig requirements for
+    // @dev function can only be called after at least n &gt;= quorumLevel owners have agreed to call it
+<span class="fstat-no" title="function not covered" >    modifier hasConsensus(bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash</span>) {
+<span class="cstat-no" title="statement not covered" >      bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash))))</span>;
+<span class="cstat-no" title="statement not covered" >      uint256 numTokens = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))).totalSupply()</span>;
+<span class="cstat-no" title="statement not covered" >      require(database.uintStorage(numVotesID).mul(100).div(numTokens) &gt;= 33)</span>;
+      _;
+    }
+&nbsp;
+&nbsp;
+    event LogEscrowBurned(bytes32 indexed _assetID, address indexed _assetManager, uint _amountBurnt);
+    event LogEscrowLocked(bytes32 indexed _assetID, bytes32 indexed _assetManagerEscrowID, address indexed _assetManager, uint _amount);
+&nbsp;
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Oct 22 2018 16:43:42 GMT-0700 (PDT)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>
