@@ -18,6 +18,15 @@ contract TimedVote {
 
   using SafeMath for uint256;
 
+  // ----
+  // Type
+
+  // Commitment of MYB tokens to voting
+  struct Commitment {
+    uint256 value;                // Amount of MYB committed
+    uint256 time;                 // Instant tokens were committed
+  }
+
   // -----
   // State
 
