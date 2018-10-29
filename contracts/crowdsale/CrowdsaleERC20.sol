@@ -188,8 +188,9 @@ contract CrowdsaleERC20{
   //------------------------------------------------------------------------------------------------------------------
   //                                            Events
   //------------------------------------------------------------------------------------------------------------------
-
+  /*
   event LogAssetPurchased(bytes32 indexed _assetID, address indexed _sender, uint _amount);
   event LogAssetPayout(bytes32 indexed _assetID, address indexed _operator, uint _amount);
   event LogDestruction(uint _amountSent, address indexed _caller);
+  */
 }

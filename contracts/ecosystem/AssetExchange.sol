@@ -77,7 +77,7 @@ contract AssetExchange {
     weiOwed[msg.sender] = weiOwed[msg.sender].add(value);
     delete orders[_buyer][thisOrder];
     events.exchange('Buy order completed', thisOrder, _assetID, msg.sender);
-    emit LogBuyOrderCompleted(thisOrder, _assetID, msg.sender);
+    //emit LogBuyOrderCompleted(thisOrder, _assetID, msg.sender);
     return true;
   }
 
@@ -239,7 +239,7 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   //                                      Events
   //------------------------------------------------------------------------------------------------------------------
-
+  /*
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
   event LogBuyOrderCreated(bytes32 _orderID, bytes32 indexed _assetID, address indexed _creator);
   event LogBuyOrderCompleted(bytes32 _orderID, bytes32 indexed _assetAddress, address indexed _purchaser);
@@ -248,4 +248,5 @@ contract AssetExchange {
   event LogBuyOrderDetails(bytes32 _orderID, uint indexed _amount, uint indexed _price);
   event LogSellOrderDetails(bytes32 orderID, uint indexed _amount, uint indexed _price);
   event LogSig(bytes4 _sig);
+  */
 }

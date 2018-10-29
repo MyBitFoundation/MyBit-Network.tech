@@ -107,6 +107,8 @@ contract CollectiveOwned {
   //------------------------------------------------------------------------------------------------------------------
   //                                              Events
   //------------------------------------------------------------------------------------------------------------------
+  /*
   event LogOwnerChanged(address indexed _previousOwner, address indexed _newOwner);
   event LogFunctionAuthorized(address indexed _owner, string indexed _functionName, bytes32 indexed _beneficiary, bytes32 _authHash);
+  */
 }

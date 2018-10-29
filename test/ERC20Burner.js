@@ -60,7 +60,7 @@ contract('Burner', async() => {
   });
 
   it('Set platform', async() => {
-    platform = await Platform.new(db.address);
+    platform = await Platform.new(db.address, events.address);
     await cm.addContract('PlatformFunds', platform.address);
     await platform.setPlatformToken(token.address);
   });

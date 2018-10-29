@@ -143,10 +143,6 @@ contract DividendToken is MintableToken {
         _;
     }
 
-
-
-
-
     event LogIncomeReceived(address indexed _sender, uint _paymentAmount);
     event LogIncomeCollected(address _address, uint _amount);
 

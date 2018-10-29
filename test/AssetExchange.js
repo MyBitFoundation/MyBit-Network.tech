@@ -98,7 +98,7 @@ contract('Asset Exchange', async() => {
   });
 
   it('Deploy platform', async() => {
-    platform = await Platform.new(db.address);
+    platform = await Platform.new(db.address, events.address);
     await cm.addContract('PlatformFunds', platform.address);
     await platform.setPlatformWallet(owner);
     await platform.setPlatformToken(platformToken.address);
@@ -110,7 +110,7 @@ contract('Asset Exchange', async() => {
   });
 
   it('Deploy pausible contract', async() => {
-    pausible = await Pausible.new(db.address);
+    pausible = await Pausible.new(db.address, events.address);
     await cm.addContract('Pausible', pausible.address);
   });
 
@@ -122,10 +122,13 @@ contract('Asset Exchange', async() => {
   });
 
   it('Set operator', async() => {
-    operators = await Operators.new(db.address);
+    operators = await Operators.new(db.address, events.address);
     await cm.addContract('Operators', operators.address);
-    let tx = await operators.registerOperator(operator, 'Operator');
-    operatorID = tx.logs[0].args._operatorID;
+    let block = await web3.eth.getBlock('latest');
+    await operators.registerOperator(operator, 'Operator');
+    let e = events.LogOperator({message: 'Operator registered', origin: owner}, {fromBlock: block.number, toBlock: 'latest'});
+    let logs = await Promisify(callback => e.get(callback));
+    operatorID = logs[0].args.operatorID;
   });
 
   it('Give platform burning permission', async() => {
@@ -471,7 +474,6 @@ contract('Asset Exchange', async() => {
     let tokenPrice = 0.1*ETH;
     let amount = Number(bn(tokenAmount).multipliedBy(tokenPrice).dividedBy(ETH));
     let block = await web3.eth.getBlock('latest');
-    console.log(block.number);
     await dax.createBuyOrder(asset2ID, tokenAmount, tokenPrice, {from:user2, value:amount});
     let e = events.LogExchange({message: 'Buy order created', origin: user2}, {fromBlock: block.number, toBlock: 'latest'});
     let logs = await Promisify(callback => e.get(callback));

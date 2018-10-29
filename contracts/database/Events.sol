@@ -15,10 +15,10 @@ contract Events {
       emit LogEvent(_message, tx.origin);
   }
 
-  function transaction(string _message, address _sender, address _receiver, uint _amount, bytes32 _id)
+  function transaction(string _message, address _from, address _to, uint _amount, bytes32 _id)
   external
   onlyApprovedContract {
-      emit LogTransaction(_message, _sender, _receiver, _amount, _id, tx.origin);
+      emit LogTransaction(_message, _from, _to, _amount, _id, tx.origin);
   }
 
   function registration(string _message, address _account)
@@ -63,16 +63,23 @@ contract Events {
       emit LogOperator(_message, _operatorID, _operatorURI, _account, tx.origin);
   }
 
+  function consensus(string _message, bytes32 _executionID, bytes32 _votesID, uint _votes, uint _tokens, uint _quorum)
+  external
+  onlyApprovedContract {
+    emit LogConsensus(_message, _executionID, _votesID, _votes, _tokens, _quorum, tx.origin);
+  }
+
   //Generalized events
   event LogEvent(string message, address indexed origin);
-  event LogTransaction(string message, address _sender, address receiver, uint amount, bytes32 id, address indexed origin); //amount and id will be empty on some events
+  event LogTransaction(string message, address from, address to, uint amount, bytes32 id, address indexed origin); //amount and id will be empty on some events
   event LogAddress(string message, address indexed account, address indexed origin);
   event LogContractChange(string message, address indexed account, string name, address indexed origin);
   event LogAsset(string message, string uri, bytes32 assetID, address token, address indexed manager, address indexed origin);
   event LogEscrow(string message, bytes32 assetID, bytes32  escrowID, address indexed manager, uint amount, address indexed origin);
   event LogOrder(string message, bytes32 indexed orderID, uint amount, uint price, address indexed origin);
   event LogExchange(string message, bytes32 orderID, bytes32 indexed assetID, address account, address indexed origin);
-  event LogOperator(string message, bytes32 operatorID, string indexed operatorURI, address indexed account, address origin);
+  event LogOperator(string message, bytes32 operatorID, string operatorURI, address indexed account, address indexed origin);
+  event LogConsensus(string message, bytes32 executionID, bytes32 votesID, uint votes, uint tokens, uint quorum, address indexed origin);
 
 
 /*
@@ -125,6 +132,9 @@ contract Events {
   //PlatformFunds
   //LogAddress event LogPlatformWallet(address _platformWallet);
   //LogAddress event LogPlatformToken(address _platformToken);
+
+  //AssetGovernance
+  event LogConsensus(bytes32 votesID, uint votes, uint tokens, bytes32 executionID, uint quorum);
 
   //CollectiveOwned
   //LogTransaction event LogOwnerChanged(address indexed _previousOwner, address indexed _newOwner);

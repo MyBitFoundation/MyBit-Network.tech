@@ -1,16 +1,16 @@
 var bn = require('bignumber.js');
 
-const AssetToken = artifacts.require("./tokens/erc20/DividendTokenERC20.sol");
-const BurnableToken = artifacts.require("./tokens/erc20/BurnableToken.sol");
+const Token = artifacts.require("./tokens/erc20/DividendToken.sol");
+const PlatformToken = artifacts.require("./tokens/erc20/BurnableToken.sol");
 const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
-const Crowdsale = artifacts.require("./crowdsale/CrowdsaleERC20.sol");
+const Crowdsale = artifacts.require("./crowdsale/CrowdsaleETH.sol");
+const CrowdsaleGenerator = artifacts.require("./crowdsale/CrowdsaleGeneratorETH.sol");
 const Database = artifacts.require("./database/Database.sol");
 const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
+const Operators = artifacts.require("./roles/Operators.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Pausible = artifacts.require("./ownership/Pausible.sol");
-const CrowdsaleGenerator = artifacts.require("./crowdsale/CrowdsaleGeneratorERC20.sol");
-const Operators = artifacts.require("./roles/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
 const API = artifacts.require("./database/API.sol");
 const Promisify = (inner) =>
@@ -31,33 +31,38 @@ const user2 = web3.eth.accounts[2];
 const user3 = web3.eth.accounts[3];
 const assetManager = web3.eth.accounts[4];
 const operator = web3.eth.accounts[5];
-const tokenHolders = [user1, user2, user3, assetManager, operator];
+const tokenHolders = [user1, user2, user3];
 
 
 const ETH = 1000000000000000000;
 const scaling = 1000000000000000000000000000000000000;
 const tokenSupply = 180000000000000000000000000;
 const tokenPerAccount = 1000000000000000000000;
+let assetManagerFee = 5;
 
-contract('ERC20 Crowdsale', async() => {
-  let assetToken;
-  let erc20;
+contract('Ether Crowdsale', async() => {
+
+  let token;
   let platformToken;
   let crowdsale;
-  let crowdsaleGen;   // crowdsale generator
+  let crowdsaleGen;
   let db;
   let events;
   let cm;
   let hash;
   let api;
   let platform;
-  let assetManagerFee;
   let operators;
   let operatorID;
+  let operatorHash;
   let assetID;
   let assetURI;
   let tokenAddress;
   let pausible;
+
+  it('Deploy hash contract', async() => {
+    hash = await HashFunctions.new();
+  });
 
   it('Deploy database contract', async() => {
     db = await Database.new([owner], true);
@@ -72,16 +77,12 @@ contract('ERC20 Crowdsale', async() => {
     await db.enableContractManagement(cm.address);
   });
 
-  it('Deploy hashing contract', async() => {
-    hash = await HashFunctions.new(db.address);
-  });
-
   it('Deploy api contract', async() => {
     api = await API.new(db.address);
   });
 
   it('Deploy MyB token', async() => {
-    platformToken = await BurnableToken.new('MyBit', tokenSupply);
+    platformToken = await PlatformToken.new('MyBit', tokenSupply);
   });
 
   it("Spread tokens to users", async() => {
@@ -115,37 +116,17 @@ contract('ERC20 Crowdsale', async() => {
     await cm.addContract('Pausible', pausible.address);
   });
 
-  it("Deploy standard token", async() => {
-    erc20 = await BurnableToken.new('Dai', tokenSupply);
-    console.log(erc20.address);
-  });
-
-  it("Spread erc20 to users", async() => {
-    let userBalance;
-    for (var i = 0; i < tokenHolders.length; i++) {
-      //console.log(web3.eth.accounts[i]);
-      await erc20.transfer(tokenHolders[i], tokenPerAccount);
-      userBalance = await erc20.balanceOf(tokenHolders[i]);
-      assert.equal(userBalance, tokenPerAccount);
-    }
-    // Check token ledger is correct
-    let totalTokensCirculating = tokenHolders.length * tokenPerAccount;
-    let remainingTokens = bn(tokenSupply).minus(totalTokensCirculating);
-    let ledgerTrue = bn(await erc20.balanceOf(owner)).eq(remainingTokens);
-    assert.equal(ledgerTrue, true);
-  });
-
   it('Deploy CrowdsaleGenerator', async() => {
     crowdsaleGen = await CrowdsaleGenerator.new(db.address, events.address);
-    await cm.addContract("CrowdsaleGenerator", crowdsaleGen.address);
-    await burner.setFee('0x40aedf24', crowdsaleGen.address,  250);
+    await cm.addContract("CrowdsaleGeneratorETH", crowdsaleGen.address);
+    await burner.setFee('0x667de2cd', crowdsaleGen.address,  250);
   });
 
   it('Deploy crowdsale contract', async() => {
     crowdsale = await Crowdsale.new(db.address, events.address);
-    await cm.addContract('CrowdsaleERC20', crowdsale.address);
+    await cm.addContract('CrowdsaleETH', crowdsale.address);
     await cm.addContract('Owner', owner); //Right now some database functions are operated from owner account
-    await burner.setFee('0xc9cd97eb', crowdsale.address,  250);
+    await burner.setFee('0xa71d4c6a', crowdsale.address,  250);
   });
 
   it('Deploy operators', async() => {
@@ -166,60 +147,50 @@ contract('ERC20 Crowdsale', async() => {
     let e = events.LogOperator({message: 'Operator registered', origin: owner}, {fromBlock: block.number, toBlock: 'latest'});
     let logs = await Promisify(callback => e.get(callback));
     operatorID = logs[0].args.operatorID;
-    await operators.acceptERC20Token(operatorID, erc20.address, true, {from: operator});
     await operators.acceptEther(operatorID, true, {from: operator});
   });
 
   //Start successful funding
   it('Start funding', async() => {
-    assetURI = 'ipfs.io/F3b2854A9';
-    assetManagerFee = 5;
+    assetURI = 'BTC ATM';
     let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 100, 20*ETH, assetManagerFee, erc20.address, {from:assetManager});
+    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 1, 20*ETH, assetManagerFee, {from:assetManager});
     let e = events.LogAsset({message: 'Asset funding started', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
     let logs = await Promisify(callback => e.get(callback));
     assetID = logs[0].args.assetID;
     assetTokenAddress = logs[0].args.token;
-    console.log('Token Address: ' + tokenAddress);
-    assetToken = await AssetToken.at(assetTokenAddress);
+    token = await Token.at(assetTokenAddress);
   });
 
   it('User1 funding', async() => {
-    await erc20.approve(crowdsale.address, 5*ETH, {from:user1});
-    await crowdsale.buyAssetOrderERC20(assetID, 5*ETH, {from:user1});
-    let user1AssetTokens = await assetToken.balanceOf(user1);
-    console.log('assetToken Address: ' + assetToken.address);
-    console.log('User: ' + user1);
-    console.log('User assetTokens: ' + Number(user1AssetTokens));
-
-    let assetTokenSupply = await assetToken.totalSupply()
-    console.log('assetToken Supply: ' + assetTokenSupply);
-    assert.equal(user1AssetTokens, 5*ETH);
+    let tokenSupply = await token.totalSupply()
+    console.log('Token Supply: ' + tokenSupply);
+    await crowdsale.buyAssetOrderETH(assetID, {from:user1, value:5*ETH});
+    let user1Tokens = await token.balanceOf(user1);
+    assert.equal(user1Tokens, 5*ETH);
   });
 
   it('Asset already exists fail', async() => {
     let err;
-    let assetManagerFee = 2;
     //Fail because asset already exists
     try{
-      await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 10, 20*ETH, assetManagerFee, erc20.address, {from:assetManager});
+      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 20*ETH, assetManagerFee, {from:assetManager});
     } catch(e){
       err = e;
     }
     assert.notEqual(err, undefined);
   });
-
+/*
   it('Fail to buy asset, fail to payout. No platform address', async() => {
     let err;
     try{
-      await erc20.approve(crowdsale.address, 15*ETH, {from:user2});
-      await crowdsale.buyAssetOrderERC20(assetID, 15*ETH, {from:user2});
+      await crowdsale.buyAssetOrderETH(assetID, {from:user2, value:15*ETH});
     } catch(e){
       err = e;
     }
     assert.notEqual(err, undefined);
   });
-
+*/
   it('Set platform', async() => {
     await platform.setPlatformWallet(owner);
   });
@@ -235,20 +206,18 @@ contract('ERC20 Crowdsale', async() => {
   });
 
   it('User2 funding', async() => {
-    console.log(user2);
-    ownerBalanceBefore = await erc20.balanceOf(owner);
-    operatorBalanceBefore = await erc20.balanceOf(operator);
-    await erc20.approve(crowdsale.address, 15*ETH, {from:user2});
-    await crowdsale.buyAssetOrderERC20(assetID, 15*ETH, {from:user2});
-    let user2AssetTokens = await assetToken.balanceOf(user2);
-    console.log(Number(user2AssetTokens));
-    assert.equal(user2AssetTokens, 15*ETH);
+    //console.log(web3.eth.getBalance(user2));
+    ownerBalanceBefore = await web3.eth.getBalance(owner);
+    operatorBalanceBefore = await web3.eth.getBalance(operator);
 
-    ownerBalanceAfter = await erc20.balanceOf(owner);
-    console.log(Number(ownerBalanceAfter))
+    await crowdsale.buyAssetOrderETH(assetID, {from:user2, value:15*ETH});
+    let user2Tokens = await token.balanceOf(user2);
+    assert.equal(user2Tokens, 15*ETH);
+
+    ownerBalanceAfter = await web3.eth.getBalance(owner);
     assert.equal(bn(ownerBalanceAfter).minus(ownerBalanceBefore).isEqualTo(bn(ETH).multipliedBy(20).dividedBy(100)), true);
 
-    operatorBalanceAfter = await erc20.balanceOf(operator);
+    operatorBalanceAfter = await web3.eth.getBalance(operator);
     assert.equal(bn(operatorBalanceAfter).minus(operatorBalanceBefore).isEqualTo(bn(ETH).multipliedBy(20).minus( bn(ETH).multipliedBy(20).dividedBy(100) )), true);
   });
 
@@ -256,8 +225,7 @@ contract('ERC20 Crowdsale', async() => {
     //Funding finished
     let err;
     try{
-      await erc20.approve(crowdsale.address, 5*ETH, {from:user3});
-      await crowdsale.buyAssetOrderERC20(assetID, 5*ETH, {from:user3});
+      await crowdsale.buyAssetOrderETH(assetID, {from:user3, value:5*ETH});
     } catch(e){
       err = e;
     }
@@ -275,37 +243,33 @@ contract('ERC20 Crowdsale', async() => {
   });
 
   it('Test dividends', async() => {
-    operatorBalanceBefore = await erc20.balanceOf(operator);
-    console.log(Number(operatorBalanceBefore));
-    await erc20.approve(assetToken.address, ETH, {from:operator});
-    await assetToken.issueDividends(ETH, {from: operator});
-    operatorBalanceAfter = await erc20.balanceOf(operator);
+    operatorBalanceBefore = web3.eth.getBalance(operator);
+    await web3.eth.sendTransaction({from: operator, to: tokenAddress, value:10*ETH});
+    operatorBalanceAfter = web3.eth.getBalance(operator);
     console.log(Number(bn(operatorBalanceAfter).minus(operatorBalanceBefore).plus(bn(ETH).multipliedBy(10))));
   });
 
   it('User1 withdraw dividends', async() => {
-    user1BalanceBefore = await erc20.balanceOf(user1);
-    await assetToken.withdraw({from:user1});
-    user1BalanceAfter = await erc20.balanceOf(user1);
+    user1BalanceBefore = web3.eth.getBalance(user1);
+    await token.withdraw({from:user1});
+    user1BalanceAfter = web3.eth.getBalance(user1);
     assert.equal(bn(user1BalanceAfter).isGreaterThan(user1BalanceBefore), true);
   });
 
   it('User2 withdraw dividends', async() => {
-    user2BalanceBefore = await erc20.balanceOf(user2);
-    await assetToken.withdraw({from:user2});
-    user2BalanceAfter = await erc20.balanceOf(user2);
+    user2BalanceBefore = web3.eth.getBalance(user2);
+    await token.withdraw({from:user2});
+    user2BalanceAfter = web3.eth.getBalance(user2);
     assert.equal(bn(user2BalanceAfter).isGreaterThan(user2BalanceBefore), true);
   });
 
   //Start failed funding
-  it('Start failed funding', async() => {
+  it('Start funding without operator set', async() => {
     let err;
-
     await operators.removeOperator(operatorID);
     assetURI = 'Fail: No operator';
-    assetManagerFee = 10;
     try{
-      await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 10, 20*ETH, assetManagerFee, erc20.address, {from:assetManager});
+      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 20*ETH, assetManagerFee, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -318,42 +282,53 @@ contract('ERC20 Crowdsale', async() => {
     let e = events.LogOperator({message: 'Operator registered', origin: owner}, {fromBlock: block.number, toBlock: 'latest'});
     let logs = await Promisify(callback => e.get(callback));
     operatorID = logs[0].args.operatorID;
-    await operators.acceptERC20Token(operatorID, erc20.address, true, {from: operator});
     await operators.acceptEther(operatorID, true, {from: operator});
   });
 
   it('Start funding that does not reach goal', async() => {
-    assetURI = 'Goooooooaaallllllll';
-    assetManagerFee = 20;
+    assetURI = 'No Goal';
     let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 1, 20*ETH, assetManagerFee, erc20.address, {from:assetManager});
+    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 2, 20*ETH, assetManagerFee, {from:assetManager});
     let e = events.LogAsset({message: 'Asset funding started', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
     let logs = await Promisify(callback => e.get(callback));
     assetID = logs[0].args.assetID;
     assetTokenAddress = logs[0].args.token;
-    assetToken = await AssetToken.at(assetTokenAddress);
+    token = await Token.at(assetTokenAddress);
   });
 
   it('User3 funding', async() => {
-    await erc20.approve(crowdsale.address, 5*ETH, {from:user3});
-    await crowdsale.buyAssetOrderERC20(assetID, 5*ETH, {from:user3});
-    let user3assetTokens = await assetToken.balanceOf(user3);
-    assert.equal(user3assetTokens, 5*ETH);
+    await crowdsale.buyAssetOrderETH(assetID, {from:user3, value:5*ETH});
+    let user3Tokens = await token.balanceOf(user3);
+    assert.equal(user3Tokens, 5*ETH);
   });
 
-  // TODO: this isn't failing as it should
   it('User1 funding fail', async() => {
     web3.currentProvider.send({jsonrpc: "2.0", method: "evm_increaseTime", params: [3], id: 0});
-
+    //After deadline
+    let now = await web3.eth.getBlock('latest').timestamp;
+    console.log(now);
+    let deadlineHash = await hash.stringBytes('fundingDeadline', assetID);
+    let deadline = await db.uintStorage(deadlineHash);
+    console.log(Number(deadline));
     let err;
     try{
-      await erc20.approve(crowdsale.address, 5*ETH, {from:user1});
-      await crowdsale.buyAssetOrderERC20(assetID, 5*ETH, {from:user1});
+      await crowdsale.buyAssetOrderETH(assetID, {from:user1, value:5*ETH});
     } catch(e){
       err = e;
     }
-    // assert.notEqual(err, undefined);
+    assert.notEqual(err, undefined);
   });
+
+  it('Fail to pause', async() => {
+    let err;
+    try{
+      await pausible.pause(crowdsale.address, {from:user3});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
 
   it('Pause contract', async() => {
     await pausible.pause(crowdsale.address);
@@ -374,13 +349,119 @@ contract('ERC20 Crowdsale', async() => {
   });
 
   it('Refund', async() => {
-    let totalassetTokens = await assetToken.totalSupply();
-    user3BalanceBefore = await erc20.balanceOf(user3);
+    let totalTokens = await token.totalSupply();
+    user3BalanceBefore = web3.eth.getBalance(user3);
     await crowdsale.refund(assetID);
-    await assetToken.withdraw({from:user3});
-    user3BalanceAfter = await erc20.balanceOf(user3);
+    await token.withdraw({from:user3});
+    user3BalanceAfter = web3.eth.getBalance(user3);
     assert.equal(bn(user3BalanceAfter).isGreaterThan(user3BalanceBefore), true);
   });
+
+  //Start successful funding with no manager fee
+  it('Start funding', async() => {
+    assetURI = 'Free Management';
+    assetManagerFee = 0;
+    let block = await web3.eth.getBlock('latest');
+    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 1, 2*ETH, assetManagerFee, {from:assetManager});
+    let e = events.LogAsset({message: 'Asset funding started', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
+    let logs = await Promisify(callback => e.get(callback));
+    assetID = logs[0].args.assetID;
+    assetTokenAddress = logs[0].args.token;
+    token = await Token.at(assetTokenAddress);
+  });
+
+  it('User1 funding', async() => {
+    let tokenSupply = await token.totalSupply()
+    console.log('Token Supply: ' + tokenSupply);
+    await crowdsale.buyAssetOrderETH(assetID, {from:user1, value:2*ETH});
+    let user1Tokens = await token.balanceOf(user1);
+    console.log(user1Tokens);
+    console.log(2*ETH);
+    assert.equal(user1Tokens.eq(2*ETH), true);
+    assert.equal(await token.mintingFinished(), true);
+    assert.equal(await token.balanceOf(assetManager), 0);
+    assert.equal(await api.crowdsaleFinalized(assetID), true);
+  });
+
+
+  it('Fail funding with 100% manager fee', async() => {
+    assetURI = 'Free Management';
+    assetManagerFee = 100;
+    let err;
+    try {
+      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 1, 2*ETH, assetManagerFee, {from:assetManager});
+    }
+    catch(e) {
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  //Start successful funding with 99% manager fee
+  it('Start funding', async() => {
+    assetURI = '99%managementfee.com';
+    assetManagerFee = 99;
+    let block = await web3.eth.getBlock('latest');
+    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 2*ETH, assetManagerFee, {from:assetManager});
+    let e = events.LogAsset({message: 'Asset funding started', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
+    let logs = await Promisify(callback => e.get(callback));
+    assetID = logs[0].args.assetID;
+    assetTokenAddress = logs[0].args.token;
+    token = await Token.at(assetTokenAddress);
+  });
+
+
+  it('user2 funding ', async() => {
+    await crowdsale.buyAssetOrderETH(assetID, {from:user2, value:2*ETH});
+    let user2Tokens = await token.balanceOf(user2);
+    let tokenSupply = await token.totalSupply()
+    assert.equal(user2Tokens.eq(2*ETH), true);
+    assert.equal(await token.mintingFinished(), true);
+    assert.equal(await api.crowdsaleFinalized(assetID), true);
+  });
+
+  it('Fail asset crowdsale with 0 amount to raise', async() => {
+    assetURI = 'raisenothing.com';
+    assetManagerFee = 42;
+    let err;
+    try{
+      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 0, assetManagerFee, {from:assetManager});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  // amountToRaise == 1
+  it('Start funding with small amount to raise', async() => {
+    assetURI = 'lowgoals.com';
+    assetManagerFee = 50;
+    let block = await web3.eth.getBlock('latest');
+    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 1, assetManagerFee, {from:assetManager});
+    let e = events.LogAsset({message: 'Asset funding started', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
+    let logs = await Promisify(callback => e.get(callback));
+    assetID = logs[0].args.assetID;
+    assetTokenAddress = logs[0].args.token;
+    token = await Token.at(assetTokenAddress);
+  });
+
+
+  // Note it's possible for asset-token supply to be larger than wei received due to rounding error
+  // This example makes 2 asset tokens, but only receives 1 WEI as it mints a token for the assetmanager
+  it('user3 funding 1 wei', async() => {
+    let balanceBefore = web3.eth.getBalance(user3);
+    await crowdsale.buyAssetOrderETH(assetID, {from:user3, value:2*ETH});
+    let balanceAfter = web3.eth.getBalance(user3);
+    let user3Tokens = await token.balanceOf(user3);
+    let tokenSupply = await token.totalSupply()
+    assert.equal(user3Tokens.eq(1), true);
+    assert.equal(await token.balanceOf(assetManager), 1);
+    assert.equal(await token.mintingFinished(), true);
+    assert.equal(await api.crowdsaleFinalized(assetID), true);
+  });
+
+
+    // TODO: try to force integer rounding
 
   it('Fail to send money to contract', async() => {
     let err;
@@ -392,50 +473,6 @@ contract('ERC20 Crowdsale', async() => {
     assert.notEqual(err, undefined);
   });
 
-  // start funding with 0 assetmanager fee
-  it('Start funding with no fee', async() => {
-    assetURI = 'ipfs.io/F3b285ABA9';
-    assetManagerFee = 0;
-    let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 100, 2*ETH, assetManagerFee, erc20.address, {from:assetManager});
-    let e = events.LogAsset({message: 'Asset funding started', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
-    let logs = await Promisify(callback => e.get(callback));
-    assetID = logs[0].args.assetID;
-    assetTokenAddress = logs[0].args.token;
-    console.log('Token Address: ' + tokenAddress);
-    assetToken = await AssetToken.at(assetTokenAddress);
-  });
-
-  it('Fully fund no fee asset', async() => {
-    await erc20.approve(crowdsale.address, 2*ETH, {from:user1});
-    let platformWalletBalance = await erc20.balanceOf(owner);
-    await crowdsale.buyAssetOrderERC20(assetID, 2*ETH, {from:user1});
-    let user1AssetTokens = await assetToken.balanceOf(user1);
-    let assetTokenSupply = await assetToken.totalSupply()
-    assert.equal(assetTokenSupply.eq(user1AssetTokens), true);
-    assert.equal(user1AssetTokens, 2*ETH);
-    assert.equal(await assetToken.mintingFinished(), true);
-    assert.equal(await assetToken.balanceOf(assetManager), 0);
-    assert.equal(await api.crowdsaleFinalized(assetID), true);
-    // Check payout to platform and operator
-    console.log(platformWalletBalance);
-    console.log(await erc20.balanceOf(owner));
-    // assert.equal(bn(platformWalletBalance).gt(await erc20.balanceOf(owner)), true);
-  });
-
-  it('Fail to create asset with 0 amount to raise', async() => {
-    let err;
-    assetURI = 'ipfs.io/F3b285ABCA9';
-    assetManagerFee = 12;
-    try{
-      await await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 100, 0, assetManagerFee, erc20.address, {from:assetManager});
-    } catch(e){
-      err = e;
-    }
-    assert.notEqual(err, undefined);
-  });
-
-  /*
   it('Fail to destroy', async() => {
     let err;
     try{
@@ -449,6 +486,6 @@ contract('ERC20 Crowdsale', async() => {
   it('Destroy', async() => {
     await crowdsale.destroy();
   });
-  */
+
 
 });

@@ -74,6 +74,6 @@ contract CrowdsaleGeneratorERC20 {
   //                                            Events
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _assetManager, string _assetURI, address indexed _tokenAddress);
-  event LogSig(bytes4 _sig);
+  //event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _assetManager, string _assetURI, address indexed _tokenAddress);
+  //event LogSig(bytes4 _sig);
 }

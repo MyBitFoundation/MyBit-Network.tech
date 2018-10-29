@@ -1,6 +1,7 @@
 pragma solidity ^0.4.24;
 
 import '../database/Database.sol';
+import '../database/Events.sol';
 
 // @title A contract for managing a single platform owner
 // @dev Single owned platforms store owner as an address
@@ -8,10 +9,12 @@ import '../database/Database.sol';
 contract SingleOwned {
 
   Database public database;
+  Events public events;
 
   // @notice constructor: initiate database instance
-  constructor(address _database) public {
+  constructor(address _database, address _events) public {
     database = Database(_database);
+    events = Events(_events);
   }
 
   // @notice Transfer ownership to to a new owner
@@ -20,7 +23,8 @@ contract SingleOwned {
   onlyOwner {
     database.setBool(keccak256(abi.encodePacked("owner", _newOwner)), true);
     database.setBool(keccak256(abi.encodePacked("owner", msg.sender)), false);
-    emit OwnershipTransferred(msg.sender, _newOwner);
+    events.transaction('Ownership transferred', msg.sender, _newOwner, 0, '');
+    //emit OwnershipTransferred(msg.sender, _newOwner);
   }
 
   // @notice reverts if caller is not the owner
@@ -29,5 +33,5 @@ contract SingleOwned {
     _;
   }
 
-  event OwnershipTransferred(address indexed owner, address indexed pendingOwner);
+  //event OwnershipTransferred(address indexed owner, address indexed pendingOwner);
 }
