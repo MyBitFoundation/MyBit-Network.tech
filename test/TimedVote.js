@@ -20,7 +20,7 @@ beforeEach(async() => {
 });
 
 
-function asyncThrows (executor) {
+function throws (executor) {
   return async() => {
     try {
       await executor();
@@ -29,7 +29,7 @@ function asyncThrows (executor) {
   }
 }
 
-function asyncSucceeds (executor) {
+function succeeds (executor) {
   return async() => {
     try {
       await executor();
@@ -55,11 +55,11 @@ contract('TimedVote', () => {
   });
 
   describe('#onlyCommitted', () => {
-    it('Detect uncommitted', asyncThrows(async() => {
+    it('Detect uncommitted', throws(async() => {
       await timedVote._onlyCommitted();
     }));
 
-    it('Detect committed', asyncSucceeds(async() => {
+    it('Detect committed', succeeds(async() => {
       await timedVote._setCommitment(user1, 5);
       await timedVote._onlyCommitted();
     }));
