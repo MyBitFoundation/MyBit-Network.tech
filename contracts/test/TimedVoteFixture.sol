@@ -8,7 +8,7 @@ contract TimedVoteFixture is TimedVote {
   public
   TimedVote(_tokenAddress) {}
 
-  /** Succeed if committed */
+  /** Require sender committed */
   function _onlyCommitted()
   external
   view
