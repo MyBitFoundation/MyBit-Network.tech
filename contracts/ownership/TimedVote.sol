@@ -40,6 +40,7 @@ contract TimedVote {
   // State
 
   BurnableToken token;                          // MYB token contract
+  uint256 voteDuration;                         // Vote duration
   mapping(address => Commitment) commitments;   // Active commitments
   mapping(bytes32 => Proposal) proposals;       // Created proposals
 
