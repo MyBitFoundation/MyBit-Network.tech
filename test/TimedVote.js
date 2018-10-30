@@ -147,6 +147,19 @@ contract('TimedVote', () => {
       }));
     });
 
+    describe('~onlyUnlocked', () => {
+      it('Accept unlocked', async() => {
+        await timedVote._setCommitment(user1, 5);
+        await timedVote._advanceCommitmentDays(user1, voteDurationDays + 1);
+        await timedVote._onlyUnlocked();
+      });
+
+      it('Reject locked', throws(async() => {
+        await timedVote._setCommitment(user1, 5);
+        await timedVote._onlyUnlocked();
+      }));
+    });
+
     describe('~onlyValid(address)', () => {
       it('Accept valid', async() => {
         await timedVote._onlyValidAddress(validAddress);

@@ -48,6 +48,12 @@ contract TimedVoteFixture is TimedVote {
   view
   onlyUncommitted(msg.sender) {}
 
+  /** Require commitment unlocked */
+  function _onlyUnlocked()
+  external
+  view
+  onlyUnlocked(msg.sender) {}
+
   /** Require address valid */
   function _onlyValidAddress(address _address)
   external

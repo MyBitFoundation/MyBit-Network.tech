@@ -207,6 +207,21 @@ contract TimedVote {
   }
 
   /**
+   * Require commitment unlocked
+   * @dev
+   * Throws if the commitment of the specified account is locked.
+   * Assumes the account has an active commitment.
+   * @param _account - Account owning commitment that must be unlocked.
+   */
+  modifier onlyUnlocked(address _account) {
+    require(
+      !commitmentLocked(_account),
+      "Unlocked commitment required"
+    );
+    _;
+  }
+
+  /**
    * Require address valid
    * @dev
    * Throws if the specified address is the null address.
