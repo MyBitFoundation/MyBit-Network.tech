@@ -23,8 +23,8 @@ contract TimedVote {
 
   // Commitment of MYB tokens to voting
   struct Commitment {
-    uint256 value;                // MYB amount
-    uint256 time;                 // Commit instant
+    uint256 value;                              // MYB amount
+    uint256 time;                               // Commit instant
   }
 
   // -----
