@@ -28,6 +28,7 @@ contract('TimedVote', () => {
   // ----
   // Hook
   // ----
+
   beforeEach(async() => {
     token = await Token.new("MyBit", tokenSupply);
     timedVote = await TimedVote.new(token.address);
