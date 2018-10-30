@@ -16,7 +16,7 @@
 
     DBInterface public database;
     Events public events;
-
+    
     uint public consensus = 66;
 
     // @notice constructor: initializes database

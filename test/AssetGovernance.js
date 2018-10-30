@@ -277,6 +277,10 @@ contract('AssetGovernance', async() => {
     await platformToken.approve(escrow.address, 10*ETH, {from: newAssetManager});
     let consensus = await governance.isConsensusReached(escrow.address, assetID, methodID, parameterHash);
     console.log("consensus is reached?  ", consensus);
+    // let e = await governance.LogConsensus({}, {fromBlock: 0, toBlock: 'latest'});
+    // let logs = await Promisify(callback => e.get(callback));
+    // console.log('Consensus: ', consensus);
+    // console.log(logs[0].args);
     await escrow.becomeAssetManager(assetID, assetManager, 10*ETH, true, {from:newAssetManager});
   });
 
