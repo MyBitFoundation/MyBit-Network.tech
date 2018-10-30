@@ -7,17 +7,15 @@ const TimedVote = artifacts.require('TimedVoteFixture');
 const tokenSupply = 180000000000000000000000000;
 
 
-contract('TimedVote', () => {
-  let token;
-  let timedVote;
+let token, timedVote;
 
-  it('Deploy Token', async() => {
-    token = await Token.new("MyBit", tokenSupply);
-  });
-
-  it('Spread tokens to users', async() => {});
-
-  it('Deploy TimedVote', async() => {
-    timedVote = await TimedVote.new(token.address);
-  });
+before(async() => {
+  token = await Token.new("MyBit", tokenSupply);
 });
+
+beforeEach(async() => {
+  timedVote = await TimedVote.new(token.address);
+});
+
+
+contract('TimedVote', () => {});
