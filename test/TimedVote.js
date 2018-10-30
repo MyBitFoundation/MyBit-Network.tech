@@ -11,11 +11,8 @@ const tokenSupply = 180000000000000000000000000;
 
 let token, timedVote;
 
-before(async() => {
-  token = await Token.new("MyBit", tokenSupply);
-});
-
 beforeEach(async() => {
+  token = await Token.new("MyBit", tokenSupply);
   timedVote = await TimedVote.new(token.address);
 });
 
