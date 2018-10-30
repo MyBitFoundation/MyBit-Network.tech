@@ -66,6 +66,18 @@ contract TimedVote {
   }
 
   /**
+   * Get account commitment amount
+   * @param _account - Account to get commitment amount of.
+   * @return value - MYB amount currently committed by the given account.
+   */
+  function commitment(address _account)
+  external
+  view
+  returns (uint256 value) {
+      return commitments[_account].value;
+  }
+
+  /**
    * Check account committed
    * @param _account - Account to check.
    * @return committed - Whether the account has an active commitment.

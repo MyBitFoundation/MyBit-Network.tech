@@ -131,4 +131,17 @@ contract('TimedVote', () => {
       assert.isTrue(BigNumber(event.args.value).isEqualTo(100));
     });
   });
+
+  describe('#commitment', () => {
+    it('Find 0 commitment', async() => {
+      const result = await timedVote.commitment.call(user1);
+      assert.isTrue(BigNumber(result).isEqualTo(0));
+    });
+
+    it('Find nonzero commitment', async() => {
+      await timedVote._setCommitment(user1, 100);
+      const result = await timedVote.commitment.call(user1);
+      assert.isTrue(BigNumber(result).isEqualTo(100));
+    });
+  });
 });
