@@ -7,7 +7,7 @@ const TimedVote = artifacts.require('TimedVoteFixture');
 const tokenSupply = 180000000000000000000000000;
 
 
-contract('TimedVote', async() => {
+contract('TimedVote', () => {
   let token;
   let timedVote;
 
