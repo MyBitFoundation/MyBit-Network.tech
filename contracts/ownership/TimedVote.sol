@@ -30,8 +30,7 @@ contract TimedVote {
   // -----
   // State
 
-  // MYB token contract
-  BurnableToken token;
+  BurnableToken token;                          // MYB token contract
 
   // -----------
   // Constructor
