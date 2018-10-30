@@ -98,7 +98,7 @@ contract TimedVote {
    * @param _account - Account to get commitment amount of.
    * @return value - MYB amount currently committed by the given account.
    */
-  function commitment(address _account)
+  function commitmentOf(address _account)
   external
   view
   returns (uint256 value) {

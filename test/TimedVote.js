@@ -154,15 +154,15 @@ contract('TimedVote', () => {
       });
     });
 
-    describe('#commitment', () => {
+    describe('#commitmentOf', () => {
       it('No commitment', async() => {
-        const result = await timedVote.commitment.call(user1);
+        const result = await timedVote.commitmentOf.call(user1);
         assert.isTrue(BigNumber(result).isEqualTo(0));
       });
 
       it('Commitment', async() => {
         await timedVote._setCommitment(user1, 100);
-        const result = await timedVote.commitment.call(user1);
+        const result = await timedVote.commitmentOf.call(user1);
         assert.isTrue(BigNumber(result).isEqualTo(100));
       });
     });
