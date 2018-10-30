@@ -64,4 +64,15 @@ contract('TimedVote', () => {
       await timedVote._onlyCommitted();
     }));
   });
+
+  describe('#onlyUncommitted', () => {
+    it('Detect uncommitted', succeeds(async() => {
+      await timedVote._onlyUncommitted();
+    }));
+
+    it('Detect committed', throws(async() => {
+      await timedVote._setCommitment(user1, 5);
+      await timedVote._onlyUncommitted();
+    }));
+  });
 });

@@ -74,4 +74,17 @@ contract TimedVote {
     );
     _;
   }
+
+  /**
+   * Require sender uncommitted
+   * @notice
+   * Throws if the sender has an active commitment.
+   */
+  modifier onlyUncommitted {
+    require(
+      !isCommitted(msg.sender),
+      "Commitment disallows"
+    );
+    _;
+  }
 }

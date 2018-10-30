@@ -14,6 +14,12 @@ contract TimedVoteFixture is TimedVote {
   view
   onlyCommitted {}
 
+  /** Succeed if uncommitted */
+  function _onlyUncommitted()
+  external
+  view
+  onlyUncommitted {}
+
   /**
    * Set account commitment
    * @param _account - Account to set commitment of.
