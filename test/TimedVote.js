@@ -106,4 +106,29 @@ contract('TimedVote', () => {
       assert.isTrue(BigNumber(event.args.value).isEqualTo(100));
     });
   });
+
+  describe('#withdraw', () => {
+    it('Fail without commitment', throws(async() => {
+      await timedVote.withdraw();
+    }));
+
+    it('Succeed', async() => {
+      await token.transfer(user1, 100);
+      await token.approve(timedVote.address, 100, {from: user1});
+      await timedVote.commit(100);
+      await timedVote.withdraw();
+    });
+
+    it('Emit Withdraw', async() => {
+      await token.transfer(user1, 100);
+      await token.approve(timedVote.address, 100, {from: user1});
+      await timedVote.commit(100);
+      const { logs: events } = await timedVote.withdraw();
+      assert.isAtLeast(events.length, 1);
+      const event = events.pop();
+      assert.strictEqual(event.event, 'Withdraw');
+      assert.strictEqual(event.args.account, user1);
+      assert.isTrue(BigNumber(event.args.value).isEqualTo(100));
+    });
+  });
 });

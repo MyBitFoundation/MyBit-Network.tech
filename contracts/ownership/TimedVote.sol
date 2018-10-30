@@ -77,6 +77,22 @@ contract TimedVote {
     return (commitments[_account].value > 0);
   }
 
+  /**
+   * Withdraw committed MYB
+   * @notice
+   * Withdraws all of your committed MYB to the original address. Fails if you
+   * have no active commitment. Emits Withdraw on success.
+   */
+  function withdraw()
+  external
+  onlyCommitted {
+    uint256 _value = commitments[msg.sender].value;
+    delete commitments[msg.sender];
+    bool transferred = token.transfer(msg.sender, _value);
+    require(transferred, "Transfer failed");
+    emit Withdraw(msg.sender, _value);
+  }
+
   // --------
   // Modifier
 
@@ -111,6 +127,12 @@ contract TimedVote {
 
   /** MYB committed to voting */
   event Commit(
+    address indexed account,
+    uint256 value
+  );
+
+  /** Commitment withdrawn */
+  event Withdraw(
     address indexed account,
     uint256 value
   );
