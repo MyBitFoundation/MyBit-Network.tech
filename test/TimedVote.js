@@ -94,5 +94,16 @@ contract('TimedVote', () => {
         await timedVote.commit(100);
       });
     });
+
+    it('Emit Commit', async() => {
+      await token.transfer(user1, 100);
+      await token.approve(timedVote.address, 100, {from: user1});
+      const { logs: events } = await timedVote.commit(100);
+      assert.isAtLeast(events.length, 1);
+      const event = events.pop();
+      assert.strictEqual(event.event, 'Commit');
+      assert.strictEqual(event.args.account, user1);
+      assert.isTrue(BigNumber(event.args.value).isEqualTo(100));
+    })
   });
 });

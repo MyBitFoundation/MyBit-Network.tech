@@ -52,7 +52,7 @@ contract TimedVote {
    * @notice
    * Commits specified amount of your MYB to voting. Approve this contract with
    * the token contract for the desired amount before calling. Fails if you
-   * already have an active commitment.
+   * already have an active commitment. Emits Commit on success.
    * @param _value - MYB amount to commit.
    */
   function commit(uint256 _value)
@@ -62,6 +62,7 @@ contract TimedVote {
     commitments[msg.sender] = Commitment(_value, now);
     bool transferred = token.transferFrom(msg.sender, this, _value);
     require(transferred, "Transfer failed");
+    emit Commit(msg.sender, _value);
   }
 
   /**
@@ -104,4 +105,13 @@ contract TimedVote {
     );
     _;
   }
+
+  // -----
+  // Event
+
+  /** MYB committed to voting */
+  event Commit(
+    address indexed account,
+    uint256 value
+  );
 }
