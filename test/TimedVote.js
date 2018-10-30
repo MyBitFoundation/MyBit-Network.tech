@@ -104,6 +104,6 @@ contract('TimedVote', () => {
       assert.strictEqual(event.event, 'Commit');
       assert.strictEqual(event.args.account, user1);
       assert.isTrue(BigNumber(event.args.value).isEqualTo(100));
-    })
+    });
   });
 });
