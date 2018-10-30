@@ -64,7 +64,7 @@ contract TimedVote {
 
   /**
    * Require sender committed
-   * @notice
+   * @dev
    * Throws if the sender does not have an active commitment.
    */
   modifier onlyCommitted {
@@ -77,7 +77,7 @@ contract TimedVote {
 
   /**
    * Require sender uncommitted
-   * @notice
+   * @dev
    * Throws if the sender has an active commitment.
    */
   modifier onlyUncommitted {
