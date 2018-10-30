@@ -1,7 +1,8 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
+import "../database/Events.sol";
 import "../access/ERC20Burner.sol";
 import "../tokens/erc20/DividendToken.sol";
 
@@ -12,15 +13,17 @@ contract CrowdsaleGeneratorETH {
   using SafeMath for uint256;
 
   DBInterface public database;
+  Events public events;
   ERC20Burner public burner;
 
   uint constant scalingFactor = 1e32;   // Used to avoid rounding errors
 
   // @notice This contract
   // @param: The address for the database contract used by this platform
-  constructor(address _database)
+  constructor(address _database, address _events)
   public{
       database = DBInterface(_database);
+      events = Events(_events);
       burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
@@ -50,7 +53,8 @@ contract CrowdsaleGeneratorETH {
     database.setBytes32(keccak256(abi.encodePacked("assetTokenID", assetAddress)), assetID);
     database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
     database.setAddress(keccak256(abi.encodePacked("operator", assetID)), database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))));
-    emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, address(assetAddress));
+    //emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, address(assetAddress));
+    events.asset('Asset funding started', _assetURI, assetID, assetAddress, msg.sender);
     return true;
   }
 
@@ -70,7 +74,7 @@ contract CrowdsaleGeneratorETH {
   //                                            Events
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _assetManager, string _assetURI, address indexed _tokenAddress);
-  event LogSig(bytes4 _sig);
+  //event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _assetManager, string _assetURI, address indexed _tokenAddress);
+  //event LogSig(bytes4 _sig);
 
 }

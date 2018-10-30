@@ -22,7 +22,7 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>4/4</span>
+        <span class='fraction'>3/3</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
@@ -37,7 +37,7 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>7/7</span>
+        <span class='fraction'>8/8</span>
       </div>
     </div>
   </div>
@@ -98,7 +98,12 @@
 53
 54
 55
-56</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+56
+57
+58
+59
+60
+61</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -109,7 +114,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">8×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -117,16 +125,18 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7×</span>
-<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">9×</span>
-<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -135,8 +145,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">18×</span>
 <span class="cline-any cline-yes">16×</span>
+<span class="cline-any cline-yes">14×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -153,18 +163,21 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity 0.4.24;
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity ^0.4.24;
 &nbsp;
 import '../database/Database.sol';
+import '../database/Events.sol';
 &nbsp;
 contract PlatformFunds {
 &nbsp;
   Database public database;
+  Events public events;
 &nbsp;
   // @notice initialize database
-  constructor(address _database)
+  constructor(address _database, address _events)
   public {
     database = Database(_database);
+    events = Events(_events);
   }
 &nbsp;
   // @notice owners must set the wallet to receive payments here before initiating crowdsale
@@ -173,7 +186,8 @@ contract PlatformFunds {
   external
   onlyOwner {
     database.setAddress(keccak256(abi.encodePacked("platformWallet")), _walletAddress);
-    emit LogPlatformWallet(_walletAddress);
+    //emit LogPlatformWallet(_walletAddress);
+    events.registration('Platform wallet', _walletAddress);
   }
 &nbsp;
   // @notice
@@ -181,7 +195,8 @@ contract PlatformFunds {
   external
   onlyOwner {
     database.setAddress(keccak256(abi.encodePacked("platformToken")), _tokenAddress);
-    emit LogPlatformToken(_tokenAddress);
+    //emit LogPlatformToken(_tokenAddress);
+    events.registration('Platform token', _tokenAddress);
   }
 &nbsp;
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -198,10 +213,10 @@ contract PlatformFunds {
   //                                                Events                                                                        //
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 &nbsp;
-&nbsp;
+  /*
   event LogPlatformWallet(address _platformWallet);
   event LogPlatformToken(address _platformToken);
-&nbsp;
+  */
 &nbsp;
 &nbsp;
 &nbsp;
@@ -214,7 +229,7 @@ contract PlatformFunds {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Oct 23 2018 17:09:37 GMT-0700 (PDT)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Oct 29 2018 17:26:07 GMT-0700 (PDT)
 </div>
 </div>
 <script src="../prettify.js"></script>

@@ -1,15 +1,18 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import '../database/Database.sol';
+import '../database/Events.sol';
 
 contract PlatformFunds {
 
   Database public database;
+  Events public events;
 
   // @notice initialize database
-  constructor(address _database)
+  constructor(address _database, address _events)
   public {
     database = Database(_database);
+    events = Events(_events);
   }
 
   // @notice owners must set the wallet to receive payments here before initiating crowdsale
@@ -18,7 +21,8 @@ contract PlatformFunds {
   external
   onlyOwner {
     database.setAddress(keccak256(abi.encodePacked("platformWallet")), _walletAddress);
-    emit LogPlatformWallet(_walletAddress);
+    //emit LogPlatformWallet(_walletAddress);
+    events.registration('Platform wallet', _walletAddress);
   }
 
   // @notice
@@ -26,7 +30,8 @@ contract PlatformFunds {
   external
   onlyOwner {
     database.setAddress(keccak256(abi.encodePacked("platformToken")), _tokenAddress);
-    emit LogPlatformToken(_tokenAddress);
+    //emit LogPlatformToken(_tokenAddress);
+    events.registration('Platform token', _tokenAddress);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -43,10 +48,10 @@ contract PlatformFunds {
   //                                                Events                                                                        //
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+  /*
   event LogPlatformWallet(address _platformWallet);
   event LogPlatformToken(address _platformToken);
-
+  */
 
 
 

@@ -1,5 +1,6 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 import '../database/Database.sol';
+import '../database/Events.sol';
 import '../math/SafeMath.sol';
 import '../interfaces/DivToken.sol';
 import "../access/ERC20Burner.sol";
@@ -13,6 +14,7 @@ contract AssetExchange {
   using SafeMath for uint;
 
   Database public database;
+  Events public events;
   ERC20Burner private burner;
 
   mapping (address => mapping (bytes32 => bool)) public orders;  // Hash of (assetID, sellerAddress, amountToBuy, price, boolean(BuyOrder = true))
@@ -24,9 +26,10 @@ contract AssetExchange {
 
   // @notice constructor: initializes database
   // @param: the address for the database contract used by this platform
-  constructor(address _database)
+  constructor(address _database, address _events)
   public {
     database = Database(_database);
+    events = Events(_events);
     burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
@@ -50,7 +53,8 @@ contract AssetExchange {
     require(assetToken.transferFrom(_seller, msg.sender, _amount));
     weiOwed[_seller] = weiOwed[_seller].add(msg.value);
     delete orders[_seller][thisOrder];
-    emit LogSellOrderCompleted(thisOrder, _assetID, msg.sender);
+    events.exchange('Sell order completed', thisOrder, _assetID, msg.sender);
+    //emit LogSellOrderCompleted(thisOrder, _assetID, msg.sender);
     return true;
   }
 
@@ -72,7 +76,8 @@ contract AssetExchange {
     weiDeposited[_buyer] = weiDeposited[_buyer].sub(value);
     weiOwed[msg.sender] = weiOwed[msg.sender].add(value);
     delete orders[_buyer][thisOrder];
-    emit LogBuyOrderCompleted(thisOrder, _assetID, msg.sender);
+    events.exchange('Buy order completed', thisOrder, _assetID, msg.sender);
+    //emit LogBuyOrderCompleted(thisOrder, _assetID, msg.sender);
     return true;
   }
 
@@ -93,8 +98,10 @@ contract AssetExchange {
     require(!orders[msg.sender][orderID]);
     orders[msg.sender][orderID] = true;
     weiDeposited[msg.sender] = weiDeposited[msg.sender].add(msg.value);
-    emit LogBuyOrderCreated(orderID, _assetID, msg.sender);
-    emit LogBuyOrderDetails(orderID, _amount, _price);
+    events.exchange('Buy order created', orderID, _assetID, msg.sender);
+    events.order('Buy order', orderID, _amount, _price);
+    //emit LogBuyOrderCreated(orderID, _assetID, msg.sender);
+    //emit LogBuyOrderDetails(orderID, _amount, _price);
     return true;
   }
 
@@ -111,8 +118,10 @@ contract AssetExchange {
     bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, false));
     require(!orders[msg.sender][orderID]);
     orders[msg.sender][orderID] = true;
-    emit LogSellOrderCreated(orderID, _assetID, msg.sender);
-    emit LogSellOrderDetails(orderID, _amount, _price);
+    events.exchange('Sell order created', orderID, _assetID, msg.sender);
+    events.order('Sell order', orderID, _amount, _price);
+    //emit LogSellOrderCreated(orderID, _assetID, msg.sender);
+    //emit LogSellOrderDetails(orderID, _amount, _price);
     return true;
   }
 
@@ -158,7 +167,8 @@ contract AssetExchange {
   public {
     require(_functionInitiator != msg.sender);
     require(database.boolStorage(keccak256(abi.encodePacked(address(this), _functionInitiator, "destroy", keccak256(abi.encodePacked(_holdingAddress))))));
-    emit LogDestruction(_holdingAddress, address(this).balance, msg.sender);
+    events.transaction('Destroy contract', address(this), _holdingAddress, address(this).balance, '');
+    //emit LogDestruction(_holdingAddress, address(this).balance, msg.sender);
     selfdestruct(_holdingAddress);
   }
 
@@ -229,7 +239,7 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   //                                      Events
   //------------------------------------------------------------------------------------------------------------------
-
+  /*
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
   event LogBuyOrderCreated(bytes32 _orderID, bytes32 indexed _assetID, address indexed _creator);
   event LogBuyOrderCompleted(bytes32 _orderID, bytes32 indexed _assetAddress, address indexed _purchaser);
@@ -237,6 +247,6 @@ contract AssetExchange {
   event LogSellOrderCompleted(bytes32 _orderID, bytes32 indexed _assetAddress, address indexed _purchaser);
   event LogBuyOrderDetails(bytes32 _orderID, uint indexed _amount, uint indexed _price);
   event LogSellOrderDetails(bytes32 orderID, uint indexed _amount, uint indexed _price);
-  event LogownershipUnitsTraded(bytes32 _assetID, address _from, address _to, uint _amount);
   event LogSig(bytes4 _sig);
+  */
 }

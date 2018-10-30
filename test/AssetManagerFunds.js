@@ -2,6 +2,7 @@ var bn = require('bignumber.js');
 
 const AssetManagerFunds = artifacts.require("./roles/AssetManagerFunds.sol");
 const Database = artifacts.require("./database/Database.sol");
+const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const DivToken = artifacts.require("./tokens/ERC20/DividendToken.sol");
 const DivTokenERC20 = artifacts.require("./tokens/ERC20/DividendTokenERC20.sol");
@@ -10,6 +11,16 @@ const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
 const API = artifacts.require("./database/API.sol");
+const Promisify = (inner) =>
+    new Promise((resolve, reject) =>
+        inner((err, res) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(res);
+            }
+        })
+    );
 
 const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
@@ -27,6 +38,7 @@ contract('AssetManagerFunds', async() => {
   let divTokenERC20;
   let burnToken
   let db;
+  let events;
   let cm;
   let hash;
   let api;
@@ -47,8 +59,12 @@ contract('AssetManagerFunds', async() => {
     db = await Database.new([owner], true);
   });
 
+  it('Deploy Events', async() => {
+    events = await Events.new(db.address);
+  });
+
   it('Deploy contract manager contract', async() => {
-    cm = await ContractManager.new(db.address);
+    cm = await ContractManager.new(db.address, events.address);
     await db.enableContractManagement(cm.address);
     await cm.addContract('Owner', owner);
   });
@@ -91,17 +107,20 @@ contract('AssetManagerFunds', async() => {
   });
 
   it('Deploy platform', async() => {
-    platform = await Platform.new(db.address);
+    platform = await Platform.new(db.address, events.address);
     await cm.addContract('PlatformFunds', platform.address);
     await platform.setPlatformWallet(owner);
     await platform.setPlatformToken(burnToken.address);
   });
 
   it('Set operator', async() => {
-    operators = await Operators.new(db.address);
+    operators = await Operators.new(db.address, events.address);
     await cm.addContract('Operators', operators.address);
-    let tx = await operators.registerOperator(operator, 'Operator');
-    operatorID = tx.logs[0].args._operatorID;
+    let block = await web3.eth.getBlock('latest');
+    await operators.registerOperator(operator, 'Operator');
+    let e = events.LogOperator({message: 'Operator registered', origin: owner}, {fromBlock: block.number, toBlock: 'latest'});
+    let logs = await Promisify(callback => e.get(callback));
+    operatorID = logs[0].args.operatorID;
   });
 
   it("Generate assetID", async() => {

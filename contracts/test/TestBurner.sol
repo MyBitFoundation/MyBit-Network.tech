@@ -1,6 +1,6 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
-import '../access/ERC20Burner.sol'; 
+import '../access/ERC20Burner.sol';
 import '../database/Database.sol';
 
 contract TestBurner {

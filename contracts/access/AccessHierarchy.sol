@@ -1,6 +1,8 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import '../database/Database.sol';
+import '../database/Events.sol';
+
 
 // @title A contract for granting and revoking access levels to different users
 // @author Kyle Dewhurst, MyBit Foundation
@@ -8,12 +10,14 @@ import '../database/Database.sol';
 contract AccessHierarchy {
 
   Database public database;
+  Events public events;
   uint8 public upperAccessLevel;
 
   // @notice Constructor: Inititalize Database
-  constructor(address _database)
+  constructor(address _database, address _events)
   public  {
     database = Database(_database);
+    events = Events(_events);
   }
 
   // @notice Owner can manually grant access to a user here. WIll be used for KYC approval

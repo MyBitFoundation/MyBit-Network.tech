@@ -1,7 +1,8 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
+import '../database/Events.sol';
 import "../access/ERC20Burner.sol";
 import "../tokens/erc20/DividendToken.sol";
 import "../tokens/distribution/FixedDistribution.sol";
@@ -13,13 +14,15 @@ contract AssetGenerator {
   using SafeMath for uint256;
 
   DBInterface private database;
+  Events private events;
 
 
   // @notice This contract
   // @param: The address for the database contract used by this platform
-  constructor(address _database)
+  constructor(address _database, address _events)
   public{
       database = DBInterface(_database);
+      events = Events(_events);
   }
 
 
@@ -35,7 +38,8 @@ contract AssetGenerator {
     FixedDistribution assetInstance = new FixedDistribution(_tokenURI, _tokenHolders, _amount);
     database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetInstance));
-    emit LogAssetCreated(assetID, address(assetInstance), msg.sender, _tokenURI);
+    //emit LogAssetCreated(assetID, address(assetInstance), msg.sender, _tokenURI);
+    events.asset('Asset created', _tokenURI, assetID, address(assetInstance), msg.sender);
     return true;
   }
 
@@ -56,7 +60,8 @@ contract AssetGenerator {
     assetInstance.finishMinting();
     database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetInstance));
-    emit LogTradeableAssetCreated(assetID, address(assetInstance), msg.sender, _tokenURI);
+    //emit LogTradeableAssetCreated(assetID, address(assetInstance), msg.sender, _tokenURI);
+    events.asset('Tradeable asset created', _tokenURI, assetID, address(assetInstance), msg.sender);
     return true;
   }
 
@@ -69,8 +74,8 @@ contract AssetGenerator {
   }
 
 
-  event LogAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
-  event LogTradeableAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
+  //event LogAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
+  //event LogTradeableAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
 
 
 }

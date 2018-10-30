@@ -3,6 +3,7 @@ var bn = require('bignumber.js');
 const Token = artifacts.require("./tokens/ERC20/BurnableToken.sol");
 const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 const Database = artifacts.require("./database/Database.sol");
+const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
 const TestBurner = artifacts.require("./test/TestBurner.sol");
@@ -22,6 +23,7 @@ contract('Burner', async() => {
   let token;
   let db;
   let cm;
+  let events;
   let platform;
   let testBurner;
 
@@ -29,10 +31,10 @@ contract('Burner', async() => {
 
   it('Deploy Database', async() => {
     db = await Database.new([owner], true);
-    cm = await ContractManager.new(db.address);
+    events = await Events.new(db.address);
+    cm = await ContractManager.new(db.address, events.address);
     await db.enableContractManagement(cm.address);
   });
-
 
   it('Deploy Token', async() => {
     token = await Token.new("MyBit", tokenSupply);
@@ -58,14 +60,14 @@ contract('Burner', async() => {
   });
 
   it('Set platform', async() => {
-    platform = await Platform.new(db.address);
+    platform = await Platform.new(db.address, events.address);
     await cm.addContract('PlatformFunds', platform.address);
     await platform.setPlatformToken(token.address);
   });
 
 
   it('Deploy ERC20Burner', async() => {
-    burner = await ERC20Burner.new(db.address);
+    burner = await ERC20Burner.new(db.address, events.address);
     await cm.addContract("ERC20Burner", burner.address);
     console.log(burner.address);
   });
