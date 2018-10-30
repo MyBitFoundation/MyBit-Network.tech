@@ -107,7 +107,7 @@ contract TimedVote {
    */
   function withdraw()
   external
-  onlyCommitted {
+  onlyCommitted(msg.sender) {
     uint256 _value = commitments[msg.sender].value;
     delete commitments[msg.sender];
     bool transferred = token.transfer(msg.sender, _value);
@@ -119,13 +119,14 @@ contract TimedVote {
   // Modifier
 
   /**
-   * Require sender committed
+   * Require account committed
    * @dev
-   * Throws if the sender does not have an active commitment.
+   * Throws if the specified account does not have an active commitment.
+   * @param _account - Account to require commitment of.
    */
-  modifier onlyCommitted() {
+  modifier onlyCommitted(address _account) {
     require(
-      accountCommitted(msg.sender),
+      accountCommitted(_account),
       "Commitment required"
     );
     _;

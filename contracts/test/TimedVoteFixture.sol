@@ -12,7 +12,7 @@ contract TimedVoteFixture is TimedVote {
   function _onlyCommitted()
   external
   view
-  onlyCommitted {}
+  onlyCommitted(msg.sender) {}
 
   /** Succeed if uncommitted */
   function _onlyUncommitted()
