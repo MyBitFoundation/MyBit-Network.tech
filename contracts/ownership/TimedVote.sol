@@ -31,6 +31,7 @@ contract TimedVote {
   // State
 
   BurnableToken token;                          // MYB token contract
+  mapping(address => Commitment) commitments;   // Active commitments
 
   // -----------
   // Constructor
