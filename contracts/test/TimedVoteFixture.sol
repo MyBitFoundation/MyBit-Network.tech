@@ -28,6 +28,12 @@ contract TimedVoteFixture is TimedVote {
   view
   onlyUncommitted(msg.sender) {}
 
+  /** Require address valid */
+  function _onlyValidAddress(address _address)
+  external
+  pure
+  onlyValidAddress(_address) {}
+
   /**
    * Set account commitment
    * @param _account - Account to set commitment of.

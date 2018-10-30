@@ -93,6 +93,16 @@ contract('TimedVote', () => {
         await timedVote._onlyUncommitted();
       }));
     });
+
+    describe('~onlyValidAddress', () => {
+      it('Accept valid', async() => {
+        await timedVote._onlyValidAddress(validAddress);
+      });
+
+      it('Reject null', throws(async() => {
+        await timedVote._onlyValidAddress(NULL_ADDRESS);
+      }));
+    });
   });
 
   // ---------

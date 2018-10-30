@@ -167,6 +167,20 @@ contract TimedVote {
     _;
   }
 
+  /**
+   * Require address valid
+   * @dev
+   * Throws if the specified address is the null address.
+   * @param _address - Address that must be valid.
+   */
+  modifier onlyValidAddress(address _address) {
+    require(
+      !isNullAddress(_address),
+      "Valid address required"
+    );
+    _;
+  }
+
   // -----
   // Event
 
