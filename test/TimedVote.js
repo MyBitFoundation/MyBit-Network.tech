@@ -62,4 +62,37 @@ contract('TimedVote', () => {
       await timedVote._onlyUncommitted();
     }));
   });
+
+  describe('#commit', () => {
+    it('Fail with value 0', throws(async() => {
+      await timedVote.commit(0);
+    }));
+
+    it('Fail without approval', throws(async() => {
+      await timedVote.commit(5);
+    }));
+
+    it('Fail with insufficient approval', async() => {
+      await token.transfer(user1, 100);
+      await token.approve(timedVote.address, 5, {from: user1});
+      await throws(async() => {
+        await timedVote.commit(100);
+      });
+    });
+
+    it('Succeed', async() => {
+      await token.transfer(user1, 100);
+      await token.approve(timedVote.address, 100, {from: user1});
+      await timedVote.commit(100);
+    });
+
+    it('Fail double commit', async() => {
+      await token.transfer(user1, 200);
+      await token.approve(timedVote.address, 200, {from: user1});
+      await timedVote.commit(100);
+      await throws(async() => {
+        await timedVote.commit(100);
+      });
+    });
+  });
 });

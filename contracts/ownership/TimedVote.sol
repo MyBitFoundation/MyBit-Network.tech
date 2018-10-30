@@ -48,6 +48,23 @@ contract TimedVote {
   // Interface
 
   /**
+   * Commit MYB to voting
+   * @notice
+   * Commits specified amount of your MYB to voting. Approve this contract with
+   * the token contract for the desired amount before calling. Fails if you
+   * already have an active commitment.
+   * @param _value - MYB amount to commit.
+   */
+  function commit(uint256 _value)
+  external
+  onlyUncommitted {
+    require(_value > 0, "Nonzero value required");
+    commitments[msg.sender] = Commitment(_value, now);
+    bool transferred = token.transferFrom(msg.sender, this, _value);
+    require(transferred, "Transfer failed");
+  }
+
+  /**
    * Check account committed
    * @param _account - Account to check.
    * @return committed - Whether the account has an active commitment.
