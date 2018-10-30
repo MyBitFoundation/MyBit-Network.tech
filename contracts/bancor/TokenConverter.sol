@@ -14,8 +14,6 @@ contract TokenConverter {
 
     IBancorNetwork bancorNetwork;
 
-    event Status(uint _statusCode);
-
     ///@notice initialise addresses needed for conversion
     constructor(IBancorNetwork _bancorNetwork) {
         bancorNetwork = _bancorNetwork;
@@ -32,7 +30,6 @@ contract TokenConverter {
         address _toToken,
         address _ether
         ) payable {
-        emit Status(101);
         IERC20Token token;
         IERC20Token[] memory path = new IERC20Token[](3);
         uint amount = _amount;
@@ -51,7 +48,6 @@ contract TokenConverter {
         path[0] = token;
         path[1] = toToken;
         path[2] = toToken;
-        emit Status(100);
         uint convertedValue = IBancorNetwork(bancorNetwork).convert.value(value)(
             path,
             amount,
