@@ -18,6 +18,11 @@ contract TimedVote {
 
   using SafeMath for uint256;
 
+  // --------
+  // Constant
+
+  address constant NULL_ADDRESS = address(0);   // Null address
+
   // ----
   // Type
 
