@@ -34,6 +34,20 @@ contract('TimedVote', () => {
     timedVote = await TimedVote.new(token.address);
   });
 
+  // ---------
+  // Construct
+  // ---------
+
+  describe('Construct', () => {
+    it('Succeed', async() => {
+      await TimedVote.new(token.address);
+    });
+
+    it('Fail with null token address', throws(async() => {
+      await TimedVote.new(NULL_ADDRESS);
+    }));
+  });
+
   // --------------
   // Pure Condition
   // --------------

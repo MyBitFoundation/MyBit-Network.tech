@@ -56,7 +56,8 @@ contract TimedVote {
    * @param _tokenAddress - MYB token contract address.
    */
   constructor(address _tokenAddress)
-  public {
+  public
+  onlyValidAddress(_tokenAddress) {
     token = BurnableToken(_tokenAddress);
   }
 
