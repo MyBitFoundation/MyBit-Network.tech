@@ -30,6 +30,18 @@ function throws (executor) {
 
 
 contract('TimedVote', () => {
+  describe('~isNullAddress', () => {
+    it('Null', async() => {
+      const nullAddress = await timedVote._isNullAddress(NULL_ADDRESS);
+      assert.isTrue(nullAddress);
+    });
+
+    it('Nonnull', async() => {
+      const nullAddress = await timedVote._isNullAddress(validAddress);
+      assert.isFalse(nullAddress);
+    });
+  });
+
   describe('#accountCommitted', () => {
     it('Uncommitted', async() => {
       const committed = await timedVote.accountCommitted(user1);
@@ -144,18 +156,6 @@ contract('TimedVote', () => {
       await timedVote._setCommitment(user1, 100);
       const result = await timedVote.commitment.call(user1);
       assert.isTrue(BigNumber(result).isEqualTo(100));
-    });
-  });
-
-  describe('~isNullAddress', () => {
-    it('Null', async() => {
-      const nullAddress = await timedVote._isNullAddress(NULL_ADDRESS);
-      assert.isTrue(nullAddress);
-    });
-
-    it('Nonnull', async() => {
-      const nullAddress = await timedVote._isNullAddress(validAddress);
-      assert.isFalse(nullAddress);
     });
   });
 });
