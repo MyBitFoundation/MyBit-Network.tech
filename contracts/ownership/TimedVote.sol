@@ -62,7 +62,7 @@ contract TimedVote {
    */
   constructor(address _tokenAddress, uint256 _voteDuration)
   public
-  onlyValidAddress(_tokenAddress)
+  onlyValid(_tokenAddress)
   onlyPositive(_voteDuration) {
     token = BurnableToken(_tokenAddress);
     voteDuration = _voteDuration;
@@ -195,7 +195,7 @@ contract TimedVote {
    * Throws if the specified address is the null address.
    * @param _address - Address that must be valid.
    */
-  modifier onlyValidAddress(address _address) {
+  modifier onlyValid(address _address) {
     require(
       !addressNull(_address),
       "Valid address required"

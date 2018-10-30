@@ -38,7 +38,7 @@ contract TimedVoteFixture is TimedVote {
   function _onlyValidAddress(address _address)
   external
   pure
-  onlyValidAddress(_address) {}
+  onlyValid(_address) {}
 
   /**
    * Set account commitment

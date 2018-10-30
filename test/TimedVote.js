@@ -131,7 +131,7 @@ contract('TimedVote', () => {
       }));
     });
 
-    describe('~onlyValidAddress', () => {
+    describe('~onlyValid(address)', () => {
       it('Accept valid', async() => {
         await timedVote._onlyValidAddress(validAddress);
       });
