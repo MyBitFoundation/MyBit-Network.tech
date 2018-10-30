@@ -11,6 +11,8 @@ import "../math/SafeMath.sol";
  * tokens are locked for longer periods. A proposal closes after 15 days. It
  * passes if a 20% quorum of total MYB supply voted and 51% of weighted votes
  * approved.
+ *
+ * Provide the address of the MYB token contract.
  */
 contract TimedVote {
   // -------
