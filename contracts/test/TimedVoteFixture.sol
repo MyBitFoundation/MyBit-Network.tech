@@ -22,6 +22,12 @@ contract TimedVoteFixture is TimedVote {
   view
   onlyCommitted(msg.sender) {}
 
+  /** Require number positive */
+  function _onlyPositive(uint256 _number)
+  external
+  pure
+  onlyPositive(_number) {}
+
   /** Require sender uncommitted */
   function _onlyUncommitted()
   external

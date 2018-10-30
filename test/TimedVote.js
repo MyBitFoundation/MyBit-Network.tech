@@ -101,6 +101,20 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('~onlyPositive', () => {
+      it('Accept positive', async() => {
+        await timedVote._onlyPositive(55);
+      });
+
+      it('Accept 1', async() => {
+        await timedVote._onlyPositive(1);
+      });
+
+      it('Reject 0', throws(async() => {
+        await timedVote._onlyPositive(0);
+      }));
+    });
+
     describe('~onlyUncommitted', () => {
       it('Accept uncommitted', async() => {
         await timedVote._onlyUncommitted();

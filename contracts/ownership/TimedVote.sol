@@ -155,6 +155,20 @@ contract TimedVote {
   }
 
   /**
+   * Require number positive
+   * @dev
+   * Throws if the specified number is not positive.
+   * @param _number - Number that must be positive.
+   */
+  modifier onlyPositive(uint256 _number) {
+    require(
+      _number > 0,
+      "Positive number required"
+    );
+    _;
+  }
+
+  /**
    * Require account uncommitted
    * @dev
    * Throws if the specified account has an active commitment.
