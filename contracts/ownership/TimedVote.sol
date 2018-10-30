@@ -144,6 +144,23 @@ contract TimedVote {
     return (_address == NULL_ADDRESS);
   }
 
+  /**
+   * Check commitment locked
+   * @notice
+   * A commitment is locked if its age is within the vote duration.
+   * @dev
+   * Assumes the specified account has an active commitment.
+   * @param _account - Account owning commitment to check.
+   * @return locked - Whether commitment of the specified account is locked.
+   */
+  function commitmentLocked(address _account)
+  internal
+  view
+  returns (bool locked) {
+    uint256 age = now.sub(commitments[_account].time);
+    return (age <= voteDuration);
+  }
+
   // --------
   // Modifier
 

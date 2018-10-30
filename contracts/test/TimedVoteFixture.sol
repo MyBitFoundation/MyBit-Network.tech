@@ -22,6 +22,14 @@ contract TimedVoteFixture is TimedVote {
     return addressNull(_address);
   }
 
+  /** Check commitment locked */
+  function _commitmentLocked(address _account)
+  external
+  view
+  returns (bool locked) {
+    return commitmentLocked(_account);
+  }
+
   /** Require sender committed */
   function _onlyCommitted()
   external
