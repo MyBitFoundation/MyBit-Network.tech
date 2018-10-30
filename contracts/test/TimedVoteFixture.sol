@@ -3,10 +3,16 @@ pragma solidity 0.4.24;
 import "../ownership/TimedVote.sol";
 
 contract TimedVoteFixture is TimedVote {
+  // -----------
+  // Constructor
+
   /** Relay all arguments */
   constructor(address _tokenAddress, uint256 _voteDuration)
   public
   TimedVote(_tokenAddress, _voteDuration) {}
+
+  // --------
+  // Revealer
 
   /** Check address null */
   function _addressNull(address _address)
@@ -39,6 +45,9 @@ contract TimedVoteFixture is TimedVote {
   external
   pure
   onlyValid(_address) {}
+
+  // ------
+  // Writer
 
   /**
    * Set account commitment
