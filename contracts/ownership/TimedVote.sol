@@ -123,7 +123,7 @@ contract TimedVote {
    * @dev
    * Throws if the sender does not have an active commitment.
    */
-  modifier onlyCommitted {
+  modifier onlyCommitted() {
     require(
       accountCommitted(msg.sender),
       "Commitment required"
@@ -136,7 +136,7 @@ contract TimedVote {
    * @dev
    * Throws if the sender has an active commitment.
    */
-  modifier onlyUncommitted {
+  modifier onlyUncommitted() {
     require(
       !accountCommitted(msg.sender),
       "Commitment disallows"
