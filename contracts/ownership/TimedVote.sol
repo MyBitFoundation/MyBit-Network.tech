@@ -110,7 +110,7 @@ contract TimedVote {
   external
   view
   returns (uint256 value) {
-      return commitments[_account].value;
+    return commitments[_account].value;
   }
 
   /**
