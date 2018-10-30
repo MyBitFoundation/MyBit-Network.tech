@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import './AccessHierarchy.sol';
 
@@ -8,14 +8,15 @@ import './AccessHierarchy.sol';
 
 contract KYC is AccessHierarchy {
 
-  constructor(address _database) public AccessHierarchy(_database){}
+  constructor(address _database, address _events) public AccessHierarchy(_database, _events){}
 
   // @notice Owner can approve KYC for user
   function approveKYC(address _user)
   onlyOwner
   external {
     database.setBool(keccak256(abi.encodePacked("kycApproved", _user)), true);
-    emit LogKYCApproved(msg.sender, _user);
+    events.transaction('KYC Approved', msg.sender, _user, 0, '');
+    //emit LogKYCApproved(msg.sender, _user);
   }
 
   // @notice Owner can approve KYC for user

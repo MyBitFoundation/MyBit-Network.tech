@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for crowdsale/CrowdsaleEther.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">crowdsale/</a> CrowdsaleEther.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>40/40</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">80% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>24/30</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>13/13</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>59/59</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">  pragma solidity ^0.4.24;
+&nbsp;
+  import "../math/SafeMath.sol";
+  import "../interfaces/DBInterface.sol";
+  import "../tokens/erc20/DividendToken.sol";         // Change to Mintable or Burnable if needed
+&nbsp;
+&nbsp;
+  // @title An asset crowdsale contract.
+  // @author Kyle Dewhurst, MyBit Foundation
+  // @notice creates a dividend token to represent the newly created asset.
+  contract CrowdsaleEther{
+    using SafeMath for uint256;
+&nbsp;
+    DBInterface public database;
+&nbsp;
+    // @notice Constructor: Initiates the database
+    // @param: The address for the database contract
+    constructor(address _database)
+    public {
+        database = DBInterface(_database);
+    }
+&nbsp;
+    // @notice brokers can initiate a crowdfund for a new asset here
+    // @dev this crowdsale contract is granted the whole supply to distribute to investors
+    // @dev can lookup the amount of escrow in the database with sha3("brokerEscrow", assetID)
+    function createAssetOrder(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, uint _brokerFee)
+    external {
+      address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID)));
+      <span class="missing-if-branch" title="else path not taken" >E</span>require(operatorAddress != address(0));
+      bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
+      require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
+      DividendToken newAsset = new DividendToken(_assetURI, address(this));   // Gives this contract all new asset tokens
+      database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
+      database.setUint(keccak256(abi.encodePacked("amountToRaise", assetID)), _amountToRaise);
+      database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(newAsset));
+      database.setAddress(keccak256(abi.encodePacked("broker", assetID)), msg.sender);
+      database.setUint(keccak256(abi.encodePacked("brokerFee", assetID)), _brokerFee);     // Percentage of income that goes to broker
+      database.setAddress(keccak256(abi.encodePacked("operator", assetID)), operatorAddress);
+      emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, address(newAsset));
+    }
+&nbsp;
+    // @notice Users can send Ether here to fund asset if the deadline has not already passed.
+    function buyAssetOrder(bytes32 _assetID)
+    external
+    payable
+    requiresEther
+    beforeDeadline(_assetID)
+    notFinished(_assetID)
+    returns (bool) {
+      DividendToken thisToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+      uint brokerPercent = database.uintStorage(keccak256(abi.encodePacked("brokerFee", _assetID)));
+      uint investorPercent = uint(100).sub(brokerPercent);
+      uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID)));
+      uint tokensRemaining = amountToRaise.mul(investorPercent).div(100).sub(thisToken.totalSupply()); //Amount to raise minus the broker's percent
+      if (msg.value.mul(investorPercent).div(100) &gt;= tokensRemaining) {
+        database.setBool(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)), true);
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(thisToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens
+        uint brokerTokens = amountToRaise.mul(brokerPercent).div(100);
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(thisToken.mint(database.addressStorage(keccak256(abi.encodePacked("broker", _assetID))), brokerTokens));
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(thisToken.finishMinting());
+        require(payout(_assetID, thisToken.totalSupply()));          // 1 token = 1 wei
+        msg.sender.transfer(msg.value.sub(tokensRemaining.mul(100).div(investorPercent)));     // Return leftover WEI
+        //This bool is set to true to make it a valid token on the DAX.
+        database.setBool(keccak256(abi.encodePacked("assetTradeable", _assetID)), true);
+      }
+      else {
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(thisToken.mint(msg.sender, msg.value.mul(investorPercent).div(100)));
+      }
+      emit LogAssetPurchased(_assetID, msg.sender, msg.value);
+      return true;
+    }
+&nbsp;
+&nbsp;
+    // @notice Contributors can retrieve their funds here if crowdsale has paased deadline
+    // TODO: call this on receiveApproval() so we can do it in a single transaction?
+    function refund(bytes32 _assetID)
+    external
+    whenNotPaused
+    afterDeadline(_assetID)
+    notFinished(_assetID)
+    returns (bool) {
+      DividendToken assetToken = DividendToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+      //uint tokensRemaining = assetToken.balanceOf(address(this));
+      uint refundValue = assetToken.totalSupply(); //token=wei
+      database.setBool(keccak256(abi.encodePacked("crowdsaleFinished", _assetID)), true);
+      assetToken.issueDividends.value(refundValue)();
+      return true;
+    }
+&nbsp;
+    // @notice platform owners can destroy contract here
+    function destroy()
+    onlyOwner
+    public {
+      emit LogDestruction(address(this).balance, msg.sender);
+      selfdestruct(msg.sender);
+    }
+&nbsp;
+    // @notice fallback function: reject ether
+    function ()
+    public
+    payable {
+      revert();
+    }
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    //                                            Internal Functions
+    //------------------------------------------------------------------------------------------------------------------
+&nbsp;
+    // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where operator/broker can withdraw
+    // @dev The contract manager needs to know  the address PlatformDistribution contract
+    function payout(bytes32 _assetID, uint _amount)
+    internal
+    whenNotPaused
+    returns (bool) {
+      address operator = database.addressStorage(keccak256(abi.encodePacked("operator", _assetID)));
+      address platformWallet = database.addressStorage(keccak256(abi.encodePacked("platformWallet")));
+      assert (operator != address(0) &amp;&amp; platformWallet != address(0));
+      uint operatorPortion = _amount.mul(99).div(100);          // Give operator 99%
+      uint platformPortion = _amount.sub(operatorPortion);      // Give platform 1%
+      operator.transfer(operatorPortion);
+      platformWallet.transfer(platformPortion);
+      emit LogAssetPayout(_assetID, operator, _amount);
+      return true;
+    }
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    //                                            Modifiers
+    //------------------------------------------------------------------------------------------------------------------
+&nbsp;
+&nbsp;
+    // @notice Requires that Ether is sent with the transaction
+    modifier requiresEther() {
+      <span class="missing-if-branch" title="else path not taken" >E</span>require(msg.value &gt; 0);
+      _;
+    }
+&nbsp;
+    // @notice Sender must be a registered owner
+    modifier onlyOwner {
+      require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
+      _;
+    }
+&nbsp;
+    // @notice function won't run if owners have paused this contract
+    modifier whenNotPaused {
+      require(!database.boolStorage(keccak256(abi.encodePacked("paused", address(this)))));
+      _;
+    }
+&nbsp;
+&nbsp;
+    // @notice reverts if the funding deadline has already past
+    modifier beforeDeadline(bytes32 _assetID) {
+      require(now &lt;= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
+      _;
+    }
+&nbsp;
+    // @notice reverts if the funding deadline has already past
+    modifier afterDeadline(bytes32 _assetID) {
+      require(now &gt; database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
+      _;
+    }
+&nbsp;
+    // @notice returns true if crowdsale is not finshed
+    modifier notFinished(bytes32 _assetID) {
+      require( !database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinished", _assetID))) );
+      _;
+    }
+&nbsp;
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    //                                            Events
+    //------------------------------------------------------------------------------------------------------------------
+&nbsp;
+    event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _broker, string _tokenURI, address indexed _tokenAddress);
+    event LogAssetPurchased(bytes32 indexed _assetID, address indexed _sender, uint _amount);
+    event LogRefund(bytes32 indexed _assetID, address indexed _funder, uint _amount);
+    event LogAssetPayout(bytes32 indexed _assetID, address indexed _distributionContract, uint _amount);
+    event LogDestruction(uint _amountSent, address indexed _caller);
+  }
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Sep 21 2018 09:39:17 GMT-0700 (PDT)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

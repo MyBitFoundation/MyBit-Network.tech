@@ -110,5 +110,4 @@ contract AssetGovernance {
     _;
   }
 
-  event LogConsensus(bytes32 votesID, uint votes, uint tokens, bytes32 executionID, uint quorum);
 }

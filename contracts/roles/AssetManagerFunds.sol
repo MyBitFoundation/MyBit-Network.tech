@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import "../interfaces/ERC20.sol";
 import "../interfaces/DBInterface.sol";
@@ -29,7 +29,7 @@ contract AssetManagerFunds {
   }
 
   // @notice asset manager can withdraw his dividend fee from assets here
-  // @param : bytes32 _assetID = the ID of this asset on the platform 
+  // @param : bytes32 _assetID = the ID of this asset on the platform
   function withdraw(bytes32 _assetID)
   external
   nonReentrant

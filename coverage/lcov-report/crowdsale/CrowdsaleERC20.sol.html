@@ -20,9 +20,9 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">88.37% </span>
+        <span class="strong">90.24% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>38/43</span>
+        <span class='fraction'>37/41</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">66.67% </span>
@@ -35,9 +35,9 @@
         <span class='fraction'>11/14</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">88.14% </span>
+        <span class="strong">88.33% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>52/59</span>
+        <span class='fraction'>53/60</span>
       </div>
     </div>
   </div>
@@ -233,7 +233,13 @@
 188
 189
 190
-191</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+191
+192
+193
+194
+195
+196
+197</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -255,8 +261,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2×</span>
-<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -288,6 +297,7 @@
 <span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -331,6 +341,7 @@
 <span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -348,6 +359,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -423,13 +435,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity 0.4.24;
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity ^0.4.24;
 &nbsp;
 import "../math/SafeMath.sol";
 import "../interfaces/ERC20.sol";
 import "../interfaces/DBInterface.sol";
 import "../interfaces/ERC20DividendInterface.sol";
 import "../access/ERC20Burner.sol";
+import "../database/Events.sol";
 &nbsp;
 // @title An asset crowdsale contract which accepts funding from ERC20 tokens.
 // @notice Begins a crowdfunding period for a digital asset, minting asset dividend tokens to investors when particular ERC20 token is received
@@ -439,13 +452,15 @@ contract CrowdsaleERC20{
   using SafeMath for uint256;
 &nbsp;
   DBInterface public database;
+  Events public events;
   ERC20Burner public burner;
 &nbsp;
   // @notice Constructor: initializes database instance
   // @param: The address for the platform database
-  constructor(address _database)
+  constructor(address _database, address _events)
   public{
       database = DBInterface(_database);
+      events = Events(_events);
       burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 &nbsp;
@@ -477,7 +492,8 @@ contract CrowdsaleERC20{
       <span class="missing-if-branch" title="else path not taken" >E</span>require(fundingToken.transferFrom(msg.sender, address(this), _amount));
       <span class="missing-if-branch" title="else path not taken" >E</span>require(assetToken.mint(msg.sender, _amount));
     }
-    emit LogAssetPurchased(_assetID, msg.sender, _amount); //Should amount listed be how much they spent or how much they received?
+    events.transaction('Asset purchased', msg.sender, address(this), _amount, _assetID);
+    //emit LogAssetPurchased(_assetID, msg.sender, _amount); //Should amount listed be how much they spent or how much they received?
     return true;
   }
 &nbsp;
@@ -520,7 +536,8 @@ contract CrowdsaleERC20{
     uint platformPortion = _amount.sub(operatorPortion);
     fundingToken.transfer(platformWallet, platformPortion);
     fundingToken.transfer(operator, operatorPortion);
-    emit LogAssetPayout(_assetID, operator, _amount);
+    events.transaction('Asset payout', address(this), operator, _amount, _assetID);
+    //emit LogAssetPayout(_assetID, operator, _amount);
     return true;
   }
 &nbsp;
@@ -537,7 +554,8 @@ contract CrowdsaleERC20{
 <span class="fstat-no" title="function not covered" >  function destroy()</span>
   onlyOwner
   external {
-<span class="cstat-no" title="statement not covered" >    emit LogDestruction(address(this).balance, msg.sender);</span>
+    events.transaction('CrowdsaleERC20 destroyed', address(this), msg.sender, address(this).balance, '');
+    //emit LogDestruction(address(this).balance, msg.sender);
 <span class="cstat-no" title="statement not covered" >    selfdestruct(msg.sender)</span>;
   }
 &nbsp;
@@ -607,11 +625,11 @@ contract CrowdsaleERC20{
   //------------------------------------------------------------------------------------------------------------------
   //                                            Events
   //------------------------------------------------------------------------------------------------------------------
-&nbsp;
+  /*
   event LogAssetPurchased(bytes32 indexed _assetID, address indexed _sender, uint _amount);
   event LogAssetPayout(bytes32 indexed _assetID, address indexed _operator, uint _amount);
   event LogDestruction(uint _amountSent, address indexed _caller);
-  event LogAssetInfo(uint _investorAmount, uint _tokensRemaining);
+  */
 }
 &nbsp;</pre></td></tr>
 </table></pre>
@@ -619,7 +637,7 @@ contract CrowdsaleERC20{
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Oct 23 2018 17:09:37 GMT-0700 (PDT)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Oct 29 2018 17:26:07 GMT-0700 (PDT)
 </div>
 </div>
 <script src="../prettify.js"></script>

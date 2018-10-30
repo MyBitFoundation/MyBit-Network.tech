@@ -1,6 +1,7 @@
 var BigNumber = require('bignumber.js');
 
 const Database = artifacts.require('./database/Database.sol');
+const Events = artifacts.require('./database/Events.sol');
 const ContractManager = artifacts.require('./database/ContractManager.sol');
 const Expirable = artifacts.require('./access/Expirable.sol');
 
@@ -11,6 +12,7 @@ contract('Access Hierarchy', async (accounts) => {
   const user = web3.eth.accounts[1];
 
   let database;
+  let events;
   let contractManager;
   let expirable;
 
@@ -18,8 +20,12 @@ contract('Access Hierarchy', async (accounts) => {
     database = await Database.new([owner], true);
   });
 
+  it('Deploy Events', async() => {
+    events = await Events.new(database.address);
+  });
+
   it('Deploy contract manage contract', async() => {
-    contractManager = await ContractManager.new(database.address);
+    contractManager = await ContractManager.new(database.address, events.address);
   });
 
   it('Set contract manager', async() => {
@@ -32,7 +38,7 @@ contract('Access Hierarchy', async (accounts) => {
   });
 
   it('Deploy access', async() => {
-    expirable = await Expirable.new(database.address);
+    expirable = await Expirable.new(database.address, events.address);
     await contractManager.addContract('Expirable', expirable.address);
   });
 

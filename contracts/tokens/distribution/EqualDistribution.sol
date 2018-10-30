@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import '../../math/SafeMath.sol';
 import '../../interfaces/PullPayment.sol';
@@ -21,7 +21,7 @@ contract EqualDistribution {
   // @param (address) _beneficiary = The ETH address of who is to receive the income. Could be a distribution contract.
   constructor(address[] _beneficiaries)
   public{
-    require(_beneficiaries.length < 200); 
+    require(_beneficiaries.length < 200);
     beneficiaries = _beneficiaries;
   }
 

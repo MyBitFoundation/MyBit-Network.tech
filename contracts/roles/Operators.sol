@@ -1,14 +1,17 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import '../database/Database.sol';
+import '../database/Events.sol';
 import '../math/SafeMath.sol';
 
 contract Operators {
 
   Database private database;
+  Events private events;
 
-  constructor(address _database) public {
+  constructor(address _database, address _events) public {
     database = Database(_database);
+    events = Events(_events);
   }
 
   // @notice allows the platform owners to onboard a new operator.
@@ -21,7 +24,8 @@ contract Operators {
     require(database.addressStorage(keccak256(abi.encodePacked("operator", operatorID))) == address(0));
     database.setAddress(keccak256(abi.encodePacked("operator", operatorID)), _operatorAddress);
     database.setBytes32(keccak256(abi.encodePacked("operator", _operatorAddress)), operatorID);
-    emit LogOperatorRegistered(operatorID, _operatorURI);
+    events.operator('Operator registered', operatorID, _operatorURI, _operatorAddress);
+    //emit LogOperatorRegistered(operatorID, _operatorURI);
   }
 
   // @notice owners can remove operators from the platform here
@@ -29,7 +33,8 @@ contract Operators {
   external
   onlyOwner {
     database.deleteAddress(keccak256(abi.encodePacked("operator", _operatorID)));
-    emit LogOperatorRemoved(_operatorID, msg.sender);
+    events.operator('Operator removed', _operatorID, '', msg.sender);
+    //emit LogOperatorRemoved(_operatorID, msg.sender);
   }
 
 
@@ -41,7 +46,8 @@ contract Operators {
     require(msg.sender == oldAddress || database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
     database.deleteAddress(keccak256(abi.encodePacked("operator", _operatorID)));
     database.setAddress(keccak256(abi.encodePacked("operator", _operatorID)), _newAddress);
-    emit LogOperatorAddressChanged(_operatorID, msg.sender, _newAddress);
+    events.transaction('Operator address changed', oldAddress, _newAddress, 0, _operatorID);
+    //emit LogOperatorAddressChanged(_operatorID, msg.sender, _newAddress);
   }
 
   // @notice operator can choose which ERC20 tokens he's willing to accept as payment
@@ -82,12 +88,11 @@ contract Operators {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                                Events                                                                        //
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
+  /*
   event LogOperatorRegistered(bytes32 indexed _operatorID, string _operatorURI);
   event LogOperatorRemoved(bytes32 indexed _operatorID, address _owner);
   event LogOperatorAddressChanged(bytes32 indexed _operatorID, address _oldAddress, address _newAddress);
   event LogOperatorAcceptsToken(bytes32 indexed _operatorID, address _tokenAddress);
+  */
 
 }

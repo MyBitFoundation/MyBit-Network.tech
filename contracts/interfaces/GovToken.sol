@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 
 interface GovToken {
@@ -9,7 +9,7 @@ interface GovToken {
 
   function unlockTokens() external returns (bool);
 
-  function lockTokens() external returns (bool); 
+  function lockTokens() external returns (bool);
 
   function transfer(address _to, uint _amount) external returns (bool);
 

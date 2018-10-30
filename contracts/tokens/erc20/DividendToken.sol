@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import './MintableToken.sol';
 import '../../math/SafeMath.sol';
@@ -142,10 +142,6 @@ contract DividendToken is MintableToken {
         previousValuePerToken[_investor] = valuePerToken;
         _;
     }
-
-
-
-
 
     event LogIncomeReceived(address indexed _sender, uint _paymentAmount);
     event LogIncomeCollected(address _address, uint _amount);

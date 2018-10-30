@@ -2,6 +2,7 @@
 
   import "../math/SafeMath.sol";
   import "../interfaces/DBInterface.sol";
+  import "../database/Events.sol";
   import "../interfaces/DivToken.sol";
   import "../interfaces/BurnableERC20.sol";
 
@@ -14,14 +15,16 @@
     using SafeMath for uint256;
 
     DBInterface public database;
-
+    Events public events;
+    
     uint public consensus = 66;
 
     // @notice constructor: initializes database
     // @param: the address for the database contract used by this platform
-    constructor(address _database)
+    constructor(address _database, address _events)
     public {
       database = DBInterface(_database);
+      events = Events(_events);
     }
 
     // @dev assetID can be computed beforehand with sha3(msg.sender, _amountToRaise, _operatorID, _assetURI))
@@ -110,7 +113,8 @@
       require(BurnableERC20(tokenAddress).transferFrom(_assetManager, address(this), _amount));
       database.setUint(keccak256(abi.encodePacked("assetManagerEscrow", assetManagerEscrowID)), _amount);
       database.setAddress(keccak256(abi.encodePacked("assetManager", _assetID)), _assetManager);
-      emit LogEscrowLocked(_assetID, assetManagerEscrowID, _assetManager, _amount);
+      events.escrow('Escrow locked', _assetID, assetManagerEscrowID, _assetManager, _amount);
+      //emit LogEscrowLocked(_assetID, assetManagerEscrowID, _assetManager, _amount);
       return true;
     }
 
@@ -125,13 +129,15 @@
     modifier hasConsensus(bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash) {
       bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash))));
       uint256 numTokens = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))).totalSupply();
-      emit LogConsensus(numVotesID, database.uintStorage(numVotesID), numTokens, keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash)), database.uintStorage(numVotesID).mul(100).div(numTokens));
+      events.consensus('Current consensus', keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash)), numVotesID, database.uintStorage(numVotesID), numTokens, database.uintStorage(numVotesID).mul(100).div(numTokens));
+      //emit LogConsensus(numVotesID, database.uintStorage(numVotesID), numTokens, keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash)), database.uintStorage(numVotesID).mul(100).div(numTokens));
       require(database.uintStorage(numVotesID).mul(100).div(numTokens) >= consensus, 'Consensus not reached');
       _;
     }
 
+    /*
     event LogConsensus(bytes32 votesID, uint votes, uint tokens, bytes32 executionID, uint quorum);
     event LogEscrowBurned(bytes32 indexed _assetID, address indexed _assetManager, uint _amountBurnt);
     event LogEscrowLocked(bytes32 indexed _assetID, bytes32 indexed _assetManagerEscrowID, address indexed _assetManager, uint _amount);
-
+    */
 }
