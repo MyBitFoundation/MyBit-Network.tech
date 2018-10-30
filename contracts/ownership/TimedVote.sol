@@ -37,7 +37,7 @@ contract TimedVote {
   // Constructor
 
   /**
-   * @param _tokenAddress MYB token contract address.
+   * @param _tokenAddress - MYB token contract address.
    */
   constructor(address _tokenAddress)
   public {
