@@ -15,7 +15,7 @@ contract TimedVoteFixture is TimedVote {
    */
   function _setCommitment(address _account, uint256 _amount)
   external {
-    commitments[msg.sender].value = _amount;
-    commitments[msg.sender].time = now;
+    commitments[_account].value = _amount;
+    commitments[_account].time = now;
   }
 }
