@@ -117,11 +117,13 @@ contract TimedVote {
    * Withdraw committed MYB
    * @notice
    * Withdraws all of your committed MYB to the original address. Fails if you
-   * have no active commitment. Emits Withdraw on success.
+   * have no active commitment. Fails if your commitment is locked. Emits
+   * Withdraw on success.
    */
   function withdraw()
   external
-  onlyCommitted(msg.sender) {
+  onlyCommitted(msg.sender)
+  onlyUnlocked(msg.sender) {
     uint256 _value = commitments[msg.sender].value;
     delete commitments[msg.sender];
     bool transferred = token.transfer(msg.sender, _value);

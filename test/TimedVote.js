@@ -239,10 +239,18 @@ contract('TimedVote', () => {
         await timedVote.withdraw();
       }));
 
+      it('Fail with locked commitment', throws(async() => {
+        await token.transfer(user1, 100);
+        await token.approve(timedVote.address, 100, {from: user1});
+        await timedVote.commit(100);
+        await timedVote.withdraw();
+      }));
+
       it('Succeed', async() => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
         await timedVote.commit(100);
+        await timedVote._advanceCommitmentDays(user1, unlockDays);
         await timedVote.withdraw();
       });
 
@@ -250,6 +258,7 @@ contract('TimedVote', () => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
         await timedVote.commit(100);
+        await timedVote._advanceCommitmentDays(user1, unlockDays);
         const { logs: events } = await timedVote.withdraw();
         assert.isAtLeast(events.length, 1);
         const event = events.pop();
