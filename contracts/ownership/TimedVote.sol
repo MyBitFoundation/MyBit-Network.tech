@@ -79,7 +79,7 @@ contract TimedVote {
    */
   function commit(uint256 _value)
   external
-  onlyUncommitted {
+  onlyUncommitted(msg.sender) {
     require(_value > 0, "Nonzero value required");
     commitments[msg.sender] = Commitment(_value, now);
     bool transferred = token.transferFrom(msg.sender, this, _value);
@@ -133,13 +133,14 @@ contract TimedVote {
   }
 
   /**
-   * Require sender uncommitted
+   * Require account uncommitted
    * @dev
-   * Throws if the sender has an active commitment.
+   * Throws if the specified account has an active commitment.
+   * @param _account - Account that must be uncommitted.
    */
-  modifier onlyUncommitted() {
+  modifier onlyUncommitted(address _account) {
     require(
-      !accountCommitted(msg.sender),
+      !accountCommitted(_account),
       "Commitment disallows"
     );
     _;
