@@ -28,15 +28,15 @@ function throws (executor) {
 
 
 contract('TimedVote', () => {
-  describe('#isCommitted', () => {
+  describe('#accountCommitted', () => {
     it('Detect uncommitted', async() => {
-      const committed = await timedVote.isCommitted(user1);
+      const committed = await timedVote.accountCommitted(user1);
       assert.isFalse(committed);
     });
 
     it('Detect committed', async() => {
       await timedVote._setCommitment(user1, 5);
-      const committed = await timedVote.isCommitted(user1);
+      const committed = await timedVote.accountCommitted(user1);
       assert.isTrue(committed);
     });
   });

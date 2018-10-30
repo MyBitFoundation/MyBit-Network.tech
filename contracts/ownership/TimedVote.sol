@@ -58,6 +58,18 @@ contract TimedVote {
   // Interface
 
   /**
+   * Check account committed
+   * @param _account - Account to check.
+   * @return committed - Whether the account has an active commitment.
+   */
+  function accountCommitted(address _account)
+  public
+  view
+  returns (bool committed) {
+    return (commitments[_account].value > 0);
+  }
+
+  /**
    * Commit MYB to voting
    * @notice
    * Commits specified amount of your MYB to voting. Approve this contract with
@@ -88,18 +100,6 @@ contract TimedVote {
   }
 
   /**
-   * Check account committed
-   * @param _account - Account to check.
-   * @return committed - Whether the account has an active commitment.
-   */
-  function isCommitted(address _account)
-  public
-  view
-  returns (bool committed) {
-    return (commitments[_account].value > 0);
-  }
-
-  /**
    * Withdraw committed MYB
    * @notice
    * Withdraws all of your committed MYB to the original address. Fails if you
@@ -125,7 +125,7 @@ contract TimedVote {
    */
   modifier onlyCommitted {
     require(
-      isCommitted(msg.sender),
+      accountCommitted(msg.sender),
       "Commitment required"
     );
     _;
@@ -138,7 +138,7 @@ contract TimedVote {
    */
   modifier onlyUncommitted {
     require(
-      !isCommitted(msg.sender),
+      !accountCommitted(msg.sender),
       "Commitment disallows"
     );
     _;
