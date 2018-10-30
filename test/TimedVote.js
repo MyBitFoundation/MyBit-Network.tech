@@ -43,7 +43,7 @@ contract('TimedVote', () => {
     });
   });
 
-  describe('#onlyCommitted', () => {
+  describe('~onlyCommitted', () => {
     it('Reject uncommitted', throws(async() => {
       await timedVote._onlyCommitted();
     }));
@@ -54,7 +54,7 @@ contract('TimedVote', () => {
     });
   });
 
-  describe('#onlyUncommitted', () => {
+  describe('~onlyUncommitted', () => {
     it('Accept uncommitted', async() => {
       await timedVote._onlyUncommitted();
     });
