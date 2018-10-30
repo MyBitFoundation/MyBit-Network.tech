@@ -12,7 +12,7 @@ contract TimedVoteFixture is TimedVote {
   function _addressNull(address _address)
   external
   pure
-  returns (bool nullAddress) {
+  returns (bool null_) {
     return addressNull(_address);
   }
 

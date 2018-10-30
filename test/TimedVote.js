@@ -37,13 +37,13 @@ contract('TimedVote', () => {
   describe('Pure Condition', () => {
     describe('~addressNull', () => {
       it('Null', async() => {
-        const nullAddress = await timedVote._addressNull(NULL_ADDRESS);
-        assert.isTrue(nullAddress);
+        const null_ = await timedVote._addressNull(NULL_ADDRESS);
+        assert.isTrue(null_);
       });
 
       it('Nonnull', async() => {
-        const nullAddress = await timedVote._addressNull(validAddress);
-        assert.isFalse(nullAddress);
+        const null_ = await timedVote._addressNull(validAddress);
+        assert.isFalse(null_);
       });
     });
   });

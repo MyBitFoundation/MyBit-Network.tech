@@ -127,12 +127,12 @@ contract TimedVote {
   /**
    * Check address null
    * @param _address - Address to check.
-   * @return nullAddress - Whether the address is the null address.
+   * @return null_ - Whether the address is the null address.
    */
   function addressNull(address _address)
   internal
   pure
-  returns (bool nullAddress) {
+  returns (bool null_) {
     return (_address == NULL_ADDRESS);
   }
 
