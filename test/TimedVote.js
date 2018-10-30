@@ -13,11 +13,6 @@ const validAddress = '0xbaCc40C0Df5E6eC2B0A4e9d1A0F748473F7f8b1a';
 
 let token, timedVote;
 
-beforeEach(async() => {
-  token = await Token.new("MyBit", tokenSupply);
-  timedVote = await TimedVote.new(token.address);
-});
-
 
 function throws (executor) {
   return async() => {
@@ -30,6 +25,14 @@ function throws (executor) {
 
 
 contract('TimedVote', () => {
+  // ----
+  // Hook
+  // ----
+  beforeEach(async() => {
+    token = await Token.new("MyBit", tokenSupply);
+    timedVote = await TimedVote.new(token.address);
+  });
+
   // --------------
   // Pure Condition
   // --------------
