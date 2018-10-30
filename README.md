@@ -67,6 +67,18 @@ All contracts are found [here](contracts)
 ### [Database](contracts/database)
 Contracts in the SDK store all long-term data in a database contract, which allows for contracts to be upgraded without losing valuable data. The Database stores all data using a bytes32 type, which is often the keccak256 hash of the variableName, ID, address that make up that variable.
 
+The Database stores any data type under a bytes32 key:
+```javascript
+mapping(bytes32 => uint) public uintStorage;
+mapping(bytes32 => string) public stringStorage;
+mapping(bytes32 => address) public addressStorage;
+mapping(bytes32 => bytes) public bytesStorage;
+mapping(bytes32 => bytes32) public bytes32Storage;
+mapping(bytes32 => bool) public boolStorage;
+mapping(bytes32 => int) public intStorage;
+```
+
+
 Storing an integer looks like this:
 ```javascript
   database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), 20000000);
@@ -94,7 +106,17 @@ The API contract can be used to easily fetch variables from the database
 ```
 
 ### [ContractManagement](contracts/database/ContractManager.sol)
-To give a contract write access to the database, you must call `addContract(contractName, contractAddress)` from a platform owner account
+
+The Database restricts write access to only contract that are on the platform
+```javascript
+// Caller must be registered as a contract through ContractManager.sol
+modifier onlyApprovedContract() {
+    require(boolStorage[keccak256(abi.encodePacked("contract", msg.sender))]);
+    _;
+}
+```
+
+To give a contract write access to the database, you must call `addContract(contractName, contractAddress)` from a platform owner account:
 ```javascript
   function addContract(string _name, address _contractAddress)
   external
@@ -127,7 +149,16 @@ Every time a contract is added or updated the contract state will change, requir
 ```
 
 ### [TokenBurning](contracts/access/ERC20Burner.sol)
-To create new asset orders, or purchase existing asset orders, users must provably burn MYB using the [burner](contracts/access/ERC20Burner.sol). To do this each user must approve the burner contract to burn tokens by calling the MYB contract:
+To create new asset orders, or purchase existing asset orders, users must provably burn MYB using the [burner](contracts/access/ERC20Burner.sol). Functions that require burning have the `burnRequired` modifier:
+```javascript
+// @notice reverts if investor hasn't approved burner to burn platform token
+modifier burnRequired {
+  require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
+  _;
+}
+```
+
+To do this each user must approve the burner contract to burn tokens by calling the MYB contract:
 
 ```javascript
   function approve(address _spender, uint256 _value) public returns (bool) {
