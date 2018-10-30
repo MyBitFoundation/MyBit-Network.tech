@@ -27,6 +27,15 @@ contract TimedVote {
     uint256 time;                               // Commit instant
   }
 
+  // Proposal for the MYB community
+  struct Proposal {
+    uint256 start;                              // Create instant
+    uint256 voted;                              // Voting MYB amount
+    uint256 approval;                           // Weighted approval amount
+    uint256 dissent;                            // Weighted dissent amount
+    mapping(address => bool) voters;            // Voting accounts
+  }
+
   // -----
   // State
 
