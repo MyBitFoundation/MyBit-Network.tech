@@ -122,7 +122,7 @@ contract TimedVote {
    * Require account committed
    * @dev
    * Throws if the specified account does not have an active commitment.
-   * @param _account - Account to require commitment of.
+   * @param _account - Account that must be committed.
    */
   modifier onlyCommitted(address _account) {
     require(
