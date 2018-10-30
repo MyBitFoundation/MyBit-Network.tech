@@ -43,4 +43,19 @@ contract TimedVote {
   public {
     token = BurnableToken(_tokenAddress);
   }
+
+  // ---------
+  // Interface
+
+  /**
+   * Check account committed
+   * @param _account - Account to check.
+   * @return Whether the account has an active commitment.
+   */
+  function isCommitted(address _account)
+  public
+  view
+  returns (bool) {
+    return (commitments[_account].value > 0);
+  }
 }
