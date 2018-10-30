@@ -10,6 +10,7 @@ const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const tokenSupply = 180000000000000000000000000;
 const voteDurationDays = 15;
 const voteDuration = voteDurationDays * 24 * 60 * 60; // In seconds
+const unlockDays = voteDurationDays + 1;
 const validAddress = '0xbaCc40C0Df5E6eC2B0A4e9d1A0F748473F7f8b1a';
 
 
@@ -99,7 +100,7 @@ contract('TimedVote', () => {
 
       it('Unlocked', async() => {
         await timedVote._setCommitment(user1, 5);
-        await timedVote._advanceCommitmentDays(user1, voteDurationDays + 1);
+        await timedVote._advanceCommitmentDays(user1, unlockDays);
         const locked = await timedVote._commitmentLocked(user1);
         assert.isFalse(locked);
       });
@@ -150,7 +151,7 @@ contract('TimedVote', () => {
     describe('~onlyUnlocked', () => {
       it('Accept unlocked', async() => {
         await timedVote._setCommitment(user1, 5);
-        await timedVote._advanceCommitmentDays(user1, voteDurationDays + 1);
+        await timedVote._advanceCommitmentDays(user1, unlockDays);
         await timedVote._onlyUnlocked();
       });
 
