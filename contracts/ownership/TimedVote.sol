@@ -58,4 +58,20 @@ contract TimedVote {
   returns (bool committed) {
     return (commitments[_account].value > 0);
   }
+
+  // --------
+  // Modifier
+
+  /**
+   * Require sender committed
+   * @notice
+   * Throws if the sender does not have an active commitment.
+   */
+  modifier onlyCommitted {
+    require(
+      isCommitted(msg.sender),
+      "Commitment required"
+    );
+    _;
+  }
 }

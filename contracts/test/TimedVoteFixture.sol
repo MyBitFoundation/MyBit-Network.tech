@@ -8,6 +8,12 @@ contract TimedVoteFixture is TimedVote {
   public
   TimedVote(_tokenAddress) {}
 
+  /** Succeed if committed */
+  function _onlyCommitted()
+  external
+  view
+  onlyCommitted {}
+
   /**
    * Set account commitment
    * @param _account - Account to set commitment of.

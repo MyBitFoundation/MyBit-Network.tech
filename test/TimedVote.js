@@ -20,6 +20,26 @@ beforeEach(async() => {
 });
 
 
+function asyncThrows (executor) {
+  return async() => {
+    try {
+      await executor();
+      assert.fail();
+    } catch (e) {}
+  }
+}
+
+function asyncSucceeds (executor) {
+  return async() => {
+    try {
+      await executor();
+    } catch (e) {
+      assert.fail(e);
+    }
+  }
+}
+
+
 contract('TimedVote', () => {
   describe('#isCommitted', () => {
     it('Detect uncommitted', async() => {
@@ -32,5 +52,16 @@ contract('TimedVote', () => {
       const committed = await timedVote.isCommitted(user1);
       assert.isTrue(committed);
     });
+  });
+
+  describe('#onlyCommitted', () => {
+    it('Detect uncommitted', asyncThrows(async() => {
+      await timedVote._onlyCommitted();
+    }));
+
+    it('Detect committed', asyncSucceeds(async() => {
+      await timedVote._setCommitment(user1, 5);
+      await timedVote._onlyCommitted();
+    }));
   });
 });
