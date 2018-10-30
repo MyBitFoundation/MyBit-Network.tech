@@ -10,6 +10,7 @@ const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
+const AssetManagerFunds = artifacts.require("./roles/AssetManagerFunds.sol");
 const Pausible = artifacts.require("./ownership/Pausible.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
 const API = artifacts.require("./database/API.sol");
@@ -52,12 +53,13 @@ contract('Ether Crowdsale', async() => {
   let hash;
   let api;
   let platform;
+  let assetManagerFunds;
   let operators;
   let operatorID;
   let operatorHash;
   let assetID;
   let assetURI;
-  let tokenAddress;
+  let assetTokenAddress;
   let pausible;
 
   it('Deploy hash contract', async() => {
@@ -109,6 +111,11 @@ contract('Ether Crowdsale', async() => {
   it('Deploy burner contract', async() => {
     burner = await ERC20Burner.new(db.address, events.address);
     await cm.addContract("ERC20Burner", burner.address);
+  });
+
+  it('Deploy asset manager funds', async() => {
+    assetManagerFunds = await AssetManagerFunds.new(db.address);
+    await cm.addContract('AssetManagerFunds', assetManagerFunds.address);
   });
 
   it('Deploy pausible contract', async() => {
@@ -244,7 +251,7 @@ contract('Ether Crowdsale', async() => {
 
   it('Test dividends', async() => {
     operatorBalanceBefore = web3.eth.getBalance(operator);
-    await web3.eth.sendTransaction({from: operator, to: tokenAddress, value:10*ETH});
+    await web3.eth.sendTransaction({from: operator, to: assetTokenAddress, value:10*ETH});
     operatorBalanceAfter = web3.eth.getBalance(operator);
     console.log(Number(bn(operatorBalanceAfter).minus(operatorBalanceBefore).plus(bn(ETH).multipliedBy(10))));
   });
@@ -261,6 +268,13 @@ contract('Ether Crowdsale', async() => {
     await token.withdraw({from:user2});
     user2BalanceAfter = web3.eth.getBalance(user2);
     assert.equal(bn(user2BalanceAfter).isGreaterThan(user2BalanceBefore), true);
+  });
+
+  it('Asset manager withdraw dividends', async() => {
+    managerBalanceBefore = web3.eth.getBalance(assetManager);
+    await assetManagerFunds.withdraw(assetID, {from:assetManager});
+    managerBalanceAfter = web3.eth.getBalance(assetManager);
+    assert.equal(bn(managerBalanceAfter).isGreaterThan(managerBalanceBefore), true);
   });
 
   //Start failed funding
@@ -455,7 +469,7 @@ contract('Ether Crowdsale', async() => {
     let user3Tokens = await token.balanceOf(user3);
     let tokenSupply = await token.totalSupply()
     assert.equal(user3Tokens.eq(1), true);
-    assert.equal(await token.balanceOf(assetManager), 1);
+    assert.equal(await token.balanceOf(assetManager), 0);//This should round down to zero
     assert.equal(await token.mintingFinished(), true);
     assert.equal(await api.crowdsaleFinalized(assetID), true);
   });

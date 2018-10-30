@@ -2,6 +2,7 @@ var fs = require('fs');
 
 var BurnableToken = artifacts.require("./tokens/erc20/BurnableToken.sol");
 var Database = artifacts.require("./database/Database.sol");
+var Events = artifacts.require("./database/Events.sol");
 var ContractManager = artifacts.require("./database/ContractManager.sol");
 var API = artifacts.require("./database/API.sol");
 var SingleOwned = artifacts.require("./ownership/SingleOwned.sol");
@@ -12,6 +13,7 @@ var PlatformFunds = artifacts.require("./ecosystem/PlatformFunds.sol");
 var Operators = artifacts.require("./roles/Operators.sol");
 var AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
 var AssetManagerFunds = artifacts.require("./roles/AssetManagerFunds.sol");
+var AssetGenerator = artifacts.require("./ecosystem/AssetGenerator.sol");
 var CrowdsaleGeneratorETH = artifacts.require("./crowdsale/CrowdsaleGeneratorETH.sol");
 var CrowdsaleETH = artifacts.require("./crowdsale/CrowdsaleETH.sol");
 var CrowdsaleGeneratorERC20 = artifacts.require("./crowdsale/CrowdsaleGeneratorERC20.sol");
@@ -23,9 +25,9 @@ var decimals = 1000000000000000000;
 var tokenSupply = 100000*decimals;
 var tokenPerAccount = 100*decimals;
 
-var safemath, MyB, db, cm, api, owned, pausible, burner, access,
-    platform, operators, escrow, crowdsaleETH, crowdsaleGeneratorETH,
-    crowdsaleERC20, crowdsaleGeneratorERC20, dax;
+var safemath, MyB, db, events, cm, api, owned, pausible, burner, access,
+    platform, operators, escrow, managerFunds, assetGenerator, crowdsaleETH,
+    crowdsaleGeneratorETH, crowdsaleERC20, crowdsaleGeneratorERC20, dax;
 
 module.exports = function(deployer, network, accounts) {
   deployer.then(function(){
@@ -64,13 +66,21 @@ module.exports = function(deployer, network, accounts) {
     db = instance;
     console.log('Database.sol: ' + db.address);
 
-    return ContractManager.new(db.address);
+    return Events.new(db.address);
+
+  }).then(function(instance) {
+
+    events = instance;
+    console.log('Events.sol: ' + events.address);
+
+    return ContractManager.new(db.address, events.address);
 
   }).then(function(instance) {
 
     cm = instance;
     console.log('ContractManager.sol: ' + cm.address);
     db.enableContractManagement(cm.address);
+    // !!Remove for mainnet release!!
     cm.addContract('Owner', accounts[0]); //Give acounts[0] ability to write to database
 
     return API.new(db.address);
@@ -81,7 +91,7 @@ module.exports = function(deployer, network, accounts) {
     console.log('API.sol: ' + api.address);
     cm.addContract('API', api.address);
 
-    return SingleOwned.new(db.address);
+    return SingleOwned.new(db.address, events.address);
 
   }).then(function(instance) {
 
@@ -89,7 +99,7 @@ module.exports = function(deployer, network, accounts) {
     console.log('SingleOwned.sol: ' + owned.address);
     cm.addContract('SingleOwned', owned.address);
 
-    return Pausible.new(db.address);
+    return Pausible.new(db.address, events.address);
 
   }).then(function(instance) {
 
@@ -97,7 +107,7 @@ module.exports = function(deployer, network, accounts) {
     console.log('Pausible.sol: ' + pausible.address);
     cm.addContract('Pausible', pausible.address);
 
-    return PlatformFunds.new(db.address);
+    return PlatformFunds.new(db.address, events.address);
 
   }).then(function(instance) {
 
@@ -107,7 +117,7 @@ module.exports = function(deployer, network, accounts) {
     platform.setPlatformWallet(accounts[0]);
     platform.setPlatformToken(MyB.address);
 
-    return ERC20Burner.new(db.address);
+    return ERC20Burner.new(db.address, events.address);
 
   }).then(function(instance) {
 
@@ -122,7 +132,7 @@ module.exports = function(deployer, network, accounts) {
     //burner.setFee("buyAsset(bytes32, address, uint, uint)", 250); //AssetExchange
     //burner.setFee("createBuyOrder(bytes32, uint, uint)", 250); //AssetExchange
 
-    return Operators.new(db.address);
+    return Operators.new(db.address, events.address);
 
   }).then(function(instance) {
 
@@ -130,7 +140,7 @@ module.exports = function(deployer, network, accounts) {
     console.log('Operators.sol: ' + operators.address);
     cm.addContract('Operators', operators.address);
 
-    return AccessHierarchy.new(db.address);
+    return AccessHierarchy.new(db.address, events.address);
 
   }).then(function(instance) {
 
@@ -138,7 +148,7 @@ module.exports = function(deployer, network, accounts) {
     console.log('AccessHierarchy.sol: ' + access.address);
     cm.addContract('AccessHierarchy', access.address);
 
-    return AssetManagerEscrow.new(db.address);
+    return AssetManagerEscrow.new(db.address, events.address);
 
   }).then(function(instance) {
 
@@ -149,18 +159,18 @@ module.exports = function(deployer, network, accounts) {
     return AssetManagerFunds.new(db.address);
 
   }).then(function(instance) {
-    var managerFunds = instance;
+    managerFunds = instance;
     cm.addContract('AssetManagerFunds', managerFunds.address);
 
-    return CrowdsaleGeneratorETH.new(db.address);
-    
+    return CrowdsaleGeneratorETH.new(db.address, events.address);
+
   }).then(function(instance) {
 
     crowdsaleGeneratorETH = instance;
     console.log('CrowdsaleGeneratorETH.sol: ' + crowdsaleGeneratorETH.address);
     cm.addContract('CrowdsaleGeneratorETH', crowdsaleGeneratorETH.address);
 
-    return CrowdsaleETH.new(db.address);
+    return CrowdsaleETH.new(db.address, events.address);
 
   }).then(function(instance) {
 
@@ -168,7 +178,7 @@ module.exports = function(deployer, network, accounts) {
     console.log('CrowdsaleETH.sol: ' + crowdsaleETH.address);
     cm.addContract('CrowdsaleETH', crowdsaleETH.address);
 
-    return CrowdsaleGeneratorERC20.new(db.address);
+    return CrowdsaleGeneratorERC20.new(db.address, events.address);
 
   }).then(function(instance) {
 
@@ -177,7 +187,7 @@ module.exports = function(deployer, network, accounts) {
     cm.addContract('CrowdsaleGeneratorERC20', crowdsaleGeneratorERC20.address);
 
 
-    return CrowdsaleERC20.new(db.address);
+    return CrowdsaleERC20.new(db.address, events.address);
 
   }).then(function(instance) {
 
@@ -185,7 +195,15 @@ module.exports = function(deployer, network, accounts) {
     console.log('CrowdsaleERC20.sol: ' + crowdsaleERC20.address);
     cm.addContract('CrowdsaleERC20', crowdsaleERC20.address);
 
-    return AssetExchange.new(db.address);
+    return AssetGenerator.new(db.address, events.address);
+
+  }).then(function(instance) {
+
+    assetGenerator = instance;
+    console.log('AssetGenerator.sol: ' + assetGenerator.address);
+    cm.addContract('AssetGenerator', assetGenerator.address);
+
+    return AssetExchange.new(db.address, events.address);
 
   }).then(function(instance) {
 
@@ -193,11 +211,12 @@ module.exports = function(deployer, network, accounts) {
     console.log('AssetExchange.sol: ' + dax.address);
     cm.addContract('AssetExchange', dax.address);
 
+  }).then(function() {
+    //Set burning values
+
     for (var i = 0; i < accounts.length; i++){
       cm.setContractStatePreferences(true, true, {from: accounts[i]});
     }
-
-  }).then(function() {
 
     burner.setFee('0x667de2cd', crowdsaleGeneratorETH.address,  250); //CrowdsaleGeneratorETH
     burner.setFee('0xa71d4c6a', crowdsaleETH.address,  250); //CrowdsaleETH
@@ -205,14 +224,15 @@ module.exports = function(deployer, network, accounts) {
     burner.setFee('0xc9cd97eb', crowdsaleERC20.address,  250);
     burner.setFee('0xf08fa7b0', dax.address,  250);
     burner.setFee('0xf5e20d6f', dax.address,  250);
-    //burner.setFee('0xf76c5c55', assetGenerator.address,  250);
-    //burner.setFee('0x4e38c7f4', assetGenerator.address,  250);
+    burner.setFee('0xf76c5c55', assetGenerator.address,  250);
+    burner.setFee('0x4e38c7f4', assetGenerator.address,  250);
 
   }).then(function() {
     var addresses = {
       "MyBit" : MyB.address,
       "ERC20Burner" : burner.address,
       "Database" : db.address,
+      "Events" : events.address,
       "ContractManager" : cm.address,
       "API" : api.address,
       "SingleOwned" : owned.address,
@@ -221,6 +241,8 @@ module.exports = function(deployer, network, accounts) {
       "PlatformFunds" : platform.address,
       "Operators" : operators.address,
       "AssetManagerEscrow" : escrow.address,
+      "AssetManagerFunds" : managerFunds.address,
+      "AssetGenerator" : assetGenerator.address,
       "CrowdsaleETH" : crowdsaleETH.address,
       "CrowdsaleGeneratorETH" : crowdsaleGeneratorETH.address,
       "CrowdsaleERC20" : crowdsaleERC20.address,

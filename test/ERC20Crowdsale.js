@@ -9,6 +9,7 @@ const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Pausible = artifacts.require("./ownership/Pausible.sol");
+const AssetManagerFunds = artifacts.require("./roles/AssetManagerFunds.sol");
 const CrowdsaleGenerator = artifacts.require("./crowdsale/CrowdsaleGeneratorERC20.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
@@ -51,6 +52,7 @@ contract('ERC20 Crowdsale', async() => {
   let hash;
   let api;
   let platform;
+  let assetManagerFunds;
   let assetManagerFee;
   let operators;
   let operatorID;
@@ -108,6 +110,11 @@ contract('ERC20 Crowdsale', async() => {
   it('Deploy burner contract', async() => {
     burner = await ERC20Burner.new(db.address, events.address);
     await cm.addContract("ERC20Burner", burner.address);
+  });
+
+  it('Deploy asset manager funds', async() => {
+    assetManagerFunds = await AssetManagerFunds.new(db.address);
+    await cm.addContract('AssetManagerFunds', assetManagerFunds.address);
   });
 
   it('Deploy pausible contract', async() => {
@@ -295,6 +302,13 @@ contract('ERC20 Crowdsale', async() => {
     await assetToken.withdraw({from:user2});
     user2BalanceAfter = await erc20.balanceOf(user2);
     assert.equal(bn(user2BalanceAfter).isGreaterThan(user2BalanceBefore), true);
+  });
+
+  it('Asset Manager withdraw dividends', async() => {
+    managerBalanceBefore = await erc20.balanceOf(assetManager);
+    await assetManagerFunds.withdraw(assetID, {from:assetManager});
+    managerBalanceAfter = await erc20.balanceOf(assetManager);
+    assert.equal(bn(managerBalanceAfter).isGreaterThan(managerBalanceBefore), true);
   });
 
   //Start failed funding

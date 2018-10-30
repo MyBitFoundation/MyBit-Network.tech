@@ -176,7 +176,7 @@ contract('AssetManagerFunds', async() => {
     let balanceBefore = await web3.eth.getBalance(user1);
     console.log("withdraw dividends");
     let amountOwed = await divToken.getAmountOwed(user1);
-    let tx = await divToken.withdraw({from:user1});
+    await divToken.withdraw({from:user1});
     let balanceAfter = await web3.eth.getBalance(user1);
     assert.notEqual(balanceBefore, balanceAfter);
     //console.log(tx);
@@ -187,8 +187,7 @@ contract('AssetManagerFunds', async() => {
     let balanceBefore = await web3.eth.getBalance(assetManager);
     let amountOwed = await divToken.getAmountOwed(assetManagerFunds.address);
     assert.notEqual(amountOwed, 0);
-    let tx = await assetManagerFunds.retrieveAssetManagerETH(assetsETH, {from:assetManager, gas:6721975});
-    //console.log(tx);
+    await assetManagerFunds.retrieveAssetManagerETH(assetsETH, {from:assetManager, gas:6721975});
     let balanceAfter = await web3.eth.getBalance(assetManager);
     assert.equal(bn(balanceAfter).isGreaterThan(balanceBefore), true);
   });

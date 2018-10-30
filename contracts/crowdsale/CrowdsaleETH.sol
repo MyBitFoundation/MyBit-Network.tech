@@ -44,7 +44,7 @@ contract CrowdsaleETH {
       uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
       if (msg.value >= tokensRemaining) {
         // Give assetManager his portion of tokens
-        require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID)))));
+        require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID)))));
         require(finalizeCrowdsale(_assetID));    // delete unnecessary variables
         require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens
         require(assetToken.finishMinting());
