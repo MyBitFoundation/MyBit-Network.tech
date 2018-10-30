@@ -19,5 +19,5 @@ contract('TimedVote', async() => {
 
   it('Deploy TimedVote', async() => {
     timedVote = await TimedVote.new(token.address);
-  })
+  });
 });
