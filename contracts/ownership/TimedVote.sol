@@ -41,6 +41,7 @@ contract TimedVote {
 
   BurnableToken token;                          // MYB token contract
   mapping(address => Commitment) commitments;   // Active commitments
+  mapping(bytes32 => Proposal) proposals;       // Created proposals
 
   // -----------
   // Constructor
