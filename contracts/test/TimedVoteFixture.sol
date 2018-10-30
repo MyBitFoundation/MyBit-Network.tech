@@ -9,11 +9,11 @@ contract TimedVoteFixture is TimedVote {
   TimedVote(_tokenAddress) {}
 
   /** Check address null */
-  function _isNullAddress(address _address)
+  function _addressNull(address _address)
   external
   pure
   returns (bool nullAddress) {
-    return isNullAddress(_address);
+    return addressNull(_address);
   }
 
   /** Require sender committed */

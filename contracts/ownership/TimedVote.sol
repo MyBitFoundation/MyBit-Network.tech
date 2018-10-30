@@ -129,7 +129,7 @@ contract TimedVote {
    * @param _address - Address to check.
    * @return nullAddress - Whether the address is the null address.
    */
-  function isNullAddress(address _address)
+  function addressNull(address _address)
   internal
   pure
   returns (bool nullAddress) {
@@ -175,7 +175,7 @@ contract TimedVote {
    */
   modifier onlyValidAddress(address _address) {
     require(
-      !isNullAddress(_address),
+      !addressNull(_address),
       "Valid address required"
     );
     _;
