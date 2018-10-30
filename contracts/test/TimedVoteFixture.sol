@@ -8,6 +8,14 @@ contract TimedVoteFixture is TimedVote {
   public
   TimedVote(_tokenAddress) {}
 
+  /** Check address null */
+  function _isNullAddress(address _address)
+  external
+  pure
+  returns (bool nullAddress) {
+    return isNullAddress(_address);
+  }
+
   /** Require sender committed */
   function _onlyCommitted()
   external

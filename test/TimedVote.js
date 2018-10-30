@@ -6,7 +6,9 @@ const TimedVote = artifacts.require('TimedVoteFixture');
 
 const user1 = web3.eth.accounts[0];
 
+const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const tokenSupply = 180000000000000000000000000;
+const validAddress = '0xbaCc40C0Df5E6eC2B0A4e9d1A0F748473F7f8b1a';
 
 
 let token, timedVote;
@@ -142,6 +144,18 @@ contract('TimedVote', () => {
       await timedVote._setCommitment(user1, 100);
       const result = await timedVote.commitment.call(user1);
       assert.isTrue(BigNumber(result).isEqualTo(100));
+    });
+  });
+
+  describe('~isNullAddress', () => {
+    it('Null', async() => {
+      const nullAddress = await timedVote._isNullAddress(NULL_ADDRESS);
+      assert.isTrue(nullAddress);
+    });
+
+    it('Nonnull', async() => {
+      const nullAddress = await timedVote._isNullAddress(validAddress);
+      assert.isFalse(nullAddress);
     });
   });
 });
