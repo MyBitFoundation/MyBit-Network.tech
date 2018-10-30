@@ -155,12 +155,12 @@ contract('TimedVote', () => {
     });
 
     describe('#commitment', () => {
-      it('Find 0 commitment', async() => {
+      it('No commitment', async() => {
         const result = await timedVote.commitment.call(user1);
         assert.isTrue(BigNumber(result).isEqualTo(0));
       });
 
-      it('Find nonzero commitment', async() => {
+      it('Commitment', async() => {
         await timedVote._setCommitment(user1, 100);
         const result = await timedVote.commitment.call(user1);
         assert.isTrue(BigNumber(result).isEqualTo(100));
