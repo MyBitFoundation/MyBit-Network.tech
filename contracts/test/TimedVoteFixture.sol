@@ -4,9 +4,9 @@ import "../ownership/TimedVote.sol";
 
 contract TimedVoteFixture is TimedVote {
   /** Relay all arguments */
-  constructor(address _tokenAddress)
+  constructor(address _tokenAddress, uint256 _voteDuration)
   public
-  TimedVote(_tokenAddress) {}
+  TimedVote(_tokenAddress, _voteDuration) {}
 
   /** Check address null */
   function _addressNull(address _address)

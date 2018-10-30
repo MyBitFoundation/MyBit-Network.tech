@@ -12,7 +12,8 @@ import "../math/SafeMath.sol";
  * passes if a 20% quorum of total MYB supply voted and 51% of weighted votes
  * approved.
  *
- * Provide the address of the MYB token contract.
+ * Provide the address of the MYB token contract and vote duration. Voting for
+ * each proposal will be open for the specified duration.
  */
 contract TimedVote {
   // -------
@@ -56,11 +57,15 @@ contract TimedVote {
 
   /**
    * @param _tokenAddress - MYB token contract address.
+   * @param _voteDuration - Vote duration. Voting period of each proposal.
+   *     Must be positive.
    */
-  constructor(address _tokenAddress)
+  constructor(address _tokenAddress, uint256 _voteDuration)
   public
-  onlyValidAddress(_tokenAddress) {
+  onlyValidAddress(_tokenAddress)
+  onlyPositive(_voteDuration) {
     token = BurnableToken(_tokenAddress);
+    voteDuration = _voteDuration;
   }
 
   // ---------

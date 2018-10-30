@@ -8,6 +8,7 @@ const user1 = web3.eth.accounts[0];
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const tokenSupply = 180000000000000000000000000;
+const voteDuration = 15 * 24 * 60 * 60; // 15 days
 const validAddress = '0xbaCc40C0Df5E6eC2B0A4e9d1A0F748473F7f8b1a';
 
 
@@ -31,7 +32,7 @@ contract('TimedVote', () => {
 
   beforeEach(async() => {
     token = await Token.new("MyBit", tokenSupply);
-    timedVote = await TimedVote.new(token.address);
+    timedVote = await TimedVote.new(token.address, voteDuration);
   });
 
   // ---------
@@ -40,11 +41,15 @@ contract('TimedVote', () => {
 
   describe('Construct', () => {
     it('Succeed', async() => {
-      await TimedVote.new(token.address);
+      await TimedVote.new(token.address, voteDuration);
     });
 
     it('Fail with null token address', throws(async() => {
-      await TimedVote.new(NULL_ADDRESS);
+      await TimedVote.new(NULL_ADDRESS, voteDuration);
+    }));
+
+    it('Fail with 0 vote duration', throws(async() => {
+      await TimedVote.new(token.address, 0);
     }));
   });
 
