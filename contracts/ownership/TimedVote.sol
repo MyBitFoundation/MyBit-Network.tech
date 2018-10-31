@@ -114,6 +114,18 @@ contract TimedVote {
   }
 
   /**
+   * Check proposal extant
+   * @param _proposalID - Proposal identifier to check.
+   * @return extant - Whether a proposal with the specified identifier exists.
+   */
+  function proposalExtant(bytes32 _proposalID)
+  public
+  view
+  returns (bool extant) {
+    return (proposals[_proposalID].start > 0);
+  }
+
+  /**
    * Withdraw committed MYB
    * @notice
    * Withdraws all of your committed MYB to the original address. Fails if you

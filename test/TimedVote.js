@@ -12,6 +12,8 @@ const voteDurationDays = 15;
 const voteDuration = voteDurationDays * 24 * 60 * 60; // In seconds
 const unlockDays = voteDurationDays + 1;
 const validAddress = '0xbaCc40C0Df5E6eC2B0A4e9d1A0F748473F7f8b1a';
+const proposalID =
+  '0x0011223344556677889900112233445566778899001122334455667788990011';
 
 
 let token, timedVote;
@@ -103,6 +105,19 @@ contract('TimedVote', () => {
         await timedVote._advanceCommitmentDays(user1, unlockDays);
         const locked = await timedVote._commitmentLocked(user1);
         assert.isFalse(locked);
+      });
+    });
+
+    describe('#proposalExtant', () => {
+      it('Extant', async() => {
+        await timedVote._addProposal(proposalID);
+        const extant = await timedVote.proposalExtant(proposalID);
+        assert.isTrue(extant);
+      });
+
+      it('Nonextant', async() => {
+        const extant = await timedVote.proposalExtant(proposalID);
+        assert.isFalse(extant);
       });
     });
   });

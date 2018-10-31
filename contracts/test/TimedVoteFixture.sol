@@ -64,6 +64,15 @@ contract TimedVoteFixture is TimedVote {
   // Writer
 
   /**
+   * Add proposal
+   * @param _proposalID - Identifier of new proposal.
+   */
+  function _addProposal(bytes32 _proposalID)
+  external {
+    proposals[_proposalID] = Proposal(now, 0, 0, 0);
+  }
+
+  /**
    * Advance commitment time by seconds
    * @param _account - Account owning commitment to advance.
    * @param _seconds - Seconds to advance commitment.
