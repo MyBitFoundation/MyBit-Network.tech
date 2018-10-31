@@ -210,6 +210,48 @@ contract('TimedVote', () => {
   // ----------
 
   describe('Pure Value', () => {
+    describe('~percentage', () => {
+      it('0%', async() => {
+        const percent = await timedVote._percentage(0, 1000);
+        assert.isTrue(BigNumber(percent).isEqualTo(0));
+      });
+
+      it('1%', async() => {
+        const percent = await timedVote._percentage(10, 1000);
+        assert.isTrue(BigNumber(percent).isEqualTo(1));
+      });
+
+      it('20%', async() => {
+        const percent = await timedVote._percentage(200, 1000);
+        assert.isTrue(BigNumber(percent).isEqualTo(20));
+      });
+
+      it('50%', async() => {
+        const percent = await timedVote._percentage(500, 1000);
+        assert.isTrue(BigNumber(percent).isEqualTo(50));
+      });
+
+      it('100%', async() => {
+        const percent = await timedVote._percentage(1000, 1000);
+        assert.isTrue(BigNumber(percent).isEqualTo(100));
+      });
+
+      it('200%', async() => {
+        const percent = await timedVote._percentage(2000, 1000);
+        assert.isTrue(BigNumber(percent).isEqualTo(200));
+      });
+
+      it('Approximate', async() => {
+        const percent = await timedVote._percentage(57, 599);
+        assert.isTrue(BigNumber(percent).isEqualTo(9)); // Exact ~9.5
+      });
+
+      it('Approximately none', async() => {
+        const percent = await timedVote._percentage(57, 55555);
+        assert.isTrue(BigNumber(percent).isEqualTo(0)); // Exact ~0.1
+      });
+    });
+
     describe('~weightVote', () => {
       it('1.0', async() => {
         const vote = await timedVote._weightVote(10, 100);

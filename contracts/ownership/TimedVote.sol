@@ -349,6 +349,21 @@ contract TimedVote {
   }
 
   /**
+   * Percentage
+   * @notice
+   * Provides percentage portion is of total.
+   * @param _portion - Portion to calculate percentage for.
+   * @param _total - Total to calculate percentage of.
+   * @return percent - Percentage portion is of total. Integer percent.
+   */
+  function percentage(uint256 _portion, uint256 _total)
+  internal
+  pure
+  returns (uint8 percent) {
+    return uint8(_portion.mul(100).div(_total));
+  }
+
+  /**
    * Get proposal age
    * @dev
    * Assumes extant proposal.

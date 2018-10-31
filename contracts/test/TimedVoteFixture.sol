@@ -139,6 +139,14 @@ contract TimedVoteFixture is TimedVote {
   pure
   onlyValid(_address) {}
 
+  /** Percentage */
+  function _percentage(uint256 _portion, uint256 _total)
+  external
+  pure
+  returns (uint8 percent) {
+    return percentage(_portion, _total);
+  }
+
   /** Get proposal age */
   function _proposalAge(bytes32 _proposalID)
   external
