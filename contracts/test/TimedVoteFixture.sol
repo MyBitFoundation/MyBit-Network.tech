@@ -45,6 +45,14 @@ contract TimedVoteFixture is TimedVote {
     return commitmentLocked(_account);
   }
 
+  /** Check commitment tier 2 */
+  function _commitmentTier2(address _account)
+  external
+  view
+  returns (bool tier2) {
+    return commitmentTier2(_account);
+  }
+
   /** Require proposal closed */
   function _onlyClosedProposal(bytes32 _proposalID)
   external
