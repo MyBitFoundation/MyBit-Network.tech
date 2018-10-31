@@ -25,6 +25,7 @@ contract TimedVote {
   // Constant
 
   address constant NULL_ADDRESS = address(0);   // Null address
+  uint256 constant TIER_2_AGE = 180 days;       // Tier 2 commitment age
 
   // ----
   // Type
