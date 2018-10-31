@@ -214,4 +214,21 @@ contract TimedVoteFixture is TimedVote {
   external {
     commitments[_account] = Commitment(_amount, time());
   }
+
+  // --------
+  // Override
+  // --------
+
+  /**
+   * Get artificial current time
+   * @dev
+   * Provides an artificial now timestamp. Enables control of time in tests.
+   * @return instant - Artificial current instant.
+   */
+  function time()
+  internal
+  view
+  returns (uint256 instant) {
+    return timestamp;
+  }
 }
