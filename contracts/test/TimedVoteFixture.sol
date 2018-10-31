@@ -131,6 +131,14 @@ contract TimedVoteFixture is TimedVote {
     return proposalOpen(_proposalID);
   }
 
+  /** Weight vote */
+  function _weightVote(uint256 _value, uint8 _multiplier)
+  external
+  pure
+  returns (uint256 vote) {
+    return weightVote(_value, _multiplier);
+  }
+
   // ------
   // Writer
 

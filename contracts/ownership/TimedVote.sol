@@ -304,6 +304,19 @@ contract TimedVote {
     return now;
   }
 
+  /**
+   * Weight vote
+   * @param _value - Token amount applied.
+   * @param _multiplier - Weighting multiplier.
+   * @return vote - Weighted vote amount.
+   */
+  function weightVote(uint256 _value, uint8 _multiplier)
+  internal
+  pure
+  returns (uint256 vote) {
+    return _value.mul(_multiplier).div(100);
+  }
+
   // --------
   // Modifier
 

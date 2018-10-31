@@ -234,6 +234,23 @@ contract('TimedVote', () => {
         assert.isTrue(BigNumber(age).isEqualTo(222));
       });
     });
+
+    describe('~weightVote', () => {
+      it('1.0', async() => {
+        const vote = await timedVote._weightVote(10, 100);
+        assert.isTrue(BigNumber(vote).isEqualTo(10));
+      });
+
+      it('1.5', async() => {
+        const vote = await timedVote._weightVote(10, 150);
+        assert.isTrue(BigNumber(vote).isEqualTo(15));
+      });
+
+      it('2.0', async() => {
+        const vote = await timedVote._weightVote(10, 200);
+        assert.isTrue(BigNumber(vote).isEqualTo(20));
+      });
+    });
   });
 
   // --------
