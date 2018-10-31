@@ -19,13 +19,18 @@ const proposalID =
 let token, timedVote;
 
 
-function throws (executor) {
-  return async() => {
-    try {
-      await executor();
-      assert.fail();
-    } catch (e) {}
-  }
+async function throws (executor) {
+  try {
+    await executor();
+    assert.fail();
+  } catch (e) {}
+}
+
+async function rejects (promise) {
+  try {
+    await promise;
+    assert.fail();
+  } catch (e) {}
 }
 
 
@@ -48,13 +53,13 @@ contract('TimedVote', () => {
       await TimedVote.new(token.address, voteDuration);
     });
 
-    it('Fail with null token address', throws(async() => {
-      await TimedVote.new(NULL_ADDRESS, voteDuration);
-    }));
+    it('Fail with null token address', async() => {
+      await rejects(TimedVote.new(NULL_ADDRESS, voteDuration));
+    });
 
-    it('Fail with 0 vote duration', throws(async() => {
-      await TimedVote.new(token.address, 0);
-    }));
+    it('Fail with 0 vote duration', async() => {
+      await rejects(TimedVote.new(token.address, 0));
+    });
   });
 
   // --------------
@@ -128,9 +133,9 @@ contract('TimedVote', () => {
 
   describe('Modifier', () => {
     describe('~onlyCommitted', () => {
-      it('Reject uncommitted', throws(async() => {
-        await timedVote._onlyCommitted();
-      }));
+      it('Reject uncommitted', async() => {
+        await rejects(timedVote._onlyCommitted());
+      });
 
       it('Accept committed', async() => {
         await timedVote._setCommitment(user1, 5);
@@ -147,9 +152,9 @@ contract('TimedVote', () => {
         await timedVote._onlyPositive(1);
       });
 
-      it('Reject 0', throws(async() => {
-        await timedVote._onlyPositive(0);
-      }));
+      it('Reject 0', async() => {
+        await rejects(timedVote._onlyPositive(0));
+      });
     });
 
     describe('~onlyUncommitted', () => {
@@ -157,10 +162,10 @@ contract('TimedVote', () => {
         await timedVote._onlyUncommitted();
       });
 
-      it('Reject committed', throws(async() => {
+      it('Reject committed', async() => {
         await timedVote._setCommitment(user1, 5);
-        await timedVote._onlyUncommitted();
-      }));
+        await rejects(timedVote._onlyUncommitted());
+      });
     });
 
     describe('~onlyUnlocked', () => {
@@ -170,10 +175,10 @@ contract('TimedVote', () => {
         await timedVote._onlyUnlocked();
       });
 
-      it('Reject locked', throws(async() => {
+      it('Reject locked', async() => {
         await timedVote._setCommitment(user1, 5);
-        await timedVote._onlyUnlocked();
-      }));
+        await rejects(timedVote._onlyUnlocked());
+      });
     });
 
     describe('~onlyValid(address)', () => {
@@ -181,9 +186,9 @@ contract('TimedVote', () => {
         await timedVote._onlyValidAddress(validAddress);
       });
 
-      it('Reject null', throws(async() => {
-        await timedVote._onlyValidAddress(NULL_ADDRESS);
-      }));
+      it('Reject null', async() => {
+        await rejects(timedVote._onlyValidAddress(NULL_ADDRESS));
+      });
     });
   });
 
@@ -193,20 +198,18 @@ contract('TimedVote', () => {
 
   describe('Interface', () => {
     describe('#commit', () => {
-      it('Fail with value 0', throws(async() => {
-        await timedVote.commit(0);
-      }));
+      it('Fail with value 0', async() => {
+        await rejects(timedVote.commit(0));
+      });
 
-      it('Fail without approval', throws(async() => {
-        await timedVote.commit(5);
-      }));
+      it('Fail without approval', async() => {
+        await rejects(timedVote.commit(5));
+      });
 
       it('Fail with insufficient approval', async() => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 5, {from: user1});
-        await throws(async() => {
-          await timedVote.commit(100);
-        });
+        await rejects(timedVote.commit(100));
       });
 
       it('Succeed', async() => {
@@ -219,9 +222,7 @@ contract('TimedVote', () => {
         await token.transfer(user1, 200);
         await token.approve(timedVote.address, 200, {from: user1});
         await timedVote.commit(100);
-        await throws(async() => {
-          await timedVote.commit(100);
-        });
+        await rejects(timedVote.commit(100));
       });
 
       it('Emit Commit', async() => {
@@ -250,16 +251,16 @@ contract('TimedVote', () => {
     });
 
     describe('#withdraw', () => {
-      it('Fail without commitment', throws(async() => {
-        await timedVote.withdraw();
-      }));
+      it('Fail without commitment', async() => {
+        await rejects(timedVote.withdraw());
+      });
 
-      it('Fail with locked commitment', throws(async() => {
+      it('Fail with locked commitment', async() => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
         await timedVote.commit(100);
-        await timedVote.withdraw();
-      }));
+        await rejects(timedVote.withdraw());
+      });
 
       it('Succeed', async() => {
         await token.transfer(user1, 100);
