@@ -22,14 +22,14 @@ let token, timedVote;
 async function throws (executor) {
   try {
     await executor();
-    assert.fail();
+    assert.fail('Incorrect success');
   } catch (e) {}
 }
 
 async function rejects (promise) {
   try {
     await promise;
-    assert.fail();
+    assert.fail('Incorrect success');
   } catch (e) {}
 }
 
