@@ -27,9 +27,9 @@ const Promisify = (inner) =>
 
 
 const owner = web3.eth.accounts[0];
-const user1 = web3.eth.accounts[1];
-const user2 = web3.eth.accounts[2];
-const user3 = web3.eth.accounts[3];
+const user1 = web3.eth.accounts[6];
+const user2 = web3.eth.accounts[7];
+const user3 = web3.eth.accounts[8];
 const assetManager = web3.eth.accounts[4];
 const operator = web3.eth.accounts[5];
 const tokenHolders = [user1, user2, user3];
@@ -158,10 +158,12 @@ contract('Ether Crowdsale', async() => {
   });
 
   //Start successful funding
-  it('Start funding', async() => {
+  it('Start funding in the future', async() => {
+    let now = Math.floor(new Date() / 1000);
+    let startTime = now + 86400; //Startime is a day from now
     assetURI = 'BTC ATM';
     let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 1, 20*ETH, assetManagerFee, {from:assetManager});
+    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 100, startTime, 20*ETH, assetManagerFee, {from:assetManager});
     let e = events.LogAsset({message: 'Asset funding started', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
     let logs = await Promisify(callback => e.get(callback));
     assetID = logs[0].args.assetID;
@@ -169,7 +171,23 @@ contract('Ether Crowdsale', async() => {
     token = await Token.at(assetTokenAddress);
   });
 
+  it('User1 funding fail', async() => {
+    //Start time hasn't been reached
+    let err;
+    try{
+      await crowdsale.buyAssetOrderETH(assetID, {from:user1, value:5*ETH});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
   it('User1 funding', async() => {
+    web3.currentProvider.send({
+        jsonrpc: "2.0",
+        method: "evm_increaseTime",
+        params: [86400], id: 0
+    });
     let tokenSupply = await token.totalSupply()
     console.log('Token Supply: ' + tokenSupply);
     await crowdsale.buyAssetOrderETH(assetID, {from:user1, value:5*ETH});
@@ -181,7 +199,7 @@ contract('Ether Crowdsale', async() => {
     let err;
     //Fail because asset already exists
     try{
-      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 20*ETH, assetManagerFee, {from:assetManager});
+      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 0, 20*ETH, assetManagerFee, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -283,7 +301,7 @@ contract('Ether Crowdsale', async() => {
     await operators.removeOperator(operatorID);
     assetURI = 'Fail: No operator';
     try{
-      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 20*ETH, assetManagerFee, {from:assetManager});
+      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 0, 20*ETH, assetManagerFee, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -302,7 +320,7 @@ contract('Ether Crowdsale', async() => {
   it('Start funding that does not reach goal', async() => {
     assetURI = 'No Goal';
     let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 2, 20*ETH, assetManagerFee, {from:assetManager});
+    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 2, 0, 20*ETH, assetManagerFee, {from:assetManager});
     let e = events.LogAsset({message: 'Asset funding started', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
     let logs = await Promisify(callback => e.get(callback));
     assetID = logs[0].args.assetID;
@@ -376,7 +394,7 @@ contract('Ether Crowdsale', async() => {
     assetURI = 'Free Management';
     assetManagerFee = 0;
     let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 1, 2*ETH, assetManagerFee, {from:assetManager});
+    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 1, 0, 2*ETH, assetManagerFee, {from:assetManager});
     let e = events.LogAsset({message: 'Asset funding started', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
     let logs = await Promisify(callback => e.get(callback));
     assetID = logs[0].args.assetID;
@@ -403,7 +421,7 @@ contract('Ether Crowdsale', async() => {
     assetManagerFee = 100;
     let err;
     try {
-      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 1, 2*ETH, assetManagerFee, {from:assetManager});
+      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 1, 0, 2*ETH, assetManagerFee, {from:assetManager});
     }
     catch(e) {
       err = e;
@@ -416,7 +434,7 @@ contract('Ether Crowdsale', async() => {
     assetURI = '99%managementfee.com';
     assetManagerFee = 99;
     let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 2*ETH, assetManagerFee, {from:assetManager});
+    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 0, 2*ETH, assetManagerFee, {from:assetManager});
     let e = events.LogAsset({message: 'Asset funding started', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
     let logs = await Promisify(callback => e.get(callback));
     assetID = logs[0].args.assetID;
@@ -439,7 +457,7 @@ contract('Ether Crowdsale', async() => {
     assetManagerFee = 42;
     let err;
     try{
-      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 0, assetManagerFee, {from:assetManager});
+      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 0, 0, assetManagerFee, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -451,7 +469,7 @@ contract('Ether Crowdsale', async() => {
     assetURI = 'lowgoals.com';
     assetManagerFee = 50;
     let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 1, assetManagerFee, {from:assetManager});
+    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 0, 1, assetManagerFee, {from:assetManager});
     let e = events.LogAsset({message: 'Asset funding started', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
     let logs = await Promisify(callback => e.get(callback));
     assetID = logs[0].args.assetID;

@@ -35,7 +35,7 @@ contract CrowdsaleERC20{
   function buyAssetOrderERC20(bytes32 _assetID, uint _amount)
   external
   validAsset(_assetID)
-  beforeDeadline(_assetID)
+  betweenDeadlines(_assetID)
   notFinalized(_assetID)
   burnRequired
   returns (bool) {
@@ -168,8 +168,9 @@ contract CrowdsaleERC20{
   }
 
   // @notice reverts if the funding deadline has already past
-  modifier beforeDeadline(bytes32 _assetID) {
+  modifier betweenDeadlines(bytes32 _assetID) {
     require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
+    require(now >= database.uintStorage(keccak256(abi.encodePacked("startTime", _assetID))));
     _;
   }
 
