@@ -54,6 +54,7 @@ contract TimedVote {
 
   BurnableToken token;                          // MYB token contract
   uint256 voteDuration;                         // Vote duration
+  uint8 quorum;                                 // Quorum
   mapping(address => Commitment) commitments;   // Active commitments
   mapping(bytes32 => Proposal) proposals;       // Created proposals
 
