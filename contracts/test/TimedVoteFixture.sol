@@ -53,6 +53,7 @@ contract TimedVoteFixture is TimedVote {
     return commitmentTier2(_account);
   }
 
+  /** Check commitment tier 3 */
   function _commitmentTier3(address _account)
   external
   view
