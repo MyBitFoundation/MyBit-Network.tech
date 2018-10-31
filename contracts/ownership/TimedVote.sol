@@ -232,7 +232,7 @@ contract TimedVote {
   internal
   view
   returns (bool open) {
-    uint256 age = time().sub(proposals[_proposalID].start);
+    uint256 age = proposalAge(_proposalID);
     return (age <= voteDuration);
   }
 
