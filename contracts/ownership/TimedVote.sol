@@ -367,6 +367,20 @@ contract TimedVote {
   }
 
   /**
+   * Check proposal meets quorum
+   * @dev
+   * Assumes extant proposal.
+   * @param _proposalID - Identiier of proposal to check.
+   * @return meets - Whether proposal meets quorum.
+   */
+  function meetsQuorum(bytes32 _proposalID)
+  internal
+  view
+  returns (bool meets) {
+    return (votingPercentage(_proposalID) >= quorum);
+  }
+
+  /**
    * Percentage
    * @notice
    * Provides percentage portion is of total.

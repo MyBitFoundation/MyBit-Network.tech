@@ -177,6 +177,32 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('~meetsQuorum', () => {
+      it('Over', async() => {
+        const amount = (quorum + 10) / 100 * tokenSupply;
+        await timedVote._addProposal(proposalID);
+        await timedVote._setVoted(proposalID, amount);
+        const meets = await timedVote._meetsQuorum(proposalID);
+        assert.isTrue(meets);
+      });
+
+      it('Under', async() => {
+        const amount = (quorum - 10) / 100 * tokenSupply;
+        await timedVote._addProposal(proposalID);
+        await timedVote._setVoted(proposalID, amount);
+        const meets = await timedVote._meetsQuorum(proposalID);
+        assert.isFalse(meets);
+      });
+
+      it('At', async() => {
+        const amount = quorum / 100 * tokenSupply;
+        await timedVote._addProposal(proposalID);
+        await timedVote._setVoted(proposalID, amount);
+        const meets = await timedVote._meetsQuorum(proposalID);
+        assert.isTrue(meets);
+      });
+    });
+
     describe('#proposalExtant', () => {
       it('Extant', async() => {
         await timedVote._addProposal(proposalID);

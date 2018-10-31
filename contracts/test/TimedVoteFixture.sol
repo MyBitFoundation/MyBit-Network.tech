@@ -82,6 +82,14 @@ contract TimedVoteFixture is TimedVote {
     return hasVoted(_account, _proposalID);
   }
 
+  /** Check proposal meets quorum */
+  function _meetsQuorum(bytes32 _proposalID)
+  external
+  view
+  returns (bool meets) {
+    return meetsQuorum(_proposalID);
+  }
+
   /** Require proposal closed */
   function _onlyClosedProposal(bytes32 _proposalID)
   external
@@ -239,6 +247,18 @@ contract TimedVoteFixture is TimedVote {
   function _setDissent(bytes32 _proposalID, uint256 _dissent)
   external {
     proposals[_proposalID].dissent = _dissent;
+  }
+
+  /**
+   * Set proposal voting MYB amount
+   * @dev
+   * Assumes extant proposal.
+   * @param _proposalID - Identifier of proposal.
+   * @param _voted - Voting MYB amount.
+   */
+  function _setVoted(bytes32 _proposalID, uint256 _voted)
+  external {
+    proposals[_proposalID].voted = _voted;
   }
 
   /**
