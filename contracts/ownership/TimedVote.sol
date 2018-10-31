@@ -12,10 +12,11 @@ import "../math/SafeMath.sol";
  * vote duration. It passes if a quorum of total MYB supply voted and the
  * approval ratio of weighted votes reaches the required threshold.
  *
- * Provide the address of the MYB token contract, vote duration, and quorum.
- * On each proposal, voting will be open for the specified duration. For a
- * proposal to be eligible to pass the percent of total MYB that votes must be
- * at least the quorum.
+ * Provide the address of the MYB token contract, vote duration, quorum, and
+ * approval threshold. On each proposal, voting will be open for the specified
+ * duration. For a proposal to be eligible to pass the percent of total MYB
+ * that votes must be at least the quorum. For a proposal to pass the percent
+ * of weighted votes that are approval must be at least the approval threshold.
  */
 contract TimedVote {
   // -------
@@ -70,15 +71,25 @@ contract TimedVote {
    *     Must be positive.
    * @param _quorum - Amount of supply that must vote to make a proposal valid.
    *     Integer percent, eg 20 for 20%. In range 1-100 inclusive.
+   * @param _threshold - Amount of weighted votes that must be approval for a
+   *     proposal to pass. Integer percent, eg 51 for 51%. In range 1-100
+   *     inclusive.
    */
-  constructor(address _tokenAddress, uint256 _voteDuration, uint8 _quorum)
+  constructor(
+    address _tokenAddress,
+    uint256 _voteDuration,
+    uint8 _quorum,
+    uint8 _threshold
+  )
   public
   onlyValid(_tokenAddress)
   onlyPositive(_voteDuration)
-  onlyIn(_quorum, 1, 100) {
+  onlyIn(_quorum, 1, 100)
+  onlyIn(_threshold, 1, 100) {
     token = BurnableToken(_tokenAddress);
     voteDuration = _voteDuration;
     quorum = _quorum;
+    threshold = _threshold;
   }
 
   // ---------

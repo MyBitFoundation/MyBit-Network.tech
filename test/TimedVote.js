@@ -18,6 +18,7 @@ const tier1Multiplier = 100;
 const tier2Multiplier = 150;
 const tier3Multiplier = 200;
 const quorum = 20; // 20%
+const threshold = 51; // 51%
 const validAddress = '0xbaCc40C0Df5E6eC2B0A4e9d1A0F748473F7f8b1a';
 const proposalID =
   '0x0011223344556677889900112233445566778899001122334455667788990011';
@@ -48,7 +49,12 @@ contract('TimedVote', () => {
 
   beforeEach(async() => {
     token = await Token.new("MyBit", tokenSupply);
-    timedVote = await TimedVote.new(token.address, voteDuration, quorum);
+    timedVote = await TimedVote.new(
+      token.address,
+      voteDuration,
+      quorum,
+      threshold
+    );
   });
 
   // ---------
@@ -57,15 +63,20 @@ contract('TimedVote', () => {
 
   describe('Construct', () => {
     it('Succeed', async() => {
-      await TimedVote.new(token.address, voteDuration, quorum);
+      await TimedVote.new(token.address, voteDuration, quorum, threshold);
     });
 
     it('Fail with null token address', async() => {
-      await rejects(TimedVote.new(NULL_ADDRESS, voteDuration, quorum));
+      await rejects(TimedVote.new(
+        NULL_ADDRESS,
+        voteDuration,
+        quorum,
+        threshold
+      ));
     });
 
     it('Fail with 0 vote duration', async() => {
-      await rejects(TimedVote.new(token.address, 0, quorum));
+      await rejects(TimedVote.new(token.address, 0, quorum, threshold));
     });
   });
 
