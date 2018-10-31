@@ -3,6 +3,11 @@ pragma solidity 0.4.24;
 import "../ownership/TimedVote.sol";
 
 contract TimedVoteFixture is TimedVote {
+  // -----
+  // State
+
+  uint256 timestamp;                            // Artificial now timestamp
+
   // -----------
   // Constructor
 
