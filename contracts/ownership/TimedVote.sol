@@ -299,6 +299,11 @@ contract TimedVote {
     uint256 value
   );
 
+  /** Proposal created */
+  event Propose(
+    bytes32 proposalID
+  );
+
   /** Commitment withdrawn */
   event Withdraw(
     address indexed account,
