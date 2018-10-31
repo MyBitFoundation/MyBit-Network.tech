@@ -109,7 +109,7 @@ contract TimedVote {
     uint256 value = commitments[msg.sender].value;
     proposal.voted = proposal.voted.add(value);
     uint8 multiplier = multiplierOf(msg.sender);
-    uint256 vote = weightVote(commitments[msg.sender].value, multiplier);
+    uint256 vote = weightVote(value, multiplier);
     proposal.approval = proposal.approval.add(vote);
     emit Approve(_proposalID, msg.sender, vote);
   }
