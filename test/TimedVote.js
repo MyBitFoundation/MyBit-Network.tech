@@ -205,11 +205,34 @@ contract('TimedVote', () => {
     });
   });
 
-  // -----
-  // Value
-  // -----
+  // ----------
+  // Pure Value
+  // ----------
 
-  describe('Value', () => {
+  describe('Pure Value', () => {
+    describe('~weightVote', () => {
+      it('1.0', async() => {
+        const vote = await timedVote._weightVote(10, 100);
+        assert.isTrue(BigNumber(vote).isEqualTo(10));
+      });
+
+      it('1.5', async() => {
+        const vote = await timedVote._weightVote(10, 150);
+        assert.isTrue(BigNumber(vote).isEqualTo(15));
+      });
+
+      it('2.0', async() => {
+        const vote = await timedVote._weightVote(10, 200);
+        assert.isTrue(BigNumber(vote).isEqualTo(20));
+      });
+    });
+  });
+
+  // ----------
+  // View Value
+  // ----------
+
+  describe('View Value', () => {
     describe('~commitmentAge', () => {
       it('Birth', async() => {
         await timedVote._setCommitment(user1, 5);
@@ -259,23 +282,6 @@ contract('TimedVote', () => {
         await timedVote._timeTravelSeconds(222);
         const age = await timedVote._proposalAge(proposalID);
         assert.isTrue(BigNumber(age).isEqualTo(222));
-      });
-    });
-
-    describe('~weightVote', () => {
-      it('1.0', async() => {
-        const vote = await timedVote._weightVote(10, 100);
-        assert.isTrue(BigNumber(vote).isEqualTo(10));
-      });
-
-      it('1.5', async() => {
-        const vote = await timedVote._weightVote(10, 150);
-        assert.isTrue(BigNumber(vote).isEqualTo(15));
-      });
-
-      it('2.0', async() => {
-        const vote = await timedVote._weightVote(10, 200);
-        assert.isTrue(BigNumber(vote).isEqualTo(20));
       });
     });
   });
