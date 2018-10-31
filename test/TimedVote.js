@@ -261,6 +261,19 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('#propose', () => {
+      it('Fail with extant ID', async() => {
+        await timedVote._addProposal(proposalID);
+        await rejects(timedVote.propose(proposalID));
+      });
+
+      it('Succeed', async() => {
+        await timedVote.propose(proposalID);
+        const extant = await timedVote.proposalExtant(proposalID);
+        assert.isTrue(extant);
+      });
+    });
+
     describe('#withdraw', () => {
       it('Fail without commitment', async() => {
         await rejects(timedVote.withdraw());

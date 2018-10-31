@@ -126,6 +126,19 @@ contract TimedVote {
   }
 
   /**
+   * Create proposal
+   * @notice
+   * Creates a new proposal with the specified identifier. Fails if a proposal
+   * with the same identifier already exists.
+   * @param _proposalID - Identifier of new proposal.
+   */
+  function propose(bytes32 _proposalID)
+  external
+  onlyNew(_proposalID) {
+    proposals[_proposalID] = Proposal(now, 0, 0, 0);
+  }
+
+  /**
    * Withdraw committed MYB
    * @notice
    * Withdraws all of your committed MYB to the original address. Fails if you
