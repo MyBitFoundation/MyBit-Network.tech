@@ -5,6 +5,7 @@ const TimedVote = artifacts.require('TimedVoteFixture');
 
 
 const user1 = web3.eth.accounts[1];
+const user2 = web3.eth.accounts[2];
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const tokenSupply = 180000000000000000000000000;
@@ -337,6 +338,72 @@ contract('TimedVote', () => {
         await timedVote._timeTravelSeconds(222);
         const age = await timedVote._proposalAge(proposalID);
         assert.isTrue(BigNumber(age).isEqualTo(222));
+      });
+    });
+
+    describe('~votingPercentage', () => {
+      it('None', async() => {
+        await timedVote._addProposal(proposalID);
+        const percent = await timedVote._votingPercentage(proposalID);
+        assert.isTrue(BigNumber(percent).isEqualTo(0));
+      });
+
+      it('Half approve', async() => {
+        await timedVote._setCommitment(user1, tokenSupply / 2);
+        await timedVote._timeTravelDays(unlockDays);
+        await timedVote._addProposal(proposalID);
+        await timedVote.approve(proposalID, {from: user1});
+        const percent = await timedVote._votingPercentage(proposalID);
+        assert.isTrue(BigNumber(percent).isEqualTo(50));
+      });
+
+      it('Half decline', async() => {
+        await timedVote._setCommitment(user1, tokenSupply / 2);
+        await timedVote._timeTravelDays(unlockDays);
+        await timedVote._addProposal(proposalID);
+        await timedVote.decline(proposalID, {from: user1});
+        const percent = await timedVote._votingPercentage(proposalID);
+        assert.isTrue(BigNumber(percent).isEqualTo(50));
+      });
+
+      it('Half mixed', async() => {
+        await timedVote._setCommitment(user1, tokenSupply / 4);
+        await timedVote._setCommitment(user2, tokenSupply / 4);
+        await timedVote._timeTravelDays(unlockDays);
+        await timedVote._addProposal(proposalID);
+        await timedVote.approve(proposalID, {from: user1});
+        await timedVote.decline(proposalID, {from: user2});
+        const percent = await timedVote._votingPercentage(proposalID);
+        assert.isTrue(BigNumber(percent).isEqualTo(50));
+      });
+
+      it('Full approve', async() => {
+        await timedVote._setCommitment(user1, tokenSupply);
+        await timedVote._timeTravelDays(unlockDays);
+        await timedVote._addProposal(proposalID);
+        await timedVote.approve(proposalID, {from: user1});
+        const percent = await timedVote._votingPercentage(proposalID);
+        assert.isTrue(BigNumber(percent).isEqualTo(100));
+      });
+
+      it('Full decline', async() => {
+        await timedVote._setCommitment(user1, tokenSupply);
+        await timedVote._timeTravelDays(unlockDays);
+        await timedVote._addProposal(proposalID);
+        await timedVote.decline(proposalID, {from: user1});
+        const percent = await timedVote._votingPercentage(proposalID);
+        assert.isTrue(BigNumber(percent).isEqualTo(100));
+      });
+
+      it('Full mixed', async() => {
+        await timedVote._setCommitment(user1, tokenSupply / 2);
+        await timedVote._setCommitment(user2, tokenSupply / 2);
+        await timedVote._timeTravelDays(unlockDays);
+        await timedVote._addProposal(proposalID);
+        await timedVote.approve(proposalID, {from: user1});
+        await timedVote.decline(proposalID, {from: user2});
+        const percent = await timedVote._votingPercentage(proposalID);
+        assert.isTrue(BigNumber(percent).isEqualTo(100));
       });
     });
   });

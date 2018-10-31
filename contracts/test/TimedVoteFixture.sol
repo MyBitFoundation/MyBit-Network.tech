@@ -163,6 +163,14 @@ contract TimedVoteFixture is TimedVote {
     return proposalOpen(_proposalID);
   }
 
+  /** Proposal voting percentage */
+  function _votingPercentage(bytes32 _proposalID)
+  external
+  view
+  returns (uint8 percent) {
+    return votingPercentage(_proposalID);
+  }
+
   /** Weight vote */
   function _weightVote(uint256 _value, uint8 _multiplier)
   external

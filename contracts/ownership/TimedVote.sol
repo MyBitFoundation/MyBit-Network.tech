@@ -408,6 +408,21 @@ contract TimedVote {
   }
 
   /**
+   * Proposal voting percentage
+   * @notice
+   * Provides what percentage voting MYB amount is of total supply.
+   * @dev
+   * Assumes extant proposal.
+   * @param _proposalID - Identifier of proposal to calculate for.
+   */
+  function votingPercentage(bytes32 _proposalID)
+  internal
+  view
+  returns (uint8 percent) {
+    return percentage(proposals[_proposalID].voted, token.totalSupply());
+  }
+
+  /**
    * Weight vote
    * @param _value - Token amount applied.
    * @param _multiplier - Weighting multiplier.
