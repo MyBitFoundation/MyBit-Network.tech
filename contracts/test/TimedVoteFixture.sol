@@ -90,6 +90,14 @@ contract TimedVoteFixture is TimedVote {
     return meetsQuorum(_proposalID);
   }
 
+  /** Check proposal meets threshold */
+  function _meetsThreshold(bytes32 _proposalID)
+  external
+  view
+  returns (bool meets) {
+    return meetsThreshold(_proposalID);
+  }
+
   /** Require proposal closed */
   function _onlyClosedProposal(bytes32 _proposalID)
   external

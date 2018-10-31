@@ -203,6 +203,38 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('~meetsThreshold', () => {
+      it('Over', async() => {
+        const approval = 900;
+        const dissent = 100;
+        await timedVote._addProposal(proposalID);
+        await timedVote._setApproval(proposalID, approval);
+        await timedVote._setDissent(proposalID, dissent);
+        const meets = await timedVote._meetsThreshold(proposalID);
+        assert.isTrue(meets);
+      });
+
+      it('Under', async() => {
+        const approval = 200;
+        const dissent = 800;
+        await timedVote._addProposal(proposalID);
+        await timedVote._setApproval(proposalID, approval);
+        await timedVote._setDissent(proposalID, dissent);
+        const meets = await timedVote._meetsThreshold(proposalID);
+        assert.isFalse(meets);
+      });
+
+      it('At', async() => {
+        const approval = 510;
+        const dissent = 490;
+        await timedVote._addProposal(proposalID);
+        await timedVote._setApproval(proposalID, approval);
+        await timedVote._setDissent(proposalID, dissent);
+        const meets = await timedVote._meetsThreshold(proposalID);
+        assert.isTrue(meets);
+      });
+    });
+
     describe('#proposalExtant', () => {
       it('Extant', async() => {
         await timedVote._addProposal(proposalID);

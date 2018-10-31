@@ -381,6 +381,19 @@ contract TimedVote {
   }
 
   /**
+   * Check proposal meets threshold
+   * @dev
+   * Assumes extant proposal. Assumes nonzero total votes.
+   * @param _proposalID - Identifier of proposal to calculate for.
+   */
+  function meetsThreshold(bytes32 _proposalID)
+  internal
+  view
+  returns (bool meets) {
+    return (approvalPercentage(_proposalID) >= threshold);
+  }
+
+  /**
    * Percentage
    * @notice
    * Provides percentage portion is of total.
