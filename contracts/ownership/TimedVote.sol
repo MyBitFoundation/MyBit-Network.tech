@@ -191,7 +191,7 @@ contract TimedVote {
   /**
    * Check commitment locked
    * @notice
-   * A commitment is locked if its age is within the vote duration.
+   * A commitment is locked until vote duration has elapsed.
    * @dev
    * Assumes active commitment.
    * @param _account - Account owning commitment to check.
@@ -208,7 +208,7 @@ contract TimedVote {
   /**
    * Check proposal open
    * @notice
-   * A proposal is open for voting if its age is within the vote duration.
+   * A proposal is open for voting until vote duration has elapsed.
    * @dev
    * Assumes extant proposal.
    * @param _proposalID - Identifier of proposal to check.
@@ -225,7 +225,7 @@ contract TimedVote {
   /**
    * Get current time
    * @dev
-   * Used as interface to the now timestamp to enable overriding in tests.
+   * Abstracted interface to the current time. Enables overriding in tests.
    * @return isntant - Current instant.
    */
   function time()
@@ -241,7 +241,7 @@ contract TimedVote {
   /**
    * Require proposal closed
    * @dev
-   * Throws if named proposal is open. Assumes extant proposal.
+   * Throws if proposal is open. Assumes extant proposal.
    * @param _proposalID - Identifier of proposal that must be closed.
    */
   modifier onlyClosed(bytes32 _proposalID) {
@@ -255,7 +255,7 @@ contract TimedVote {
   /**
    * Require account committed
    * @dev
-   * Throws if the specified account does not have an active commitment.
+   * Throws if account does not have a commitment.
    * @param _account - Account that must be committed.
    */
   modifier onlyCommitted(address _account) {
@@ -269,7 +269,7 @@ contract TimedVote {
   /**
    * Require proposal extant
    * @dev
-   * Throws if a proposal with the specified identifier does not exist.
+   * Throws if proposal does not exist.
    * @param _proposalID - Identifier for which a proposal must exist.
    */
   modifier onlyExtant(bytes32 _proposalID) {
@@ -283,7 +283,7 @@ contract TimedVote {
   /**
    * Require proposal ID new
    * @dev
-   * Throws if a proposal with the specified identifier already exists.
+   * Throws if identifier refers to an extant proposal.
    * @param _proposalID - Proposal identifier that must be new.
    */
   modifier onlyNew(bytes32 _proposalID) {
@@ -297,7 +297,7 @@ contract TimedVote {
   /**
    * Require proposal open
    * @dev
-   * Throws if named proposal is closed. Assumes extant proposal.
+   * Throws if proposal is closed. Assumes extant proposal.
    * @param _proposalID - Identifier of proposal that must be open.
    */
   modifier onlyOpen(bytes32 _proposalID) {
@@ -311,7 +311,7 @@ contract TimedVote {
   /**
    * Require number positive
    * @dev
-   * Throws if the specified number is not positive.
+   * Throws if number is not positive.
    * @param _number - Number that must be positive.
    */
   modifier onlyPositive(uint256 _number) {
@@ -325,7 +325,7 @@ contract TimedVote {
   /**
    * Require account uncommitted
    * @dev
-   * Throws if the specified account has an active commitment.
+   * Throws if account has active commitment.
    * @param _account - Account that must be uncommitted.
    */
   modifier onlyUncommitted(address _account) {
@@ -339,8 +339,7 @@ contract TimedVote {
   /**
    * Require commitment unlocked
    * @dev
-   * Throws if the commitment of the specified account is locked.
-   * Assumes active commitment.
+   * Throws if commitment is locked. Assumes active commitment.
    * @param _account - Account owning commitment that must be unlocked.
    */
   modifier onlyUnlocked(address _account) {
@@ -354,7 +353,7 @@ contract TimedVote {
   /**
    * Require address valid
    * @dev
-   * Throws if the specified address is the null address.
+   * Throws if address is the null address.
    * @param _address - Address that must be valid.
    */
   modifier onlyValid(address _address) {
