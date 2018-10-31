@@ -108,7 +108,7 @@ contract('TimedVote', () => {
 
       it('Unlocked', async() => {
         await timedVote._setCommitment(user1, 5);
-        await timedVote._advanceCommitmentDays(user1, unlockDays);
+        await timedVote._timeTravelDays(unlockDays);
         const locked = await timedVote._commitmentLocked(user1);
         assert.isFalse(locked);
       });
@@ -136,7 +136,7 @@ contract('TimedVote', () => {
 
       it('Closed', async() => {
         await timedVote._addProposal(proposalID);
-        await timedVote._advanceProposalDays(proposalID, closeDays);
+        await timedVote._timeTravelDays(closeDays);
         const open = await timedVote._proposalOpen(proposalID);
         assert.isFalse(open);
       });
@@ -157,7 +157,7 @@ contract('TimedVote', () => {
 
       it('Terrible 2s', async() => {
         await timedVote._setCommitment(user1, 5);
-        await timedVote._advanceCommitmentSeconds(user1, 222);
+        await timedVote._timeTravelSeconds(222);
         const age = await timedVote._commitmentAge(user1);
         assert.isTrue(BigNumber(age).isEqualTo(222));
       });
@@ -172,7 +172,7 @@ contract('TimedVote', () => {
     describe('~onlyClosed(proposal)', () => {
       it('Accept closed', async() => {
         await timedVote._addProposal(proposalID);
-        await timedVote._advanceProposalDays(proposalID, closeDays);
+        await timedVote._timeTravelDays(closeDays);
         await timedVote._onlyClosedProposal(proposalID);
       });
 
@@ -223,7 +223,7 @@ contract('TimedVote', () => {
 
       it('Reject closed', async() => {
         await timedVote._addProposal(proposalID);
-        await timedVote._advanceProposalDays(proposalID, closeDays);
+        await timedVote._timeTravelDays(closeDays);
         await rejects(timedVote._onlyOpenProposal(proposalID));
       });
     });
@@ -256,7 +256,7 @@ contract('TimedVote', () => {
     describe('~onlyUnlocked', () => {
       it('Accept unlocked', async() => {
         await timedVote._setCommitment(user1, 5);
-        await timedVote._advanceCommitmentDays(user1, unlockDays);
+        await timedVote._timeTravelDays(unlockDays);
         await timedVote._onlyUnlocked();
       });
 
@@ -375,7 +375,7 @@ contract('TimedVote', () => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
         await timedVote.commit(100);
-        await timedVote._advanceCommitmentDays(user1, unlockDays);
+        await timedVote._timeTravelDays(unlockDays);
         await timedVote.withdraw();
       });
 
@@ -383,7 +383,7 @@ contract('TimedVote', () => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
         await timedVote.commit(100);
-        await timedVote._advanceCommitmentDays(user1, unlockDays);
+        await timedVote._timeTravelDays(unlockDays);
         const { logs: events } = await timedVote.withdraw();
         assert.isAtLeast(events.length, 1);
         const event = events.pop();
