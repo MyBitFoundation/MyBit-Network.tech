@@ -22,6 +22,14 @@ contract TimedVoteFixture is TimedVote {
     return addressNull(_address);
   }
 
+  /** Get commitment age */
+  function _commitmentAge(address _account)
+  external
+  view
+  returns (uint256 age) {
+    return commitmentAge(_account);
+  }
+
   /** Check commitment locked */
   function _commitmentLocked(address _account)
   external

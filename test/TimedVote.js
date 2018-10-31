@@ -143,6 +143,27 @@ contract('TimedVote', () => {
     });
   });
 
+  // -----
+  // Value
+  // -----
+
+  describe('Value', () => {
+    describe('~commitmentAge', () => {
+      it('Birth', async() => {
+        await timedVote._setCommitment(user1, 5);
+        const age = await timedVote._commitmentAge(user1);
+        assert.isTrue(BigNumber(age).isEqualTo(0));
+      });
+
+      it('Terrible 2s', async() => {
+        await timedVote._setCommitment(user1, 5);
+        await timedVote._advanceCommitmentSeconds(user1, 222);
+        const age = await timedVote._commitmentAge(user1);
+        assert.isTrue(BigNumber(age).isEqualTo(222));
+      });
+    });
+  });
+
   // --------
   // Modifier
   // --------

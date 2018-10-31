@@ -175,6 +175,18 @@ contract TimedVote {
   }
 
   /**
+   * Get commitment age
+   * @param _account - Account owning commitment to get age of.
+   * @return age - Commitment age.
+   */
+  function commitmentAge(address _account)
+  internal
+  view
+  returns (uint256 age) {
+    return now.sub(commitments[_account].time);
+  }
+
+  /**
    * Check commitment locked
    * @notice
    * A commitment is locked if its age is within the vote duration.
