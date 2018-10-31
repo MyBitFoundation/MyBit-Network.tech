@@ -193,6 +193,20 @@ contract TimedVote {
   }
 
   /**
+   * Require proposal ID new
+   * @dev
+   * Throws if a proposal with the specified identifier already exists.
+   * @param _proposalID - Proposal identifier that must be new.
+   */
+  modifier onlyNew(bytes32 _proposalID) {
+    require(
+      !proposalExtant(_proposalID),
+      "Proposal exists"
+    );
+    _;
+  }
+
+  /**
    * Require number positive
    * @dev
    * Throws if the specified number is not positive.
