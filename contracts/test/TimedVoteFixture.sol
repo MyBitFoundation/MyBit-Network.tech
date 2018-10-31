@@ -36,6 +36,12 @@ contract TimedVoteFixture is TimedVote {
   view
   onlyCommitted(msg.sender) {}
 
+  /** Require proposal extant */
+  function _onlyExtant(bytes32 _proposalID)
+  external
+  view
+  onlyExtant(_proposalID) {}
+
   /** Require proposal ID new */
   function _onlyNew(bytes32 _proposalID)
   external

@@ -143,6 +143,17 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('~onlyExtant(proposal)', () => {
+      it('Accept extant', async() => {
+        await timedVote._addProposal(proposalID);
+        await timedVote._onlyExtant(proposalID);
+      });
+
+      it('Reject nonextant', async() => {
+        await rejects(timedVote._onlyExtant(proposalID));
+      });
+    })
+
     describe('~onlyNew(proposalID)', () => {
       it('Accept new', async() => {
         await timedVote._onlyNew(proposalID);

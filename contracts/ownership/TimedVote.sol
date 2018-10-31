@@ -206,6 +206,20 @@ contract TimedVote {
   }
 
   /**
+   * Require proposal extant
+   * @dev
+   * Throws if a proposal with the specified identifier does not exist.
+   * @param _proposalID - Identifier for which a proposal must exist.
+   */
+  modifier onlyExtant(bytes32 _proposalID) {
+    require(
+      proposalExtant(_proposalID),
+      "Proposal not found"
+    );
+    _;
+  }
+
+  /**
    * Require proposal ID new
    * @dev
    * Throws if a proposal with the specified identifier already exists.
