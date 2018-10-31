@@ -181,6 +181,19 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('~onlyOpen(proposal)', () => {
+      it('Accept open', async() => {
+        await timedVote._addProposal(proposalID);
+        await timedVote._onlyOpenProposal(proposalID);
+      });
+
+      it('Reject closed', async() => {
+        await timedVote._addProposal(proposalID);
+        await timedVote._advanceProposalDays(proposalID, closeDays);
+        await rejects(timedVote._onlyOpenProposal(proposalID));
+      });
+    });
+
     describe('~onlyPositive', () => {
       it('Accept positive', async() => {
         await timedVote._onlyPositive(55);
