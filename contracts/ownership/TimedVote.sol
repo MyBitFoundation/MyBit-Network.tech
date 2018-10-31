@@ -145,6 +145,32 @@ contract TimedVote {
   }
 
   /**
+   * Decline proposal
+   * @notice
+   * Declines proposal with all of your committed tokens. Your vote is weighted
+   * differently depending on how long your tokens have been committed.
+   * Requires an unlocked commitment and an open proposal you haven't voted on.
+   * Emits Decline on success.
+   * @param _proposalID - Identifier of proposal to decline.
+   */
+  function decline(bytes32 _proposalID)
+  external
+  onlyCommitted(msg.sender)
+  onlyUnlocked(msg.sender)
+  onlyExtant(_proposalID)
+  onlyOpen(_proposalID)
+  onlyOneVote(_proposalID, msg.sender) {
+    Proposal storage proposal = proposals[_proposalID];
+    proposal.voters[msg.sender] = true;
+    uint256 value = commitments[msg.sender].value;
+    proposal.voted = proposal.voted.add(value);
+    uint8 multiplier = multiplierOf(msg.sender);
+    uint256 vote = weightVote(value, multiplier);
+    proposal.dissent = proposal.dissent.add(vote);
+    emit Decline(_proposalID, msg.sender, vote);
+  }
+
+  /**
    * Get commitment multiplier
    * @notice
    * A commitment multiplier changes as the commitment advances tiers.
@@ -518,6 +544,12 @@ contract TimedVote {
   event Commit(
     address indexed account,                    // Committing account
     uint256 value                               // MYB amount committed
+  );
+
+  event Decline(
+    bytes32 indexed proposalID,                 // Declined proposal identifier
+    address indexed account,                    // Declining account
+    uint256 vote                                // Weighted dissent amount
   );
 
   /** Proposal created */

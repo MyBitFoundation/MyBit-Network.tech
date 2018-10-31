@@ -510,6 +510,64 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('#decline', () => {
+      it('Fail without commitment', async() => {
+        await timedVote._addProposal(proposalID);
+        await rejects(timedVote.decline(proposalID, {from: user1}));
+      });
+
+      it('Fail with locked commitment', async() => {
+        await timedVote._setCommitment(user1, 5);
+        await timedVote._addProposal(proposalID);
+        await rejects(timedVote.decline(proposalID, {from: user1}));
+      });
+
+      it('Fail with missing proposal', async() => {
+        await timedVote._setCommitment(user1, 5);
+        await timedVote._timeTravelDays(unlockDays);
+        await rejects(timedVote.decline(proposalID, {from: user1}));
+      });
+
+      it('Fail with closed proposal', async() => {
+        await timedVote._setCommitment(user1, 5);
+        await timedVote._timeTravelDays(unlockDays);
+        await timedVote._addProposal(proposalID);
+        await timedVote._timeTravelDays(closeDays);
+        await rejects(timedVote.decline(proposalID, {from: user1}));
+      });
+
+      it('Fail on plural vote', async() => {
+        await timedVote._setCommitment(user1, 5);
+        await timedVote._timeTravelDays(unlockDays);
+        await timedVote._addProposal(proposalID);
+        await timedVote._setVoted(proposalID, user1);
+        await rejects(timedVote.decline(proposalID, {from: user1}));
+      });
+
+      it('Succeed', async() => {
+        await timedVote._setCommitment(user1, 5);
+        await timedVote._timeTravelDays(unlockDays);
+        await timedVote._addProposal(proposalID);
+        await timedVote.decline(proposalID, {from: user1});
+      });
+
+      it('Emit Decline', async() => {
+        await timedVote._setCommitment(user1, 5);
+        await timedVote._timeTravelDays(unlockDays);
+        await timedVote._addProposal(proposalID);
+        const { logs: events } = await timedVote.decline(
+          proposalID,
+          {from: user1}
+        );
+        assert.isAtLeast(events.length, 1);
+        const event = events.pop();
+        assert.strictEqual(event.event, 'Decline');
+        assert.strictEqual(event.args.proposalID, proposalID);
+        assert.strictEqual(event.args.account, user1);
+        assert.isTrue(BigNumber(event.args.vote).isEqualTo(5));
+      });
+    });
+
     describe('#propose', () => {
       it('Fail with extant ID', async() => {
         await timedVote._addProposal(proposalID);
