@@ -226,7 +226,7 @@ contract TimedVote {
    * Get current time
    * @dev
    * Abstracted interface to the current time. Enables overriding in tests.
-   * @return isntant - Current instant.
+   * @return instant - Current instant.
    */
   function time()
   internal
