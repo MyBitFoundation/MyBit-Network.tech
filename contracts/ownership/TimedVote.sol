@@ -254,7 +254,7 @@ contract TimedVote {
   /**
    * Require proposal open
    * @dev
-   * Throws if named proposal is closed.
+   * Throws if named proposal is closed. Assumes proposal exists.
    * @param _proposalID - Identifier of proposal that must be open.
    */
   modifier onlyOpen(bytes32 _proposalID) {
