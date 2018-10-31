@@ -341,6 +341,36 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('~totalVotes', () => {
+      it('None', async() => {
+        await timedVote._addProposal(proposalID);
+        const votes = await timedVote._totalVotes(proposalID);
+        assert.isTrue(BigNumber(votes).isEqualTo(0));
+      });
+
+      it('Approval', async() => {
+        await timedVote._addProposal(proposalID);
+        await timedVote._setApproval(proposalID, 50);
+        const votes = await timedVote._totalVotes(proposalID);
+        assert.isTrue(BigNumber(votes).isEqualTo(50));
+      });
+
+      it('Dissent', async() => {
+        await timedVote._addProposal(proposalID);
+        await timedVote._setDissent(proposalID, 50);
+        const votes = await timedVote._totalVotes(proposalID);
+        assert.isTrue(BigNumber(votes).isEqualTo(50));
+      });
+
+      it('Mixed', async() => {
+        await timedVote._addProposal(proposalID);
+        await timedVote._setApproval(proposalID, 50);
+        await timedVote._setDissent(proposalID, 50);
+        const votes = await timedVote._totalVotes(proposalID);
+        assert.isTrue(BigNumber(votes).isEqualTo(100));
+      });
+    });
+
     describe('~votingPercentage', () => {
       it('None', async() => {
         await timedVote._addProposal(proposalID);

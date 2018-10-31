@@ -163,6 +163,14 @@ contract TimedVoteFixture is TimedVote {
     return proposalOpen(_proposalID);
   }
 
+  /** Proposal total votes */
+  function _totalVotes(bytes32 _proposalID)
+  external
+  view
+  returns (uint256 votes) {
+    return totalVotes(_proposalID);
+  }
+
   /** Proposal voting percentage */
   function _votingPercentage(bytes32 _proposalID)
   external
@@ -192,6 +200,18 @@ contract TimedVoteFixture is TimedVote {
   }
 
   /**
+   * Set proposal approval
+   * @dev
+   * Assumes extant proposal.
+   * @param _proposalID - Identifier of proposal.
+   * @param _approval - Approval amount.
+   */
+  function _setApproval(bytes32 _proposalID, uint256 _approval)
+  external {
+    proposals[_proposalID].approval = _approval;
+  }
+
+  /**
    * Set account commitment
    * @param _account - Account to set commitment of.
    * @param _amount - MYB commitment amount.
@@ -199,6 +219,18 @@ contract TimedVoteFixture is TimedVote {
   function _setCommitment(address _account, uint256 _amount)
   external {
     commitments[_account] = Commitment(_amount, time());
+  }
+
+  /**
+   * Set proposal dissent
+   * @dev
+   * Assumes extant proposal.
+   * @param _proposalID - Identifier of proposal.
+   * @param _dissent - Dissent amount.
+   */
+  function _setDissent(bytes32 _proposalID, uint256 _dissent)
+  external {
+    proposals[_proposalID].dissent = _dissent;
   }
 
   /**

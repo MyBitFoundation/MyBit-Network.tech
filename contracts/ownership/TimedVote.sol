@@ -408,6 +408,22 @@ contract TimedVote {
   }
 
   /**
+   * Proposal total votes
+   * @notice
+   * Provides total weighted votes cast on the proposal.
+   * Sum of weighted approval and weighted dissent.
+   * @param _proposalID - Identifier of proposal to calculate for.
+   * @return votes - Total weighted votes cast on the proposal.
+   */
+  function totalVotes(bytes32 _proposalID)
+  internal
+  view
+  returns (uint256 votes) {
+    return proposals[_proposalID].approval
+      .add(proposals[_proposalID].dissent);
+  }
+
+  /**
    * Proposal voting percentage
    * @notice
    * Provides what percentage voting MYB amount is of total supply.
