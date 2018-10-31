@@ -89,6 +89,32 @@ contract TimedVote {
   }
 
   /**
+   * Approve proposal
+   * @notice
+   * Approves proposal with all of your committed tokens. Your vote is weighted
+   * differently depending on how long your tokens have been committed.
+   * Requires an unlocked commitment and an open proposal you haven't voted on.
+   * Emits Approve on success.
+   * @param _proposalID - Identifier of proposal to approve.
+   */
+  function approve(bytes32 _proposalID)
+  external
+  onlyCommitted(msg.sender)
+  onlyUnlocked(msg.sender)
+  onlyExtant(_proposalID)
+  onlyOpen(_proposalID)
+  onlyOneVote(_proposalID, msg.sender) {
+    Proposal storage proposal = proposals[_proposalID];
+    proposal.voters[msg.sender] = true;
+    uint256 value = commitments[msg.sender].value;
+    proposal.voted = proposal.voted.add(value);
+    uint8 multiplier = multiplierOf(msg.sender);
+    uint256 vote = weightVote(commitments[msg.sender].value, multiplier);
+    proposal.approval = proposal.approval.add(vote);
+    emit Approve(_proposalID, msg.sender, vote);
+  }
+
+  /**
    * Commit MYB to voting
    * @notice
    * Commits specified amount of your MYB to voting. Approve this contract with
@@ -481,6 +507,12 @@ contract TimedVote {
 
   // -----
   // Event
+
+  event Approve(
+    bytes32 indexed proposalID,
+    address indexed account,
+    uint256 vote
+  );
 
   /** MYB committed to voting */
   event Commit(
