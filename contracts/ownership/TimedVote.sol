@@ -226,12 +226,12 @@ contract TimedVote {
    * Get current time
    * @dev
    * Used as interface to the now timestamp to enable overriding in tests.
-   * @return timestamp - Current instant.
+   * @return isntant - Current instant.
    */
   function time()
   internal
   view
-  returns (uint256 timestamp) {
+  returns (uint256 instant) {
     return now;
   }
 
