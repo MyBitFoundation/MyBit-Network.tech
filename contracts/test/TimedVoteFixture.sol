@@ -30,6 +30,12 @@ contract TimedVoteFixture is TimedVote {
     return commitmentLocked(_account);
   }
 
+  /** Require proposal closed */
+  function _onlyClosedProposal(bytes32 _proposalID)
+  external
+  view
+  onlyClosed(_proposalID) {}
+
   /** Require sender committed */
   function _onlyCommitted()
   external

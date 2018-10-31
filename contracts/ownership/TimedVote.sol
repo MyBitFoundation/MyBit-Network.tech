@@ -210,6 +210,20 @@ contract TimedVote {
   // Modifier
 
   /**
+   * Require proposal closed
+   * @dev
+   * Throws if named proposal is open. Assumes proposal exists.
+   * @param _proposalID - Identifier of proposal that must be closed.
+   */
+  modifier onlyClosed(bytes32 _proposalID) {
+    require(
+      !proposalOpen(_proposalID),
+      "Closed proposal required"
+    );
+    _;
+  }
+
+  /**
    * Require account committed
    * @dev
    * Throws if the specified account does not have an active commitment.

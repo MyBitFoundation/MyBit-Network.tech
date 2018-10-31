@@ -148,6 +148,19 @@ contract('TimedVote', () => {
   // --------
 
   describe('Modifier', () => {
+    describe('~onlyClosed(proposal)', () => {
+      it('Accept closed', async() => {
+        await timedVote._addProposal(proposalID);
+        await timedVote._advanceProposalDays(proposalID, closeDays);
+        await timedVote._onlyClosedProposal(proposalID);
+      });
+
+      it('Reject open', async() => {
+        await timedVote._addProposal(proposalID);
+        await rejects(timedVote._onlyClosedProposal(proposalID));
+      });
+    });
+
     describe('~onlyCommitted', () => {
       it('Reject uncommitted', async() => {
         await rejects(timedVote._onlyCommitted());
