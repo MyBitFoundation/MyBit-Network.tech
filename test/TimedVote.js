@@ -285,9 +285,13 @@ contract('TimedVote', () => {
       });
 
       it('Emit Propose', async() => {
-        const { logs: events } = await timedVote.propose(proposalID);
+        const { logs: events } = await timedVote.propose(
+          proposalID,
+          {from: user1}
+        );
         const event = events.pop();
         assert.strictEqual(event.event, 'Propose');
+        assert.strictEqual(event.args.proposer, user1);
         assert.strictEqual(event.args.proposalID, proposalID);
       });
     });

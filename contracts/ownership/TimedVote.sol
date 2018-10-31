@@ -136,7 +136,7 @@ contract TimedVote {
   external
   onlyNew(_proposalID) {
     proposals[_proposalID] = Proposal(now, 0, 0, 0);
-    emit Propose(_proposalID);
+    emit Propose(msg.sender, _proposalID);
   }
 
   /**
@@ -302,6 +302,7 @@ contract TimedVote {
 
   /** Proposal created */
   event Propose(
+    address indexed proposer,
     bytes32 proposalID
   );
 
