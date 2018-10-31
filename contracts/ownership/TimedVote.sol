@@ -200,7 +200,7 @@ contract TimedVote {
   function multiplierOf(address _account)
   public
   view
-  onlyCommitted(msg.sender)
+  onlyCommitted(_account)
   returns (uint8 multiplier) {
     if (commitmentTier3(_account)) return TIER_3_MULTIPLIER;
     else if (commitmentTier2(_account)) return TIER_2_MULTIPLIER;
