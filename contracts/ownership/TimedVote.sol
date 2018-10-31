@@ -528,7 +528,7 @@ contract TimedVote {
 
   /** Commitment withdrawn */
   event Withdraw(
-    address indexed account,
-    uint256 value
+    address indexed account,                    // Withdrawing account
+    uint256 value                               // MYB amount withdrawn
   );
 }
