@@ -121,6 +121,12 @@ contract TimedVoteFixture is TimedVote {
   pure
   onlyIn(number, minimum, maximum) {}
 
+  /** Require proposal meets quorum */
+  function _onlyMeetsQuorum(bytes32 _proposalID)
+  external
+  view
+  onlyMeetsQuorum(_proposalID) {}
+
   /** Require proposal ID new */
   function _onlyNew(bytes32 _proposalID)
   external

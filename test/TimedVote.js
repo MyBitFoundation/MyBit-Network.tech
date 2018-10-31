@@ -582,6 +582,29 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('~onlyMeetsQuorum', () => {
+      it('Accept over', async() => {
+        const amount = (quorum + 10) / 100 * tokenSupply;
+        await timedVote._addProposal(proposalID);
+        await timedVote._setVoted(proposalID, amount);
+        await timedVote._onlyMeetsQuorum(proposalID);
+      });
+
+      it('Accept at', async() => {
+        const amount = quorum / 100 * tokenSupply;
+        await timedVote._addProposal(proposalID);
+        await timedVote._setVoted(proposalID, amount);
+        await timedVote._onlyMeetsQuorum(proposalID);
+      });
+
+      it('Reject under', async() => {
+        const amount = (quorum - 10) / 100 * tokenSupply;
+        await timedVote._addProposal(proposalID);
+        await timedVote._setVoted(proposalID, amount);
+        await rejects(timedVote._onlyMeetsQuorum(proposalID));
+      });
+    });
+
     describe('~onlyNew(proposalID)', () => {
       it('Accept new', async() => {
         await timedVote._onlyNew(proposalID);
