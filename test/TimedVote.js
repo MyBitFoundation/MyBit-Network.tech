@@ -4,7 +4,7 @@ const Token = artifacts.require('./tokens/ERC20/BurnableToken.sol');
 const TimedVote = artifacts.require('TimedVoteFixture');
 
 
-const user1 = web3.eth.accounts[0];
+const user1 = web3.eth.accounts[1];
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const tokenSupply = 180000000000000000000000000;
@@ -361,12 +361,12 @@ contract('TimedVote', () => {
 
     describe('~onlyCommitted', () => {
       it('Reject uncommitted', async() => {
-        await rejects(timedVote._onlyCommitted());
+        await rejects(timedVote._onlyCommitted({from: user1}));
       });
 
       it('Accept committed', async() => {
         await timedVote._setCommitment(user1, 5);
-        await timedVote._onlyCommitted();
+        await timedVote._onlyCommitted({from: user1});
       });
     });
 
@@ -456,12 +456,12 @@ contract('TimedVote', () => {
 
     describe('~onlyUncommitted', () => {
       it('Accept uncommitted', async() => {
-        await timedVote._onlyUncommitted();
+        await timedVote._onlyUncommitted({from: user1});
       });
 
       it('Reject committed', async() => {
         await timedVote._setCommitment(user1, 5);
-        await rejects(timedVote._onlyUncommitted());
+        await rejects(timedVote._onlyUncommitted({from: user1}));
       });
     });
 
@@ -469,12 +469,12 @@ contract('TimedVote', () => {
       it('Accept unlocked', async() => {
         await timedVote._setCommitment(user1, 5);
         await timedVote._timeTravelDays(unlockDays);
-        await timedVote._onlyUnlocked();
+        await timedVote._onlyUnlocked({from: user1});
       });
 
       it('Reject locked', async() => {
         await timedVote._setCommitment(user1, 5);
-        await rejects(timedVote._onlyUnlocked());
+        await rejects(timedVote._onlyUnlocked({from: user1}));
       });
     });
 
@@ -554,36 +554,36 @@ contract('TimedVote', () => {
 
     describe('#commit', () => {
       it('Fail with value 0', async() => {
-        await rejects(timedVote.commit(0));
+        await rejects(timedVote.commit(0, {from: user1}));
       });
 
       it('Fail without approval', async() => {
-        await rejects(timedVote.commit(5));
+        await rejects(timedVote.commit(5, {from: user1}));
       });
 
       it('Fail with insufficient approval', async() => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 5, {from: user1});
-        await rejects(timedVote.commit(100));
+        await rejects(timedVote.commit(100, {from: user1}));
       });
 
       it('Succeed', async() => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
-        await timedVote.commit(100);
+        await timedVote.commit(100, {from: user1});
       });
 
       it('Fail double commit', async() => {
         await token.transfer(user1, 200);
         await token.approve(timedVote.address, 200, {from: user1});
-        await timedVote.commit(100);
-        await rejects(timedVote.commit(100));
+        await timedVote.commit(100, {from: user1});
+        await rejects(timedVote.commit(100, {from: user1}));
       });
 
       it('Emit Commit', async() => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
-        const { logs: events } = await timedVote.commit(100);
+        const { logs: events } = await timedVote.commit(100, {from: user1});
         assert.isAtLeast(events.length, 1);
         const event = events.pop();
         assert.strictEqual(event.event, 'Commit');
@@ -653,11 +653,11 @@ contract('TimedVote', () => {
     describe('#propose', () => {
       it('Fail with extant ID', async() => {
         await timedVote._addProposal(proposalID);
-        await rejects(timedVote.propose(proposalID));
+        await rejects(timedVote.propose(proposalID, {from: user1}));
       });
 
       it('Succeed', async() => {
-        await timedVote.propose(proposalID);
+        await timedVote.propose(proposalID, {from: user1});
         const extant = await timedVote.proposalExtant(proposalID);
         assert.isTrue(extant);
       });
@@ -676,30 +676,30 @@ contract('TimedVote', () => {
 
     describe('#withdraw', () => {
       it('Fail without commitment', async() => {
-        await rejects(timedVote.withdraw());
+        await rejects(timedVote.withdraw({from: user1}));
       });
 
       it('Fail with locked commitment', async() => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
-        await timedVote.commit(100);
-        await rejects(timedVote.withdraw());
+        await timedVote.commit(100, {from: user1});
+        await rejects(timedVote.withdraw({from: user1}));
       });
 
       it('Succeed', async() => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
-        await timedVote.commit(100);
+        await timedVote.commit(100, {from: user1});
         await timedVote._timeTravelDays(unlockDays);
-        await timedVote.withdraw();
+        await timedVote.withdraw({from: user1});
       });
 
       it('Emit Withdraw', async() => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
-        await timedVote.commit(100);
+        await timedVote.commit(100, {from: user1});
         await timedVote._timeTravelDays(unlockDays);
-        const { logs: events } = await timedVote.withdraw();
+        const { logs: events } = await timedVote.withdraw({from: user1});
         assert.isAtLeast(events.length, 1);
         const event = events.pop();
         assert.strictEqual(event.event, 'Withdraw');
