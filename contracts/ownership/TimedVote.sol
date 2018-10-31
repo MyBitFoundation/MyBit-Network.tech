@@ -201,7 +201,7 @@ contract TimedVote {
   internal
   view
   returns (bool locked) {
-    uint256 age = time().sub(commitments[_account].time);
+    uint256 age = commitmentAge(_account);
     return (age <= voteDuration);
   }
 
