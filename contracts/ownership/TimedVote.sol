@@ -578,20 +578,6 @@ contract TimedVote {
   }
 
   /**
-   * Require proposal meets quorum
-   * @dev
-   * Throws if proposal does not meet quorum. Assumes extant proposal.
-   * @param _proposalID - Identifier of proposal that must meet quorum.
-   */
-  modifier onlyMeetsQuorum(bytes32 _proposalID) {
-    require(
-      meetsQuorum(_proposalID),
-      "Quorum not met"
-    );
-    _;
-  }
-
-  /**
    * Require proposal ID new
    * @dev
    * Throws if identifier refers to an extant proposal.
