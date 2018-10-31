@@ -128,6 +128,49 @@ contract TimedVoteFixture is TimedVote {
   }
 
   /**
+   * Advance proposal time by seconds
+   * @param _proposalID - Identifier of proposal to advance.
+   * @param _seconds - Seconds to advance.
+   */
+  function _advanceProposalSeconds(bytes32 _proposalID, uint256 _seconds)
+  public {
+    proposals[_proposalID].start = proposals[_proposalID].start.sub(_seconds);
+  }
+
+  /**
+   * Advance proposal time by minutes
+   * @param _proposalID - Identifier of proposal to advance.
+   * @param _minutes - Minutes to advance.
+   */
+  function _advanceProposalMinutes(bytes32 _proposalID, uint256 _minutes)
+  public {
+    uint256 _seconds = _minutes.mul(60);
+    _advanceProposalSeconds(_proposalID, _seconds);
+  }
+
+  /**
+   * Advance proposal time by hours
+   * @param _proposalID - Identifier of proposal to advance.
+   * @param _hours - Hours to advance.
+   */
+  function _advanceProposalHours(bytes32 _proposalID, uint256 _hours)
+  public {
+    uint256 _minutes = _hours.mul(60);
+    _advanceProposalMinutes(_proposalID, _minutes);
+  }
+
+  /**
+   * Advance proposal time by days
+   * @param _proposalID - Identifier of proposal to advance.
+   * @param _days - Days to advance.
+   */
+  function _advanceProposalDays(bytes32 _proposalID, uint256 _days)
+  external {
+    uint256 _hours = _days.mul(24);
+    _advanceProposalHours(_proposalID, _hours);
+  }
+
+  /**
    * Set account commitment
    * @param _account - Account to set commitment of.
    * @param _amount - MYB commitment amount.
