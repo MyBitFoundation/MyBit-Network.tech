@@ -27,7 +27,7 @@ contract TimedVote {
   address constant NULL_ADDRESS = address(0);   // Null address
   uint256 constant TIER_2_AGE = 180 days;       // Tier 2 commitment age
   uint256 constant TIER_3_AGE = 365 days;       // Tier 3 commitment age
-  uint8 constant TIER_1_MULTIPLIER = 100;       // Tier 1 multiplier
+  uint8 constant TIER_1_MULTIPLIER = 100;       // Tier 1 multiplier-
   uint8 constant TIER_2_MULTIPLIER = 150;       // Tier 2 multiplier
   uint8 constant TIER_3_MULTIPLIER = 200;       // Tier 3 multiplier
 
@@ -116,6 +116,24 @@ contract TimedVote {
   view
   returns (uint256 value) {
     return commitments[_account].value;
+  }
+
+  /**
+   * Get commitment multiplier
+   * @notice
+   * A commitment multiplier changes as the commitment advances tiers.
+   * Fails if you have no active commitment.
+   * @param _account - Account owning commitment to get the multiplier of.
+   * @return multiplier - Current commitment multiplier.
+   */
+  function multiplierOf(address _account)
+  public
+  view
+  onlyCommitted(msg.sender)
+  returns (uint8 multiplier) {
+    if (commitmentTier3(_account)) return TIER_3_MULTIPLIER;
+    else if (commitmentTier2(_account)) return TIER_2_MULTIPLIER;
+    else return TIER_1_MULTIPLIER;
   }
 
   /**

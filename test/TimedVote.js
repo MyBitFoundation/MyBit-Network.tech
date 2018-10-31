@@ -14,6 +14,9 @@ const unlockDays = voteDurationDays + 1;
 const closeDays = voteDurationDays + 1;
 const tier2Days = 180 + 1;
 const tier3Days = 365 + 1;
+const tier1Multiplier = 100;
+const tier2Multiplier = 150;
+const tier3Multiplier = 200;
 const validAddress = '0xbaCc40C0Df5E6eC2B0A4e9d1A0F748473F7f8b1a';
 const proposalID =
   '0x0011223344556677889900112233445566778899001122334455667788990011';
@@ -192,6 +195,28 @@ contract('TimedVote', () => {
         await timedVote._timeTravelSeconds(222);
         const age = await timedVote._commitmentAge(user1);
         assert.isTrue(BigNumber(age).isEqualTo(222));
+      });
+    });
+
+    describe('#multiplierOf', () => {
+      it('Tier 1', async() => {
+        await timedVote._setCommitment(user1, 5);
+        const multiplier = await timedVote.multiplierOf(user1);
+        assert.isTrue(BigNumber(multiplier).isEqualTo(tier1Multiplier));
+      });
+
+      it('Tier 2', async() => {
+        await timedVote._setCommitment(user1, 5);
+        await timedVote._timeTravelDays(tier2Days);
+        const multiplier = await timedVote.multiplierOf(user1);
+        assert.isTrue(BigNumber(multiplier).isEqualTo(tier2Multiplier));
+      });
+
+      it('Tier 3', async() => {
+        await timedVote._setCommitment(user1, 5);
+        await timedVote._timeTravelDays(tier3Days);
+        const multiplier = await timedVote.multiplierOf(user1);
+        assert.isTrue(BigNumber(multiplier).isEqualTo(tier3Multiplier));
       });
     });
 
