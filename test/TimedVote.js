@@ -91,7 +91,7 @@ contract('TimedVote', () => {
       });
     });
 
-    describe('#commitmentLocked', () => {
+    describe('~commitmentLocked', () => {
       it('Locked', async() => {
         await timedVote._setCommitment(user1, 5);
         const locked = await timedVote._commitmentLocked(user1);
