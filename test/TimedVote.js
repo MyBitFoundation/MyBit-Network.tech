@@ -876,6 +876,51 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('#result', () => {
+      it('Fail with missing proposal', async() => {
+        await rejects(timedVote.result(proposalID));
+      });
+
+      it('Fail with open proposal', async() => {
+        await timedVote._addProposal(proposalID);
+        await rejects(timedVote.result(proposalID));
+      });
+
+      it('Defeated under quorum', async() => {
+        await timedVote._setCommitment(user1, 10);
+        await timedVote._timeTravelDays(unlockDays);
+        await timedVote._addProposal(proposalID);
+        await timedVote.approve(proposalID, {from: user1});
+        await timedVote._timeTravelDays(closeDays);
+        const result = await timedVote.result(proposalID);
+        assert.isFalse(result);
+      });
+
+      it('Defeated under threshold', async() => {
+        await timedVote._setCommitment(user1, tokenSupply / 4);
+        await timedVote._setCommitment(user2, tokenSupply / 4);
+        await timedVote._timeTravelDays(unlockDays);
+        await timedVote._addProposal(proposalID);
+        await timedVote.approve(proposalID, {from: user1});
+        await timedVote.decline(proposalID, {from: user2});
+        await timedVote._timeTravelDays(closeDays);
+        const result = await timedVote.result(proposalID);
+        assert.isFalse(result);
+      });
+
+      it('Passed', async() => {
+        await timedVote._setCommitment(user1, tokenSupply / 2);
+        await timedVote._setCommitment(user2, tokenSupply / 4);
+        await timedVote._timeTravelDays(unlockDays);
+        await timedVote._addProposal(proposalID);
+        await timedVote.approve(proposalID, {from: user1});
+        await timedVote.decline(proposalID, {from: user2});
+        await timedVote._timeTravelDays(closeDays);
+        const result = await timedVote.result(proposalID);
+        assert.isTrue(result);
+      });
+    });
+
     describe('#withdraw', () => {
       it('Fail without commitment', async() => {
         await rejects(timedVote.withdraw({from: user1}));

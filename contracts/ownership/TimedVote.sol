@@ -234,6 +234,24 @@ contract TimedVote {
   }
 
   /**
+   * Get proposal result
+   * @notice
+   * Returns the final result of the proposal. A proposal passes if it meets
+   * quorum and meets the approval threshold. Fails if the proposal does not
+   * exist. Fails if the proposal is still open for voting.
+   * @param _proposalID - Identifier of proposal to get result of.
+   * @return passed - Whether the proposal passed.
+   */
+  function result(bytes32 _proposalID)
+  external
+  view
+  onlyExtant(_proposalID)
+  onlyClosed(_proposalID)
+  returns (bool passed) {
+    return (meetsQuorum(_proposalID) && meetsThreshold(_proposalID));
+  }
+
+  /**
    * Withdraw committed MYB
    * @notice
    * Withdraws all of your committed MYB to the original address. Fails if you
