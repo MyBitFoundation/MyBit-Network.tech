@@ -9,7 +9,7 @@ const user1 = web3.eth.accounts[0];
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const tokenSupply = 180000000000000000000000000;
 const voteDurationDays = 15;
-const voteDuration = voteDurationDays * 24 * 60 * 60; // In seconds
+const voteDuration = voteDurationDays * 24 * 60 * 60; // In second
 const unlockDays = voteDurationDays + 1;
 const closeDays = voteDurationDays + 1;
 const tier2Days = 180 + 1;
@@ -17,6 +17,7 @@ const tier3Days = 365 + 1;
 const tier1Multiplier = 100;
 const tier2Multiplier = 150;
 const tier3Multiplier = 200;
+const quorum = 20; // 20%
 const validAddress = '0xbaCc40C0Df5E6eC2B0A4e9d1A0F748473F7f8b1a';
 const proposalID =
   '0x0011223344556677889900112233445566778899001122334455667788990011';
@@ -47,7 +48,7 @@ contract('TimedVote', () => {
 
   beforeEach(async() => {
     token = await Token.new("MyBit", tokenSupply);
-    timedVote = await TimedVote.new(token.address, voteDuration);
+    timedVote = await TimedVote.new(token.address, voteDuration, quorum);
   });
 
   // ---------
@@ -56,15 +57,15 @@ contract('TimedVote', () => {
 
   describe('Construct', () => {
     it('Succeed', async() => {
-      await TimedVote.new(token.address, voteDuration);
+      await TimedVote.new(token.address, voteDuration, quorum);
     });
 
     it('Fail with null token address', async() => {
-      await rejects(TimedVote.new(NULL_ADDRESS, voteDuration));
+      await rejects(TimedVote.new(NULL_ADDRESS, voteDuration, quorum));
     });
 
     it('Fail with 0 vote duration', async() => {
-      await rejects(TimedVote.new(token.address, 0));
+      await rejects(TimedVote.new(token.address, 0, quorum));
     });
   });
 
