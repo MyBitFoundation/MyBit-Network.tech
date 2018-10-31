@@ -306,7 +306,7 @@ contract('TimedVote', () => {
       it('Reject nonextant', async() => {
         await rejects(timedVote._onlyExtant(proposalID));
       });
-    })
+    });
 
     describe('~onlyNew(proposalID)', () => {
       it('Accept new', async() => {
