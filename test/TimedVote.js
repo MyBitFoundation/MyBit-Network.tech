@@ -143,7 +143,7 @@ contract('TimedVote', () => {
       });
     });
 
-    describe('~onlyNew', () => {
+    describe('~onlyNew(proposalID)', () => {
       it('Accept new', async() => {
         await timedVote._onlyNew(proposalID);
       });
