@@ -6,7 +6,7 @@ contract TimedVoteFixture is TimedVote {
   // -----
   // State
 
-  uint256 timestamp;                            // Artificial now timestamp
+  uint256 private timestamp;                    // Artificial now timestamp
 
   // -----------
   // Constructor
