@@ -509,9 +509,9 @@ contract TimedVote {
   // Event
 
   event Approve(
-    bytes32 indexed proposalID,
-    address indexed account,
-    uint256 vote
+    bytes32 indexed proposalID,                 // Approved proposal identifier
+    address indexed account,                    // Approving account
+    uint256 vote                                // Weighted approval amount
   );
 
   /** MYB committed to voting */
