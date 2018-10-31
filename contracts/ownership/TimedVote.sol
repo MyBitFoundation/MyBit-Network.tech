@@ -516,8 +516,8 @@ contract TimedVote {
 
   /** MYB committed to voting */
   event Commit(
-    address indexed account,
-    uint256 value
+    address indexed account,                    // Committing account
+    uint256 value                               // MYB amount committed
   );
 
   /** Proposal created */
