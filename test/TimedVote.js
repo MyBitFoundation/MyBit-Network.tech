@@ -171,7 +171,7 @@ contract('TimedVote', () => {
 
       it('Vote', async() => {
         await timedVote._addProposal(proposalID);
-        await timedVote._setVoted(proposalID, user1);
+        await timedVote._setVoter(proposalID, user1);
         const voted = await timedVote._hasVoted(user1, proposalID);
         assert.isTrue(voted);
       });
@@ -543,7 +543,7 @@ contract('TimedVote', () => {
 
       it('Reject subsequent', async() => {
         await timedVote._addProposal(proposalID);
-        await timedVote._setVoted(proposalID, user1);
+        await timedVote._setVoter(proposalID, user1);
         await rejects(timedVote._onlyOneVote(proposalID, user1));
       });
     });
@@ -645,7 +645,7 @@ contract('TimedVote', () => {
         await timedVote._setCommitment(user1, 5);
         await timedVote._timeTravelDays(unlockDays);
         await timedVote._addProposal(proposalID);
-        await timedVote._setVoted(proposalID, user1);
+        await timedVote._setVoter(proposalID, user1);
         await rejects(timedVote.approve(proposalID, {from: user1}));
       });
 
@@ -743,7 +743,7 @@ contract('TimedVote', () => {
         await timedVote._setCommitment(user1, 5);
         await timedVote._timeTravelDays(unlockDays);
         await timedVote._addProposal(proposalID);
-        await timedVote._setVoted(proposalID, user1);
+        await timedVote._setVoter(proposalID, user1);
         await rejects(timedVote.decline(proposalID, {from: user1}));
       });
 

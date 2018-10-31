@@ -242,11 +242,11 @@ contract TimedVoteFixture is TimedVote {
   }
 
   /**
-   * Set account voted
-   * @param _proposalID - Identifier of proposal to set vote on.
-   * @param _account - Account to set voted for.
+   * Set account voter
+   * @param _proposalID - Identifier of proposal to make a voter on.
+   * @param _account - Account to make a voter.
    */
-  function _setVoted(bytes32 _proposalID, address _account)
+  function _setVoter(bytes32 _proposalID, address _account)
   external {
     proposals[_proposalID].voters[_account] = true;
   }
