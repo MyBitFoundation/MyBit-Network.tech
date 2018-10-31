@@ -276,6 +276,30 @@ contract('TimedVote', () => {
   // ----------
 
   describe('View Value', () => {
+    describe('~approvalPercentage', () => {
+      it('0%', async() => {
+        await timedVote._addProposal(proposalID);
+        await timedVote._setDissent(proposalID, 1000);
+        const percent = await timedVote._approvalPercentage(proposalID);
+        assert.isTrue(BigNumber(percent).isEqualTo(0));
+      });
+
+      it('50%', async() => {
+        await timedVote._addProposal(proposalID);
+        await timedVote._setApproval(proposalID, 500);
+        await timedVote._setDissent(proposalID, 500);
+        const percent = await timedVote._approvalPercentage(proposalID);
+        assert.isTrue(BigNumber(percent).isEqualTo(50));
+      });
+
+      it('100%', async() => {
+        await timedVote._addProposal(proposalID);
+        await timedVote._setApproval(proposalID, 1000);
+        const percent = await timedVote._approvalPercentage(proposalID);
+        assert.isTrue(BigNumber(percent).isEqualTo(100));
+      });
+    });
+
     describe('~commitmentAge', () => {
       it('Birth', async() => {
         await timedVote._setCommitment(user1, 5);

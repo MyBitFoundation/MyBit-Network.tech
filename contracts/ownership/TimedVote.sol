@@ -267,6 +267,24 @@ contract TimedVote {
   }
 
   /**
+   * Proposal approval percentage
+   * @notice
+   * Provides what percentage proposal approval is of total weighted votes.
+   * @dev
+   * Assumes extant proposal. Assumes nonzero total votes.
+   * @param _proposalID - Identifier of proposal to calculate for.
+   */
+  function approvalPercentage(bytes32 _proposalID)
+  internal
+  view
+  returns (uint8 percent) {
+    return percentage(
+      proposals[_proposalID].approval,
+      totalVotes(_proposalID)
+    );
+  }
+
+  /**
    * Get commitment age
    * @dev
    * Assumes active commitment.

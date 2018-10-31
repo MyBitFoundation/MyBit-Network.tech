@@ -34,6 +34,14 @@ contract TimedVoteFixture is TimedVote {
     return addressNull(_address);
   }
 
+  /** Proposal approval percentage */
+  function _approvalPercentage(bytes32 _proposalID)
+  external
+  view
+  returns (uint8 percent) {
+    return approvalPercentage(_proposalID);
+  }
+
   /** Get commitment age */
   function _commitmentAge(address _account)
   external
