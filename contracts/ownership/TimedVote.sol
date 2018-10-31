@@ -522,8 +522,8 @@ contract TimedVote {
 
   /** Proposal created */
   event Propose(
-    address indexed proposer,
-    bytes32 proposalID
+    address indexed proposer,                   // Proposing account
+    bytes32 proposalID                          // Proposal identifier
   );
 
   /** Commitment withdrawn */
