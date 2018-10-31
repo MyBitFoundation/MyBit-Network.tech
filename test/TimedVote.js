@@ -308,6 +308,28 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('~onlyIn', () => {
+      it('Accept inner', async() => {
+        await timedVote._onlyIn(5, 0, 10);
+      });
+
+      it('Accept lower limit', async() => {
+        await timedVote._onlyIn(0, 0, 10);
+      });
+
+      it('Accept upper limit', async() => {
+        await timedVote._onlyIn(10, 0, 10);
+      });
+
+      it('Reject below', async() => {
+        await rejects(timedVote._onlyIn(5, 6, 10));
+      });
+
+      it('Reject above', async() => {
+        await rejects(timedVote._onlyIn(11, 6, 10));
+      });
+    });
+
     describe('~onlyNew(proposalID)', () => {
       it('Accept new', async() => {
         await timedVote._onlyNew(proposalID);

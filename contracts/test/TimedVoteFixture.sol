@@ -87,6 +87,11 @@ contract TimedVoteFixture is TimedVote {
   view
   onlyExtant(_proposalID) {}
 
+  function _onlyIn(uint8 number, uint8 minimum, uint8 maximum)
+  external
+  pure
+  onlyIn(number, minimum, maximum) {}
+
   /** Require proposal ID new */
   function _onlyNew(bytes32 _proposalID)
   external

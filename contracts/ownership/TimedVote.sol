@@ -432,6 +432,24 @@ contract TimedVote {
   }
 
   /**
+   * Require number in range
+   * @notice
+   * Number must be in range minimum through maximum inclusive.
+   * @dev
+   * Throws id number is outside range.
+   * @param number - Number that must be in range.
+   * @param minimum - Lower limit.
+   * @param maximum - Upper limit.
+   */
+  modifier onlyIn(uint8 number, uint8 minimum, uint8 maximum) {
+    require(
+      number >= minimum && number <= maximum,
+      "Number outside valid range"
+    );
+    _;
+  }
+
+  /**
    * Require proposal ID new
    * @dev
    * Throws if identifier refers to an extant proposal.
