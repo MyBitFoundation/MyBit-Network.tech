@@ -283,6 +283,13 @@ contract('TimedVote', () => {
         const extant = await timedVote.proposalExtant(proposalID);
         assert.isTrue(extant);
       });
+
+      it('Emit Propose', async() => {
+        const { logs: events } = await timedVote.propose(proposalID);
+        const event = events.pop();
+        assert.strictEqual(event.event, 'Propose');
+        assert.strictEqual(event.args.proposalID, proposalID);
+      });
     });
 
     describe('#withdraw', () => {

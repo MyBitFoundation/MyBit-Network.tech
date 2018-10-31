@@ -129,13 +129,14 @@ contract TimedVote {
    * Create proposal
    * @notice
    * Creates a new proposal with the specified identifier. Fails if a proposal
-   * with the same identifier already exists.
+   * with the same identifier already exists. Emits Propose on success.
    * @param _proposalID - Identifier of new proposal.
    */
   function propose(bytes32 _proposalID)
   external
   onlyNew(_proposalID) {
     proposals[_proposalID] = Proposal(now, 0, 0, 0);
+    emit Propose(_proposalID);
   }
 
   /**
