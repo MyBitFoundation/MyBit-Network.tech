@@ -72,6 +72,14 @@ contract TimedVoteFixture is TimedVote {
   pure
   onlyValid(_address) {}
 
+  /** Check proposal open */
+  function _proposalOpen(bytes32 _proposalID)
+  external
+  view
+  returns (bool open) {
+    return proposalOpen(_proposalID);
+  }
+
   // ------
   // Writer
 

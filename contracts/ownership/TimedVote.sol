@@ -189,6 +189,23 @@ contract TimedVote {
     return (age <= voteDuration);
   }
 
+  /**
+   * Check proposal open
+   * @notice
+   * A proposal is open for voting if its age is within the vote duration.
+   * @dev
+   * Assumes a proposal with the specified identifier exists.
+   * @param _proposalID - Identifier of proposal to check.
+   * @return open - Whether proposal with the specified identifier is open.
+   */
+  function proposalOpen(bytes32 _proposalID)
+  internal
+  view
+  returns (bool open) {
+    uint256 age = now.sub(proposals[_proposalID].start);
+    return (age <= voteDuration);
+  }
+
   // --------
   // Modifier
 
