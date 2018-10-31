@@ -149,6 +149,21 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('~hasVoted', () => {
+      it('No vote', async() => {
+        await timedVote._addProposal(proposalID);
+        const voted = await timedVote._hasVoted(user1, proposalID);
+        assert.isFalse(voted);
+      });
+
+      it('Vote', async() => {
+        await timedVote._addProposal(proposalID);
+        await timedVote._setVoted(proposalID, user1);
+        const voted = await timedVote._hasVoted(user1, proposalID);
+        assert.isTrue(voted);
+      });
+    });
+
     describe('#proposalExtant', () => {
       it('Extant', async() => {
         await timedVote._addProposal(proposalID);

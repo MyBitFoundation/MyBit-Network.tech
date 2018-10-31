@@ -261,6 +261,23 @@ contract TimedVote {
   }
 
   /**
+   * Check account has voted
+   * @notice
+   * Checks whether account has voted on a proposal.
+   * @dev
+   * Assumes extant proposal.
+   * @param _account - Account to check.
+   * @param _proposalID - Identifier of proposal to check.
+   * @return voted - Whether account has voted on the proposal.
+   */
+  function hasVoted(address _account, bytes32 _proposalID)
+  internal
+  view
+  returns (bool voted) {
+    return proposals[_proposalID].voters[_account];
+  }
+
+  /**
    * Get proposal age
    * @dev
    * Assumes extant proposal.

@@ -61,6 +61,14 @@ contract TimedVoteFixture is TimedVote {
     return commitmentTier3(_account);
   }
 
+  /** Check account has voted */
+  function _hasVoted(address _account, bytes32 _proposalID)
+  external
+  view
+  returns (bool voted) {
+    return hasVoted(_account, _proposalID);
+  }
+
   /** Require proposal closed */
   function _onlyClosedProposal(bytes32 _proposalID)
   external
@@ -159,6 +167,16 @@ contract TimedVoteFixture is TimedVote {
   function _setCommitment(address _account, uint256 _amount)
   external {
     commitments[_account] = Commitment(_amount, time());
+  }
+
+  /**
+   * Set account voted
+   * @param _proposalID - Identifier of proposal to set vote on.
+   * @param _account - Account to set voted for.
+   */
+  function _setVoted(bytes32 _proposalID, address _account)
+  external {
+    proposals[_proposalID].voters[_account] = true;
   }
 
   /**
