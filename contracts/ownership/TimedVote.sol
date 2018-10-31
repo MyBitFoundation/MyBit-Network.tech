@@ -176,6 +176,8 @@ contract TimedVote {
 
   /**
    * Get commitment age
+   * @dev
+   * Assumes active commitment.
    * @param _account - Account owning commitment to get age of.
    * @return age - Commitment age.
    */
