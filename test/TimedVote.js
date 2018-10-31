@@ -13,6 +13,7 @@ const voteDuration = voteDurationDays * 24 * 60 * 60; // In seconds
 const unlockDays = voteDurationDays + 1;
 const closeDays = voteDurationDays + 1;
 const tier2Days = 180 + 1;
+const tier3Days = 365 + 1;
 const validAddress = '0xbaCc40C0Df5E6eC2B0A4e9d1A0F748473F7f8b1a';
 const proposalID =
   '0x0011223344556677889900112233445566778899001122334455667788990011';
@@ -127,6 +128,21 @@ contract('TimedVote', () => {
         await timedVote._timeTravelDays(tier2Days);
         const tier2 = await timedVote._commitmentTier2(user1);
         assert.isTrue(tier2);
+      });
+    });
+
+    describe('~commitmentTier3', () => {
+      it('Prior tier', async() => {
+        await timedVote._setCommitment(user1, 5);
+        const tier3 = await timedVote._commitmentTier3(user1);
+        assert.isFalse(tier3);
+      });
+
+      it('Tier 3', async() => {
+        await timedVote._setCommitment(user1, 5);
+        await timedVote._timeTravelDays(tier3Days);
+        const tier3 = await timedVote._commitmentTier3(user1);
+        assert.isTrue(tier3);
       });
     });
 

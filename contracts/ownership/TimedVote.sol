@@ -225,6 +225,23 @@ contract TimedVote {
   }
 
   /**
+   * Check commitment tier 3
+   * @notice
+   * A commitment becomes tier 3 after TIER_3_AGE has elapsed.
+   * @dev
+   * Assumes active commitment. Assumes commitment is not a higher tier.
+   * @param _account - Account owning commitment to check.
+   * @return tier3 - Whether commitment is tier 3.
+   */
+  function commitmentTier3(address _account)
+  internal
+  view
+  returns (bool tier3) {
+    uint256 age = commitmentAge(_account);
+    return (age > TIER_3_AGE);
+  }
+
+  /**
    * Get proposal age
    * @dev
    * Assumes extant proposal.

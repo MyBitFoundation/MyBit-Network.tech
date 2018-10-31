@@ -53,6 +53,13 @@ contract TimedVoteFixture is TimedVote {
     return commitmentTier2(_account);
   }
 
+  function _commitmentTier3(address _account)
+  external
+  view
+  returns (bool tier3) {
+    return commitmentTier3(_account);
+  }
+
   /** Require proposal closed */
   function _onlyClosedProposal(bytes32 _proposalID)
   external
