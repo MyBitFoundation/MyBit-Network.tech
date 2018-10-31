@@ -8,9 +8,9 @@ import "../math/SafeMath.sol";
  * @notice
  * Anyone can create a proposal. An MYB holder can lock their tokens to become
  * a voter. Voters may approve or decline proposals. Vote weight increases as
- * tokens are locked for longer periods. A proposal closes after 15 days. It
- * passes if a 20% quorum of total MYB supply voted and 51% of weighted votes
- * approved.
+ * tokens are locked for longer periods. A proposal closes after a configurable
+ * vote duration. It passes if a quorum of total MYB supply voted and the
+ * approval ratio of weighted votes crosses the required threshold.
  *
  * Provide the address of the MYB token contract and vote duration. Voting for
  * each proposal will be open for the specified duration.
