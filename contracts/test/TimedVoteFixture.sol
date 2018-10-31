@@ -14,7 +14,9 @@ contract TimedVoteFixture is TimedVote {
   /** Relay all arguments */
   constructor(address _tokenAddress, uint256 _voteDuration)
   public
-  TimedVote(_tokenAddress, _voteDuration) {}
+  TimedVote(_tokenAddress, _voteDuration) {
+    timestamp = now;
+  }
 
   // --------
   // Revealer
