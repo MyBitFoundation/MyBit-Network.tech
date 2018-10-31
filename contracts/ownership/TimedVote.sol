@@ -97,7 +97,7 @@ contract TimedVote {
   external
   onlyUncommitted(msg.sender) {
     require(_value > 0, "Nonzero value required");
-    commitments[msg.sender] = Commitment(_value, now);
+    commitments[msg.sender] = Commitment(_value, time());
     bool transferred = token.transferFrom(msg.sender, this, _value);
     require(transferred, "Transfer failed");
     emit Commit(msg.sender, _value);
@@ -137,7 +137,7 @@ contract TimedVote {
   function propose(bytes32 _proposalID)
   external
   onlyNew(_proposalID) {
-    proposals[_proposalID] = Proposal(now, 0, 0, 0);
+    proposals[_proposalID] = Proposal(time(), 0, 0, 0);
     emit Propose(msg.sender, _proposalID);
   }
 
@@ -185,7 +185,7 @@ contract TimedVote {
   internal
   view
   returns (uint256 age) {
-    return now.sub(commitments[_account].time);
+    return time().sub(commitments[_account].time);
   }
 
   /**
@@ -201,7 +201,7 @@ contract TimedVote {
   internal
   view
   returns (bool locked) {
-    uint256 age = now.sub(commitments[_account].time);
+    uint256 age = time().sub(commitments[_account].time);
     return (age <= voteDuration);
   }
 
@@ -218,7 +218,7 @@ contract TimedVote {
   internal
   view
   returns (bool open) {
-    uint256 age = now.sub(proposals[_proposalID].start);
+    uint256 age = time().sub(proposals[_proposalID].start);
     return (age <= voteDuration);
   }
 
