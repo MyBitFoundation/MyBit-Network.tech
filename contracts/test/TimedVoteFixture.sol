@@ -99,6 +99,14 @@ contract TimedVoteFixture is TimedVote {
   pure
   onlyValid(_address) {}
 
+  /** Get proposal age */
+  function _proposalAge(bytes32 _proposalID)
+  external
+  view
+  returns (uint256 age) {
+    return proposalAge(_proposalID);
+  }
+
   /** Check proposal open */
   function _proposalOpen(bytes32 _proposalID)
   external

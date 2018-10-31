@@ -206,6 +206,20 @@ contract TimedVote {
   }
 
   /**
+   * Get proposal age
+   * @dev
+   * Assumes extant proposal.
+   * @param _proposalID - Identifier of proposal to get age of.
+   * @return age - Proposal age.
+   */
+  function proposalAge(bytes32 _proposalID)
+  internal
+  view
+  returns (uint256 age) {
+    return time().sub(proposals[_proposalID].start);
+  }
+
+  /**
    * Check proposal open
    * @notice
    * A proposal is open for voting until vote duration has elapsed.

@@ -162,6 +162,21 @@ contract('TimedVote', () => {
         assert.isTrue(BigNumber(age).isEqualTo(222));
       });
     });
+
+    describe('~proposalAge', () => {
+      it('Birth', async() => {
+        await timedVote._addProposal(proposalID);
+        const age = await timedVote._proposalAge(proposalID);
+        assert.isTrue(BigNumber(age).isEqualTo(0));
+      });
+
+      it('Terrible 2s', async() => {
+        await timedVote._addProposal(proposalID);
+        await timedVote._timeTravelSeconds(222);
+        const age = await timedVote._proposalAge(proposalID);
+        assert.isTrue(BigNumber(age).isEqualTo(222));
+      });
+    });
   });
 
   // --------
