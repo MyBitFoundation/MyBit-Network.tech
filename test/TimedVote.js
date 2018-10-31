@@ -447,7 +447,7 @@ contract('TimedVote', () => {
         const { logs: events } = await timedVote.approve(
           proposalID,
           {from: user1}
-        )
+        );
         assert.isAtLeast(events.length, 1);
         const event = events.pop();
         assert.strictEqual(event.event, 'Approve');
