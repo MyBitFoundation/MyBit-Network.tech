@@ -193,7 +193,7 @@ contract TimedVote {
    * @notice
    * A commitment is locked if its age is within the vote duration.
    * @dev
-   * Assumes the specified account has an active commitment.
+   * Assumes active commitment.
    * @param _account - Account owning commitment to check.
    * @return locked - Whether commitment of the specified account is locked.
    */
@@ -210,7 +210,7 @@ contract TimedVote {
    * @notice
    * A proposal is open for voting if its age is within the vote duration.
    * @dev
-   * Assumes a proposal with the specified identifier exists.
+   * Assumes extant proposal.
    * @param _proposalID - Identifier of proposal to check.
    * @return open - Whether proposal with the specified identifier is open.
    */
@@ -241,7 +241,7 @@ contract TimedVote {
   /**
    * Require proposal closed
    * @dev
-   * Throws if named proposal is open. Assumes proposal exists.
+   * Throws if named proposal is open. Assumes extant proposal.
    * @param _proposalID - Identifier of proposal that must be closed.
    */
   modifier onlyClosed(bytes32 _proposalID) {
@@ -297,7 +297,7 @@ contract TimedVote {
   /**
    * Require proposal open
    * @dev
-   * Throws if named proposal is closed. Assumes proposal exists.
+   * Throws if named proposal is closed. Assumes extant proposal.
    * @param _proposalID - Identifier of proposal that must be open.
    */
   modifier onlyOpen(bytes32 _proposalID) {
@@ -340,7 +340,7 @@ contract TimedVote {
    * Require commitment unlocked
    * @dev
    * Throws if the commitment of the specified account is locked.
-   * Assumes the account has an active commitment.
+   * Assumes active commitment.
    * @param _account - Account owning commitment that must be unlocked.
    */
   modifier onlyUnlocked(address _account) {
