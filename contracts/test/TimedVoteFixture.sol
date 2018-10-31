@@ -114,7 +114,7 @@ contract TimedVoteFixture is TimedVote {
    */
   function _addProposal(bytes32 _proposalID)
   external {
-    proposals[_proposalID] = Proposal(now, 0, 0, 0);
+    proposals[_proposalID] = Proposal(time(), 0, 0, 0);
   }
 
   /**
@@ -210,6 +210,6 @@ contract TimedVoteFixture is TimedVote {
    */
   function _setCommitment(address _account, uint256 _amount)
   external {
-    commitments[_account] = Commitment(_amount, now);
+    commitments[_account] = Commitment(_amount, time());
   }
 }
