@@ -87,7 +87,7 @@ contract TimedVoteFixture is TimedVote {
   /**
    * Advance commitment time by seconds
    * @param _account - Account owning commitment to advance.
-   * @param _seconds - Seconds to advance commitment.
+   * @param _seconds - Seconds to advance.
    */
   function _advanceCommitmentSeconds(address _account, uint256 _seconds)
   public {
@@ -97,7 +97,7 @@ contract TimedVoteFixture is TimedVote {
   /**
    * Advance commitment time by minutes
    * @param _account - Account owning commitment to advance.
-   * @param _minutes - Minutes to advance commitment.
+   * @param _minutes - Minutes to advance.
    */
   function _advanceCommitmentMinutes(address _account, uint256 _minutes)
   public {
@@ -108,7 +108,7 @@ contract TimedVoteFixture is TimedVote {
   /**
    * Advance commitment time by hours
    * @param _account - Account owning commitment to advance.
-   * @param _hours - Hours to advance commitment.
+   * @param _hours - Hours to advance.
    */
   function _advanceCommitmentHours(address _account, uint256 _hours)
   public {
@@ -119,7 +119,7 @@ contract TimedVoteFixture is TimedVote {
   /**
    * Advance commitment time by days
    * @param _account - Account owning commitment to advance.
-   * @param _days - Days to advance commitment.
+   * @param _days - Days to advance.
    */
   function _advanceCommitmentDays(address _account, uint256 _days)
   external {
