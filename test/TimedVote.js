@@ -248,6 +248,19 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('#commitmentOf', () => {
+      it('No commitment', async() => {
+        const result = await timedVote.commitmentOf.call(user1);
+        assert.isTrue(BigNumber(result).isEqualTo(0));
+      });
+
+      it('Commitment', async() => {
+        await timedVote._setCommitment(user1, 100);
+        const result = await timedVote.commitmentOf.call(user1);
+        assert.isTrue(BigNumber(result).isEqualTo(100));
+      });
+    });
+
     describe('#multiplierOf', () => {
       it('Tier 1', async() => {
         await timedVote._setCommitment(user1, 5);
@@ -534,19 +547,6 @@ contract('TimedVote', () => {
         assert.strictEqual(event.event, 'Commit');
         assert.strictEqual(event.args.account, user1);
         assert.isTrue(BigNumber(event.args.value).isEqualTo(100));
-      });
-    });
-
-    describe('#commitmentOf', () => {
-      it('No commitment', async() => {
-        const result = await timedVote.commitmentOf.call(user1);
-        assert.isTrue(BigNumber(result).isEqualTo(0));
-      });
-
-      it('Commitment', async() => {
-        await timedVote._setCommitment(user1, 100);
-        const result = await timedVote.commitmentOf.call(user1);
-        assert.isTrue(BigNumber(result).isEqualTo(100));
       });
     });
 
