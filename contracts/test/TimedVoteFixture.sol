@@ -170,7 +170,6 @@ contract TimedVoteFixture is TimedVote {
 
   // --------
   // Override
-  // --------
 
   /**
    * Get artificial current time
