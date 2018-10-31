@@ -93,6 +93,12 @@ contract TimedVoteFixture is TimedVote {
   view
   onlyNew(_proposalID) {}
 
+  /** Require maximum 1 vote */
+  function _onlyOneVote(bytes32 _proposalID, address _account)
+  external
+  view
+  onlyOneVote(_proposalID, _account) {}
+
   /** Require proposal open */
   function _onlyOpenProposal(bytes32 _proposalID)
   external

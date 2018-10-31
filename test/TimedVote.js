@@ -319,6 +319,19 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('~onlyOneVote', () => {
+      it('Accept first', async() => {
+        await timedVote._addProposal(proposalID);
+        await timedVote._onlyOneVote(proposalID, user1);
+      });
+
+      it('Reject subsequent', async() => {
+        await timedVote._addProposal(proposalID);
+        await timedVote._setVoted(proposalID, user1);
+        await rejects(timedVote._onlyOneVote(proposalID, user1));
+      });
+    });
+
     describe('~onlyOpen(proposal)', () => {
       it('Accept open', async() => {
         await timedVote._addProposal(proposalID);

@@ -394,6 +394,22 @@ contract TimedVote {
   }
 
   /**
+   * Require maximum 1 vote
+   * @dev
+   * Throws if account has already voted on the proposal.
+   * Assumes extant proposal.
+   * @param _proposalID - Identifier of proposal to check.
+   * @param _account - Account to check.
+   */
+  modifier onlyOneVote(bytes32 _proposalID, address _account) {
+    require(
+      !hasVoted(_account, _proposalID),
+      "Already voted"
+    );
+    _;
+  }
+
+  /**
    * Require proposal open
    * @dev
    * Throws if proposal is closed. Assumes extant proposal.
