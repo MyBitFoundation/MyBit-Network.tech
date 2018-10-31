@@ -76,7 +76,7 @@ contract TimedVote {
   /**
    * Check account committed
    * @param _account - Account to check.
-   * @return committed - Whether the account has an active commitment.
+   * @return committed - Whether account has an active commitment.
    */
   function accountCommitted(address _account)
   public
@@ -106,7 +106,7 @@ contract TimedVote {
   /**
    * Get account commitment amount
    * @param _account - Account to get commitment amount of.
-   * @return value - MYB amount currently committed by the given account.
+   * @return value - MYB amount currently committed by the account.
    */
   function commitmentOf(address _account)
   external
@@ -118,7 +118,7 @@ contract TimedVote {
   /**
    * Check proposal extant
    * @param _proposalID - Proposal identifier to check.
-   * @return extant - Whether a proposal with the specified identifier exists.
+   * @return extant - Whether proposal with identifier exists.
    */
   function proposalExtant(bytes32 _proposalID)
   public
@@ -165,7 +165,7 @@ contract TimedVote {
   /**
    * Check address null
    * @param _address - Address to check.
-   * @return null_ - Whether the address is the null address.
+   * @return null_ - Whether address is the null address.
    */
   function addressNull(address _address)
   internal
@@ -195,7 +195,7 @@ contract TimedVote {
    * @dev
    * Assumes active commitment.
    * @param _account - Account owning commitment to check.
-   * @return locked - Whether commitment of the specified account is locked.
+   * @return locked - Whether commitment is locked.
    */
   function commitmentLocked(address _account)
   internal
@@ -212,7 +212,7 @@ contract TimedVote {
    * @dev
    * Assumes extant proposal.
    * @param _proposalID - Identifier of proposal to check.
-   * @return open - Whether proposal with the specified identifier is open.
+   * @return open - Whether proposal is open.
    */
   function proposalOpen(bytes32 _proposalID)
   internal
