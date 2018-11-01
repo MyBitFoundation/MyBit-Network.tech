@@ -950,17 +950,20 @@ contract('TimedVote', () => {
       });
 
       it('Initial', async() => {
+        await timedVote._setBody(10);
         await timedVote._addProposal(proposalID);
-        const [ open, age, voted, approval, dissent ] =
+        const [ open, age, votingBody, voted, approval, dissent ] =
           await timedVote.status(proposalID);
         assert.isTrue(open);
         assert.isTrue(BigNumber(age).isEqualTo(0));
+        assert.isTrue(BigNumber(votingBody).isEqualTo(10));
         assert.isTrue(BigNumber(voted).isEqualTo(0));
         assert.isTrue(BigNumber(approval).isEqualTo(0));
         assert.isTrue(BigNumber(dissent).isEqualTo(0));
       });
 
       it('Closed', async() => {
+        await timedVote._setBody(10);
         await timedVote._addProposal(proposalID);
         await timedVote._timeTravelDays(closeDays);
         const [ open ] = await timedVote.status(proposalID);
@@ -968,6 +971,7 @@ contract('TimedVote', () => {
       });
 
       it('Aged', async() => {
+        await timedVote._setBody(10);
         await timedVote._addProposal(proposalID);
         await timedVote._timeTravelSeconds(222);
         const [ , age ] = await timedVote.status(proposalID);
@@ -979,7 +983,7 @@ contract('TimedVote', () => {
         await timedVote._timeTravelDays(unlockDays);
         await timedVote._addProposal(proposalID);
         await timedVote.approve(proposalID, {from: user1});
-        const [ , , voted, approval ] = await timedVote.status(proposalID);
+        const [ , , , voted, approval ] = await timedVote.status(proposalID);
         assert.isTrue(BigNumber(voted).isEqualTo(5));
         assert.isTrue(BigNumber(approval).isEqualTo(5));
       });
@@ -989,7 +993,7 @@ contract('TimedVote', () => {
         await timedVote._timeTravelDays(unlockDays);
         await timedVote._addProposal(proposalID);
         await timedVote.decline(proposalID, {from: user1});
-        const [ , , voted, , dissent ] = await timedVote.status(proposalID);
+        const [ , , , voted, , dissent ] = await timedVote.status(proposalID);
         assert.isTrue(BigNumber(voted).isEqualTo(5));
         assert.isTrue(BigNumber(dissent).isEqualTo(5));
       });
@@ -1001,7 +1005,7 @@ contract('TimedVote', () => {
         await timedVote._addProposal(proposalID);
         await timedVote.approve(proposalID, {from: user1});
         await timedVote.decline(proposalID, {from: user2});
-        const [ , , voted, approval, dissent ] =
+        const [ , , , voted, approval, dissent ] =
           await timedVote.status(proposalID);
         assert.isTrue(BigNumber(voted).isEqualTo(10));
         assert.isTrue(BigNumber(approval).isEqualTo(5));

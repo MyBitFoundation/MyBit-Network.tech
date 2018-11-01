@@ -267,6 +267,7 @@ contract TimedVote {
    * @param _proposalID - Identifier of proposal to get status of.
    * @return open - Whether the proposal is open.
    * @return age - Proposal age. Voting closes after voteDuration.
+   * @return votingBody - Proposal voting body MYB amount. Fixed when created.
    * @return voted - Voting MYB amount. Must meet quorum to pass.
    * @return approval - Weighted approval amount. Ratio with total votes
    *     must meet threshold to pass.
@@ -279,6 +280,7 @@ contract TimedVote {
   returns (
     bool open,
     uint256 age,
+    uint256 votingBody,
     uint256 voted,
     uint256 approval,
     uint256 dissent
@@ -287,6 +289,7 @@ contract TimedVote {
     return (
       proposalOpen(_proposalID),
       proposalAge(_proposalID),
+      proposal.body,
       proposal.voted,
       proposal.approval,
       proposal.dissent
