@@ -2,6 +2,7 @@ var bn = require('bignumber.js');
 
 const AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
 const Database = artifacts.require("./database/Database.sol");
+const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const DivToken = artifacts.require("./tokens/ERC20/DividendToken.sol");
 const BurnableToken = artifacts.require("./tokens/ERC20/BurnableToken.sol");
@@ -9,6 +10,16 @@ const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
 const API = artifacts.require("./database/API.sol");
+const Promisify = (inner) =>
+    new Promise((resolve, reject) =>
+        inner((err, res) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(res);
+            }
+        })
+    );
 
 const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
@@ -25,6 +36,7 @@ contract('AssetManager Escrow', async() => {
   let divToken;
   let burnToken
   let db;
+  let events;
   let cm;
   let api;
   let hash;
@@ -45,8 +57,12 @@ contract('AssetManager Escrow', async() => {
     db = await Database.new([owner], true);
   });
 
+  it('Deploy Events', async() => {
+    events = await Events.new(db.address);
+  });
+
   it('Deploy contract manager contract', async() => {
-    cm = await ContractManager.new(db.address);
+    cm = await ContractManager.new(db.address, events.address);
     await db.enableContractManagement(cm.address);
     await cm.addContract('Owner', owner);
   });
@@ -67,22 +83,25 @@ contract('AssetManager Escrow', async() => {
   });
 
   it('Deploy platform', async() => {
-    platform = await Platform.new(db.address);
+    platform = await Platform.new(db.address, events.address);
     await cm.addContract('PlatformFunds', platform.address);
     await platform.setPlatformWallet(owner);
     await platform.setPlatformToken(burnToken.address);
   });
 
   it('Deploy assetManager escrow', async() => {
-    escrow = await AssetManagerEscrow.new(db.address);
+    escrow = await AssetManagerEscrow.new(db.address, events.address);
     await cm.addContract('AssetManagerEscrow', escrow.address);
   });
 
   it('Set operator', async() => {
-    operators = await Operators.new(db.address);
+    operators = await Operators.new(db.address, events.address);
     await cm.addContract('Operators', operators.address);
-    let tx = await operators.registerOperator(operator, 'Operator');
-    operatorID = tx.logs[0].args._operatorID;
+    let block = await web3.eth.getBlock('latest');
+    await operators.registerOperator(operator, 'Operator');
+    let e = events.LogOperator({message: 'Operator registered', origin: owner}, {fromBlock: block.number, toBlock: 'latest'});
+    let logs = await Promisify(callback => e.get(callback));
+    operatorID = logs[0].args.operatorID;
   });
 
   it("Generate assetID", async() => {
@@ -92,8 +111,11 @@ contract('AssetManager Escrow', async() => {
   it("Lock escrow", async() => {
     let balanceBefore = await burnToken.balanceOf(assetManager);
     await burnToken.approve(escrow.address, 2*ETH, {from:assetManager});
-    tx = await escrow.lockEscrow(assetID, 2*ETH, {from:assetManager});
-    assetManagerEscrowID = tx.logs[0].args._assetManagerEscrowID;
+    let block = await web3.eth.getBlock('latest');
+    await escrow.lockEscrow(assetID, 2*ETH, {from:assetManager});
+    let e = events.LogEscrow({message: 'Escrow locked', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
+    let logs = await Promisify(callback => e.get(callback));
+    assetManagerEscrowID = logs[0].args.escrowID;
     let balanceAfter = await burnToken.balanceOf(assetManager);
     let diff = bn(balanceBefore).minus(balanceAfter);
     assert.equal(diff, 2*ETH);

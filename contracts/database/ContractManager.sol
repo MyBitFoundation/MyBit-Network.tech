@@ -1,18 +1,21 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import "../interfaces/DBInterface.sol";
+import "./Events.sol";
 
 // @title A contract manager that determines which contracts have write access to platform database
 // @notice This contract determines which contracts are allowed to make changes to the database contract.
 // @author Kyle Dewhurst, MyBit Foundation
 contract ContractManager{
   DBInterface public database;
+  Events public events;
 
   // @notice constructor: initializes database
   // @param: the address for the database contract used by this platform
-  constructor(address _database)
+  constructor(address _database, address _events)
   public {
     database = DBInterface(_database);
+    events = Events(_events);
   }
 
   // @notice This function adds new contracts to the platform. Giving them write access to Database.sol
@@ -30,7 +33,8 @@ contract ContractManager{
     bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));      //Update currentState
     bytes32 newState = keccak256(abi.encodePacked(currentState, _contractAddress));
     database.setBytes32(keccak256(abi.encodePacked("currentState")), newState);
-    emit LogContractAdded(_contractAddress, _name, block.number);
+    events.contractChange("Contract added", _contractAddress, _name);
+    //emit LogContractAdded(_contractAddress, _name, block.number);
   }
 
   // @notice Owner can remove an existing contract on the platform.
@@ -44,7 +48,8 @@ contract ContractManager{
     address contractToDelete = database.addressStorage(keccak256(abi.encodePacked("contract", _name)));
     database.deleteBool(keccak256(abi.encodePacked("contract", contractToDelete)));
     database.deleteAddress(keccak256(abi.encodePacked("contract", _name)));
-    emit LogContractRemoved(contractToDelete, _name, block.number);
+    events.contractChange("Contract removed", contractToDelete, _name);
+    //emit LogContractRemoved(contractToDelete, _name, block.number);
   }
 
   // @notice Owner can update an existing contract on the platform, giving it write access to Database
@@ -62,8 +67,10 @@ contract ContractManager{
     bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));      //Update currentState
     bytes32 newState = keccak256(abi.encodePacked(currentState, _newContractAddress));
     database.setBytes32(keccak256(abi.encodePacked("currentState")), newState);
-    emit LogContractUpdated(oldAddress, _name, block.number);
-    emit LogNewContractLocation(_newContractAddress, _name, block.number);
+    events.contractChange("Contract updated (old)", oldAddress, _name);
+    events.contractChange("Contract updated (new)", _newContractAddress, _name);
+    //emit LogContractUpdated(oldAddress, _name, block.number);
+    //emit LogNewContractLocation(_newContractAddress, _name, block.number);
   }
 
   // @notice user can decide to accept or deny the current and future state of the platform contracts

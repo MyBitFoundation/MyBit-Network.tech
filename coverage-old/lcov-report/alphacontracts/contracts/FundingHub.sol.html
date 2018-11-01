@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for alphacontracts/contracts/FundingHub.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">all files</a> / <a href="index.html">alphacontracts/contracts/</a> FundingHub.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>0/41</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/32</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/16</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>0/60</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">  pragma solidity 0.4.24;
+&nbsp;
+  import "./SafeMath.sol";
+  import "./Database.sol";
+&nbsp;
+  //------------------------------------------------------------------------------------------------------------------
+  // This contract is where users can fund assets or receive refunds from failed funding periods. Funding stages are represented by uints.
+  // Funding stages: 0: funding hasn't started, 1: currently being funded, 2: funding failed,  3: funding success, 4: asset is live
+  //------------------------------------------------------------------------------------------------------------------
+  contract FundingHub {
+    using SafeMath for *;
+&nbsp;
+    Database public database;
+&nbsp;
+    bool private rentrancy_lock;    // Prevents re-entrancy attack
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    // Contructor:
+    // @Param: The address for the MyBit database
+    //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >    constructor(address _database)</span>
+    public {
+<span class="cstat-no" title="statement not covered" >        database = Database(_database)</span>;
+    }
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    // Users can send Ether here to fund asset if funding goal hasn't been reached and the funding period isn't over.
+    // Invariants: Requires Eth be sent with transaction |  Must be in funding stage. Must be under goal | Must have KYC approved. | contract is not paused
+    //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >    function fund(bytes32 _assetID)</span>
+    external
+    payable
+    requiresEther
+    whenNotPaused
+    atStage(_assetID, uint(1))
+    priceUpdated
+    fundingLimit(_assetID)
+    // onlyApproved   TODO: uncomment when inner-alpha done
+    returns (bool) {
+<span class="cstat-no" title="statement not covered" >      uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)))</span>;
+<span class="cstat-no" title="statement not covered" >      if (ownershipUnits == 0) {</span>
+<span class="cstat-no" title="statement not covered" >        emit LogNewFunder(_assetID, msg.sender);</span>    // Create event to reference list of funders
+      }
+<span class="cstat-no" title="statement not covered" >      uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)))</span>;
+      database.setUint(keccak256(abi.encodePacked("amountRaised", _assetID)), amountRaised.add(msg.value));
+      database.setUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)), ownershipUnits.add(msg.value));
+<span class="cstat-no" title="statement not covered" >      emit LogAssetFunded(_assetID, msg.sender, msg.value);</span>
+<span class="cstat-no" title="statement not covered" >      return true;</span>
+    }
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    // This is called once funding has succeeded. Sends Ether to installer, foundation and Token Holders
+    // Invariants: Must be in stage FundingSuccess | MyBitFoundation + AssetEscrow  + BugEscrow addresses are set | Contract is not paused
+    // Note: Will fail if addresses + percentages are not set. AmountRaised = WeiRaised = ownershipUnits
+    // TODO: Installer gets extra 1-2 wei from solidity rounding down when faced with fraction
+    // TODO: Create asset tokens here
+    //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >    function payout(bytes32 _assetID)</span>
+    external
+    nonReentrant
+    whenNotPaused
+    atStage(_assetID, uint(3))       // Can only get to stage 3 by receiving enough funding within time limit
+    returns (bool) {
+<span class="cstat-no" title="statement not covered" >      uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)))</span>;
+<span class="cstat-no" title="statement not covered" >      uint myBitAmount = amountRaised.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("myBitFoundationPercentage"))))</span>;
+<span class="cstat-no" title="statement not covered" >      uint installerAmount = amountRaised.sub(myBitAmount)</span>;
+      database.addressStorage(keccak256(abi.encodePacked("MyBitFoundation"))).transfer(myBitAmount);             // Must be normal account
+      database.addressStorage(keccak256(abi.encodePacked("InstallerEscrow"))).transfer(installerAmount);             // Must be normal account
+      database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(4));
+<span class="cstat-no" title="statement not covered" >      emit LogAssetPayout(_assetID, amountRaised);</span>
+<span class="cstat-no" title="statement not covered" >      return true;</span>
+    }
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    // This function needs to be called to allow refunds to be made. Signals to the myBitHub contract that funding has failed + moves stage to Funding failed
+    // Invariants: Must be still be in funding stage | must be passed deadline
+    //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >    function initiateRefund(bytes32 _assetID)</span>
+    external
+    fundingPeriodOver(_assetID)
+    atStage(_assetID, uint(1))
+    returns (bool) {
+      database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(2));
+<span class="cstat-no" title="statement not covered" >      emit LogAssetFundingFailed(_assetID, database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID))));</span>
+<span class="cstat-no" title="statement not covered" >      return true;</span>
+    }
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    // Contributors can retrieve their funds here if campaign is finished + failure and initateRefund() has been called.
+    // Invariants: sender must have ownershipUnits | Must be in failed funding stage || No re-entry | Contract must not be paused
+    //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >    function refund(bytes32 _assetID)</span>
+    external
+    nonReentrant
+    whenNotPaused
+    atStage(_assetID, uint(2))
+    returns (bool) {
+<span class="cstat-no" title="statement not covered" >      uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)))</span>;
+<span class="cstat-no" title="statement not covered" >      require (ownershipUnits &gt; uint(0))</span>;
+      database.deleteUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)));
+<span class="cstat-no" title="statement not covered" >      uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)))</span>;
+      database.setUint(keccak256(abi.encodePacked("amountRaised", _assetID)), amountRaised.sub(ownershipUnits));
+      msg.sender.transfer(ownershipUnits);
+<span class="cstat-no" title="statement not covered" >      emit LogRefund(_assetID, msg.sender, ownershipUnits);</span>
+<span class="cstat-no" title="statement not covered" >      return true;</span>
+    }
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    // Must be authorized by 1 of the 3 owners and then can be called by any of the other 2
+    // Invariants: Must be 1 of 3 owners. Cannot be called by same owner who authorized the function to be called.
+    //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >    function destroy(address _functionInitiator, address _holdingAddress)</span>
+    anyOwner
+    public {
+<span class="cstat-no" title="statement not covered" >      require(_functionInitiator != msg.sender)</span>;
+<span class="cstat-no" title="statement not covered" >      require(database.boolStorage(keccak256(abi.encodePacked(address(this), _functionInitiator, "destroy", keccak256(abi.encodePacked(_holdingAddress))))))</span>;
+<span class="cstat-no" title="statement not covered" >      emit LogDestruction(_holdingAddress, address(this).balance, msg.sender);</span>
+<span class="cstat-no" title="statement not covered" >      selfdestruct(_holdingAddress)</span>;
+    }
+&nbsp;
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    //                                            Modifiers
+    //------------------------------------------------------------------------------------------------------------------
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    // Requires caller is one of the three owners
+    //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >    modifier anyOwne</span>r {
+<span class="cstat-no" title="statement not covered" >      require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))))</span>;
+      _;
+    }
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    // Requires that the contract is not paused
+    //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >    modifier whenNotPause</span>d {
+<span class="cstat-no" title="statement not covered" >      require(!database.boolStorage(keccak256(abi.encodePacked("pause", address(this)))))</span>;
+      _;
+    }
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    // Don't let function caller re-enter function before initial transaction finishes
+    //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >    modifier nonReentrant(</span>) {
+<span class="cstat-no" title="statement not covered" >      require(!rentrancy_lock)</span>;
+<span class="cstat-no" title="statement not covered" >      rentrancy_lock = true</span>;
+      _;
+<span class="cstat-no" title="statement not covered" >      rentrancy_lock = false</span>;
+    }
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    // Requires that Ether is sent with the transaction
+    //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >    modifier requiresEther(</span>) {
+<span class="cstat-no" title="statement not covered" >      require(msg.value &gt; 0)</span>;
+      _;
+    }
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    // Requires user has burnt tokens to access this function
+    //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >    modifier onlyApprov</span>ed{
+<span class="cstat-no" title="statement not covered" >      require(database.uintStorage(keccak256(abi.encodePacked("userAccess", msg.sender))) &gt;= uint(1))</span>;
+<span class="cstat-no" title="statement not covered" >      require(database.uintStorage(keccak256(abi.encodePacked("userAccessExpiration", msg.sender))) &gt; now)</span>;
+      _;
+    }
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    // Transitions funding period to success if enough Ether is raised
+    // Must be in funding stage 3 (currently being funded).
+    // Deletes funding raising variables if current transaction puts it over the goal.
+    // TODO: Limit how far over the goal users are allowed to fund?
+    //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >    modifier fundingLimit(bytes32 _assetID</span>) {
+<span class="cstat-no" title="statement not covered" >      require(now &lt;= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))))</span>;
+<span class="cstat-no" title="statement not covered" >      uint currentEthPrice = database.uintStorage(keccak256(abi.encodePacked("ethUSDPrice")))</span>;
+<span class="cstat-no" title="statement not covered" >      assert (currentEthPrice &gt; uint(0))</span>;
+      _;
+<span class="cstat-no" title="statement not covered" >      uint amountRaised = database.uintStorage(keccak256(abi.encodePacked("amountRaised", _assetID)))</span>; 
+<span class="cstat-no" title="statement not covered" >      if (amountRaised.mul(currentEthPrice).div(1e18) &gt;= database.uintStorage(keccak256(abi.encodePacked("amountToBeRaised", _assetID)))) {</span>
+         database.setUint(keccak256(abi.encodePacked("fundingStage", _assetID)), uint(3));
+<span class="cstat-no" title="statement not covered" >         emit LogAssetFundingSuccess(_assetID, currentEthPrice, amountRaised);</span>
+        }
+    }
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    // Check that the Ether/USD prices have been updated
+    //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >    modifier priceUpdate</span>d {
+<span class="cstat-no" title="statement not covered" >      require (now &lt; database.uintStorage(keccak256(abi.encodePacked("priceExpiration"))))</span>;
+      _;
+    }
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    // Requires the funding stage is at a particular stage
+    //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >    modifier atStage(bytes32 _assetID, uint _stage</span>) {
+<span class="cstat-no" title="statement not covered" >      require(database.uintStorage(keccak256(abi.encodePacked("fundingStage", _assetID))) == _stage)</span>;
+      _;
+    }
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    // Requires that the funding deadline has passed
+    //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >    modifier fundingPeriodOver(bytes32 _assetID</span>) {
+<span class="cstat-no" title="statement not covered" >      require(now &gt;= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))))</span>;
+      _;
+    }
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    // Fallback: Reject Ether
+    //------------------------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >    function ()</span>
+    public {
+<span class="cstat-no" title="statement not covered" >      revert()</span>;
+    }
+&nbsp;
+&nbsp;
+    //------------------------------------------------------------------------------------------------------------------
+    //                                            Events
+    //------------------------------------------------------------------------------------------------------------------
+&nbsp;
+    event LogNewFunder(bytes32 indexed _assetID, address indexed _funder);
+    event LogAssetFunded(bytes32 indexed _assetID, address indexed _sender, uint _amount);
+    event LogAssetFundingFailed(bytes32 indexed _assetID, uint _amountRaised);
+    event LogAssetFundingSuccess(bytes32 indexed _assetID, uint _currentEthPrice, uint _amountRaised);
+    event LogRefund(bytes32 indexed _assetID, address indexed _funder, uint _amount);
+    event LogAssetPayout(bytes32 indexed _assetID, uint _amount);
+    event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
+  }
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sat Sep 08 2018 07:28:40 GMT-0700 (PDT)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>

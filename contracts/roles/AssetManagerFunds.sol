@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import "../interfaces/ERC20.sol";
 import "../interfaces/DBInterface.sol";
@@ -29,7 +29,7 @@ contract AssetManagerFunds {
   }
 
   // @notice asset manager can withdraw his dividend fee from assets here
-  // @param : bytes32 _assetID = the ID of this asset on the platform 
+  // @param : bytes32 _assetID = the ID of this asset on the platform
   function withdraw(bytes32 _assetID)
   external
   nonReentrant
@@ -51,10 +51,11 @@ contract AssetManagerFunds {
     else {
       amountOwed = token.getAmountOwed(address(this));
       require(amountOwed > 0);
-      balanceBefore = token.balanceOf(address(this));
+      DToken fundingToken = DToken(token.getERC20());
+      balanceBefore = fundingToken.balanceOf(address(this));
       require(token.withdraw());
-      require(token.balanceOf(address(this)).sub(amountOwed) == balanceBefore);
-      token.transfer(msg.sender, amountOwed);
+      require(fundingToken.balanceOf(address(this)).sub(amountOwed) == balanceBefore);
+      fundingToken.transfer(msg.sender, amountOwed);
     }
     return true;
   }

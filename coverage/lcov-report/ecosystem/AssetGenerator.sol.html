@@ -22,7 +22,7 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>17/17</span>
+        <span class='fraction'>16/16</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">70% </span>
@@ -37,7 +37,7 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>24/24</span>
+        <span class='fraction'>25/25</span>
       </div>
     </div>
   </div>
@@ -118,7 +118,13 @@
 73
 74
 75
-76</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+76
+77
+78
+79
+80
+81
+82</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -138,7 +144,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -154,6 +164,7 @@
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -175,6 +186,7 @@
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -193,27 +205,31 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity 0.4.24;
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity ^0.4.24;
 &nbsp;
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
+import '../database/Events.sol';
 import "../access/ERC20Burner.sol";
 import "../tokens/erc20/DividendToken.sol";
 import "../tokens/distribution/FixedDistribution.sol";
 &nbsp;
 // @title An asset generator contract for onboarding existing real-world assets
+// @notice This contract creates ERC20 dividend tokens and give sthem to the _tokenHolders provided
 // @author Kyle Dewhurst, MyBit Foundation
 contract AssetGenerator {
   using SafeMath for uint256;
 &nbsp;
   DBInterface private database;
+  Events private events;
 &nbsp;
 &nbsp;
   // @notice This contract
   // @param: The address for the database contract used by this platform
-  constructor(address _database)
+  constructor(address _database, address _events)
   public{
       database = DBInterface(_database);
+      events = Events(_events);
   }
 &nbsp;
 &nbsp;
@@ -223,13 +239,14 @@ contract AssetGenerator {
   external
   burnRequired
   returns (bool) {
-    require (_tokenHolders.length == _amount.length &amp;&amp; _tokenHolders.length &lt;= 200);
+    require (_tokenHolders.length == _amount.length &amp;&amp; _tokenHolders.length &lt;= 100);
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _tokenURI));
     <span class="missing-if-branch" title="else path not taken" >E</span>require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))) == address(0));
     FixedDistribution assetInstance = new FixedDistribution(_tokenURI, _tokenHolders, _amount);
     database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetInstance));
-    emit LogAssetCreated(assetID, address(assetInstance), msg.sender, _tokenURI);
+    //emit LogAssetCreated(assetID, address(assetInstance), msg.sender, _tokenURI);
+    events.asset('Asset created', _tokenURI, assetID, address(assetInstance), msg.sender);
     return true;
   }
 &nbsp;
@@ -239,7 +256,7 @@ contract AssetGenerator {
   external
   burnRequired
   returns (bool) {
-    require (_tokenHolders.length == _amount.length &amp;&amp; _tokenHolders.length &lt;= uint8(200));
+    require (_tokenHolders.length == _amount.length &amp;&amp; _tokenHolders.length &lt;= uint8(100));
     address assetGeneratorAddress = database.addressStorage(keccak256(abi.encodePacked("contract", "AssetGenerator")));
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _tokenURI));
     <span class="missing-if-branch" title="else path not taken" >E</span>require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))) == address(0));
@@ -250,7 +267,8 @@ contract AssetGenerator {
     assetInstance.finishMinting();
     database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetInstance));
-    emit LogTradeableAssetCreated(assetID, address(assetInstance), msg.sender, _tokenURI);
+    //emit LogTradeableAssetCreated(assetID, address(assetInstance), msg.sender, _tokenURI);
+    events.asset('Tradeable asset created', _tokenURI, assetID, address(assetInstance), msg.sender);
     return true;
   }
 &nbsp;
@@ -263,8 +281,8 @@ contract AssetGenerator {
   }
 &nbsp;
 &nbsp;
-  event LogAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
-  event LogTradeableAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
+  //event LogAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
+  //event LogTradeableAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
 &nbsp;
 &nbsp;
 }
@@ -274,7 +292,7 @@ contract AssetGenerator {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Oct 23 2018 17:09:37 GMT-0700 (PDT)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Oct 31 2018 14:33:22 GMT-0700 (PDT)
 </div>
 </div>
 <script src="../prettify.js"></script>

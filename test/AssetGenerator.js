@@ -5,11 +5,21 @@ const PlatformToken = artifacts.require("./tokens/erc20/BurnableToken.sol");
 const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 const AssetGenerator = artifacts.require("./ecosystem/AssetGenerator.sol");
 const Database = artifacts.require("./database/Database.sol");
+const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const FixedDistribution = artifacts.require("./tokens/distribution/FixedDistribution.sol");
-
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
+const Promisify = (inner) =>
+    new Promise((resolve, reject) =>
+        inner((err, res) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(res);
+            }
+        })
+    );
 
 
 const owner = web3.eth.accounts[0];
@@ -33,6 +43,7 @@ contract('Asset Generator', async() => {
   let platformToken;
   let AssetGen;
   let db;
+  let events;
   let cm;
   let hash;
   let platform;
@@ -49,8 +60,12 @@ contract('Asset Generator', async() => {
     db = await Database.new([owner], true);
   });
 
+  it('Deploy Events', async() => {
+    events = await Events.new(db.address);
+  });
+
   it('Deploy contract manager contract', async() => {
-    cm = await ContractManager.new(db.address);
+    cm = await ContractManager.new(db.address, events.address);
     await db.enableContractManagement(cm.address);
   });
 
@@ -74,18 +89,18 @@ contract('Asset Generator', async() => {
   });
 
   it('Deploy platform funds', async() => {
-    platform = await Platform.new(db.address);
+    platform = await Platform.new(db.address, events.address);
     await cm.addContract('PlatformFunds', platform.address);
     await platform.setPlatformToken(platformToken.address);
   });
 
   it('Deploy burner contract', async() => {
-    burner = await ERC20Burner.new(db.address);
+    burner = await ERC20Burner.new(db.address, events.address);
     await cm.addContract("ERC20Burner", burner.address);
   });
 
   it('Deploy AssetGenerator', async() => {
-    assetGen = await AssetGenerator.new(db.address);
+    assetGen = await AssetGenerator.new(db.address, events.address);
     await cm.addContract("AssetGenerator", assetGen.address);
     await burner.setFee('0xf76c5c55', assetGen.address,  250);
     await burner.setFee('0x4e38c7f4', assetGen.address,  250);
@@ -100,9 +115,12 @@ contract('Asset Generator', async() => {
 
   it('Create Non-transferable Asset', async() => {
     assetURI = 'ASSET';
-    let tx = await assetGen.createAsset(assetURI, tokenHolders, [assetManagerFee, tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
-    console.log(tx.logs[0].args);
-    token = FixedDistribution.at(tx.logs[0].args._tokenAddress);
+    let block = await web3.eth.getBlock('latest');
+    await assetGen.createAsset(assetURI, tokenHolders, [assetManagerFee, tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
+    let e = events.LogAsset({message: 'Asset created', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
+    let logs = await Promisify(callback => e.get(callback));
+    console.log(logs[0].args);
+    token = FixedDistribution.at(logs[0].args.token);
     assetManagerBalance = await token.balanceOf(assetManager);
     user1Balance = await token.balanceOf(user1);
     user2Balance = await token.balanceOf(user2);
@@ -127,9 +145,12 @@ contract('Asset Generator', async() => {
 
   it('Create Tradeable Asset', async() => {
     assetURI = 'ASSETASSET';
-    let tx = await assetGen.createTradeableAsset(assetURI, tokenHolders, [assetManagerFee, tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
-    console.log(tx.logs[0].args);
-    token = FixedDistribution.at(tx.logs[0].args._tokenAddress);
+    let block = await web3.eth.getBlock('latest');
+    await assetGen.createTradeableAsset(assetURI, tokenHolders, [assetManagerFee, tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
+    let e = events.LogAsset({message: 'Tradeable asset created', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
+    let logs = await Promisify(callback => e.get(callback));
+    console.log(logs[0].args);
+    token = FixedDistribution.at(logs[0].args.token);
     assetManagerBalance = await token.balanceOf(assetManager);
     user1Balance = await token.balanceOf(user1);
     user2Balance = await token.balanceOf(user2);

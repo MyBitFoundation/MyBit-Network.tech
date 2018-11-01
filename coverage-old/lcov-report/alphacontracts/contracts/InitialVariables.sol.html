@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for alphacontracts/contracts/InitialVariables.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">all files</a> / <a href="index.html">alphacontracts/contracts/</a> InitialVariables.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>0/15</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/12</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/10</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>0/34</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity 0.4.24;
+&nbsp;
+import './Database.sol';
+import './SafeMath.sol'; 
+&nbsp;
+//------------------------------------------------------------------------------------------
+// This contract is involved in setting default variables.
+// Must be deployed before platform can be run
+//------------------------------------------------------------------------------------------
+contract InitialVariables {
+  using SafeMath for uint; 
+&nbsp;
+Database public database;
+&nbsp;
+//------------------------------------------------------------------------------------------
+// Constructor: Initialize Database
+//------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >constructor(address _database)</span>
+public {
+<span class="cstat-no" title="statement not covered" >  database = Database(_database)</span>;
+}
+//------------------------------------------------------------------------------------------
+// Initialized important variables
+//------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >function startDapp(address _myBitFoundation, address _installerEscrow)</span>
+external  {
+<span class="cstat-no" title="statement not covered" >  require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))))</span>;
+<span class="cstat-no" title="statement not covered" >  require(_myBitFoundation != address(0) &amp;&amp; _installerEscrow != address(0))</span>;
+  // --------------------Set Local Wallets-------------------------
+  database.setAddress(keccak256(abi.encodePacked("MyBitFoundation")), _myBitFoundation);
+  database.setAddress(keccak256(abi.encodePacked("InstallerEscrow")), _installerEscrow);
+  // --------------------Asset Creation Variables-----------------
+  database.setUint(keccak256(abi.encodePacked("myBitFoundationPercentage")), uint(1));
+  database.setUint(keccak256(abi.encodePacked("installerPercentage")), uint(99));
+  // ---------------------Access Price in USD--------------------------
+  database.setUint(keccak256(abi.encodePacked("accessTokenFee", uint(1))), uint(25).mul(10**21));    // Add 18 decimals * 10^3 for MYB price 
+  database.setUint(keccak256(abi.encodePacked("accessTokenFee", uint(2))), uint(75).mul(10**21));    // Add 18 decimals * 10^3 for MYB price 
+  database.setUint(keccak256(abi.encodePacked("accessTokenFee", uint(3))), uint(100).mul(10**21));   // Add 18 decimals * 10^3 for MYB price 
+  // -------------Oracle Variables-------------------------
+  database.setUint(keccak256(abi.encodePacked("priceUpdateTimeline")), uint(86400));     // Market prices need to be updated every 24 hours
+<span class="cstat-no" title="statement not covered" >  emit LogInitialized(msg.sender, address(database));</span>
+}
+&nbsp;
+// ------------------------------------------------------------------------------------------------
+//  Change MyBitFoundation address
+// ------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >function changeFoundationAddress(address _signer, string _functionName, address _newAddress)</span>
+external
+noEmptyAddress(_newAddress)
+anyOwner
+multiSigRequired(_signer, _functionName, keccak256(abi.encodePacked(_newAddress))) 
+returns (bool) {
+  database.setAddress(keccak256(abi.encodePacked("MyBitFoundation")), _newAddress);
+<span class="cstat-no" title="statement not covered" >  return true; </span>
+}
+&nbsp;
+// ------------------------------------------------------------------------------------------------
+//  Change InstallerEsrow address
+// ------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >function changeInstallerEscrowAddress(address _signer, string _functionName, address _newAddress)</span>
+external
+noEmptyAddress(_newAddress)
+anyOwner
+multiSigRequired(_signer, _functionName, keccak256(abi.encodePacked(_newAddress))) 
+returns (bool) {
+  database.setAddress(keccak256(abi.encodePacked("InstallerEscrow")), _newAddress);
+<span class="cstat-no" title="statement not covered" >  return true; </span>
+}
+&nbsp;
+// ------------------------------------------------------------------------------------------------
+//  Change MyBitFoundation address
+// ------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >function changeAccessTokenFee(address _signer, string _functionName, uint _accessLevel, uint _newPrice)</span>
+external
+anyOwner 
+multiSigRequired(_signer, _functionName, keccak256(abi.encodePacked(_accessLevel, _newPrice))) 
+returns (bool) {
+  database.setUint(keccak256(abi.encodePacked("accessTokenFee", _accessLevel)), _newPrice);
+<span class="cstat-no" title="statement not covered" >  return true;</span>
+}
+&nbsp;
+// ------------------------------------------------------------------------------------------------
+//  Set 24hr prices
+// ------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >function setDailyPrices(uint _ethPrice, uint _mybPrice)</span>
+external 
+anyOwner 
+returns (bool) { 
+<span class="cstat-no" title="statement not covered" >    uint priceExpiration = database.uintStorage(keccak256(abi.encodePacked("priceUpdateTimeline"))).add(now)</span>;
+<span class="cstat-no" title="statement not covered" >    emit LogPriceUpdate(database.uintStorage(keccak256(abi.encodePacked("ethUSDPrice"))),database.uintStorage(keccak256(abi.encodePacked("mybUSDPrice")))); </span>
+    database.setUint(keccak256(abi.encodePacked("ethUSDPrice")), _ethPrice);
+    database.setUint(keccak256(abi.encodePacked("mybUSDPrice")), _mybPrice);
+    database.setUint(keccak256(abi.encodePacked("priceExpiration")), priceExpiration);
+<span class="cstat-no" title="statement not covered" >    return true; </span>
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >function changePriceUpdateTimeline(uint _newPriceExpiration)</span>
+external
+anyOwner
+returns (bool) { 
+    database.setUint(keccak256(abi.encodePacked("priceUpdateTimeline")), _newPriceExpiration);
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+&nbsp;
+}
+&nbsp;
+&nbsp;
+// ------------------------------------------------------------------------------------------------
+//                                                Modifiers
+// ------------------------------------------------------------------------------------------------
+&nbsp;
+// ------------------------------------------------------------------------------------------------
+//  Verify that sender is an owner
+// ------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >modifier anyOwner {</span>
+<span class="cstat-no" title="statement not covered" >  require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))))</span>;
+  _;
+}
+&nbsp;
+// ------------------------------------------------------------------------------------------------
+//  Verify address isn't null
+// ------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >modifier noEmptyAddress(address _contract) {</span>
+<span class="cstat-no" title="statement not covered" >  require(_contract != address(0))</span>;
+  _;
+}
+&nbsp;
+// ------------------------------------------------------------------------------------------------
+//  Verify that function has been signed off by another owner
+// ------------------------------------------------------------------------------------------------
+<span class="fstat-no" title="function not covered" >modifier multiSigRequired(address _signer, string _functionName, bytes32 _keyParam) {</span>
+<span class="cstat-no" title="statement not covered" >  require(msg.sender != _signer)</span>;
+<span class="cstat-no" title="statement not covered" >  require(database.boolStorage(keccak256(abi.encodePacked(address(this), _signer, _functionName, _keyParam))))</span>;
+  database.setBool(keccak256(abi.encodePacked(address(this), _signer, _functionName, _keyParam)), false);
+  _;
+}
+&nbsp;
+&nbsp;
+//------------------------------------------------------------------------------------------
+//                                  Events
+//------------------------------------------------------------------------------------------
+event LogInitialized(address _sender, address _database);
+event LogPriceUpdate(uint _oldETHPrice, uint _oldMYBPrice); 
+&nbsp;
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sat Sep 08 2018 07:28:40 GMT-0700 (PDT)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>

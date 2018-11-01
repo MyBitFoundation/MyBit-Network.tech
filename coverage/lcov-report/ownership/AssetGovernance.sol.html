@@ -156,13 +156,9 @@
 111
 112
 113
-114
-115
-116
-117
-118
-119
-120</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+114</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -258,14 +254,6 @@
 <span class="cline-any cline-yes">4×</span>
 <span class="cline-any cline-yes">3×</span>
 <span class="cline-any cline-yes">3×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -304,6 +292,8 @@ contract AssetGovernance {
 &nbsp;
   DB public database;
 &nbsp;
+  uint public consensus = 66;   // TODO: sub the assetmanager portion of tokens, since they can't be voted with
+  uint constant scalingFactor = 10e32;
 &nbsp;
   constructor(address _database)
   public {
@@ -322,7 +312,7 @@ contract AssetGovernance {
     bytes32 investorVotesID = keccak256(abi.encodePacked("investorVotes", executionID, msg.sender));
     uint256 numVotes = database.uintStorage(numVotesID);
     uint256 investorVotes = database.uintStorage(investorVotesID);
-    require(lockTokens(_assetID, msg.sender, _amountToLock));
+    require(lockTokens(_assetID, msg.sender, _amountToLock), "unable to lock tokens");
     database.setUint(numVotesID, numVotes.add(_amountToLock));
     database.setUint(investorVotesID, investorVotes.add(_amountToLock));
     return true;
@@ -337,7 +327,7 @@ contract AssetGovernance {
   returns (bool) {
 <span class="cstat-no" title="statement not covered" >    bytes32 executionID = keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash))</span>;
 <span class="cstat-no" title="statement not covered" >    bytes32 voteTotalID = keccak256(abi.encodePacked("voteTotal", executionID))</span>;
-<span class="cstat-no" title="statement not covered" >    bytes32 investorVotesID = keccak256(abi.encodePacked("investorVotes", executionID))</span>;
+<span class="cstat-no" title="statement not covered" >    bytes32 investorVotesID = keccak256(abi.encodePacked("investorVotes", executionID, msg.sender))</span>;
 <span class="cstat-no" title="statement not covered" >    uint investorVotes = database.uintStorage(investorVotesID)</span>;
 <span class="cstat-no" title="statement not covered" >    uint totalVotes = database.uintStorage(voteTotalID)</span>;
 <span class="cstat-no" title="statement not covered" >    require(investorVotes &lt;= _amountToUnlock)</span>;   // 1 vote = 1 token
@@ -350,7 +340,7 @@ contract AssetGovernance {
   //                                            Public Functions
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 &nbsp;
-  // @notice  Checks that 1/3 or more of token holders agreed on function call
+  // @notice  Checks that 2/3 or more of token holders agreed on function call
   function isConsensusReached(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash)
   public
   view
@@ -359,7 +349,7 @@ contract AssetGovernance {
     bytes32 executionID = keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash));
     bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", executionID));
     uint256 numTokens = assetToken.totalSupply();
-    return database.uintStorage(numVotesID).mul(100).div(numTokens) &gt;= 33;
+    return database.uintStorage(numVotesID).mul(scalingFactor).mul(100).div(numTokens).div(scalingFactor) &gt;= consensus;
   }
 &nbsp;
 &nbsp;
@@ -384,14 +374,6 @@ contract AssetGovernance {
   //                                            Modifiers
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 &nbsp;
-  // @notice add this modifer to functions that you want multi-sig requirements for
-  // @dev function can only be called after at least n &gt;= quorumLevel owners have agreed to call it
-  /*
-  modifier hasConsensus(bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash) {
-    require(isConsensusReached(address(this), _assetID, _methodID, _parameterHash));   // owners must have agreed on function + parameters
-    _;
-  }
-  */
 &nbsp;
   // @notice reverts if the asset does not have a token address set in the database
   modifier validAsset(bytes32 _assetID) {
@@ -406,7 +388,7 @@ contract AssetGovernance {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Oct 23 2018 17:09:37 GMT-0700 (PDT)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Oct 31 2018 14:33:22 GMT-0700 (PDT)
 </div>
 </div>
 <script src="../prettify.js"></script>

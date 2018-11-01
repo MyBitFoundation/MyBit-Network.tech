@@ -1,10 +1,11 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import "../math/SafeMath.sol";
 import "../interfaces/ERC20.sol";
 import "../interfaces/DBInterface.sol";
 import "../interfaces/ERC20DividendInterface.sol";
 import "../access/ERC20Burner.sol";
+import "../database/Events.sol";
 
 // @title An asset crowdsale contract which accepts funding from ERC20 tokens.
 // @notice Begins a crowdfunding period for a digital asset, minting asset dividend tokens to investors when particular ERC20 token is received
@@ -14,13 +15,15 @@ contract CrowdsaleERC20{
   using SafeMath for uint256;
 
   DBInterface public database;
+  Events public events;
   ERC20Burner public burner;
 
   // @notice Constructor: initializes database instance
   // @param: The address for the platform database
-  constructor(address _database)
+  constructor(address _database, address _events)
   public{
       database = DBInterface(_database);
+      events = Events(_events);
       burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
@@ -32,7 +35,7 @@ contract CrowdsaleERC20{
   function buyAssetOrderERC20(bytes32 _assetID, uint _amount)
   external
   validAsset(_assetID)
-  beforeDeadline(_assetID)
+  betweenDeadlines(_assetID)
   notFinalized(_assetID)
   burnRequired
   returns (bool) {
@@ -42,7 +45,7 @@ contract CrowdsaleERC20{
     uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
     if (_amount >= tokensRemaining) {
       require(fundingToken.transferFrom(msg.sender, address(this), tokensRemaining));    // transfer investors tokens into contract
-      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID))) ));
+      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID))) ));
       require(finalizeCrowdsale(_assetID));
       require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens to investor
       require(assetToken.finishMinting());
@@ -52,7 +55,8 @@ contract CrowdsaleERC20{
       require(fundingToken.transferFrom(msg.sender, address(this), _amount));
       require(assetToken.mint(msg.sender, _amount));
     }
-    emit LogAssetPurchased(_assetID, msg.sender, _amount); //Should amount listed be how much they spent or how much they received?
+    events.transaction('Asset purchased', msg.sender, address(this), _amount, _assetID);
+    //emit LogAssetPurchased(_assetID, msg.sender, _amount); //Should amount listed be how much they spent or how much they received?
     return true;
   }
 
@@ -95,7 +99,8 @@ contract CrowdsaleERC20{
     uint platformPortion = _amount.sub(operatorPortion);
     fundingToken.transfer(platformWallet, platformPortion);
     fundingToken.transfer(operator, operatorPortion);
-    emit LogAssetPayout(_assetID, operator, _amount);
+    events.transaction('Asset payout', address(this), operator, _amount, _assetID);
+    //emit LogAssetPayout(_assetID, operator, _amount);
     return true;
   }
 
@@ -112,7 +117,8 @@ contract CrowdsaleERC20{
   function destroy()
   onlyOwner
   external {
-    emit LogDestruction(address(this).balance, msg.sender);
+    events.transaction('CrowdsaleERC20 destroyed', address(this), msg.sender, address(this).balance, '');
+    //emit LogDestruction(address(this).balance, msg.sender);
     selfdestruct(msg.sender);
   }
 
@@ -162,8 +168,9 @@ contract CrowdsaleERC20{
   }
 
   // @notice reverts if the funding deadline has already past
-  modifier beforeDeadline(bytes32 _assetID) {
+  modifier betweenDeadlines(bytes32 _assetID) {
     require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
+    require(now >= database.uintStorage(keccak256(abi.encodePacked("startTime", _assetID))));
     _;
   }
 
@@ -182,9 +189,9 @@ contract CrowdsaleERC20{
   //------------------------------------------------------------------------------------------------------------------
   //                                            Events
   //------------------------------------------------------------------------------------------------------------------
-
+  /*
   event LogAssetPurchased(bytes32 indexed _assetID, address indexed _sender, uint _amount);
   event LogAssetPayout(bytes32 indexed _assetID, address indexed _operator, uint _amount);
   event LogDestruction(uint _amountSent, address indexed _caller);
-  event LogAssetInfo(uint _investorAmount, uint _tokensRemaining);
+  */
 }
