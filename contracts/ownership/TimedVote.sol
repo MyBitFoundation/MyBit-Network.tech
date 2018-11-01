@@ -153,6 +153,8 @@ contract TimedVote {
 
   /**
    * Get account commitment amount
+   * @notice
+   * Returns 0 if account has no commitment.
    * @param _account - Account to get commitment amount of.
    * @return value - MYB amount currently committed by the account.
    */
