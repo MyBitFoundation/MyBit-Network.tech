@@ -868,18 +868,25 @@ contract('TimedVote', () => {
     });
 
     describe('#propose', () => {
+      it('Fail without voting body', async() => {
+        await rejects(timedVote.propose(proposalID, {from: user1}));
+      });
+
       it('Fail with extant ID', async() => {
+        await timedVote._setBody(10);
         await timedVote._addProposal(proposalID);
         await rejects(timedVote.propose(proposalID, {from: user1}));
       });
 
       it('Succeed', async() => {
+        await timedVote._setBody(10);
         await timedVote.propose(proposalID, {from: user1});
         const extant = await timedVote.proposalExtant(proposalID);
         assert.isTrue(extant);
       });
 
       it('Emit Propose', async() => {
+        await timedVote._setBody(10);
         const { logs: events } = await timedVote.propose(
           proposalID,
           {from: user1}

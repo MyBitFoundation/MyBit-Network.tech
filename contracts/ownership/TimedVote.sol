@@ -227,12 +227,14 @@ contract TimedVote {
   /**
    * Create proposal
    * @notice
-   * Creates a new proposal with the specified identifier. Fails if a proposal
-   * with the same identifier already exists. Emits Propose on success.
+   * Creates a new proposal with the specified identifier. Fails if there is no
+   * voting body. Fails if a proposal with the same identifier already exists.
+   * Emits Propose on success.
    * @param _proposalID - Identifier of new proposal.
    */
   function propose(bytes32 _proposalID)
   external
+  onlyVotingBody
   onlyNew(_proposalID) {
     proposals[_proposalID] = Proposal(time(), body, 0, 0, 0);
     emit Propose(msg.sender, _proposalID);
