@@ -269,8 +269,7 @@ contract TimedVote {
    * @return age - Proposal age. Voting closes after voteDuration.
    * @return votingBody - Proposal voting body MYB amount. Fixed when created.
    * @return voted - Voting MYB amount. Must meet quorum to pass.
-   * @return approval - Weighted approval amount. Ratio with total votes
-   *     must meet threshold to pass.
+   * @return approval - Weighted approval amount. Must meet threshold to pass.
    * @return dissent - Weighted dissent amount.
    */
   function status(bytes32 _proposalID)
