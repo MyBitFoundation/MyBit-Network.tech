@@ -59,6 +59,7 @@ contract TimedVote {
   uint256 voteDuration;                         // Vote duration
   uint8 quorum;                                 // Quorum
   uint8 threshold;                              // Approval threshold
+  uint256 committed;                            // Total MYB amount committed
   mapping(address => Commitment) commitments;   // Active commitments
   mapping(bytes32 => Proposal) proposals;       // Created proposals
 
