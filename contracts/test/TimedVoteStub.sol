@@ -163,6 +163,12 @@ contract TimedVoteStub is TimedVote {
   pure
   onlyValid(_address) {}
 
+  /** Require voting body */
+  function _onlyVotingBody()
+  external
+  view
+  onlyVotingBody {}
+
   /** Percentage */
   function _percentage(uint256 _portion, uint256 _total)
   external

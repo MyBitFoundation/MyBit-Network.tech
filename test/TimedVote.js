@@ -686,6 +686,17 @@ contract('TimedVote', () => {
         await rejects(timedVote._onlyValidAddress(NULL_ADDRESS));
       });
     });
+
+    describe('~onlyVotingBody', () => {
+      it('Reject without voting body', async() => {
+        await rejects(timedVote._onlyVotingBody());
+      });
+
+      it('Accept with voting body', async() => {
+        await timedVote._setBody(1);
+        await timedVote._onlyVotingBody();
+      });
+    });
   });
 
   // ---------

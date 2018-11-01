@@ -722,6 +722,19 @@ contract TimedVote {
     _;
   }
 
+  /**
+   * Require voting body
+   * @dev
+   * Throws if voting body MYB amount is 0.
+   */
+  modifier onlyVotingBody {
+    require(
+      body > 0,
+      "Voting body required"
+    );
+    _;
+  }
+
   // -----
   // Event
 
