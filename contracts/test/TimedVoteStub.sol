@@ -187,6 +187,14 @@ contract TimedVoteStub is TimedVote {
     return proposalOpen(_proposalID);
   }
 
+  /** Abstracted current time */
+  function _time()
+  external
+  view
+  returns (uint256 abstractedInstant, uint256 realInstant) {
+    return (super.time(), now);
+  }
+
   /** Proposal total votes */
   function _totalVotes(bytes32 _proposalID)
   external

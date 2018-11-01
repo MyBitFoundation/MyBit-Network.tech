@@ -423,6 +423,14 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('~time', () => {
+      it('Current time', async() => {
+        const [ abstractedInstant, realInstant ] =
+          await timedVote._time();
+        assert.isTrue(BigNumber(abstractedInstant).isEqualTo(realInstant));
+      });
+    });
+
     describe('~totalVotes', () => {
       it('None', async() => {
         await timedVote._addProposal(proposalID);
