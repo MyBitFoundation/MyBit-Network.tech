@@ -193,7 +193,7 @@ contract TimedVote {
    * Get commitment multiplier
    * @notice
    * A commitment multiplier changes as the commitment advances tiers.
-   * Fails if you have no active commitment.
+   * Fails if account has no active commitment.
    * @param _account - Account owning commitment to get the multiplier of.
    * @return multiplier - Current commitment multiplier.
    */
