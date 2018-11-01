@@ -146,6 +146,7 @@ contract TimedVote {
   external
   onlyUncommitted(msg.sender) {
     require(_value > 0, "Nonzero value required");
+    committed = committed.add(_value);
     commitments[msg.sender] = Commitment(_value, time());
     bool transferred = token.transferFrom(msg.sender, this, _value);
     require(transferred, "Transfer failed");
