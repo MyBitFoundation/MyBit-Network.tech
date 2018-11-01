@@ -3,6 +3,11 @@ pragma solidity 0.4.24;
 import "../tokens/erc20/BurnableToken.sol";
 
 contract BurnableTokenFixture is BurnableToken {
+  // -----
+  // State
+
+  bool private failTransfer = false;            // Fail #transfer
+
   // -----------
   // Constructor
 
@@ -11,6 +16,14 @@ contract BurnableTokenFixture is BurnableToken {
   public
   BurnableToken(_tokenURI, _totalSupply) {}
 
+  // ------
+  // Writer
+
+  function _failNextTransfer()
+  external {
+    failTransfer = true;
+  }
+
   // --------
   // Override
 
@@ -18,6 +31,10 @@ contract BurnableTokenFixture is BurnableToken {
   function transfer(address _to, uint256 _value)
   public
   returns (bool) {
+    if (failTransfer) {
+      failTransfer = false;
+      return false;
+    }
     return super.transfer(_to, _value);
   }
 

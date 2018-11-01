@@ -975,6 +975,15 @@ contract('TimedVote', () => {
         await rejects(timedVote.withdraw({from: user1}));
       });
 
+      it('Fail on transfer failure', async() => {
+        await token.transfer(user1, 100);
+        await token.approve(timedVote.address, 100, {from: user1});
+        await timedVote.commit(100, {from: user1});
+        await timedVote._timeTravelDays(unlockDays);
+        await token._failNextTransfer();
+        await rejects(timedVote.withdraw({from: user1}));
+      });
+
       it('Succeed', async() => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
