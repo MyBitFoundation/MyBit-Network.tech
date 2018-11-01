@@ -34,7 +34,7 @@ contract CrowdsaleGeneratorETH {
   // @param (uint) _fundingLength = The number of seconds this crowdsale is to go on for until it fails
   // @param (uint) _amountToRaise = The amount of WEI required to raise for the crowdsale to be a success
   // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
-  function createAssetOrderETH(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise, uint _assetManagerPerc)
+  function createAssetOrderETH(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc)
   external
   burnRequired
   returns (bool) {
@@ -42,10 +42,17 @@ contract CrowdsaleGeneratorETH {
     require(_assetManagerPerc < 100);
     require(database.boolStorage(keccak256(abi.encodePacked("acceptsEther", _operatorID))));
     require(database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))) != address(0));
+    uint startTime;
+    if(_startTime < now){
+      startTime = now;
+    } else {
+      startTime = _startTime;
+    }
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
     require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
     address assetAddress = address(new DividendToken(_assetURI, database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleETH")))));   // Gives this contract all new asset tokens
-    database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), now.add(_fundingLength));
+    database.setUint(keccak256(abi.encodePacked("startTime", assetID)), startTime);
+    database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), startTime.add(_fundingLength));
     uint assetManagerFee = _amountToRaise.mul(uint(100).mul(scalingFactor).div(uint(100).sub(_assetManagerPerc)).sub(scalingFactor)).div(scalingFactor);
     database.setUint(keccak256(abi.encodePacked("assetManagerFee", assetID)), assetManagerFee);
     database.setUint(keccak256(abi.encodePacked("amountToRaise", assetID)), _amountToRaise);

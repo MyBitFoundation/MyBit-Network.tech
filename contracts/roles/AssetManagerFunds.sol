@@ -51,10 +51,11 @@ contract AssetManagerFunds {
     else {
       amountOwed = token.getAmountOwed(address(this));
       require(amountOwed > 0);
-      balanceBefore = token.balanceOf(address(this));
+      DToken fundingToken = DToken(token.getERC20());
+      balanceBefore = fundingToken.balanceOf(address(this));
       require(token.withdraw());
-      require(token.balanceOf(address(this)).sub(amountOwed) == balanceBefore);
-      token.transfer(msg.sender, amountOwed);
+      require(fundingToken.balanceOf(address(this)).sub(amountOwed) == balanceBefore);
+      fundingToken.transfer(msg.sender, amountOwed);
     }
     return true;
   }
