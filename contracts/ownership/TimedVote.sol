@@ -59,7 +59,7 @@ contract TimedVote {
   uint256 voteDuration;                         // Vote duration
   uint8 quorum;                                 // Quorum
   uint8 threshold;                              // Approval threshold
-  uint256 committed;                            // Total MYB amount committed
+  uint256 body;                                 // Voting body MYB amount
   mapping(address => Commitment) commitments;   // Active commitments
   mapping(bytes32 => Proposal) proposals;       // Created proposals
 
@@ -146,7 +146,7 @@ contract TimedVote {
   external
   onlyUncommitted(msg.sender) {
     require(_value > 0, "Nonzero value required");
-    committed = committed.add(_value);
+    body = body.add(_value);
     commitments[msg.sender] = Commitment(_value, time());
     bool transferred = token.transferFrom(msg.sender, this, _value);
     require(transferred, "Transfer failed");
@@ -302,7 +302,7 @@ contract TimedVote {
   onlyCommitted(msg.sender)
   onlyUnlocked(msg.sender) {
     uint256 _value = commitments[msg.sender].value;
-    committed = committed.sub(_value);
+    body = body.sub(_value);
     delete commitments[msg.sender];
     bool transferred = token.transfer(msg.sender, _value);
     require(transferred, "Transfer failed");
