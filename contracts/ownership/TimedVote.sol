@@ -715,6 +715,7 @@ contract TimedVote {
   // -----
   // Event
 
+  /** Approve vote cast */
   event Approve(
     bytes32 indexed proposalID,                 // Approved proposal identifier
     address indexed account,                    // Approving account
