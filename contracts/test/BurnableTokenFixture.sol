@@ -14,4 +14,11 @@ contract BurnableTokenFixture is BurnableToken {
   returns (bool) {
     return super.transfer(_to, _value);
   }
+
+  /** Transfer approved token */
+  function transferFrom(address _from, address _to, uint256 _value)
+  public
+  returns (bool) {
+    return super.transferFrom(_from, _to, _value);
+  }
 }
