@@ -6,6 +6,7 @@ const TimedVote = artifacts.require('TimedVoteStub');
 
 const user1 = web3.eth.accounts[1];
 const user2 = web3.eth.accounts[2];
+const user3 = web3.eth.accounts[3];
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const tokenSupply = 180000000000000000000000000;
@@ -179,7 +180,9 @@ contract('TimedVote', () => {
 
     describe('~meetsQuorum', () => {
       it('Over', async() => {
-        const amount = (quorum + 10) / 100 * tokenSupply;
+        const body = tokenSupply / 2;
+        const amount = (quorum + 10) / 100 * body;
+        await timedVote._setBody(body);
         await timedVote._addProposal(proposalID);
         await timedVote._setVoted(proposalID, amount);
         const meets = await timedVote._meetsQuorum(proposalID);
@@ -187,7 +190,9 @@ contract('TimedVote', () => {
       });
 
       it('Under', async() => {
-        const amount = (quorum - 10) / 100 * tokenSupply;
+        const body = tokenSupply / 2;
+        const amount = (quorum - 10) / 100 * body;
+        await timedVote._setBody(body);
         await timedVote._addProposal(proposalID);
         await timedVote._setVoted(proposalID, amount);
         const meets = await timedVote._meetsQuorum(proposalID);
@@ -195,7 +200,9 @@ contract('TimedVote', () => {
       });
 
       it('At', async() => {
-        const amount = quorum / 100 * tokenSupply;
+        const body = tokenSupply / 2;
+        const amount = quorum / 100 * body;
+        await timedVote._setBody(body);
         await timedVote._addProposal(proposalID);
         await timedVote._setVoted(proposalID, amount);
         const meets = await timedVote._meetsQuorum(proposalID);
@@ -463,13 +470,16 @@ contract('TimedVote', () => {
 
     describe('~votingPercentage', () => {
       it('None', async() => {
+        await timedVote._setCommitment(user1, tokenSupply / 2);
+        await timedVote._timeTravelDays(unlockDays);
         await timedVote._addProposal(proposalID);
         const percent = await timedVote._votingPercentage(proposalID);
         assert.isTrue(BigNumber(percent).isEqualTo(0));
       });
 
       it('Half approve', async() => {
-        await timedVote._setCommitment(user1, tokenSupply / 2);
+        await timedVote._setCommitment(user1, tokenSupply / 4);
+        await timedVote._setCommitment(user2, tokenSupply / 4);
         await timedVote._timeTravelDays(unlockDays);
         await timedVote._addProposal(proposalID);
         await timedVote.approve(proposalID, {from: user1});
@@ -478,7 +488,8 @@ contract('TimedVote', () => {
       });
 
       it('Half decline', async() => {
-        await timedVote._setCommitment(user1, tokenSupply / 2);
+        await timedVote._setCommitment(user1, tokenSupply / 4);
+        await timedVote._setCommitment(user2, tokenSupply / 4);
         await timedVote._timeTravelDays(unlockDays);
         await timedVote._addProposal(proposalID);
         await timedVote.decline(proposalID, {from: user1});
@@ -487,8 +498,9 @@ contract('TimedVote', () => {
       });
 
       it('Half mixed', async() => {
-        await timedVote._setCommitment(user1, tokenSupply / 4);
-        await timedVote._setCommitment(user2, tokenSupply / 4);
+        await timedVote._setCommitment(user1, tokenSupply / 8);
+        await timedVote._setCommitment(user2, tokenSupply / 8);
+        await timedVote._setCommitment(user3, tokenSupply / 4);
         await timedVote._timeTravelDays(unlockDays);
         await timedVote._addProposal(proposalID);
         await timedVote.approve(proposalID, {from: user1});
@@ -498,7 +510,7 @@ contract('TimedVote', () => {
       });
 
       it('Full approve', async() => {
-        await timedVote._setCommitment(user1, tokenSupply);
+        await timedVote._setCommitment(user1, tokenSupply / 2);
         await timedVote._timeTravelDays(unlockDays);
         await timedVote._addProposal(proposalID);
         await timedVote.approve(proposalID, {from: user1});
@@ -507,7 +519,7 @@ contract('TimedVote', () => {
       });
 
       it('Full decline', async() => {
-        await timedVote._setCommitment(user1, tokenSupply);
+        await timedVote._setCommitment(user1, tokenSupply / 2);
         await timedVote._timeTravelDays(unlockDays);
         await timedVote._addProposal(proposalID);
         await timedVote.decline(proposalID, {from: user1});
@@ -516,8 +528,8 @@ contract('TimedVote', () => {
       });
 
       it('Full mixed', async() => {
-        await timedVote._setCommitment(user1, tokenSupply / 2);
-        await timedVote._setCommitment(user2, tokenSupply / 2);
+        await timedVote._setCommitment(user1, tokenSupply / 4);
+        await timedVote._setCommitment(user2, tokenSupply / 4);
         await timedVote._timeTravelDays(unlockDays);
         await timedVote._addProposal(proposalID);
         await timedVote.approve(proposalID, {from: user1});
@@ -879,6 +891,7 @@ contract('TimedVote', () => {
       });
 
       it('Defeated under quorum', async() => {
+        await timedVote._setBody(10000);
         await timedVote._setCommitment(user1, 10);
         await timedVote._timeTravelDays(unlockDays);
         await timedVote._addProposal(proposalID);
