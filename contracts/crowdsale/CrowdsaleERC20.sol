@@ -35,7 +35,7 @@ contract CrowdsaleERC20{
   function buyAssetOrderERC20(bytes32 _assetID, uint _amount)
   external
   validAsset(_assetID)
-  beforeDeadline(_assetID)
+  betweenDeadlines(_assetID)
   notFinalized(_assetID)
   burnRequired
   returns (bool) {
@@ -45,7 +45,7 @@ contract CrowdsaleERC20{
     uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
     if (_amount >= tokensRemaining) {
       require(fundingToken.transferFrom(msg.sender, address(this), tokensRemaining));    // transfer investors tokens into contract
-      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID))) ));
+      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID))) ));
       require(finalizeCrowdsale(_assetID));
       require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens to investor
       require(assetToken.finishMinting());
@@ -168,8 +168,9 @@ contract CrowdsaleERC20{
   }
 
   // @notice reverts if the funding deadline has already past
-  modifier beforeDeadline(bytes32 _assetID) {
+  modifier betweenDeadlines(bytes32 _assetID) {
     require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
+    require(now >= database.uintStorage(keccak256(abi.encodePacked("startTime", _assetID))));
     _;
   }
 

@@ -35,7 +35,7 @@ contract CrowdsaleETH {
     payable
     requiresEther
     validAsset(_assetID)
-    beforeDeadline(_assetID)
+    betweenDeadlines(_assetID)
     notFinalized(_assetID)
     burnRequired
     returns (bool) {
@@ -44,15 +44,15 @@ contract CrowdsaleETH {
       uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
       if (msg.value >= tokensRemaining) {
         // Give assetManager his portion of tokens
-        require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID)))));
+        require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID)))), "Asset manager tokens not minted");
         require(finalizeCrowdsale(_assetID));    // delete unnecessary variables
-        require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens
-        require(assetToken.finishMinting());
-        require(payoutETH(_assetID, amountToRaise));          // 1 token = 1 wei
+        require(assetToken.mint(msg.sender, tokensRemaining), "Investor tokens not minted");   // Send remaining asset tokens
+        require(assetToken.finishMinting(), "Minting not finished");
+        require(payoutETH(_assetID, amountToRaise), "Payout failed");          // 1 token = 1 wei
         msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI after cost of tokens calculated and subtracted from msg.value
       }
       else {
-        require(assetToken.mint(msg.sender, msg.value));
+        require(assetToken.mint(msg.sender, msg.value), "Investor tokens not minted");
       }
       //emit LogAssetPurchased(_assetID, msg.sender, msg.value);
       events.transaction('Asset purchased', msg.sender, address(this), msg.value, _assetID);
@@ -116,7 +116,7 @@ contract CrowdsaleETH {
     returns (bool) {
       address operator = database.addressStorage(keccak256(abi.encodePacked("operator", _assetID)));
       address platformWallet = database.addressStorage(keccak256(abi.encodePacked("platformWallet")));
-      require(operator != address(0) && platformWallet != address(0));
+      require(operator != address(0) && platformWallet != address(0), "Operator or platform wallet not set");
       uint operatorPortion = _amount.mul(99).div(100);
       uint platformPortion = _amount.sub(operatorPortion);
       platformWallet.transfer(platformPortion);
@@ -151,43 +151,44 @@ contract CrowdsaleETH {
 
     // @notice Sender must be a registered owner
     modifier onlyOwner {
-      require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
+      require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))), "Now owner");
       _;
     }
 
     // @notice reverts if investor hasn't approved burner to burn platform token
     modifier burnRequired {
-      require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
+      require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))), "Burn failed");
       _;
     }
 
     // @notice function won't run if owners have paused this contract
     modifier whenNotPaused {
-      require(!database.boolStorage(keccak256(abi.encodePacked("paused", address(this)))));
+      require(!database.boolStorage(keccak256(abi.encodePacked("paused", address(this)))), "Contract paused");
       _;
     }
 
     // @notice reverts if the asset does not have a token address set in the database
     modifier validAsset(bytes32 _assetID) {
-      require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))) != address(0));
+      require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))) != address(0), "Invalid asset ID");
       _;
     }
 
     // @notice reverts if the funding deadline has already past
-    modifier beforeDeadline(bytes32 _assetID) {
-      require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
+    modifier betweenDeadlines(bytes32 _assetID) {
+      require(now <= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))), "Past deadline");
+      require(now >= database.uintStorage(keccak256(abi.encodePacked("startTime", _assetID))), "Before start time");
       _;
     }
 
     // @notice reverts if the funding deadline has already past
     modifier afterDeadline(bytes32 _assetID) {
-      require(now > database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))));
+      require(now > database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))), "Deadline not past");
       _;
     }
 
     // @notice returns true if crowdsale is not finshed
     modifier notFinalized(bytes32 _assetID) {
-      require( !database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID))) );
+      require( !database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID))), "Crowdsale not finalized");
       _;
     }
 
