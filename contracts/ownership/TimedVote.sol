@@ -302,6 +302,7 @@ contract TimedVote {
   onlyCommitted(msg.sender)
   onlyUnlocked(msg.sender) {
     uint256 _value = commitments[msg.sender].value;
+    committed = committed.sub(_value);
     delete commitments[msg.sender];
     bool transferred = token.transfer(msg.sender, _value);
     require(transferred, "Transfer failed");
