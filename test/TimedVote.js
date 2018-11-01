@@ -898,6 +898,71 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('#status', () => {
+      it('Fail with missing proposal', async() => {
+        await rejects(timedVote.status(proposalID));
+      });
+
+      it('Initial', async() => {
+        await timedVote._addProposal(proposalID);
+        const [ open, age, voted, approval, dissent ] =
+          await timedVote.status(proposalID);
+        assert.isTrue(open);
+        assert.isTrue(BigNumber(age).isEqualTo(0));
+        assert.isTrue(BigNumber(voted).isEqualTo(0));
+        assert.isTrue(BigNumber(approval).isEqualTo(0));
+        assert.isTrue(BigNumber(dissent).isEqualTo(0));
+      });
+
+      it('Closed', async() => {
+        await timedVote._addProposal(proposalID);
+        await timedVote._timeTravelDays(closeDays);
+        const [ open ] = await timedVote.status(proposalID);
+        assert.isFalse(open);
+      });
+
+      it('Aged', async() => {
+        await timedVote._addProposal(proposalID);
+        await timedVote._timeTravelSeconds(222);
+        const [ , age ] = await timedVote.status(proposalID);
+        assert.isTrue(BigNumber(age).isEqualTo(222));
+      });
+
+      it('Approval', async() => {
+        await timedVote._setCommitment(user1, 5);
+        await timedVote._timeTravelDays(unlockDays);
+        await timedVote._addProposal(proposalID);
+        await timedVote.approve(proposalID, {from: user1});
+        const [ , , voted, approval ] = await timedVote.status(proposalID);
+        assert.isTrue(BigNumber(voted).isEqualTo(5));
+        assert.isTrue(BigNumber(approval).isEqualTo(5));
+      });
+
+      it('Dissent', async() => {
+        await timedVote._setCommitment(user1, 5);
+        await timedVote._timeTravelDays(unlockDays);
+        await timedVote._addProposal(proposalID);
+        await timedVote.decline(proposalID, {from: user1});
+        const [ , , voted, , dissent ] = await timedVote.status(proposalID);
+        assert.isTrue(BigNumber(voted).isEqualTo(5));
+        assert.isTrue(BigNumber(dissent).isEqualTo(5));
+      });
+
+      it('Mixed', async() => {
+        await timedVote._setCommitment(user1, 5);
+        await timedVote._setCommitment(user2, 5);
+        await timedVote._timeTravelDays(unlockDays);
+        await timedVote._addProposal(proposalID);
+        await timedVote.approve(proposalID, {from: user1});
+        await timedVote.decline(proposalID, {from: user2});
+        const [ , , voted, approval, dissent ] =
+          await timedVote.status(proposalID);
+        assert.isTrue(BigNumber(voted).isEqualTo(10));
+        assert.isTrue(BigNumber(approval).isEqualTo(5));
+        assert.isTrue(BigNumber(dissent).isEqualTo(5));
+      });
+    });
+
     describe('#withdraw', () => {
       it('Fail without commitment', async() => {
         await rejects(timedVote.withdraw({from: user1}));

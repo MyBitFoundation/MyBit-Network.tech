@@ -252,6 +252,41 @@ contract TimedVote {
   }
 
   /**
+   * Get proposal status.
+   * @notice
+   * Provides the current status of an approval. May be called during voting
+   * to get the status so far. Fails if the proposal does not exist. Use
+   * #result after voting close to get the final result.
+   * @param _proposalID - Identifier of proposal to get status of.
+   * @return open - Whether the proposal is open.
+   * @return age - Proposal age. Voting closes after voteDuration.
+   * @return voted - Voting MYB amount. Must meet quorum to pass.
+   * @return approval - Weighted approval amount. Ratio with total votes
+   *     must meet threshold to pass.
+   * @return dissent - Weighted dissent amount.
+   */
+  function status(bytes32 _proposalID)
+  external
+  view
+  onlyExtant(_proposalID)
+  returns (
+    bool open,
+    uint256 age,
+    uint256 voted,
+    uint256 approval,
+    uint256 dissent
+  ) {
+    Proposal storage proposal = proposals[_proposalID];
+    return (
+      proposalOpen(_proposalID),
+      proposalAge(_proposalID),
+      proposal.voted,
+      proposal.approval,
+      proposal.dissent
+    );
+  }
+
+  /**
    * Withdraw committed MYB
    * @notice
    * Withdraws all of your committed MYB to the original address. Fails if you
