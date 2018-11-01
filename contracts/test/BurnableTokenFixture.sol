@@ -3,10 +3,16 @@ pragma solidity 0.4.24;
 import "../tokens/erc20/BurnableToken.sol";
 
 contract BurnableTokenFixture is BurnableToken {
+  // -----------
+  // Constructor
+
   /** Relay all arguments */
   constructor(string _tokenURI, uint _totalSupply)
   public
   BurnableToken(_tokenURI, _totalSupply) {}
+
+  // --------
+  // Override
 
   /** Transfer own token */
   function transfer(address _to, uint256 _value)
