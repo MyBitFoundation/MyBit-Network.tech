@@ -2,7 +2,7 @@ pragma solidity 0.4.24;
 
 import "../tokens/erc20/BurnableToken.sol";
 
-contract BurnableTokenFixture is BurnableToken {
+contract BurnableTokenStub is BurnableToken {
   // -----
   // State
 

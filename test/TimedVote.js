@@ -1,7 +1,7 @@
 const BigNumber = require('bignumber.js');
 
-const Token = artifacts.require('BurnableTokenFixture');
-const TimedVote = artifacts.require('TimedVoteFixture');
+const Token = artifacts.require('BurnableTokenStub');
+const TimedVote = artifacts.require('TimedVoteStub');
 
 
 const user1 = web3.eth.accounts[1];

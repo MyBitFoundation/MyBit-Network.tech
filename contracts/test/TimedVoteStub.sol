@@ -2,7 +2,7 @@ pragma solidity 0.4.24;
 
 import "../ownership/TimedVote.sol";
 
-contract TimedVoteFixture is TimedVote {
+contract TimedVoteStub is TimedVote {
   // -----
   // State
 
