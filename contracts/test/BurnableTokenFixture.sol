@@ -19,6 +19,7 @@ contract BurnableTokenFixture is BurnableToken {
   // ------
   // Writer
 
+  /** Enable failure of next #transfer call */
   function _failNextTransfer()
   external {
     failTransfer = true;
