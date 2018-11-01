@@ -7,4 +7,11 @@ contract BurnableTokenFixture is BurnableToken {
   constructor(string _tokenURI, uint _totalSupply)
   public
   BurnableToken(_tokenURI, _totalSupply) {}
+
+  /** Transfer own token */
+  function transfer(address _to, uint256 _value)
+  public
+  returns (bool) {
+    return super.transfer(_to, _value);
+  }
 }
