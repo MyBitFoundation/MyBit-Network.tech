@@ -728,6 +728,7 @@ contract TimedVote {
     uint256 value                               // MYB amount committed
   );
 
+  /** Decline vote cast */
   event Decline(
     bytes32 indexed proposalID,                 // Declined proposal identifier
     address indexed account,                    // Declining account
