@@ -46,6 +46,7 @@ contract TimedVote {
   // Proposal for the MYB community
   struct Proposal {
     uint256 start;                              // Create instant
+    uint256 body;                               // Voting body MYB amount
     uint256 voted;                              // Voting MYB amount
     uint256 approval;                           // Weighted approval amount
     uint256 dissent;                            // Weighted dissent amount
@@ -233,7 +234,7 @@ contract TimedVote {
   function propose(bytes32 _proposalID)
   external
   onlyNew(_proposalID) {
-    proposals[_proposalID] = Proposal(time(), 0, 0, 0);
+    proposals[_proposalID] = Proposal(time(), body, 0, 0, 0);
     emit Propose(msg.sender, _proposalID);
   }
 

@@ -228,7 +228,7 @@ contract TimedVoteStub is TimedVote {
    */
   function _addProposal(bytes32 _proposalID)
   external {
-    proposals[_proposalID] = Proposal(time(), 0, 0, 0);
+    proposals[_proposalID] = Proposal(time(), body, 0, 0, 0);
   }
 
   /**
