@@ -1,6 +1,6 @@
 const BigNumber = require('bignumber.js');
 
-const Token = artifacts.require('./tokens/ERC20/BurnableToken.sol');
+const Token = artifacts.require('BurnableTokenFixture');
 const TimedVote = artifacts.require('TimedVoteFixture');
 
 
