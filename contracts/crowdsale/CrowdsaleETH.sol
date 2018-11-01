@@ -92,7 +92,6 @@ contract CrowdsaleETH {
     onlyOwner
     external {
       events.transaction('CrowdsaleETH destroyed', address(this), msg.sender, address(this).balance, '');
-      //emit LogDestruction(address(this).balance, msg.sender);
       selfdestruct(msg.sender);
     }
 
@@ -151,7 +150,7 @@ contract CrowdsaleETH {
 
     // @notice Sender must be a registered owner
     modifier onlyOwner {
-      require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))), "Now owner");
+      require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))), "Not owner");
       _;
     }
 

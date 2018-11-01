@@ -55,6 +55,14 @@ contract AccessHierarchy {
     upperAccessLevel = _newUpperLimit;
   }
 
+  // @notice platform owners can destroy contract here
+  function destroy()
+  onlyOwner
+  external {
+    events.transaction('AccessHierarchy destroyed', address(this), msg.sender, address(this).balance, '');
+    selfdestruct(msg.sender);
+  }
+
   // @notice Deny empty address parameters
   modifier noEmptyAddress(address _param) {
     require(_param != address(0));

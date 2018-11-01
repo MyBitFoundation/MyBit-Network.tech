@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import "../interfaces/ERC20.sol";
 import "../interfaces/DBInterface.sol";
+import "../database/Events.sol";
 import "../math/SafeMath.sol";
 
 interface DToken {
@@ -19,13 +20,15 @@ contract AssetManagerFunds {
   using SafeMath for uint256;
 
   DBInterface public database;
+  Events public events;
 
   uint256 private transactionNumber;
 
   // @notice constructor: initializes database
-  constructor(address _database)
+  constructor(address _database, address _events)
   public {
     database = DBInterface(_database);
+    events = Events(_events);
   }
 
   // @notice asset manager can withdraw his dividend fee from assets here
@@ -126,6 +129,13 @@ contract AssetManagerFunds {
     return uint8(_addressList.length + 1);
   }
 
+  // @notice platform owners can destroy contract here
+  function destroy()
+  onlyOwner
+  external {
+    events.transaction('AssetManagerFunds destroyed', address(this), msg.sender, address(this).balance, '');
+    selfdestruct(msg.sender);
+  }
 
   // @notice prevents calls from re-entering contract
   modifier nonReentrant() {
@@ -133,6 +143,12 @@ contract AssetManagerFunds {
     uint256 localCounter = transactionNumber;
     _;
     require(localCounter == transactionNumber);
+  }
+
+  // @notice reverts if caller is not the owner
+  modifier onlyOwner {
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))) == true);
+    _;
   }
 
   function ()

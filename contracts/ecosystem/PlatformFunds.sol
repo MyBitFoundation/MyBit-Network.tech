@@ -34,6 +34,14 @@ contract PlatformFunds {
     events.registration('Platform token', _tokenAddress);
   }
 
+  // @notice platform owners can destroy contract here
+  function destroy()
+  onlyOwner
+  external {
+    events.transaction('PlatformFunds destroyed', address(this), msg.sender, address(this).balance, '');
+    selfdestruct(msg.sender);
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                                Modifiers                                                                     //
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

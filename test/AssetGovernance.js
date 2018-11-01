@@ -78,7 +78,7 @@ contract('AssetGovernance', async() => {
   });
 
   it('Deploy asset governance contract', async() => {
-    governance = await AssetGovernance.new(db.address);
+    governance = await AssetGovernance.new(db.address, events.address);
     await cm.addContract("AssetGovernance", governance.address);
   });
 
@@ -113,7 +113,7 @@ contract('AssetGovernance', async() => {
   });
 
   it('Deploy assetManager assets', async() => {
-    assetManagerFunds = await AssetManagerFunds.new(db.address);
+    assetManagerFunds = await AssetManagerFunds.new(db.address, events.address);
     await cm.addContract('AssetManagerFunds', assetManagerFunds.address);
   });
 

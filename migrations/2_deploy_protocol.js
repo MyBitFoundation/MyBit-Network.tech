@@ -156,7 +156,7 @@ module.exports = function(deployer, network, accounts) {
     console.log('AssetManagerEscrow.sol: ' + escrow.address);
     cm.addContract('AssetManagerEscrow', escrow.address);
 
-    return AssetManagerFunds.new(db.address);
+    return AssetManagerFunds.new(db.address, events.address);
 
   }).then(function(instance) {
     managerFunds = instance;
