@@ -7,6 +7,7 @@ contract BurnableTokenFixture is BurnableToken {
   // State
 
   bool private failTransfer = false;            // Fail #transfer
+  bool private failTransferFrom = false;        // Fail #transferFrom
 
   // -----------
   // Constructor
@@ -23,6 +24,12 @@ contract BurnableTokenFixture is BurnableToken {
   function _failNextTransfer()
   external {
     failTransfer = true;
+  }
+
+  /** Enable failure of next #transferFrom call */
+  function _failNextTransferFrom()
+  external {
+    failTransferFrom = true;
   }
 
   // --------
@@ -43,6 +50,10 @@ contract BurnableTokenFixture is BurnableToken {
   function transferFrom(address _from, address _to, uint256 _value)
   public
   returns (bool) {
+    if (failTransferFrom) {
+      failTransferFrom = false;
+      return false;
+    }
     return super.transferFrom(_from, _to, _value);
   }
 }

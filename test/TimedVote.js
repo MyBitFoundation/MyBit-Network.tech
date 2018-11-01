@@ -746,6 +746,13 @@ contract('TimedVote', () => {
         await rejects(timedVote.commit(100, {from: user1}));
       });
 
+      it('Fail on transfer failure', async() => {
+        await token.transfer(user1, 100);
+        await token.approve(timedVote.address, 100, {from: user1});
+        await token._failNextTransferFrom();
+        await rejects(timedVote.commit(100, {from: user1}));
+      });
+
       it('Succeed', async() => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
