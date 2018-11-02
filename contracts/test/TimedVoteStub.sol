@@ -2,7 +2,7 @@ pragma solidity 0.4.24;
 
 import "../ownership/TimedVote.sol";
 
-contract TimedVoteFixture is TimedVote {
+contract TimedVoteStub is TimedVote {
   // -----
   // State
 
@@ -185,6 +185,14 @@ contract TimedVoteFixture is TimedVote {
   view
   returns (bool open) {
     return proposalOpen(_proposalID);
+  }
+
+  /** Abstracted current time */
+  function _time()
+  external
+  view
+  returns (uint256 abstractedInstant, uint256 realInstant) {
+    return (super.time(), now);
   }
 
   /** Proposal total votes */

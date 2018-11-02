@@ -1,7 +1,7 @@
 const BigNumber = require('bignumber.js');
 
-const Token = artifacts.require('./tokens/ERC20/BurnableToken.sol');
-const TimedVote = artifacts.require('TimedVoteFixture');
+const Token = artifacts.require('BurnableTokenStub');
+const TimedVote = artifacts.require('TimedVoteStub');
 
 
 const user1 = web3.eth.accounts[1];
@@ -423,6 +423,14 @@ contract('TimedVote', () => {
       });
     });
 
+    describe('~time', () => {
+      it('Current time', async() => {
+        const [ abstractedInstant, realInstant ] =
+          await timedVote._time();
+        assert.isTrue(BigNumber(abstractedInstant).isEqualTo(realInstant));
+      });
+    });
+
     describe('~totalVotes', () => {
       it('None', async() => {
         await timedVote._addProposal(proposalID);
@@ -746,6 +754,13 @@ contract('TimedVote', () => {
         await rejects(timedVote.commit(100, {from: user1}));
       });
 
+      it('Fail on transfer failure', async() => {
+        await token.transfer(user1, 100);
+        await token.approve(timedVote.address, 100, {from: user1});
+        await token._failNextTransferFrom();
+        await rejects(timedVote.commit(100, {from: user1}));
+      });
+
       it('Succeed', async() => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
@@ -972,6 +987,15 @@ contract('TimedVote', () => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
         await timedVote.commit(100, {from: user1});
+        await rejects(timedVote.withdraw({from: user1}));
+      });
+
+      it('Fail on transfer failure', async() => {
+        await token.transfer(user1, 100);
+        await token.approve(timedVote.address, 100, {from: user1});
+        await timedVote.commit(100, {from: user1});
+        await timedVote._timeTravelDays(unlockDays);
+        await token._failNextTransfer();
         await rejects(timedVote.withdraw({from: user1}));
       });
 
