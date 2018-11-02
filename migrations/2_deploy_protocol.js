@@ -1,4 +1,5 @@
 var fs = require('fs');
+var flattener = require('truffle-flattener');
 
 var BurnableToken = artifacts.require("./tokens/erc20/BurnableToken.sol");
 var Database = artifacts.require("./database/Database.sol");
@@ -252,11 +253,11 @@ module.exports = function(deployer, network, accounts) {
 
     var addresses_json = JSON.stringify(addresses, null, 4);
     var accounts_json = JSON.stringify(accounts, null, 4);
-    fs.writeFile('addresses.json', addresses_json, (err) => {
+    fs.writeFile(network + '-addresses.json', addresses_json, (err) => {
      if (err) throw err;
      console.log('Contracts Saved');
     });
-    fs.writeFile('accounts.json', accounts_json, (err) => {
+    fs.writeFile(network + '-accounts.json', accounts_json, (err) => {
      if (err) throw err;
      console.log('Accounts Saved');
     });

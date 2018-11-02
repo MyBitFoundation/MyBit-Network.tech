@@ -63,9 +63,11 @@ contract AssetGovernance {
     bytes32 investorVotesID = keccak256(abi.encodePacked("investorVotes", executionID, msg.sender));
     uint investorVotes = database.uintStorage(investorVotesID);
     uint totalVotes = database.uintStorage(voteTotalID);
-    require(investorVotes <= _amountToUnlock);   // 1 vote = 1 token
+    uint numTokensLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", _assetID, msg.sender)));
+    require(investorVotes >= _amountToUnlock, "Amount to unlock greater than committed voted");   // 1 vote = 1 token
     database.setUint(voteTotalID, totalVotes.sub(_amountToUnlock));
     database.setUint(investorVotesID, investorVotes.sub(_amountToUnlock));
+    database.setUint(keccak256(abi.encodePacked("tokensLocked", _assetID, msg.sender)), numTokensLocked.sub(_amountToUnlock));
     return true;
   }
 
@@ -105,7 +107,7 @@ contract AssetGovernance {
   returns (bool) {
     TokenView assetToken = TokenView(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
     uint numTokensLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", _assetID, _investor)));
-    require(_amount <= assetToken.balanceOf(_investor).sub(numTokensLocked));
+    require(_amount <= assetToken.balanceOf(_investor).sub(numTokensLocked), "Amount to lock greater than available");
     database.setUint(keccak256(abi.encodePacked("tokensLocked", _assetID, _investor)), numTokensLocked.add(_amount));
     return true;
   }
@@ -118,13 +120,13 @@ contract AssetGovernance {
 
   // @notice reverts if the asset does not have a token address set in the database
   modifier validAsset(bytes32 _assetID) {
-    require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))) != address(0));
+    require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))) != address(0), "Invalid asset");
     _;
   }
 
   // @notice Sender must be a registered owner
   modifier onlyOwner {
-    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))), "Not owner");
     _;
   }
 

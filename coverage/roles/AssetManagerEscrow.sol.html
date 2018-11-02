@@ -20,24 +20,24 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">97.56% </span>
+        <span class="strong">93.02% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>40/41</span>
+        <span class='fraction'>40/43</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">70.59% </span>
+        <span class="strong">66.67% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>24/34</span>
+        <span class='fraction'>24/36</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">77.78% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>7/7</span>
+        <span class='fraction'>7/9</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">92.31% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>48/48</span>
+        <span class='fraction'>48/52</span>
       </div>
     </div>
   </div>
@@ -186,7 +186,21 @@
 141
 142
 143
-144</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -281,6 +295,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -315,12 +337,18 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2×</span>
-<span class="cline-any cline-yes">2×</span>
-<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">3×</span>
 <span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -347,7 +375,7 @@
 &nbsp;
     DBInterface public database;
     Events public events;
-    
+&nbsp;
     uint public consensus = 66;
 &nbsp;
     // @notice constructor: initializes database
@@ -420,6 +448,14 @@
       return true;
     }
 &nbsp;
+    // @notice platform owners can destroy contract here
+<span class="fstat-no" title="function not covered" >    function destroy()</span>
+    onlyOwner
+    external {
+      events.transaction('AssetManagerEscrow destroyed', address(this), msg.sender, address(this).balance, '');
+<span class="cstat-no" title="statement not covered" >      selfdestruct(msg.sender)</span>;
+    }
+&nbsp;
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //                                            Internal Functions
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -466,6 +502,12 @@
       _;
     }
 &nbsp;
+    // @notice reverts if caller is not the owner
+<span class="fstat-no" title="function not covered" >    modifier onlyOwne</span>r {
+<span class="cstat-no" title="statement not covered" >      require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))) == true)</span>;
+      _;
+    }
+&nbsp;
     /*
     event LogConsensus(bytes32 votesID, uint votes, uint tokens, bytes32 executionID, uint quorum);
     event LogEscrowBurned(bytes32 indexed _assetID, address indexed _assetManager, uint _amountBurnt);
@@ -478,7 +520,7 @@
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Oct 31 2018 14:33:22 GMT-0700 (PDT)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Nov 02 2018 10:09:53 GMT-0700 (PDT)
 </div>
 </div>
 <script src="../prettify.js"></script>

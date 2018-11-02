@@ -22,7 +22,7 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>0/28</span>
+        <span class='fraction'>0/30</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
@@ -32,12 +32,12 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>0/8</span>
+        <span class='fraction'>0/9</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>0/37</span>
+        <span class='fraction'>0/40</span>
       </div>
     </div>
   </div>
@@ -174,7 +174,17 @@
 129
 130
 131
-132</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -199,6 +209,31 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -217,16 +252,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -241,12 +267,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -308,6 +328,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity ^0.4.24;
 &nbsp;
 import '../database/Database.sol';
+import '../database/Events.sol';
 import '../math/SafeMath.sol';
 import '../interfaces/ERC20.sol';
 &nbsp;
@@ -321,6 +342,7 @@ contract TokenGovernance {
   using SafeMath for uint256;
 &nbsp;
   Database public database;
+  Events public events;
 &nbsp;
   ERC20 public governanceToken;
 &nbsp;
@@ -334,10 +356,11 @@ contract TokenGovernance {
 &nbsp;
   // @notice initiator of the platform sets the initial functions quorum level
   // @notice quorum level dictates the number of votes required for that function to be executed
-<span class="fstat-no" title="function not covered" >  constructor(address _database, uint256 _baseQuorum)</span>
+<span class="fstat-no" title="function not covered" >  constructor(address _database, address _events, uint256 _baseQuorum)</span>
   public  {
 <span class="cstat-no" title="statement not covered" >    governanceToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))))</span>;
 <span class="cstat-no" title="statement not covered" >    database = Database(_database)</span>;
+<span class="cstat-no" title="statement not covered" >    events = Events(_events)</span>;
 <span class="cstat-no" title="statement not covered" >    governanceToken = ERC20(governanceToken)</span>;
 <span class="cstat-no" title="statement not covered" >    bytes4 methodID = bytes4(keccak256(abi.encodePacked("setQuorumLevel(address, bytes4, uint256)")))</span>;
 <span class="cstat-no" title="statement not covered" >    bytes32 functionID = keccak256(abi.encodePacked(address(this), methodID))</span>;
@@ -379,6 +402,13 @@ contract TokenGovernance {
 <span class="cstat-no" title="statement not covered" >    return true;</span>
   }
 &nbsp;
+  // @notice platform owners can destroy contract here
+<span class="fstat-no" title="function not covered" >  function destroy()</span>
+  onlyOwner
+  external {
+    events.transaction('TokenGovernance destroyed', address(this), msg.sender, address(this).balance, '');
+<span class="cstat-no" title="statement not covered" >    selfdestruct(msg.sender)</span>;
+  }
 &nbsp;
   //------------------------------------------------------------------------------------------------------------------
   //                                                Internal Functions
@@ -442,7 +472,7 @@ contract TokenGovernance {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Oct 31 2018 14:33:22 GMT-0700 (PDT)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Nov 02 2018 10:09:53 GMT-0700 (PDT)
 </div>
 </div>
 <script src="../prettify.js"></script>

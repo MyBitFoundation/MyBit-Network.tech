@@ -261,7 +261,62 @@ contract('AssetGovernance', async() => {
     assert.equal(consensusProgress, 50);
   });
 
+  it("Fail to vote, bad assetID", async() => {
+    let err;
+    try{
+      await governance.voteForExecution(escrow.address, '', methodID, parameterHash, tokenPerAccount, {from: user3});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
   it("Vote for AssetManager with 3rd token holder ", async() => {
+    await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount, {from: user3});
+    let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
+    console.log("Third vote received, consensus is : " , Number(consensusProgress));
+    console.log("Third user voted with : ", tokenPerAccount);
+    console.log("Votes for execution from user3 is : ", Number(await api.getInvestorVotes(executionID, user3)));
+    console.log("Total votes for execution are: ", Number(await api.getTotalVotes(executionID)));
+    console.log("Total token supply is: ", Number(await govToken.totalSupply()));
+    assert.equal(bn(consensusProgress).gt(66), true);
+  });
+
+  it("Fail to unlock, insufficient tokens", async() => {
+    let err;
+    let userBalance = await govToken.balanceOf(user3);
+    let tokenAmount = 2*userBalance;
+    try{
+      await governance.unlockToken(escrow.address, assetID, methodID, parameterHash, tokenAmount, {from: user3});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+
+  it("Unlock tokens for 3rd token holder", async() => {
+    await governance.unlockToken(escrow.address, assetID, methodID, parameterHash, tokenPerAccount, {from: user3});
+    let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
+    console.log("Third vote revoked, consensus is : " , Number(consensusProgress));
+  });
+
+  it("Fail executing new assetManager", async() => {
+    let err;
+    let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
+    console.log("fail executing new asset manager, consensus is : " , Number(consensusProgress));
+    assert.equal(bn(consensusProgress).lt(66), true);
+    // assert.equal(await govToken.allowance(newAssetManager, escrow.address), 10*ETH);
+    //Fail because consensus is not yet reached
+    try{
+      await escrow.becomeAssetManager(assetID, assetManager, 10*ETH, true, {from:newAssetManager});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it("Revote for AssetManager with 3rd token holder ", async() => {
     await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount, {from: user3});
     let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
     console.log("Third vote received, consensus is : " , Number(consensusProgress));
@@ -282,6 +337,20 @@ contract('AssetGovernance', async() => {
     // console.log('Consensus: ', consensus);
     // console.log(logs[0].args);
     await escrow.becomeAssetManager(assetID, assetManager, 10*ETH, true, {from:newAssetManager});
+  });
+
+  it("Fail to destroy, not owner", async() => {
+    let err;
+    try{
+      await governance.destroy({from: user3});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it("Destroy", async() => {
+    await governance.destroy({from: owner});
   });
 
 });

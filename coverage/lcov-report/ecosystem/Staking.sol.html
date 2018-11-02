@@ -22,22 +22,22 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>0/14</span>
+        <span class='fraction'>0/17</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>0/10</span>
+        <span class='fraction'>0/12</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>0/4</span>
+        <span class='fraction'>0/6</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>0/18</span>
+        <span class='fraction'>0/23</span>
       </div>
     </div>
   </div>
@@ -112,7 +112,25 @@
 67
 68
 69
-70</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -132,12 +150,29 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -151,19 +186,16 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -185,6 +217,7 @@
 &nbsp;
   import "../math/SafeMath.sol";
   import "../database/Database.sol";
+  import "../database/Events.sol";
   import "../interfaces/ERC20.sol";
   import "../tokens/distribution/MintableDistribution.sol";
 &nbsp;
@@ -195,45 +228,60 @@
   // @notice AssetManager can lock his escrow in this contract and retrieve it if asset funding fails or successfully returns ROI
   contract Staking {
 &nbsp;
-    Database public database;
+  Database public database;
+  Events public events;
 &nbsp;
 &nbsp;
-<span class="fstat-no" title="function not covered" >    constructor(address _database)</span>
-    public {
-<span class="cstat-no" title="statement not covered" >      database = Database(_database)</span>;
-    }
+<span class="fstat-no" title="function not covered" >  constructor(address _database, address _events)</span>
+  public {
+<span class="cstat-no" title="statement not covered" >    database = Database(_database)</span>;
+<span class="cstat-no" title="statement not covered" >    events = Events(_events)</span>;
+  }
 &nbsp;
-    // @notice AssetManager can request for a staker to lend tokens to cover escrow
-<span class="fstat-no" title="function not covered" >    function requestStaking(string _tokenURI, bytes32 _assetID, uint _amount, uint _sharePercentage)</span>
-    external
-    returns (bool) {
-<span class="cstat-no" title="statement not covered" >      bytes32 agreementHash = keccak256(abi.encodePacked(msg.sender, _assetID, _amount, _sharePercentage))</span>;
-      database.setBytes32(_assetID, agreementHash);
-<span class="cstat-no" title="statement not covered" >      MintableDistribution mintableDistribution = new MintableDistribution(_tokenURI, address(this))</span>;
-      database.setAddress(keccak256(abi.encodePacked("stakingMint", _assetID)), address(mintableDistribution));
-<span class="cstat-no" title="statement not covered" >      return true;</span>
-    }
+  // @notice AssetManager can request for a staker to lend tokens to cover escrow
+<span class="fstat-no" title="function not covered" >  function requestStaking(string _tokenURI, bytes32 _assetID, uint _amount, uint _sharePercentage)</span>
+  external
+  returns (bool) {
+<span class="cstat-no" title="statement not covered" >    bytes32 agreementHash = keccak256(abi.encodePacked(msg.sender, _assetID, _amount, _sharePercentage))</span>;
+    database.setBytes32(_assetID, agreementHash);
+<span class="cstat-no" title="statement not covered" >    MintableDistribution mintableDistribution = new MintableDistribution(_tokenURI, address(this))</span>;
+    database.setAddress(keccak256(abi.encodePacked("stakingMint", _assetID)), address(mintableDistribution));
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+  }
 &nbsp;
-    // @notice staker can purchase all of
-<span class="fstat-no" title="function not covered" >    function purchaseStake(bytes32 _assetID, address _requester, uint _amount, uint _sharePercentage)</span>
-    external
-    returns (bool) {
-<span class="cstat-no" title="statement not covered" >      bytes32 agreementHash = keccak256(abi.encodePacked(_requester, _assetID, _amount, _sharePercentage))</span>;
-<span class="cstat-no" title="statement not covered" >      require (database.bytes32Storage(_assetID) == agreementHash)</span>;
-<span class="cstat-no" title="statement not covered" >      ERC20 stakingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))))</span>;
-<span class="cstat-no" title="statement not covered" >      MintableDistribution distributionToken = MintableDistribution(database.addressStorage(keccak256(abi.encodePacked("stakingMint", _assetID))))</span>;
-<span class="cstat-no" title="statement not covered" >      bytes32 finalAgreement = keccak256(abi.encodePacked(msg.sender, agreementHash))</span>;
-      database.setBytes32(_assetID, finalAgreement);
-<span class="cstat-no" title="statement not covered" >      require(stakingToken.transfer(_requester, _amount))</span>;
-<span class="cstat-no" title="statement not covered" >      require(distributionToken.mint(msg.sender, _amount))</span>;
-<span class="cstat-no" title="statement not covered" >      require(distributionToken.finishMinting())</span>;
-<span class="cstat-no" title="statement not covered" >      return true;</span>
-    }
+  // @notice staker can purchase all of
+<span class="fstat-no" title="function not covered" >  function purchaseStake(bytes32 _assetID, address _requester, uint _amount, uint _sharePercentage)</span>
+  external
+  returns (bool) {
+<span class="cstat-no" title="statement not covered" >    bytes32 agreementHash = keccak256(abi.encodePacked(_requester, _assetID, _amount, _sharePercentage))</span>;
+<span class="cstat-no" title="statement not covered" >    require (database.bytes32Storage(_assetID) == agreementHash)</span>;
+<span class="cstat-no" title="statement not covered" >    ERC20 stakingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))))</span>;
+<span class="cstat-no" title="statement not covered" >    MintableDistribution distributionToken = MintableDistribution(database.addressStorage(keccak256(abi.encodePacked("stakingMint", _assetID))))</span>;
+<span class="cstat-no" title="statement not covered" >    bytes32 finalAgreement = keccak256(abi.encodePacked(msg.sender, agreementHash))</span>;
+    database.setBytes32(_assetID, finalAgreement);
+<span class="cstat-no" title="statement not covered" >    require(stakingToken.transfer(_requester, _amount))</span>;
+<span class="cstat-no" title="statement not covered" >    require(distributionToken.mint(msg.sender, _amount))</span>;
+<span class="cstat-no" title="statement not covered" >    require(distributionToken.finishMinting())</span>;
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+  }
+&nbsp;
+  // @notice platform owners can destroy contract here
+<span class="fstat-no" title="function not covered" >  function destroy()</span>
+  onlyOwner
+  external {
+    events.transaction('Staking destroyed', address(this), msg.sender, address(this).balance, '');
+<span class="cstat-no" title="statement not covered" >    selfdestruct(msg.sender)</span>;
+  }
 &nbsp;
   //------------------------------------------------------------------------------------------------------------------
   //                                            Modifiers
   //------------------------------------------------------------------------------------------------------------------
 &nbsp;
+  // @notice Sender must be a registered owner
+<span class="fstat-no" title="function not covered" >  modifier onlyOwner </span>{
+<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))))</span>;
+    _;
+  }
 &nbsp;
   //------------------------------------------------------------------------------------------------------------------
   // Don't accept null value for bytes32 parameter
@@ -256,7 +304,7 @@
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Oct 31 2018 14:33:22 GMT-0700 (PDT)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Nov 02 2018 10:09:53 GMT-0700 (PDT)
 </div>
 </div>
 <script src="../prettify.js"></script>
