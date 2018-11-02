@@ -30,16 +30,6 @@ contract('Database', async (accounts) => {
     events = await Events.new(database.address);
   });
 
-  it('Fail to add contract manager', async() => {
-    let err;
-    try{
-      contractManager = await ContractManager.new(database.address, events.address);
-      await database.enableContractManagement(contractManager.address);
-    } catch(e){
-      err = e;
-    }
-    assert.notEqual(err, undefined);
-  });
 
   it('Deploy Database', async() => {
     database = await Database.new([manager1], true);
