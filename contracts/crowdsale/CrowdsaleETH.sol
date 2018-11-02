@@ -5,7 +5,7 @@ import "../interfaces/ERC20.sol";
 import "../interfaces/DBInterface.sol";
 import "../database/Events.sol";
 import "../interfaces/EtherDividendInterface.sol";
-import "../access/ERC20Burner.sol";
+// import "../access/ERC20Burner.sol";
 
 // @title An asset crowdsale contract, which accepts Ether for funding.
 // @author Kyle Dewhurst & Peter Phillips, MyBit Foundation
@@ -16,7 +16,7 @@ contract CrowdsaleETH {
 
     DBInterface public database;
     Events public events;
-    ERC20Burner public burner;
+    // ERC20Burner public burner;
 
     // @notice Constructor: Initiates the database
     // @param: The address for the database contract
@@ -24,7 +24,7 @@ contract CrowdsaleETH {
     public {
         database = DBInterface(_database);
         events = Events(_events);
-        burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
+        // burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
     }
 
 
@@ -37,7 +37,7 @@ contract CrowdsaleETH {
     validAsset(_assetID)
     betweenDeadlines(_assetID)
     notFinalized(_assetID)
-    burnRequired
+    // burnRequired
     returns (bool) {
       EtherDividendInterface assetToken = EtherDividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
       uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID)));
@@ -155,11 +155,11 @@ contract CrowdsaleETH {
       _;
     }
 
-    // @notice reverts if investor hasn't approved burner to burn platform token
-    modifier burnRequired {
-      require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))), "Burn failed");
-      _;
-    }
+    // // @notice reverts if investor hasn't approved burner to burn platform token
+    // modifier burnRequired {
+    //   require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))), "Burn failed");
+    //   _;
+    // }
 
     // @notice function won't run if owners have paused this contract
     modifier whenNotPaused {

@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
 import '../database/Events.sol';
-import "../access/ERC20Burner.sol";
+// import "../access/ERC20Burner.sol";
 import "../tokens/erc20/DividendToken.sol";
 import "../tokens/distribution/FixedDistribution.sol";
 
@@ -30,7 +30,7 @@ contract AssetGenerator {
   // @dev creates an ERC20 dividend token (tradeable) or distribution token (not-tradeable)
   function createAsset(string _tokenURI, address[] _tokenHolders, uint[] _amount)
   external
-  burnRequired
+  // burnRequired
   returns (bool) {
     require (_tokenHolders.length == _amount.length && _tokenHolders.length <= 100);
     bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _tokenURI));
@@ -47,7 +47,7 @@ contract AssetGenerator {
   // @dev creates an ERC20 dividend token (tradeable) or
   function createTradeableAsset(string _tokenURI, address[] _tokenHolders, uint[] _amount)
   external
-  burnRequired
+  // burnRequired
   returns (bool) {
     require (_tokenHolders.length == _amount.length && _tokenHolders.length <= uint8(100));
     address assetGeneratorAddress = database.addressStorage(keccak256(abi.encodePacked("contract", "AssetGenerator")));
@@ -67,11 +67,11 @@ contract AssetGenerator {
 
 
   // @notice reverts if user hasn't approved burner to burn platform token
-  modifier burnRequired {
-    ERC20Burner burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
-    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
-    _;
-  }
+  // modifier burnRequired {
+  //   ERC20Burner burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
+  //   require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
+  //   _;
+  // }
 
 
   //event LogAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
