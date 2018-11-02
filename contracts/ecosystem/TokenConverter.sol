@@ -1,11 +1,11 @@
 pragma solidity 0.4.24;
 
-import "./IBancorNetwork.sol";
-import "./token/EtherToken.sol";
-import "./token/interfaces/IERC20Token.sol";
-import "./token/interfaces/ISmartToken.sol";
-import "./token/interfaces/IEtherToken.sol";
-import "./token/SmartToken.sol";
+import "./../bancor/bancor-contracts/solidity/contracts/IBancorNetwork.sol";
+import "./../bancor/bancor-contracts/solidity/contracts/token/EtherToken.sol";
+import "./../bancor/bancor-contracts/solidity/contracts/token/interfaces/IERC20Token.sol";
+import "./../bancor/bancor-contracts/solidity/contracts/token/interfaces/ISmartToken.sol";
+import "./../bancor/bancor-contracts/solidity/contracts/token/interfaces/IEtherToken.sol";
+import "./../bancor/bancor-contracts/solidity/contracts/token/SmartToken.sol";
 
 
 ///@title A contract for converting any token into MYB (using Bancor's API)

@@ -1,21 +1,21 @@
 /* global artifacts, contract, before, it, assert, web3 */
 /* eslint-disable prefer-reflect */
 
-const Whitelist = artifacts.require('Whitelist.sol');
-const BancorNetwork = artifacts.require('BancorNetwork.sol');
-const ContractIds = artifacts.require('ContractIds.sol');
-const BancorConverter = artifacts.require('BancorConverter.sol');
-const SmartToken = artifacts.require('SmartToken.sol');
-const BancorFormula = artifacts.require('BancorFormula.sol');
-const BancorGasPriceLimit = artifacts.require('BancorGasPriceLimit.sol');
-const ContractRegistry = artifacts.require('ContractRegistry.sol');
-const ContractFeatures = artifacts.require('ContractFeatures.sol');
-const EtherToken = artifacts.require('EtherToken.sol');
-const TestERC20Token = artifacts.require('TestERC20Token.sol');
-const utils = require('./helpers/Utils');
+const Whitelist = require('./../bancor/bancor-contracts/solidity/contracts/build/Whitelist.abi');
+const BancorNetwork = require('./../bancor/bancor-contracts/solidity/contracts/build/BancorNetwork.abi');
+const ContractIds = require('./../bancor/bancor-contracts/solidity/contracts/build/ContractIds.abi');
+const BancorConverter = require('./../bancor/bancor-contracts/solidity/contracts/converter/build/BancorConverter.abi');
+const SmartToken = require('./../bancor/bancor-contracts/solidity/contracts/build/SmartToken.abi');
+const BancorFormula = require('./../bancor/bancor-contracts/solidity/contracts/converter/build/BancorFormula.abi');
+const BancorGasPriceLimit = require('./../bancor/bancor-contracts/solidity/contracts/converter/build/BancorGasPriceLimit.abi');
+const ContractRegistry = require('./../bancor/bancor-contracts/solidity/contracts/build/ContractRegistry.abi');
+const ContractFeatures = require('./../bancor/bancor-contracts/solidity/contracts/build/ContractFeatures.abi');
+const EtherToken = require('./../bancor/bancor-contracts/solidity/contracts/build/EtherToken.abi');
+const TestERC20Token = require('./../bancor/bancor-contracts/solidity/contracts/helpers/build/TestERC20Token.abi');
+const utils = require('./../bancor/bancor-contracts/solidity/test/helpers/Utils');
 const ethUtil = require('ethereumjs-util');
 const web3Utils = require('web3-utils');
-const TokenConverter = artifacts.require('TokenConverter.sol');
+const TokenConverter = require('./../bancor/bancor-contracts/solidity/contracts/build/TokenConverter.sol');
 
 let etherToken;
 let smartToken1;
