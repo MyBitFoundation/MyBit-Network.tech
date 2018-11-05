@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 
 // @title A shared storage contract for platform contracts to store and retrieve data
@@ -34,13 +34,14 @@ contract Database{
     // @notice ContractManager will be the only contract that can add/remove contracts on the platform.
     // @param (address) _contractManager is the contract which can upgrade/remove contracts to platform
     function enableContractManagement(address _contractManager)
-    external {
-        require(boolStorage[keccak256("upgradeable")]);
+    external
+    returns (bool){
         require(_contractManager != address(0));
         require(boolStorage[keccak256(abi.encodePacked("owner", msg.sender))]);
         require(addressStorage[keccak256(abi.encodePacked("contract", "ContractManager"))] == address(0));
         addressStorage[keccak256(abi.encodePacked("contract", "ContractManager"))] = _contractManager;
         boolStorage[keccak256(abi.encodePacked("contract", _contractManager))] = true;
+        return true;
     }
 
     // @notice Storage functions
