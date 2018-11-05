@@ -1,5 +1,4 @@
 var fs = require('fs');
-var flattener = require('truffle-flattener');
 
 var BurnableToken = artifacts.require("./tokens/erc20/BurnableToken.sol");
 var Database = artifacts.require("./database/Database.sol");
