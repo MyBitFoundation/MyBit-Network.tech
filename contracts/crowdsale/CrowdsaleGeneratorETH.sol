@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
 import "../database/Events.sol";
-import "../access/ERC20Burner.sol";
+// import "../access/ERC20Burner.sol";
 import "../tokens/erc20/DividendToken.sol";
 
 // @title A crowdsale generator contract
@@ -14,7 +14,7 @@ contract CrowdsaleGeneratorETH {
 
   DBInterface public database;
   Events public events;
-  ERC20Burner public burner;
+  // ERC20Burner public burner;
 
   uint constant scalingFactor = 1e32;   // Used to avoid rounding errors
 
@@ -24,7 +24,7 @@ contract CrowdsaleGeneratorETH {
   public{
       database = DBInterface(_database);
       events = Events(_events);
-      burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
+      // burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
   // @notice AssetManagers can initiate a crowdfund for a new asset here
@@ -36,7 +36,7 @@ contract CrowdsaleGeneratorETH {
   // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
   function createAssetOrderETH(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc)
   external
-  burnRequired
+  // burnRequired
   returns (bool) {
     require(_amountToRaise > 0);
     require(_assetManagerPerc < 100);
@@ -78,12 +78,12 @@ contract CrowdsaleGeneratorETH {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-  // @notice reverts if asset manager is unable to burn pp
-  modifier burnRequired {
-    //emit LogSig(msg.sig);
-    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
-    _;
-  }
+  // // @notice reverts if asset manager is unable to burn pp
+  // modifier burnRequired {
+  //   //emit LogSig(msg.sig);
+  //   require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
+  //   _;
+  // }
 
   // @notice Sender must be a registered owner
   modifier onlyOwner {

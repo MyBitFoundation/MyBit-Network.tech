@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 import "../interfaces/DBInterface.sol";
 import "./Events.sol";
@@ -25,7 +25,8 @@ contract ContractManager{
   external
   isTrue(_contractAddress != address(0))
   isTrue(bytes(_name).length != uint(0))
-  anyOwner {
+  anyOwner
+  returns (bool) {
     require(!database.boolStorage(keccak256(abi.encodePacked("contract", _contractAddress))));
     require(database.addressStorage(keccak256(abi.encodePacked("contract", _name))) == address(0));
     database.setAddress(keccak256(abi.encodePacked("contract", _name)), _contractAddress);
@@ -34,7 +35,7 @@ contract ContractManager{
     bytes32 newState = keccak256(abi.encodePacked(currentState, _contractAddress));
     database.setBytes32(keccak256(abi.encodePacked("currentState")), newState);
     events.contractChange("Contract added", _contractAddress, _name);
-    //emit LogContractAdded(_contractAddress, _name, block.number);
+    return true;
   }
 
   // @notice Owner can remove an existing contract on the platform.
@@ -42,15 +43,14 @@ contract ContractManager{
   // @Param: The owner who authorized this function to be called
   function removeContract(string _name)
   external
-  isTrue(bytes(_name).length != uint(0))
   contractExists(database.addressStorage(keccak256(abi.encodePacked("contract", _name))))
+  isUpgradeable
   anyOwner {
     require(database.boolStorage(keccak256(abi.encodePacked("upgradeable"))));
     address contractToDelete = database.addressStorage(keccak256(abi.encodePacked("contract", _name)));
     database.deleteBool(keccak256(abi.encodePacked("contract", contractToDelete)));
     database.deleteAddress(keccak256(abi.encodePacked("contract", _name)));
     events.contractChange("Contract removed", contractToDelete, _name);
-    //emit LogContractRemoved(contractToDelete, _name, block.number);
   }
 
   // @notice Owner can update an existing contract on the platform, giving it write access to Database
@@ -60,6 +60,7 @@ contract ContractManager{
   external
   isTrue(_newContractAddress != 0)
   contractExists(database.addressStorage(keccak256(abi.encodePacked("contract", _name))))
+  isUpgradeable
   anyOwner {
     require(database.boolStorage(keccak256(abi.encodePacked("upgradeable"))));
     address oldAddress = database.addressStorage(keccak256(abi.encodePacked("contract", _name)));
@@ -71,8 +72,6 @@ contract ContractManager{
     database.setBytes32(keccak256(abi.encodePacked("currentState")), newState);
     events.contractChange("Contract updated (old)", oldAddress, _name);
     events.contractChange("Contract updated (new)", _newContractAddress, _name);
-    //emit LogContractUpdated(oldAddress, _name, block.number);
-    //emit LogNewContractLocation(_newContractAddress, _name, block.number);
   }
 
   // @notice user can decide to accept or deny the current and future state of the platform contracts
@@ -93,6 +92,11 @@ contract ContractManager{
   // ------------------------------------------------------------------------------------------------
   //                                                Modifiers
   // ------------------------------------------------------------------------------------------------
+
+  modifier isUpgradeable {
+    require(database.boolStorage(keccak256(abi.encodePacked("upgradeable"))));
+    _;
+  }
 
   // @notice Verify that sender is an owner
   modifier anyOwner {

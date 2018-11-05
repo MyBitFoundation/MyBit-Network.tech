@@ -4,7 +4,7 @@ import "../math/SafeMath.sol";
 import "../interfaces/ERC20.sol";
 import "../interfaces/DBInterface.sol";
 import "../interfaces/ERC20DividendInterface.sol";
-import "../access/ERC20Burner.sol";
+// import "../access/ERC20Burner.sol";
 import "../database/Events.sol";
 
 // @title An asset crowdsale contract which accepts funding from ERC20 tokens.
@@ -16,7 +16,7 @@ contract CrowdsaleERC20{
 
   DBInterface public database;
   Events public events;
-  ERC20Burner public burner;
+  // ERC20Burner public burner;
 
   // @notice Constructor: initializes database instance
   // @param: The address for the platform database
@@ -24,7 +24,7 @@ contract CrowdsaleERC20{
   public{
       database = DBInterface(_database);
       events = Events(_events);
-      burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
+      // burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
 
@@ -37,7 +37,7 @@ contract CrowdsaleERC20{
   validAsset(_assetID)
   betweenDeadlines(_assetID)
   notFinalized(_assetID)
-  burnRequired
+  // burnRequired
   returns (bool) {
     ERC20DividendInterface assetToken = ERC20DividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
     ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))));
@@ -155,11 +155,11 @@ contract CrowdsaleERC20{
     _;
   }
 
-  // @notice reverts if investor hasn't approved burner to burn platform token
-  modifier burnRequired {
-    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
-    _;
-  }
+  // // @notice reverts if investor hasn't approved burner to burn platform token
+  // modifier burnRequired {
+  //   require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
+  //   _;
+  // }
 
       // @notice reverts if the asset does not have a token address set in the database
   modifier validAsset(bytes32 _assetID) {

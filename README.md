@@ -67,6 +67,18 @@ All contracts are found [here](contracts)
 ### [Database](contracts/database)
 Contracts in the SDK store all long-term data in a database contract, which allows for contracts to be upgraded without losing valuable data. The Database stores all data using a bytes32 type, which is often the keccak256 hash of the variableName, ID, address that make up that variable.
 
+The Database stores any data type under a bytes32 key:
+```javascript
+mapping(bytes32 => uint) public uintStorage;
+mapping(bytes32 => string) public stringStorage;
+mapping(bytes32 => address) public addressStorage;
+mapping(bytes32 => bytes) public bytesStorage;
+mapping(bytes32 => bytes32) public bytes32Storage;
+mapping(bytes32 => bool) public boolStorage;
+mapping(bytes32 => int) public intStorage;
+```
+
+
 Storing an integer looks like this:
 ```javascript
   database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), 20000000);
@@ -94,7 +106,17 @@ The API contract can be used to easily fetch variables from the database
 ```
 
 ### [ContractManagement](contracts/database/ContractManager.sol)
-To give a contract write access to the database, you must call `addContract(contractName, contractAddress)` from a platform owner account
+
+The Database restricts write access to only contract that are on the platform
+```javascript
+// Caller must be registered as a contract through ContractManager.sol
+modifier onlyApprovedContract() {
+    require(boolStorage[keccak256(abi.encodePacked("contract", msg.sender))]);
+    _;
+}
+```
+
+To give a contract write access to the database, you must call `addContract(contractName, contractAddress)` from a platform owner account:
 ```javascript
   function addContract(string _name, address _contractAddress)
   external
@@ -126,8 +148,26 @@ Every time a contract is added or updated the contract state will change, requir
   }
 ```
 
+Functions which directly effect the user in case of contract upgrades will use the `acceptedState()` modifier to prevent users from accidentally interacting with contracts that they haven't agreed to interact with. 
+```javascript
+modifier acceptedState(address _investor) {
+  bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));
+  require(database.boolStorage(keccak256(abi.encodePacked(currentState, _investor))) || database.boolStorage(keccak256(abi.encodePacked("ignoreStateChanges", _investor))));
+  _;
+}
+```
+
 ### [TokenBurning](contracts/access/ERC20Burner.sol)
-To create new asset orders, or purchase existing asset orders, users must provably burn MYB using the [burner](contracts/access/ERC20Burner.sol). To do this each user must approve the burner contract to burn tokens by calling the MYB contract:
+To create new asset orders, or purchase existing asset orders, users must provably burn MYB using the [burner](contracts/access/ERC20Burner.sol). Functions that require burning have the `burnRequired` modifier:
+```javascript
+// @notice reverts if investor hasn't approved burner to burn platform token
+modifier burnRequired {
+  require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
+  _;
+}
+```
+
+To do this each user must approve the burner contract to burn tokens by calling the MYB contract:
 
 ```javascript
   function approve(address _spender, uint256 _value) public returns (bool) {
@@ -372,6 +412,17 @@ We are working on giving investors governance tools to vote for new AssetManager
 * methodID = The function signature of the funtion to be called ie. `bytes4(sha3("exampleFunction(address, uint256, bool)"))`
 * parameterHash = The sha3 hash of the exact parameters to be called at that function
 * amountToLock - The number of asset-tokens this investor wishes to lock towards this function call
+
+Governance restricted functions will use the `hasConsensus()` modifier, which requires that token holders have agreed to call this function with these parameters.
+```javascript
+modifier hasConsensus(bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash) {
+  bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash))));
+  uint256 numTokens = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))).totalSupply();
+  emit LogConsensus(numVotesID, database.uintStorage(numVotesID), numTokens, keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash)), database.uintStorage(numVotesID).mul(100).div(numTokens));
+  require(database.uintStorage(numVotesID).mul(100).div(numTokens) >= consensus, 'Consensus not reached');
+  _;
+}
+```
 
 ✏️ All contracts are written in [Solidity](https://solidity.readthedocs.io/en/v0.4.24/) version 0.4.24.
 

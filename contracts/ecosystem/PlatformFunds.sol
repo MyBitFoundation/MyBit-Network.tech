@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 import '../database/Database.sol';
 import '../database/Events.sol';
@@ -52,14 +52,6 @@ contract PlatformFunds {
     _;
   }
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //                                                Events                                                                        //
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  /*
-  event LogPlatformWallet(address _platformWallet);
-  event LogPlatformToken(address _platformToken);
-  */
 
 
 
