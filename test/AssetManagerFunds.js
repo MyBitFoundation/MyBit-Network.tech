@@ -96,7 +96,7 @@ contract('AssetManagerFunds', async() => {
   });
 
   it('Deploy assetManager assets', async() => {
-    assetManagerFunds = await AssetManagerFunds.new(db.address);
+    assetManagerFunds = await AssetManagerFunds.new(db.address, events.address);
     await cm.addContract('AssetManagerFunds', assetManagerFunds.address);
   });
 

@@ -65,6 +65,14 @@ contract CrowdsaleGeneratorETH {
     return true;
   }
 
+  // @notice platform owners can destroy contract here
+  function destroy()
+  onlyOwner
+  external {
+    events.transaction('CrowdsaleGeneratorETH destroyed', address(this), msg.sender, address(this).balance, '');
+    selfdestruct(msg.sender);
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                            Modifiers
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,6 +84,12 @@ contract CrowdsaleGeneratorETH {
   //   require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
   //   _;
   // }
+
+  // @notice Sender must be a registered owner
+  modifier onlyOwner {
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))), "Not owner");
+    _;
+  }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                            Events

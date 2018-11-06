@@ -1,11 +1,13 @@
 pragma solidity 0.4.24;
 
 import "../math/SafeMath.sol";
+import "../database/Events.sol";
 interface Burner { function burnEscrow(bytes32 _assetID) external returns (bool); }
 interface Escrow { function unlockEscrow(bytes32 _assetID) external returns (bool); }
 interface DB {
   function addressStorage(bytes32 _key) external  view returns (address);
   function uintStorage(bytes32 _key) external view returns (uint);
+  function boolStorage(bytes32 _key) external view returns (bool);
   function setUint(bytes32 _key, uint _value) external;
 }
 interface TokenView {
@@ -20,13 +22,15 @@ contract AssetGovernance {
   using SafeMath for uint256;
 
   DB public database;
+  Events public events;
 
   uint public consensus = 66;   // TODO: sub the assetmanager portion of tokens, since they can't be voted with
   uint constant scalingFactor = 10e32;
 
-  constructor(address _database)
+  constructor(address _database, address _events)
   public {
     database = DB(_database);
+    events = Events(_events);
   }
 
 
@@ -59,9 +63,11 @@ contract AssetGovernance {
     bytes32 investorVotesID = keccak256(abi.encodePacked("investorVotes", executionID, msg.sender));
     uint investorVotes = database.uintStorage(investorVotesID);
     uint totalVotes = database.uintStorage(voteTotalID);
-    require(investorVotes <= _amountToUnlock);   // 1 vote = 1 token
+    uint numTokensLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", _assetID, msg.sender)));
+    require(investorVotes >= _amountToUnlock, "Amount to unlock greater than committed voted");   // 1 vote = 1 token
     database.setUint(voteTotalID, totalVotes.sub(_amountToUnlock));
     database.setUint(investorVotesID, investorVotes.sub(_amountToUnlock));
+    database.setUint(keccak256(abi.encodePacked("tokensLocked", _assetID, msg.sender)), numTokensLocked.sub(_amountToUnlock));
     return true;
   }
 
@@ -81,6 +87,14 @@ contract AssetGovernance {
     return database.uintStorage(numVotesID).mul(scalingFactor).mul(100).div(numTokens).div(scalingFactor) >= consensus;
   }
 
+  // @notice platform owners can destroy contract here
+  function destroy()
+  onlyOwner
+  external {
+    events.transaction('AssetGovernance destroyed', address(this), msg.sender, address(this).balance, '');
+    selfdestruct(msg.sender);
+  }
+
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                            Internal Functions
@@ -93,7 +107,7 @@ contract AssetGovernance {
   returns (bool) {
     TokenView assetToken = TokenView(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
     uint numTokensLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", _assetID, _investor)));
-    require(_amount <= assetToken.balanceOf(_investor).sub(numTokensLocked));
+    require(_amount <= assetToken.balanceOf(_investor).sub(numTokensLocked), "Amount to lock greater than available");
     database.setUint(keccak256(abi.encodePacked("tokensLocked", _assetID, _investor)), numTokensLocked.add(_amount));
     return true;
   }
@@ -106,7 +120,13 @@ contract AssetGovernance {
 
   // @notice reverts if the asset does not have a token address set in the database
   modifier validAsset(bytes32 _assetID) {
-    require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))) != address(0));
+    require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))) != address(0), "Invalid asset");
+    _;
+  }
+
+  // @notice Sender must be a registered owner
+  modifier onlyOwner {
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))), "Not owner");
     _;
   }
 

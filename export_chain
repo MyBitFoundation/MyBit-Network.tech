@@ -21,8 +21,8 @@ truffle migrate --reset
 #Kill ganache
 pkill -f ganache-cli
 #Move addresses.json to chain directory
-mv addresses.json  $CHAIN_DIR
-mv accounts.json  $CHAIN_DIR
+mv development-addresses.json  $CHAIN_DIR
+mv development-accounts.json  $CHAIN_DIR
 #Move back to chain directory
 cd $CHAIN_DIR
 #If git exists in folder, update git

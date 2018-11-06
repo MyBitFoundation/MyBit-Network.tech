@@ -39,6 +39,14 @@ contract Pausible {
     //emit LogUnpaused(_contract, msg.sender);
   }
 
+  // @notice platform owners can destroy contract here
+  function destroy()
+  onlyOwner
+  external {
+    events.transaction('Pausible destroyed', address(this), msg.sender, address(this).balance, '');
+    selfdestruct(msg.sender);
+  }
+
   // @notice reverts if caller is not the owner
   modifier onlyOwner() {
     require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
