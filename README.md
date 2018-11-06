@@ -417,7 +417,7 @@ cd docs/website
 yarn build
 ```
 
-To publish to GitHub Pages
+To publish to GitHub Pages:
 
 ```text
 cd docs/website
