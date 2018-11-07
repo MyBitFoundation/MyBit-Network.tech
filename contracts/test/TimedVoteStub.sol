@@ -163,6 +163,12 @@ contract TimedVoteStub is TimedVote {
   pure
   onlyValid(_address) {}
 
+  /** Require voting body */
+  function _onlyVotingBody()
+  external
+  view
+  onlyVotingBody {}
+
   /** Percentage */
   function _percentage(uint256 _portion, uint256 _total)
   external
@@ -228,7 +234,7 @@ contract TimedVoteStub is TimedVote {
    */
   function _addProposal(bytes32 _proposalID)
   external {
-    proposals[_proposalID] = Proposal(time(), 0, 0, 0);
+    proposals[_proposalID] = Proposal(time(), body, 0, 0, 0);
   }
 
   /**
@@ -244,12 +250,22 @@ contract TimedVoteStub is TimedVote {
   }
 
   /**
+   * Set voting body amount
+   * @param _amount - Voting body amount.
+   */
+  function _setBody(uint256 _amount)
+  external {
+    body = _amount;
+  }
+
+  /**
    * Set account commitment
    * @param _account - Account to set commitment of.
    * @param _amount - MYB commitment amount.
    */
   function _setCommitment(address _account, uint256 _amount)
   external {
+    body = body.add(_amount);
     commitments[_account] = Commitment(_amount, time());
   }
 
