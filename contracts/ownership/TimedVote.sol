@@ -30,7 +30,7 @@ contract TimedVote {
   address constant NULL_ADDRESS = address(0);   // Null address
   uint256 constant TIER_2_AGE = 180 days;       // Tier 2 commitment age
   uint256 constant TIER_3_AGE = 365 days;       // Tier 3 commitment age
-  uint8 constant TIER_1_MULTIPLIER = 100;       // Tier 1 multiplier-
+  uint8 constant TIER_1_MULTIPLIER = 100;       // Tier 1 multiplier
   uint8 constant TIER_2_MULTIPLIER = 150;       // Tier 2 multiplier
   uint8 constant TIER_3_MULTIPLIER = 200;       // Tier 3 multiplier
 
@@ -46,6 +46,7 @@ contract TimedVote {
   // Proposal for the MYB community
   struct Proposal {
     uint256 start;                              // Create instant
+    uint256 body;                               // Voting body MYB amount
     uint256 voted;                              // Voting MYB amount
     uint256 approval;                           // Weighted approval amount
     uint256 dissent;                            // Weighted dissent amount
@@ -59,6 +60,7 @@ contract TimedVote {
   uint256 voteDuration;                         // Vote duration
   uint8 quorum;                                 // Quorum
   uint8 threshold;                              // Approval threshold
+  uint256 body;                                 // Voting body MYB amount
   mapping(address => Commitment) commitments;   // Active commitments
   mapping(bytes32 => Proposal) proposals;       // Created proposals
 
@@ -145,6 +147,7 @@ contract TimedVote {
   external
   onlyUncommitted(msg.sender) {
     require(_value > 0, "Nonzero value required");
+    body = body.add(_value);
     commitments[msg.sender] = Commitment(_value, time());
     bool transferred = token.transferFrom(msg.sender, this, _value);
     require(transferred, "Transfer failed");
@@ -224,14 +227,16 @@ contract TimedVote {
   /**
    * Create proposal
    * @notice
-   * Creates a new proposal with the specified identifier. Fails if a proposal
-   * with the same identifier already exists. Emits Propose on success.
+   * Creates a new proposal with the specified identifier. Fails if there is no
+   * voting body. Fails if a proposal with the same identifier already exists.
+   * Emits Propose on success.
    * @param _proposalID - Identifier of new proposal.
    */
   function propose(bytes32 _proposalID)
   external
+  onlyVotingBody
   onlyNew(_proposalID) {
-    proposals[_proposalID] = Proposal(time(), 0, 0, 0);
+    proposals[_proposalID] = Proposal(time(), body, 0, 0, 0);
     emit Propose(msg.sender, _proposalID);
   }
 
@@ -262,9 +267,9 @@ contract TimedVote {
    * @param _proposalID - Identifier of proposal to get status of.
    * @return open - Whether the proposal is open.
    * @return age - Proposal age. Voting closes after voteDuration.
+   * @return votingBody - Proposal voting body MYB amount. Fixed when created.
    * @return voted - Voting MYB amount. Must meet quorum to pass.
-   * @return approval - Weighted approval amount. Ratio with total votes
-   *     must meet threshold to pass.
+   * @return approval - Weighted approval amount. Must meet threshold to pass.
    * @return dissent - Weighted dissent amount.
    */
   function status(bytes32 _proposalID)
@@ -274,6 +279,7 @@ contract TimedVote {
   returns (
     bool open,
     uint256 age,
+    uint256 votingBody,
     uint256 voted,
     uint256 approval,
     uint256 dissent
@@ -282,6 +288,7 @@ contract TimedVote {
     return (
       proposalOpen(_proposalID),
       proposalAge(_proposalID),
+      proposal.body,
       proposal.voted,
       proposal.approval,
       proposal.dissent
@@ -300,6 +307,7 @@ contract TimedVote {
   onlyCommitted(msg.sender)
   onlyUnlocked(msg.sender) {
     uint256 _value = commitments[msg.sender].value;
+    body = body.sub(_value);
     delete commitments[msg.sender];
     bool transferred = token.transfer(msg.sender, _value);
     require(transferred, "Transfer failed");
@@ -526,16 +534,20 @@ contract TimedVote {
   /**
    * Proposal voting percentage
    * @notice
-   * Provides what percentage voting MYB amount is of total supply.
+   * Provides what percentage voting MYB amount is of total voting body MYB
+   * amount at proposal time.
    * @dev
-   * Assumes extant proposal.
+   * Assumes extant proposal. Assumes nonzero voting body at proposal time.
    * @param _proposalID - Identifier of proposal to calculate for.
    */
   function votingPercentage(bytes32 _proposalID)
   internal
   view
   returns (uint8 percent) {
-    return percentage(proposals[_proposalID].voted, token.totalSupply());
+    return percentage(
+      proposals[_proposalID].voted,
+      proposals[_proposalID].body
+    );
   }
 
   /**
@@ -710,6 +722,19 @@ contract TimedVote {
     require(
       !addressNull(_address),
       "Valid address required"
+    );
+    _;
+  }
+
+  /**
+   * Require voting body
+   * @dev
+   * Throws if voting body MYB amount is 0.
+   */
+  modifier onlyVotingBody {
+    require(
+      body > 0,
+      "Voting body required"
     );
     _;
   }
