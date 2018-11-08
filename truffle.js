@@ -13,7 +13,6 @@ if (fs.existsSync('apiKey.json')) {
 
 module.exports = {
   networks: {
-
     development: {
       host: "localhost",
       port: 8545,
@@ -21,7 +20,6 @@ module.exports = {
       network_id: "*",
       gasPrice: 1
     },
-
     ropsten: {
       provider: function() {
         return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/v3/"+apiKey)
@@ -34,6 +32,22 @@ module.exports = {
       ipfs_protocol: "http",
       registry: "0x8011df4830b4f696cd81393997e5371b93338878",
       install_provider_uri: "https://ropsten.infura.io/truffle"
+    }
+  },
+  mocha: {
+    enableTimeouts: false,
+    useColors:      true,
+    bail:           false
+  },
+  solc: {
+    optimizer: {
+        enabled: true,
+        runs:    200
+    }
+  },
+  compilers: {
+    solc: {
+        version: "0.4.24"
     }
   }
 };
