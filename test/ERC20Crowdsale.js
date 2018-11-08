@@ -169,7 +169,7 @@ contract('ERC20 Crowdsale', async() => {
 
   it('Set operator', async() => {
     let block = await web3.eth.getBlock('latest');
-    await operators.registerOperator(operator, 'Operator');
+    await operators.registerOperator(operator, 'Operator', 'Asset Type');
     let e = events.LogOperator({message: 'Operator registered', origin: owner}, {fromBlock: block.number, toBlock: 'latest'});
     let logs = await Promisify(callback => e.get(callback));
     operatorID = logs[0].args.operatorID;
@@ -328,7 +328,7 @@ contract('ERC20 Crowdsale', async() => {
 
   it('Set operator', async() => {
     let block = await web3.eth.getBlock('latest');
-    await operators.registerOperator(operator, 'Operator');
+    await operators.registerOperator(operator, 'Operator', 'Asset Type');
     let e = events.LogOperator({message: 'Operator registered', origin: owner}, {fromBlock: block.number, toBlock: 'latest'});
     let logs = await Promisify(callback => e.get(callback));
     operatorID = logs[0].args.operatorID;
