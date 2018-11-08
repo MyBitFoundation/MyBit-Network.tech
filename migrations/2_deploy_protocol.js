@@ -1,6 +1,6 @@
 var fs = require('fs');
 
-var BurnableToken = artifacts.require("./tokens/erc20/BurnableToken.sol");
+var MyBitToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
 var Database = artifacts.require("./database/Database.sol");
 var Events = artifacts.require("./database/Events.sol");
 var ContractManager = artifacts.require("./database/ContractManager.sol");
@@ -39,7 +39,7 @@ module.exports = function(deployer, network, accounts) {
     //Link safemath library
     deployer.link(SafeMath,
                   API,
-                  BurnableToken,
+                  MyBitToken,
                   AssetManagerEscrow,
                   Operators,
                   CrowdsaleETH,
@@ -48,7 +48,7 @@ module.exports = function(deployer, network, accounts) {
                   CrowdsaleGeneratorERC20,
                   AssetExchange);
 
-    return BurnableToken.new('MyBit', tokenSupply);
+    return MyBitToken.new('MyBit', tokenSupply);
 
   }).then(function(instance) {
 
@@ -229,7 +229,7 @@ module.exports = function(deployer, network, accounts) {
 
   }).then(function() {
     var addresses = {
-      "MyBit" : MyB.address,
+      "MyBitToken" : MyB.address,
       "ERC20Burner" : burner.address,
       "Database" : db.address,
       "Events" : events.address,

@@ -1,6 +1,6 @@
 var bn = require('bignumber.js');
 
-const Token = artifacts.require("./tokens/ERC20/BurnableToken.sol");
+const Token = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 
 const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];

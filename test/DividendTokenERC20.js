@@ -1,7 +1,7 @@
 var bn = require('bignumber.js');
 
 const Token = artifacts.require("./tokens/ERC20/DividendTokenERC20.sol");
-const BurnableToken = artifacts.require("./tokens/ERC20/BurnableToken.sol");
+const MyBitToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const ApproveAndCall = artifacts.require("./test/ApproveAndCallTest.sol");
 
 const owner = web3.eth.accounts[0];
@@ -23,7 +23,7 @@ contract('Dividend Token ERC20', async() => {
   let erc20;
 
   it("Deploy standard token", async() => {
-    erc20 = await BurnableToken.new('Dai', 10000*ETH);
+    erc20 = await MyBitToken.new('Dai', 10000*ETH);
   });
 
   it('Deploy Dividend Token', async() => {

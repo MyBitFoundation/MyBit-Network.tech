@@ -1,6 +1,6 @@
 var bn = require('bignumber.js');
 
-const Token = artifacts.require("./tokens/ERC20/BurnableToken.sol");
+const Token = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 const Database = artifacts.require("./database/Database.sol");
 const Events = artifacts.require("./database/Events.sol");

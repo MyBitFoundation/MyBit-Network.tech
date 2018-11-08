@@ -6,7 +6,7 @@ const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const DivToken = artifacts.require("./tokens/ERC20/DividendToken.sol");
 const DivTokenERC20 = artifacts.require("./tokens/ERC20/DividendTokenERC20.sol");
-const BurnableToken = artifacts.require("./tokens/ERC20/BurnableToken.sol");
+const MyBitToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
@@ -74,7 +74,7 @@ contract('AssetManagerFunds', async() => {
   });
 
   it("Deploy standard token", async() => {
-    burnToken = await BurnableToken.new('MyB', 10000*ETH);
+    burnToken = await MyBitToken.new('MyB', 10000*ETH);
     await burnToken.transfer(operator, 100*ETH);
     assert.equal(await burnToken.balanceOf(operator), 100*ETH);
   });
@@ -243,7 +243,7 @@ contract('AssetManagerFunds', async() => {
     for(var i=0; i<number; i++){
       let uri = ''+i;
       //Add token
-      let erc20Token = await BurnableToken.new(uri, 10000*ETH, {from: operator});
+      let erc20Token = await MyBitToken.new(uri, 10000*ETH, {from: operator});
       let testToken = await DivTokenERC20.new(uri, owner, erc20Token.address);
       //Mint
       await testToken.mint(assetManagerFunds.address, tokenPerAccount);
