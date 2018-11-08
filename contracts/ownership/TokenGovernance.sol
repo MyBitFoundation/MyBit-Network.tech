@@ -1,6 +1,7 @@
 pragma solidity ^0.4.24;
 
 import '../database/Database.sol';
+import '../database/Events.sol';
 import '../math/SafeMath.sol';
 import '../interfaces/ERC20.sol';
 
@@ -14,6 +15,7 @@ contract TokenGovernance {
   using SafeMath for uint256;
 
   Database public database;
+  Events public events;
 
   ERC20 public governanceToken;
 
@@ -27,10 +29,11 @@ contract TokenGovernance {
 
   // @notice initiator of the platform sets the initial functions quorum level
   // @notice quorum level dictates the number of votes required for that function to be executed
-  constructor(address _database, uint256 _baseQuorum)
+  constructor(address _database, address _events, uint256 _baseQuorum)
   public  {
     governanceToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
     database = Database(_database);
+    events = Events(_events);
     governanceToken = ERC20(governanceToken);
     bytes4 methodID = bytes4(keccak256(abi.encodePacked("setQuorumLevel(address, bytes4, uint256)")));
     bytes32 functionID = keccak256(abi.encodePacked(address(this), methodID));
@@ -72,6 +75,13 @@ contract TokenGovernance {
     return true;
   }
 
+  // @notice platform owners can destroy contract here
+  function destroy()
+  onlyOwner
+  external {
+    events.transaction('TokenGovernance destroyed', address(this), msg.sender, address(this).balance, '');
+    selfdestruct(msg.sender);
+  }
 
   //------------------------------------------------------------------------------------------------------------------
   //                                                Internal Functions

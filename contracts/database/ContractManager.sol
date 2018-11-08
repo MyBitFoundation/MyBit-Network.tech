@@ -46,6 +46,7 @@ contract ContractManager{
   contractExists(database.addressStorage(keccak256(abi.encodePacked("contract", _name))))
   isUpgradeable
   anyOwner {
+    require(database.boolStorage(keccak256(abi.encodePacked("upgradeable"))));
     address contractToDelete = database.addressStorage(keccak256(abi.encodePacked("contract", _name)));
     database.deleteBool(keccak256(abi.encodePacked("contract", contractToDelete)));
     database.deleteAddress(keccak256(abi.encodePacked("contract", _name)));
@@ -61,6 +62,7 @@ contract ContractManager{
   contractExists(database.addressStorage(keccak256(abi.encodePacked("contract", _name))))
   isUpgradeable
   anyOwner {
+    require(database.boolStorage(keccak256(abi.encodePacked("upgradeable"))));
     address oldAddress = database.addressStorage(keccak256(abi.encodePacked("contract", _name)));
     database.setAddress(keccak256(abi.encodePacked("contract", _name)), _newContractAddress);
     database.setBool(keccak256(abi.encodePacked("contract", _newContractAddress)), true);

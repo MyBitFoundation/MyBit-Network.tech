@@ -114,7 +114,7 @@ contract('Ether Crowdsale', async() => {
   });
 
   it('Deploy asset manager funds', async() => {
-    assetManagerFunds = await AssetManagerFunds.new(db.address);
+    assetManagerFunds = await AssetManagerFunds.new(db.address, events.address);
     await cm.addContract('AssetManagerFunds', assetManagerFunds.address);
   });
 

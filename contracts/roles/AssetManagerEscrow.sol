@@ -16,7 +16,7 @@
 
     DBInterface public database;
     Events public events;
-    
+
     uint public consensus = 66;
 
     // @notice constructor: initializes database
@@ -89,6 +89,14 @@
       return true;
     }
 
+    // @notice platform owners can destroy contract here
+    function destroy()
+    onlyOwner
+    external {
+      events.transaction('AssetManagerEscrow destroyed', address(this), msg.sender, address(this).balance, '');
+      selfdestruct(msg.sender);
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //                                            Internal Functions
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -132,6 +140,12 @@
       events.consensus('Current consensus', keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash)), numVotesID, database.uintStorage(numVotesID), numTokens, database.uintStorage(numVotesID).mul(100).div(numTokens));
       //emit LogConsensus(numVotesID, database.uintStorage(numVotesID), numTokens, keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash)), database.uintStorage(numVotesID).mul(100).div(numTokens));
       require(database.uintStorage(numVotesID).mul(100).div(numTokens) >= consensus, 'Consensus not reached');
+      _;
+    }
+
+    // @notice reverts if caller is not the owner
+    modifier onlyOwner {
+      require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))) == true);
       _;
     }
 

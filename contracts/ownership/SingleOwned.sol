@@ -27,6 +27,14 @@ contract SingleOwned {
     //emit OwnershipTransferred(msg.sender, _newOwner);
   }
 
+  // @notice platform owners can destroy contract here
+  function destroy()
+  onlyOwner
+  external {
+    events.transaction('SingleOwned destroyed', address(this), msg.sender, address(this).balance, '');
+    selfdestruct(msg.sender);
+  }
+
   // @notice reverts if caller is not the owner
   modifier onlyOwner() {
     require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))) == true);

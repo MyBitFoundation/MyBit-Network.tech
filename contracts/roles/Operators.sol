@@ -68,6 +68,14 @@ contract Operators {
     return true;
   }
 
+  // @notice platform owners can destroy contract here
+  function destroy()
+  onlyOwner
+  external {
+    events.transaction('Operators destroyed', address(this), msg.sender, address(this).balance, '');
+    selfdestruct(msg.sender);
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                                Modifiers                                                                     //
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
