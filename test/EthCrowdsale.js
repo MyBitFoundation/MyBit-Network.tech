@@ -114,7 +114,7 @@ contract('Ether Crowdsale', async() => {
   });
 
   it('Deploy asset manager funds', async() => {
-    assetManagerFunds = await AssetManagerFunds.new(db.address);
+    assetManagerFunds = await AssetManagerFunds.new(db.address, events.address);
     await cm.addContract('AssetManagerFunds', assetManagerFunds.address);
   });
 
@@ -150,7 +150,7 @@ contract('Ether Crowdsale', async() => {
 
   it('Set operator', async() => {
     let block = await web3.eth.getBlock('latest');
-    await operators.registerOperator(operator, 'Operator');
+    await operators.registerOperator(operator, 'Operator', 'Asset Type');
     let e = events.LogOperator({message: 'Operator registered', origin: owner}, {fromBlock: block.number, toBlock: 'latest'});
     let logs = await Promisify(callback => e.get(callback));
     operatorID = logs[0].args.operatorID;
@@ -159,7 +159,7 @@ contract('Ether Crowdsale', async() => {
 
   //Start successful funding
   it('Start funding in the future', async() => {
-    let now = Math.floor(new Date() / 1000);
+    let now = await web3.eth.getBlock('latest').timestamp;
     let startTime = now + 86400; //Startime is a day from now
     assetURI = 'BTC ATM';
     let block = await web3.eth.getBlock('latest');
@@ -310,7 +310,7 @@ contract('Ether Crowdsale', async() => {
 
   it('Set operator', async() => {
     let block = await web3.eth.getBlock('latest');
-    await operators.registerOperator(operator, 'Operator');
+    await operators.registerOperator(operator, 'Operator', 'Asset Type');
     let e = events.LogOperator({message: 'Operator registered', origin: owner}, {fromBlock: block.number, toBlock: 'latest'});
     let logs = await Promisify(callback => e.get(callback));
     operatorID = logs[0].args.operatorID;

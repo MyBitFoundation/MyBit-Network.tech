@@ -22,7 +22,7 @@ contract('Database', async (accounts) => {
   let events;
   let contractManager;
 
-  it('Deploy Database', async() => {
+  it('Deploy non-upgradeable database', async() => {
     database = await Database.new([manager1], false);
   });
 
@@ -30,6 +30,34 @@ contract('Database', async (accounts) => {
     events = await Events.new(database.address);
   });
 
+  it('Deploy contract manager', async() => {
+    contractManager = await ContractManager.new(database.address, events.address);
+    await database.enableContractManagement(contractManager.address);
+  });
+
+  it('Add contract', async() => {
+    await contractManager.addContract("Owner", manager1);
+  })
+
+  it('Fail to update contract', async() => {
+    let err;
+    try{
+      await contractManager.addContract("Owner", manager2);
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it('Fail to remove contract', async() => {
+    let err;
+    try{
+      await contractManager.removeContract("Owner");
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
 
   it('Deploy Database', async() => {
     database = await Database.new([manager1], true);

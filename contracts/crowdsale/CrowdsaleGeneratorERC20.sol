@@ -65,6 +65,14 @@ contract CrowdsaleGeneratorERC20 {
     //emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, assetAddress);
   }
 
+  // @notice platform owners can destroy contract here
+  function destroy()
+  onlyOwner
+  external {
+    events.transaction('CrowdsaleGeneratorERC20 destroyed', address(this), msg.sender, address(this).balance, '');
+    selfdestruct(msg.sender);
+  }
+
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                            Modifiers
@@ -74,6 +82,12 @@ contract CrowdsaleGeneratorERC20 {
   modifier burnRequired {
     //emit LogSig(msg.sig);
     require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
+    _;
+  }
+
+  // @notice Sender must be a registered owner
+  modifier onlyOwner {
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))), "Not owner");
     _;
   }
 

@@ -156,7 +156,7 @@ module.exports = function(deployer, network, accounts) {
     console.log('AssetManagerEscrow.sol: ' + escrow.address);
     cm.addContract('AssetManagerEscrow', escrow.address);
 
-    return AssetManagerFunds.new(db.address);
+    return AssetManagerFunds.new(db.address, events.address);
 
   }).then(function(instance) {
     managerFunds = instance;
@@ -252,11 +252,11 @@ module.exports = function(deployer, network, accounts) {
 
     var addresses_json = JSON.stringify(addresses, null, 4);
     var accounts_json = JSON.stringify(accounts, null, 4);
-    fs.writeFile('addresses.json', addresses_json, (err) => {
+    fs.writeFile(network + '-addresses.json', addresses_json, (err) => {
      if (err) throw err;
      console.log('Contracts Saved');
     });
-    fs.writeFile('accounts.json', accounts_json, (err) => {
+    fs.writeFile(network + '-accounts.json', accounts_json, (err) => {
      if (err) throw err;
      console.log('Accounts Saved');
     });
