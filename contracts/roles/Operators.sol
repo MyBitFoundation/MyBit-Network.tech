@@ -16,7 +16,7 @@ contract Operators {
 
   // @notice allows the platform owners to onboard a new operator.
   // @notice operators will receive crowdfunding payments and are liable for producing/installing assets.
-  function registerOperator(address _operatorAddress, string _operatorURI)
+  function registerOperator(address _operatorAddress, string _operatorURI, string _assetType)
   external
   onlyOwner {
     require(_operatorAddress != address(0));
@@ -25,6 +25,7 @@ contract Operators {
     database.setAddress(keccak256(abi.encodePacked("operator", operatorID)), _operatorAddress);
     database.setBytes32(keccak256(abi.encodePacked("operator", _operatorAddress)), operatorID);
     events.operator('Operator registered', operatorID, _operatorURI, _operatorAddress);
+    events.operator('Asset type', operatorID, _assetType, _operatorAddress);
     //emit LogOperatorRegistered(operatorID, _operatorURI);
   }
 
@@ -65,6 +66,14 @@ contract Operators {
   onlyOperator(_operatorID)
   returns (bool) {
     database.setBool(keccak256(abi.encodePacked("acceptsEther", _operatorID)), _accept);
+    return true;
+  }
+
+  function addAssetType(bytes32 _operatorID, string _assetType)
+  external
+  onlyOperator(_operatorID)
+  returns (bool) {
+    events.operator('Asset type', _operatorID, _assetType, msg.sender);
     return true;
   }
 
