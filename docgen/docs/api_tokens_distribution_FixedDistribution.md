@@ -1,0 +1,6 @@
+---
+id: tokens_distribution_FixedDistribution
+title: FixedDistribution
+---
+
+<div class="contract-doc"><div class="contract"><h2 class="contract-header"><span class="contract-kind">contract</span> FixedDistribution</h2><p class="base-contracts"><span>is</span> <a href="tokens_distribution_StandardDistribution.html">StandardDistribution</a></p><div class="source">Source: <a href="https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.1.9/contracts/tokens/distribution/FixedDistribution.sol" target="_blank">tokens/distribution/FixedDistribution.sol</a></div></div><div class="index"><h2>Index</h2><ul><li><a href="tokens_distribution_FixedDistribution.html#">fallback</a></li></ul></div><div class="reference"><h2>Reference</h2><div class="functions"><h3>Functions</h3><ul><li><div class="item function"><span id="fallback" class="anchor-marker"></span><h4 class="name">fallback</h4><div class="body"><code class="signature">function <strong></strong><span>(string _tokenURI, address[] _tokenHolders, uint[] _amount) </span><span>public </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_tokenURI</code> - string</div><div><code>_tokenHolders</code> - address[]</div><div><code>_amount</code> - uint[]</div></dd></dl></div></div></li></ul></div></div></div>

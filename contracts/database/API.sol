@@ -27,6 +27,7 @@ contract API {
   using SafeMath for uint256;
 
   DBView private database;
+  uint constant scalingFactor = 10e32;
 
   constructor(address _database)
   public {
@@ -69,14 +70,14 @@ contract API {
   view
   returns (uint) {
     uint totalVotes = getTotalVotes(_executionID);
-    return (totalVotes * 100) / TokenView(_assetToken).totalSupply();
+    return ( ( (totalVotes * 100) * scalingFactor) / TokenView(_assetToken).totalSupply() / scalingFactor);
   }
 
-  function getAssetManagerParameterHash(bytes32 _assetID, address _oldBroker, address _newBroker, uint _amount, bool _burn)
+  function getAssetManagerParameterHash(bytes32 _assetID, address _oldAssetManager, address _newAssetManager, uint _amount, bool _burn)
   public
   pure
   returns (bytes32){
-    return keccak256(abi.encodePacked(_assetID, _oldBroker, _newBroker, _amount, _burn));
+    return keccak256(abi.encodePacked(_assetID, _oldAssetManager, _newAssetManager, _amount, _burn));
   }
 
   function getExecutionID(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash)
