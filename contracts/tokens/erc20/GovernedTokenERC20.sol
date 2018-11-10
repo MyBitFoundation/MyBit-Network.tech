@@ -1,6 +1,7 @@
 pragma solidity ^0.4.24;
 
 import "./DividendTokenERC20.sol";
+import "./BurnableToken.sol";
 import "../../math/SafeMath.sol";
 
 // @notice give GovernedToken access to view uint and bytes32 storage
@@ -13,7 +14,7 @@ interface DBAccess {
 // @notice This token contract can receive ERC20 tokens as payments and token owners can lock tokens while submitting votes
 // @author Kyle Dewhurst & Peter Phillips, MyBit Foundation
 // @dev Dividend tokens aren't actually locked, but restricted from transferring to avoid locking contravt having to distribute dividends.
-contract GovernedTokenERC20 is DividendTokenERC20{
+contract GovernedTokenERC20 is DividendTokenERC20, BurnableToken{
   DBAccess public database;
 
 

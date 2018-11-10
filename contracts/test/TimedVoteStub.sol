@@ -13,13 +13,14 @@ contract TimedVoteStub is TimedVote {
 
   /** Relay all arguments */
   constructor(
+    address _database,
     address _tokenAddress,
     uint256 _voteDuration,
     uint8 _quorum,
     uint8 _threshold
   )
   public
-  TimedVote(_tokenAddress, _voteDuration, _quorum, _threshold) {
+  TimedVote(_database, _tokenAddress, _voteDuration, _quorum, _threshold) {
     timestamp = now;
   }
 
@@ -234,7 +235,11 @@ contract TimedVoteStub is TimedVote {
    */
   function _addProposal(bytes32 _proposalID)
   external {
-    proposals[_proposalID] = Proposal(time(), body, 0, 0, 0);
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "start")), time());
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "body")), body);
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), 0);
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")), 0);
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")), 0);
   }
 
   /**
@@ -246,7 +251,7 @@ contract TimedVoteStub is TimedVote {
    */
   function _setApproval(bytes32 _proposalID, uint256 _approval)
   external {
-    proposals[_proposalID].approval = _approval;
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")), _approval);
   }
 
   /**
@@ -266,7 +271,8 @@ contract TimedVoteStub is TimedVote {
   function _setCommitment(address _account, uint256 _amount)
   external {
     body = body.add(_amount);
-    commitments[_account] = Commitment(_amount, time());
+    database.setUint(keccak256(abi.encodePacked(_account, "Commitment", "value")), _amount);
+    database.setUint(keccak256(abi.encodePacked(_account, "Commitment", "time")), time());
   }
 
   /**
@@ -278,7 +284,7 @@ contract TimedVoteStub is TimedVote {
    */
   function _setDissent(bytes32 _proposalID, uint256 _dissent)
   external {
-    proposals[_proposalID].dissent = _dissent;
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")), _dissent);
   }
 
   /**
@@ -290,7 +296,7 @@ contract TimedVoteStub is TimedVote {
    */
   function _setVoted(bytes32 _proposalID, uint256 _voted)
   external {
-    proposals[_proposalID].voted = _voted;
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), _voted);
   }
 
   /**
@@ -300,7 +306,7 @@ contract TimedVoteStub is TimedVote {
    */
   function _setVoter(bytes32 _proposalID, address _account)
   external {
-    proposals[_proposalID].voters[_account] = true;
+    database.setBool(keccak256(abi.encodePacked(_proposalID, "Proposal", _account)), true);
   }
 
   /**

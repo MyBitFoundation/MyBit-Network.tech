@@ -2,8 +2,11 @@ const BigNumber = require('bignumber.js');
 
 const Token = artifacts.require('BurnableTokenStub');
 const TimedVote = artifacts.require('TimedVoteStub');
+const Database = artifacts.require('Database');
+const Events = artifacts.require('Events');
+const ContractManager = artifacts.require('ContractManager');
 
-
+const owner = web3.eth.accounts[0];
 const user1 = web3.eth.accounts[1];
 const user2 = web3.eth.accounts[2];
 const user3 = web3.eth.accounts[3];
@@ -22,11 +25,10 @@ const tier3Multiplier = 200;
 const quorum = 20; // 20%
 const threshold = 51; // 51%
 const validAddress = '0xbaCc40C0Df5E6eC2B0A4e9d1A0F748473F7f8b1a';
-const proposalID =
-  '0x0011223344556677889900112233445566778899001122334455667788990011';
+const proposalID = '0x0011223344556677889900112233445566778899001122334455667788990011';
 
 
-let token, timedVote;
+let token, timedVote, db, ev, cm;
 
 
 async function throws (executor) {
@@ -45,18 +47,24 @@ async function rejects (promise) {
 
 
 contract('TimedVote', () => {
+
   // ----
   // Hook
   // ----
-
   beforeEach(async() => {
     token = await Token.new("MyBit", tokenSupply);
+    db = await Database.new([owner], true);
+    ev = await Events.new(db.address);
+    cm = await ContractManager.new(db.address, ev.address);
+    await db.enableContractManagement(cm.address);
     timedVote = await TimedVote.new(
+      db.address,
       token.address,
       voteDuration,
       quorum,
       threshold
     );
+    await cm.addContract("TimedVote", timedVote.address);
   });
 
   // ---------
@@ -65,7 +73,7 @@ contract('TimedVote', () => {
 
   describe('Construct', () => {
     it('Succeed', async() => {
-      await TimedVote.new(token.address, voteDuration, quorum, threshold);
+      await TimedVote.new(db.address, token.address, voteDuration, quorum, threshold);
     });
 
     it('Fail with null token address', async() => {
@@ -78,7 +86,7 @@ contract('TimedVote', () => {
     });
 
     it('Fail with 0 vote duration', async() => {
-      await rejects(TimedVote.new(token.address, 0, quorum, threshold));
+      await rejects(TimedVote.new(db.address, token.address, 0, quorum, threshold));
     });
   });
 
