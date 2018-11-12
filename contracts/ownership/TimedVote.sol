@@ -1,7 +1,8 @@
 pragma solidity 0.4.24;
 
-import "../tokens/erc20/BurnableToken.sol";
+import "../tokens/erc20/MyBitToken.sol";
 import "../math/SafeMath.sol";
+import "../interfaces/DBInterface.sol";
 
 /**
  * @title Proposal voting
@@ -38,12 +39,20 @@ contract TimedVote {
   // Type
 
   // Commitment of MYB tokens to voting
+  /*
   struct Commitment {
     uint256 value;                              // MYB amount
     uint256 time;                               // Commit instant
   }
+  database.setUint(keccak256(abi.encodePacked(_address, "Commitment", "value")), _value);
+  database.setUint(keccak256(abi.encodePacked(_address, "Commitment", "time")), _time);
+
+  database.uintStorage(keccak256(abi.encodePacked(_address, "Commitment", "value")));
+  database.uintStorage(keccak256(abi.encodePacked(_address, "Commitment", "time")));
+  */
 
   // Proposal for the MYB community
+  /*
   struct Proposal {
     uint256 start;                              // Create instant
     uint256 body;                               // Voting body MYB amount
@@ -52,17 +61,32 @@ contract TimedVote {
     uint256 dissent;                            // Weighted dissent amount
     mapping(address => bool) voters;            // Voting accounts
   }
+  database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "start")), _start);
+  database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "body")), _body);
+  database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), _voted);
+  database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")), _approval);
+  database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")), _dissent);
+  database.setBool(keccak256(abi.encodePacked(_proposalID, "Proposal", _address)), _bool);
+
+  database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "start")));
+  database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "body")));
+  database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")));
+  database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")));
+  database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")));
+  database.boolStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", _address)));
+  */
 
   // -----
   // State
 
-  BurnableToken token;                          // MYB token contract
+  DBInterface database;                         //Database contract
+  MyBitToken token;                             // MYB token contract
   uint256 voteDuration;                         // Vote duration
   uint8 quorum;                                 // Quorum
   uint8 threshold;                              // Approval threshold
   uint256 body;                                 // Voting body MYB amount
-  mapping(address => Commitment) commitments;   // Active commitments
-  mapping(bytes32 => Proposal) proposals;       // Created proposals
+  //mapping(address => Commitment) commitments;   // Active commitments
+  //mapping(bytes32 => Proposal) proposals;       // Created proposals
 
   // -----------
   // Constructor
@@ -78,6 +102,7 @@ contract TimedVote {
    *     inclusive.
    */
   constructor(
+    address _database,
     address _tokenAddress,
     uint256 _voteDuration,
     uint8 _quorum,
@@ -88,7 +113,8 @@ contract TimedVote {
   onlyPositive(_voteDuration)
   onlyIn(_quorum, 1, 100)
   onlyIn(_threshold, 1, 100) {
-    token = BurnableToken(_tokenAddress);
+    database = DBInterface(_database);
+    token = MyBitToken(_tokenAddress);
     voteDuration = _voteDuration;
     quorum = _quorum;
     threshold = _threshold;
@@ -106,7 +132,7 @@ contract TimedVote {
   public
   view
   returns (bool committed) {
-    return (commitments[_account].value > 0);
+    return (database.uintStorage(keccak256(abi.encodePacked(_account, "Commitment", "value"))) > 0);
   }
 
   /**
@@ -125,13 +151,14 @@ contract TimedVote {
   onlyExtant(_proposalID)
   onlyOpen(_proposalID)
   onlyOneVote(_proposalID, msg.sender) {
-    Proposal storage proposal = proposals[_proposalID];
-    proposal.voters[msg.sender] = true;
-    uint256 value = commitments[msg.sender].value;
-    proposal.voted = proposal.voted.add(value);
+    database.boolStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", msg.sender)));
+    uint256 value = database.uintStorage(keccak256(abi.encodePacked(msg.sender, "Commitment", "value")));
+    uint256 voted = database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")));
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), voted.add(value));
     uint8 multiplier = multiplierOf(msg.sender);
     uint256 vote = weightVote(value, multiplier);
-    proposal.approval = proposal.approval.add(vote);
+    uint256 approval = database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")));
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")), approval.add(vote));
     emit Approve(_proposalID, msg.sender, vote);
   }
 
@@ -148,8 +175,9 @@ contract TimedVote {
   onlyUncommitted(msg.sender) {
     require(_value > 0, "Nonzero value required");
     body = body.add(_value);
-    commitments[msg.sender] = Commitment(_value, time());
-    bool transferred = token.transferFrom(msg.sender, this, _value);
+    database.setUint(keccak256(abi.encodePacked(msg.sender, "Commitment", "value")), _value);
+    database.setUint(keccak256(abi.encodePacked(msg.sender, "Commitment", "time")), time());
+    bool transferred = token.transferFrom(msg.sender, address(this), _value);
     require(transferred, "Transfer failed");
     emit Commit(msg.sender, _value);
   }
@@ -165,7 +193,7 @@ contract TimedVote {
   external
   view
   returns (uint256 value) {
-    return commitments[_account].value;
+    return database.uintStorage(keccak256(abi.encodePacked(_account, "Commitment", "value")));
   }
 
   /**
@@ -184,13 +212,14 @@ contract TimedVote {
   onlyExtant(_proposalID)
   onlyOpen(_proposalID)
   onlyOneVote(_proposalID, msg.sender) {
-    Proposal storage proposal = proposals[_proposalID];
-    proposal.voters[msg.sender] = true;
-    uint256 value = commitments[msg.sender].value;
-    proposal.voted = proposal.voted.add(value);
+    database.boolStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", msg.sender)));
+    uint256 value = database.uintStorage(keccak256(abi.encodePacked(msg.sender, "Commitment", "value")));
+    uint256 voted = database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")));
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), voted.add(value));
     uint8 multiplier = multiplierOf(msg.sender);
     uint256 vote = weightVote(value, multiplier);
-    proposal.dissent = proposal.dissent.add(vote);
+    uint256 dissent = database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")));
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")), dissent.add(vote));
     emit Decline(_proposalID, msg.sender, vote);
   }
 
@@ -221,7 +250,7 @@ contract TimedVote {
   public
   view
   returns (bool extant) {
-    return (proposals[_proposalID].start > 0);
+    return (database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "start"))) > 0);
   }
 
   /**
@@ -236,7 +265,10 @@ contract TimedVote {
   external
   onlyVotingBody
   onlyNew(_proposalID) {
-    proposals[_proposalID] = Proposal(time(), body, 0, 0, 0);
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "start")), time());
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), 0);
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")), 0);
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")), 0);
     emit Propose(msg.sender, _proposalID);
   }
 
@@ -284,14 +316,13 @@ contract TimedVote {
     uint256 approval,
     uint256 dissent
   ) {
-    Proposal storage proposal = proposals[_proposalID];
     return (
       proposalOpen(_proposalID),
       proposalAge(_proposalID),
-      proposal.body,
-      proposal.voted,
-      proposal.approval,
-      proposal.dissent
+      body,
+      database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted"))),
+      database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval"))),
+      database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")))
     );
   }
 
@@ -306,9 +337,10 @@ contract TimedVote {
   external
   onlyCommitted(msg.sender)
   onlyUnlocked(msg.sender) {
-    uint256 _value = commitments[msg.sender].value;
+    uint256 _value = database.uintStorage(keccak256(abi.encodePacked(msg.sender, "Commitment", "value")));
     body = body.sub(_value);
-    delete commitments[msg.sender];
+    database.deleteUint(keccak256(abi.encodePacked(msg.sender, "Commitment", "value")));
+    database.deleteUint(keccak256(abi.encodePacked(msg.sender, "Commitment", "time")));
     bool transferred = token.transfer(msg.sender, _value);
     require(transferred, "Transfer failed");
     emit Withdraw(msg.sender, _value);
@@ -342,7 +374,7 @@ contract TimedVote {
   view
   returns (uint8 percent) {
     return percentage(
-      proposals[_proposalID].approval,
+      database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval"))),
       totalVotes(_proposalID)
     );
   }
@@ -358,7 +390,7 @@ contract TimedVote {
   internal
   view
   returns (uint256 age) {
-    return time().sub(commitments[_account].time);
+    return time().sub(database.uintStorage(keccak256(abi.encodePacked(_account, "Commitment", "time"))));
   }
 
   /**
@@ -426,7 +458,7 @@ contract TimedVote {
   internal
   view
   returns (bool voted) {
-    return proposals[_proposalID].voters[_account];
+    return database.boolStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", _account)));
   }
 
   /**
@@ -482,7 +514,7 @@ contract TimedVote {
   internal
   view
   returns (uint256 age) {
-    return time().sub(proposals[_proposalID].start);
+    return time().sub(database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "start"))));
   }
 
   /**
@@ -527,8 +559,8 @@ contract TimedVote {
   internal
   view
   returns (uint256 votes) {
-    return proposals[_proposalID].approval
-      .add(proposals[_proposalID].dissent);
+    return database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")))
+      .add(database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent"))));
   }
 
   /**
@@ -545,8 +577,8 @@ contract TimedVote {
   view
   returns (uint8 percent) {
     return percentage(
-      proposals[_proposalID].voted,
-      proposals[_proposalID].body
+      database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted"))),
+      body
     );
   }
 

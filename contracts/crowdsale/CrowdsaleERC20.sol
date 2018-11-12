@@ -32,7 +32,7 @@ contract CrowdsaleERC20{
   // @dev investor must approve this contract to transfer tokens
   // @param (bytes32) _assetID = The ID of the asset tokens, investor wishes to purchase
   // @param (uint) _amount = The amount to spend purchasing this asset
-  function buyAssetOrderERC20(bytes32 _assetID, uint _amount)
+  function buyAssetOrderERC20(bytes32 _assetID, address _investor, uint _amount)
   external
   validAsset(_assetID)
   betweenDeadlines(_assetID)
@@ -44,19 +44,18 @@ contract CrowdsaleERC20{
     uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID)));
     uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
     if (_amount >= tokensRemaining) {
-      require(fundingToken.transferFrom(msg.sender, address(this), tokensRemaining));    // transfer investors tokens into contract
+      require(fundingToken.transferFrom(_investor, address(this), tokensRemaining));    // transfer investors tokens into contract
       require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID))) ));
       require(finalizeCrowdsale(_assetID));
-      require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens to investor
+      require(assetToken.mint(_investor, tokensRemaining));   // Send remaining asset tokens to investor
       require(assetToken.finishMinting());
       require(payoutERC20(_assetID, amountToRaise));          // 1 token = 1 wei
     }
     else {
-      require(fundingToken.transferFrom(msg.sender, address(this), _amount));
-      require(assetToken.mint(msg.sender, _amount));
+      require(fundingToken.transferFrom(_investor, address(this), _amount));
+      require(assetToken.mint(_investor, _amount));
     }
-    events.transaction('Asset purchased', msg.sender, address(this), _amount, _assetID);
-    //emit LogAssetPurchased(_assetID, msg.sender, _amount); //Should amount listed be how much they spent or how much they received?
+    events.transaction('Asset purchased', _investor, address(this), _amount, _assetID);
     return true;
   }
 

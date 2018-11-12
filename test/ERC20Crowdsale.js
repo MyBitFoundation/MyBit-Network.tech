@@ -1,7 +1,7 @@
 var bn = require('bignumber.js');
 
 const AssetToken = artifacts.require("./tokens/erc20/DividendTokenERC20.sol");
-const BurnableToken = artifacts.require("./tokens/erc20/BurnableToken.sol");
+const MyBitToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
 const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 const Crowdsale = artifacts.require("./crowdsale/CrowdsaleERC20.sol");
 const Database = artifacts.require("./database/Database.sol");
@@ -83,7 +83,7 @@ contract('ERC20 Crowdsale', async() => {
   });
 
   it('Deploy MyB token', async() => {
-    platformToken = await BurnableToken.new('MyBit', tokenSupply);
+    platformToken = await MyBitToken.new('MyBit', tokenSupply);
   });
 
   it("Spread tokens to users", async() => {
@@ -123,7 +123,7 @@ contract('ERC20 Crowdsale', async() => {
   });
 
   it("Deploy standard token", async() => {
-    erc20 = await BurnableToken.new('Dai', tokenSupply);
+    erc20 = await MyBitToken.new('Dai', tokenSupply);
     console.log(erc20.address);
   });
 
@@ -193,7 +193,7 @@ contract('ERC20 Crowdsale', async() => {
 
   it('User1 funding', async() => {
     await erc20.approve(crowdsale.address, 5*ETH, {from:user1});
-    await crowdsale.buyAssetOrderERC20(assetID, 5*ETH, {from:user1});
+    await crowdsale.buyAssetOrderERC20(assetID, user1, 5*ETH, {from:user1});
     let user1AssetTokens = await assetToken.balanceOf(user1);
     console.log('assetToken Address: ' + assetToken.address);
     console.log('User: ' + user1);
@@ -220,7 +220,7 @@ contract('ERC20 Crowdsale', async() => {
     let err;
     try{
       await erc20.approve(crowdsale.address, 15*ETH, {from:user2});
-      await crowdsale.buyAssetOrderERC20(assetID, 15*ETH, {from:user2});
+      await crowdsale.buyAssetOrderERC20(assetID, user2, 15*ETH, {from:user2});
     } catch(e){
       err = e;
     }
@@ -246,7 +246,7 @@ contract('ERC20 Crowdsale', async() => {
     ownerBalanceBefore = await erc20.balanceOf(owner);
     operatorBalanceBefore = await erc20.balanceOf(operator);
     await erc20.approve(crowdsale.address, 15*ETH, {from:user2});
-    await crowdsale.buyAssetOrderERC20(assetID, 15*ETH, {from:user2});
+    await crowdsale.buyAssetOrderERC20(assetID, user2, 15*ETH, {from:user2});
     let user2AssetTokens = await assetToken.balanceOf(user2);
     console.log(Number(user2AssetTokens));
     assert.equal(user2AssetTokens, 15*ETH);
@@ -264,7 +264,7 @@ contract('ERC20 Crowdsale', async() => {
     let err;
     try{
       await erc20.approve(crowdsale.address, 5*ETH, {from:user3});
-      await crowdsale.buyAssetOrderERC20(assetID, 5*ETH, {from:user3});
+      await crowdsale.buyAssetOrderERC20(assetID, user3, 5*ETH, {from:user3});
     } catch(e){
       err = e;
     }
@@ -350,7 +350,7 @@ contract('ERC20 Crowdsale', async() => {
 
   it('User3 funding', async() => {
     await erc20.approve(crowdsale.address, 5*ETH, {from:user3});
-    await crowdsale.buyAssetOrderERC20(assetID, 5*ETH, {from:user3});
+    await crowdsale.buyAssetOrderERC20(assetID, user3, 5*ETH, {from:user3});
     let user3assetTokens = await assetToken.balanceOf(user3);
     assert.equal(user3assetTokens, 5*ETH);
   });
@@ -362,7 +362,7 @@ contract('ERC20 Crowdsale', async() => {
     let err;
     try{
       await erc20.approve(crowdsale.address, 5*ETH, {from:user1});
-      await crowdsale.buyAssetOrderERC20(assetID, 5*ETH, {from:user1});
+      await crowdsale.buyAssetOrderERC20(assetID, user1, 5*ETH, {from:user1});
     } catch(e){
       err = e;
     }
@@ -423,7 +423,7 @@ contract('ERC20 Crowdsale', async() => {
   it('Fully fund no fee asset', async() => {
     await erc20.approve(crowdsale.address, 2*ETH, {from:user1});
     let platformWalletBalance = await erc20.balanceOf(owner);
-    await crowdsale.buyAssetOrderERC20(assetID, 2*ETH, {from:user1});
+    await crowdsale.buyAssetOrderERC20(assetID, user1, 2*ETH, {from:user1});
     let user1AssetTokens = await assetToken.balanceOf(user1);
     let assetTokenSupply = await assetToken.totalSupply()
     assert.equal(assetTokenSupply.eq(user1AssetTokens), true);

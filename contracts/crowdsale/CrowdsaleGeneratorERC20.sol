@@ -32,6 +32,7 @@ contract CrowdsaleGeneratorERC20 {
   // @param (string) _assetURI = The location where information about the asset can be found
   // @param (bytes32) _operatorID = The ID of the operator who is to create and install this asset
   // @param (uint) _fundingLength = The number of seconds this crowdsale is to go on for until it fails
+  // @param (uint) _startTime = The timestamp at which funding for this asset begins
   // @param (uint) _amountToRaise = The amount of tokens required to raise for the crowdsale to be a success
   // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
   // @param (address) _fundingToken = The ERC20 token to be used to fund the crowdsale (Operator must accept this token as payment)
@@ -62,7 +63,6 @@ contract CrowdsaleGeneratorERC20 {
     database.setAddress(keccak256(abi.encodePacked("operator", assetID)), database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))));
     database.setAddress(keccak256(abi.encodePacked("fundingToken", assetID)), _fundingToken);
     events.asset('Asset funding started', _assetURI, assetID, assetAddress, msg.sender);
-    //emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, assetAddress);
   }
 
   // @notice platform owners can destroy contract here

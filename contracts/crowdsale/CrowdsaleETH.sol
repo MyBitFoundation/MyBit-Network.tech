@@ -30,7 +30,7 @@ contract CrowdsaleETH {
 
     // @notice Investors can send Ether here to fund asset, receiving an equivalent number of asset-tokens.
     // @param (bytes32) _assetID = The ID of the asset which completed the crowdsale
-    function buyAssetOrderETH(bytes32 _assetID)
+    function buyAssetOrderETH(bytes32 _assetID, address _investor)
     external
     payable
     requiresEther
@@ -46,16 +46,15 @@ contract CrowdsaleETH {
         // Give assetManager his portion of tokens
         require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID)))), "Asset manager tokens not minted");
         require(finalizeCrowdsale(_assetID));    // delete unnecessary variables
-        require(assetToken.mint(msg.sender, tokensRemaining), "Investor tokens not minted");   // Send remaining asset tokens
+        require(assetToken.mint(_investor, tokensRemaining), "Investor tokens not minted");   // Send remaining asset tokens
         require(assetToken.finishMinting(), "Minting not finished");
         require(payoutETH(_assetID, amountToRaise), "Payout failed");          // 1 token = 1 wei
-        msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI after cost of tokens calculated and subtracted from msg.value
+        _investor.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI after cost of tokens calculated and subtracted from msg.value
       }
       else {
-        require(assetToken.mint(msg.sender, msg.value), "Investor tokens not minted");
+        require(assetToken.mint(_investor, msg.value), "Investor tokens not minted");
       }
-      //emit LogAssetPurchased(_assetID, msg.sender, msg.value);
-      events.transaction('Asset purchased', msg.sender, address(this), msg.value, _assetID);
+      events.transaction('Asset purchased', _investor, address(this), msg.value, _assetID);
       return true;
     }
 
@@ -121,7 +120,6 @@ contract CrowdsaleETH {
       platformWallet.transfer(platformPortion);
       operator.transfer(operatorPortion);
       events.transaction('Asset payout', address(this), operator, _amount, _assetID);
-      //emit LogAssetPayout(_assetID, operatorAddress, _amount);
       return true;
     }
 
@@ -191,13 +189,4 @@ contract CrowdsaleETH {
       _;
     }
 
-    //------------------------------------------------------------------------------------------------------------------
-    //                                            Events
-    //------------------------------------------------------------------------------------------------------------------
-    /*
-    event LogAssetPurchased(bytes32 indexed _assetID, address indexed _sender, uint _amount);
-    event LogRefund(bytes32 indexed _assetID, address indexed _funder, uint _amount);
-    event LogAssetPayout(bytes32 indexed _assetID, address indexed _distributionContract, uint _amount);
-    event LogDestruction(uint _amountSent, address indexed _caller);
-    */
   }
