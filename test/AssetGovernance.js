@@ -11,7 +11,7 @@ const Operators = artifacts.require("./roles/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
 const API = artifacts.require("./database/API.sol");
 const GovernedToken = artifacts.require("./tokens/ERC20/GovernedToken.sol");
-const PlatformToken = artifacts.require("./tokens/ERC20/BurnableToken.sol");
+const PlatformToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Promisify = (inner) =>
     new Promise((resolve, reject) =>

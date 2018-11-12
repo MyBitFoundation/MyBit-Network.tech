@@ -1,7 +1,7 @@
 var bn = require('bignumber.js');
 
 const AssetToken = artifacts.require("./tokens/erc20/DividendTokenERC20.sol");
-const BurnableToken = artifacts.require("./tokens/erc20/BurnableToken.sol");
+const MyBitToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
 const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 const Crowdsale = artifacts.require("./crowdsale/CrowdsaleERC20.sol");
 const Database = artifacts.require("./database/Database.sol");
@@ -83,7 +83,7 @@ contract('ERC20 Crowdsale', async() => {
   });
 
   it('Deploy MyB token', async() => {
-    platformToken = await BurnableToken.new('MyBit', tokenSupply);
+    platformToken = await MyBitToken.new('MyBit', tokenSupply);
   });
 
   it("Spread tokens to users", async() => {
@@ -123,7 +123,7 @@ contract('ERC20 Crowdsale', async() => {
   });
 
   it("Deploy standard token", async() => {
-    erc20 = await BurnableToken.new('Dai', tokenSupply);
+    erc20 = await MyBitToken.new('Dai', tokenSupply);
     console.log(erc20.address);
   });
 

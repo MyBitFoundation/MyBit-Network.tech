@@ -1,8 +1,8 @@
 pragma solidity 0.4.24;
 
-import "../tokens/erc20/BurnableToken.sol";
+import "../tokens/erc20/MyBitToken.sol";
 
-contract BurnableTokenStub is BurnableToken {
+contract BurnableTokenStub is MyBitToken {
   // -----
   // State
 
@@ -15,7 +15,7 @@ contract BurnableTokenStub is BurnableToken {
   /** Relay all arguments */
   constructor(string _tokenURI, uint _totalSupply)
   public
-  BurnableToken(_tokenURI, _totalSupply) {}
+  MyBitToken(_tokenURI, _totalSupply) {}
 
   // ------
   // Writer

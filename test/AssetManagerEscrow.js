@@ -5,7 +5,7 @@ const Database = artifacts.require("./database/Database.sol");
 const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const DivToken = artifacts.require("./tokens/ERC20/DividendToken.sol");
-const BurnableToken = artifacts.require("./tokens/ERC20/BurnableToken.sol");
+const MyBitToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
@@ -73,7 +73,7 @@ contract('AssetManager Escrow', async() => {
   });
 
   it("Deploy standard token", async() => {
-    burnToken = await BurnableToken.new('MyB', 10000*ETH);
+    burnToken = await MyBitToken.new('MyB', 10000*ETH);
   });
 
   it("Transfer token to assetManager", async() => {
