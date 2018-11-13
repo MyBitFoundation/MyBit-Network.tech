@@ -52,7 +52,7 @@ contract('AssetGovernance', async() => {
 
   let methodID;
   let parameterHash;
-  let executionID;
+  let proposalID;
   let assetManagerEscrowID;
   let operatorID;
   let assetID;
@@ -108,7 +108,7 @@ contract('AssetGovernance', async() => {
   });
 
   it('Deploy assetManager escrow', async() => {
-    escrow = await AssetManagerEscrow.new(db.address, events.address);
+    escrow = await AssetManagerEscrow.new(db.address, events.address, governance.address);
     await cm.addContract('AssetManagerEscrow', escrow.address);
   });
 
@@ -193,27 +193,29 @@ contract('AssetGovernance', async() => {
     assert.equal(assetManagerBalance, tokenPerAccount);
   });
 
-  it("Vote for AssetManager to be fired", async() => {
+  it("Initiate a vote", async() => {
     let methodString = "becomeAssetManager(bytes32,address,uint256,bool)";
     methodID = await api.getMethodID(methodString);
-    // set the new asset manager with a requirement of 10 token escrow and burn old managers escrow
     parameterHash = await api.getAssetManagerParameterHash(assetID, assetManager, newAssetManager, 10*ETH, true);
-    executionID = await api.getExecutionID(escrow.address, assetID, methodID, parameterHash);
-    await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount, {from: user1});
-    let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
+    await governance.propose(escrow.address, assetID, methodID, parameterHash);
+    proposalID = await api.getProposalID(escrow.address, assetID, methodID, parameterHash);
+  });
+
+  it("Vote for AssetManager to be fired", async() => {
+    await governance.voteForExecution(proposalID, tokenPerAccount, {from: user1});
+    let consensusProgress = await api.getCurrentConsensus(proposalID, govToken.address);
     console.log("First vote received, consensus is : " , Number(consensusProgress));
     console.log("First user voted with : ", tokenPerAccount);
-    console.log("Votes for execution from user1 is : ", Number(await api.getInvestorVotes(executionID, user1)));
-    console.log("Total votes for execution are: ", Number(await api.getTotalVotes(executionID)));
+    console.log("Votes for execution from user1 is : ", Number(await api.getInvestorVotes(proposalID, user1)));
+    console.log("Total votes for execution are: ", Number(await api.getTotalVotes(proposalID)));
     console.log("Total token supply is: ", Number(await govToken.totalSupply()));
     assert.equal(consensusProgress, 25);
-
   });
 
   it("Try to transfer tokens", async() => {
     let err;
     //Fail because tokens are locked in vote for firing assetManager
-    assert.equal(0, await api.getNumTokensAvailable(assetID, user1));
+    assert.equal(0, await api.getNumTokensAvailable(proposalID, user1));
     assert.equal(await govToken.balanceOf(user1), tokenPerAccount);
     try{
       await govToken.transfer(user2, tokenPerAccount, {from: user1});
@@ -221,23 +223,23 @@ contract('AssetGovernance', async() => {
       err = e;
     }
     assert.notEqual(err, undefined);
-  })
+  });
 
   it("Fail voting again from same user", async() => {
     let err;
     //Fail because user already locked all tokens in past vote
     try{
-      await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount, {from: user1});
+      await governance.voteForExecution(proposalID, tokenPerAccount, {from: user1});
     } catch(e){
       err = e;
     }
     assert.notEqual(err, undefined);
-  })
+  });
 
 
   it("Fail executing new assetManager", async() => {
     let err;
-    let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
+    let consensusProgress = await api.getCurrentConsensus(proposalID, govToken.address);
     console.log("fail executing new asset manager, consensus is : " , Number(consensusProgress));
     assert.equal(bn(consensusProgress).lt(66), true);
     // assert.equal(await govToken.allowance(newAssetManager, escrow.address), 10*ETH);
@@ -251,20 +253,20 @@ contract('AssetGovernance', async() => {
   });
 
   it("Vote for AssetManager with 2nd token holder ", async() => {
-    await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount, {from: user2});
-    let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
+    await governance.voteForExecution(proposalID, tokenPerAccount, {from: user2});
+    let consensusProgress = await api.getCurrentConsensus(proposalID, govToken.address);
     console.log("Second vote received, consensus is : " , Number(consensusProgress));
     console.log("Second user voted with : ", tokenPerAccount);
-    console.log("Votes for execution from user2 is : ", Number(await api.getInvestorVotes(executionID, user2)));
-    console.log("Total votes for execution are: ", Number(await api.getTotalVotes(executionID)));
+    console.log("Votes for execution from user2 is : ", Number(await api.getInvestorVotes(proposalID, user2)));
+    console.log("Total votes for execution are: ", Number(await api.getTotalVotes(proposalID)));
     console.log("Total token supply is: ", Number(await govToken.totalSupply()));
     assert.equal(consensusProgress, 50);
   });
 
-  it("Fail to vote, bad assetID", async() => {
+  it("Fail to vote, bad proposalID", async() => {
     let err;
     try{
-      await governance.voteForExecution(escrow.address, '', methodID, parameterHash, tokenPerAccount, {from: user3});
+      await governance.voteForExecution('', tokenPerAccount, {from: user3});
     } catch(e){
       err = e;
     }
@@ -272,12 +274,12 @@ contract('AssetGovernance', async() => {
   });
 
   it("Vote for AssetManager with 3rd token holder ", async() => {
-    await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount, {from: user3});
-    let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
+    await governance.voteForExecution(proposalID, tokenPerAccount, {from: user3});
+    let consensusProgress = await api.getCurrentConsensus(proposalID, govToken.address);
     console.log("Third vote received, consensus is : " , Number(consensusProgress));
     console.log("Third user voted with : ", tokenPerAccount);
-    console.log("Votes for execution from user3 is : ", Number(await api.getInvestorVotes(executionID, user3)));
-    console.log("Total votes for execution are: ", Number(await api.getTotalVotes(executionID)));
+    console.log("Votes for execution from user3 is : ", Number(await api.getInvestorVotes(proposalID, user3)));
+    console.log("Total votes for execution are: ", Number(await api.getTotalVotes(proposalID)));
     console.log("Total token supply is: ", Number(await govToken.totalSupply()));
     assert.equal(bn(consensusProgress).gt(66), true);
   });
@@ -296,14 +298,14 @@ contract('AssetGovernance', async() => {
 
 
   it("Unlock tokens for 3rd token holder", async() => {
-    await governance.unlockToken(escrow.address, assetID, methodID, parameterHash, tokenPerAccount, {from: user3});
-    let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
+    await governance.unlockToken(proposalID, tokenPerAccount, {from: user3});
+    let consensusProgress = await api.getCurrentConsensus(proposalID, govToken.address);
     console.log("Third vote revoked, consensus is : " , Number(consensusProgress));
   });
 
   it("Fail executing new assetManager", async() => {
     let err;
-    let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
+    let consensusProgress = await api.getCurrentConsensus(proposalID, govToken.address);
     console.log("fail executing new asset manager, consensus is : " , Number(consensusProgress));
     assert.equal(bn(consensusProgress).lt(66), true);
     // assert.equal(await govToken.allowance(newAssetManager, escrow.address), 10*ETH);
@@ -317,12 +319,12 @@ contract('AssetGovernance', async() => {
   });
 
   it("Revote for AssetManager with 3rd token holder ", async() => {
-    await governance.voteForExecution(escrow.address, assetID, methodID, parameterHash, tokenPerAccount, {from: user3});
-    let consensusProgress = await api.getCurrentConsensus(executionID, govToken.address);
+    await governance.voteForExecution(proposalID, tokenPerAccount, {from: user3});
+    let consensusProgress = await api.getCurrentConsensus(proposalID, govToken.address);
     console.log("Third vote received, consensus is : " , Number(consensusProgress));
     console.log("Third user voted with : ", tokenPerAccount);
-    console.log("Votes for execution from user3 is : ", Number(await api.getInvestorVotes(executionID, user3)));
-    console.log("Total votes for execution are: ", Number(await api.getTotalVotes(executionID)));
+    console.log("Votes for execution from user3 is : ", Number(await api.getInvestorVotes(proposalID, user3)));
+    console.log("Total votes for execution are: ", Number(await api.getTotalVotes(proposalID)));
     console.log("Total token supply is: ", Number(await govToken.totalSupply()));
     assert.equal(bn(consensusProgress).gt(66), true);
   });
@@ -330,7 +332,7 @@ contract('AssetGovernance', async() => {
 
   it("Change AssetManager", async() => {
     await platformToken.approve(escrow.address, 10*ETH, {from: newAssetManager});
-    let consensus = await governance.isConsensusReached(escrow.address, assetID, methodID, parameterHash);
+    let consensus = await governance.isConsensusReached(proposalID);
     console.log("consensus is reached?  ", consensus);
     // let e = await governance.LogConsensus({}, {fromBlock: 0, toBlock: 'latest'});
     // let logs = await Promisify(callback => e.get(callback));

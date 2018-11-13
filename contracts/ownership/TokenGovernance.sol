@@ -31,7 +31,7 @@ contract TokenGovernance {
   // @notice quorum level dictates the number of votes required for that function to be executed
   constructor(address _database, address _events, uint256 _baseQuorum)
   public  {
-    governanceToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
+    governanceToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", keccak256(abi.encodePacked("platformAssetID"))))));
     database = Database(_database);
     events = Events(_events);
     governanceToken = ERC20(governanceToken);

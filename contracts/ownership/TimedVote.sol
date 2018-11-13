@@ -1,6 +1,6 @@
 pragma solidity 0.4.24;
 
-import "../tokens/erc20/MyBitToken.sol";
+import "../interfaces/ERC20.sol";
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
 
@@ -80,11 +80,12 @@ contract TimedVote {
   // State
 
   DBInterface database;                         //Database contract
-  MyBitToken token;                             // MYB token contract
+  //MyBitToken token;                             // MYB token contract
   uint256 voteDuration;                         // Vote duration
   uint8 quorum;                                 // Quorum
   uint8 threshold;                              // Approval threshold
-  uint256 body;                                 // Voting body MYB amount
+  mapping(bytes32 => uint256) body;             // Voting body token amount, by assetID
+
   //mapping(address => Commitment) commitments;   // Active commitments
   //mapping(bytes32 => Proposal) proposals;       // Created proposals
 
@@ -92,7 +93,6 @@ contract TimedVote {
   // Constructor
 
   /**
-   * @param _tokenAddress - MYB token contract address.
    * @param _voteDuration - Vote duration. Voting period of each proposal.
    *     Must be positive.
    * @param _quorum - Amount of supply that must vote to make a proposal valid.
@@ -103,18 +103,16 @@ contract TimedVote {
    */
   constructor(
     address _database,
-    address _tokenAddress,
     uint256 _voteDuration,
     uint8 _quorum,
     uint8 _threshold
   )
   public
-  onlyValid(_tokenAddress)
+  onlyValid(_database)
   onlyPositive(_voteDuration)
   onlyIn(_quorum, 1, 100)
   onlyIn(_threshold, 1, 100) {
     database = DBInterface(_database);
-    token = MyBitToken(_tokenAddress);
     voteDuration = _voteDuration;
     quorum = _quorum;
     threshold = _threshold;
@@ -128,11 +126,11 @@ contract TimedVote {
    * @param _account - Account to check.
    * @return committed - Whether account has an active commitment.
    */
-  function accountCommitted(address _account)
+  function accountCommitted(address _account, bytes32 _assetID)
   public
   view
   returns (bool committed) {
-    return (database.uintStorage(keccak256(abi.encodePacked(_account, "Commitment", "value"))) > 0);
+    return (database.uintStorage(keccak256(abi.encodePacked(_account, _assetID, "Commitment", "value"))) > 0);
   }
 
   /**
@@ -145,17 +143,17 @@ contract TimedVote {
    * @param _proposalID - Identifier of proposal to approve.
    */
   function approve(bytes32 _proposalID)
-  external
-  onlyCommitted(msg.sender)
-  onlyUnlocked(msg.sender)
-  onlyExtant(_proposalID)
-  onlyOpen(_proposalID)
-  onlyOneVote(_proposalID, msg.sender) {
-    database.boolStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", msg.sender)));
-    uint256 value = database.uintStorage(keccak256(abi.encodePacked(msg.sender, "Commitment", "value")));
-    uint256 voted = database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")));
-    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), voted.add(value));
-    uint8 multiplier = multiplierOf(msg.sender);
+  external {
+    require(proposalExtant(_proposalID), "Proposal not found");
+    require(proposalOpen(_proposalID), "Open proposal required");
+    require(!hasVoted(msg.sender, _proposalID), "Already voted");
+    bytes32 assetID = database.bytes32Storage(keccak256(abi.encodePacked(_proposalID, "Proposal", "assetID")));
+    require(accountCommitted(msg.sender, assetID), "Commitment required");
+    require(!commitmentLocked(msg.sender, assetID), "Unlocked commitment required");
+    uint256 value = database.uintStorage(keccak256(abi.encodePacked(msg.sender, assetID, "Commitment", "value")));
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted"))).add(value));
+    database.setBool(keccak256(abi.encodePacked(_proposalID, "Proposal", msg.sender)), true);
+    uint8 multiplier = multiplierOf(msg.sender, assetID);
     uint256 vote = weightVote(value, multiplier);
     uint256 approval = database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")));
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")), approval.add(vote));
@@ -170,14 +168,14 @@ contract TimedVote {
    * already have an active commitment. Emits Commit on success.
    * @param _value - MYB amount to commit.
    */
-  function commit(uint256 _value)
+  function commit(uint256 _value, bytes32 _assetID)
   external
-  onlyUncommitted(msg.sender) {
+  onlyUncommitted(msg.sender, _assetID) {
     require(_value > 0, "Nonzero value required");
-    body = body.add(_value);
-    database.setUint(keccak256(abi.encodePacked(msg.sender, "Commitment", "value")), _value);
-    database.setUint(keccak256(abi.encodePacked(msg.sender, "Commitment", "time")), time());
-    bool transferred = token.transferFrom(msg.sender, address(this), _value);
+    body[_assetID] = body[_assetID].add(_value);
+    database.setUint(keccak256(abi.encodePacked(msg.sender, _assetID, "Commitment", "value")), _value);
+    database.setUint(keccak256(abi.encodePacked(msg.sender, _assetID, "Commitment", "time")), time());
+    bool transferred = ERC20(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))).transferFrom(msg.sender, address(this), _value);
     require(transferred, "Transfer failed");
     emit Commit(msg.sender, _value);
   }
@@ -189,11 +187,11 @@ contract TimedVote {
    * @param _account - Account to get commitment amount of.
    * @return value - MYB amount currently committed by the account.
    */
-  function commitmentOf(address _account)
+  function commitmentOf(address _account, bytes32 _assetID)
   external
   view
   returns (uint256 value) {
-    return database.uintStorage(keccak256(abi.encodePacked(_account, "Commitment", "value")));
+    return database.uintStorage(keccak256(abi.encodePacked(_account, _assetID, "Commitment", "value")));
   }
 
   /**
@@ -206,17 +204,17 @@ contract TimedVote {
    * @param _proposalID - Identifier of proposal to decline.
    */
   function decline(bytes32 _proposalID)
-  external
-  onlyCommitted(msg.sender)
-  onlyUnlocked(msg.sender)
-  onlyExtant(_proposalID)
-  onlyOpen(_proposalID)
-  onlyOneVote(_proposalID, msg.sender) {
-    database.boolStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", msg.sender)));
-    uint256 value = database.uintStorage(keccak256(abi.encodePacked(msg.sender, "Commitment", "value")));
-    uint256 voted = database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")));
-    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), voted.add(value));
-    uint8 multiplier = multiplierOf(msg.sender);
+  external {
+    require(proposalExtant(_proposalID), "Proposal not found");
+    require(proposalOpen(_proposalID), "Open proposal required");
+    require(!hasVoted(msg.sender, _proposalID), "Already voted");
+    bytes32 assetID = database.bytes32Storage(keccak256(abi.encodePacked(_proposalID, "Proposal", "assetID")));
+    require(accountCommitted(msg.sender, assetID), "Commitment required");
+    require(!commitmentLocked(msg.sender, assetID), "Unlocked commitment required");
+    uint256 value = database.uintStorage(keccak256(abi.encodePacked(msg.sender, assetID, "Commitment", "value")));
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted"))).add(value));
+    database.setBool(keccak256(abi.encodePacked(_proposalID, "Proposal", msg.sender)), true);
+    uint8 multiplier = multiplierOf(msg.sender, assetID);
     uint256 vote = weightVote(value, multiplier);
     uint256 dissent = database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")));
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")), dissent.add(vote));
@@ -231,13 +229,13 @@ contract TimedVote {
    * @param _account - Account owning commitment to get the multiplier of.
    * @return multiplier - Current commitment multiplier.
    */
-  function multiplierOf(address _account)
+  function multiplierOf(address _account, bytes32 _assetID)
   public
   view
-  onlyCommitted(_account)
+  onlyCommitted(_account, _assetID)
   returns (uint8 multiplier) {
-    if (commitmentTier3(_account)) return TIER_3_MULTIPLIER;
-    else if (commitmentTier2(_account)) return TIER_2_MULTIPLIER;
+    if (commitmentTier3(_account, _assetID)) return TIER_3_MULTIPLIER;
+    else if (commitmentTier2(_account, _assetID)) return TIER_2_MULTIPLIER;
     else return TIER_1_MULTIPLIER;
   }
 
@@ -261,14 +259,16 @@ contract TimedVote {
    * Emits Propose on success.
    * @param _proposalID - Identifier of new proposal.
    */
-  function propose(bytes32 _proposalID)
+  function propose(bytes32 _proposalID, bytes32 _assetID)
   external
-  onlyVotingBody
-  onlyNew(_proposalID) {
+  onlyVotingBody(_assetID)
+  onlyNew(_proposalID)
+  onlyAsset(_assetID){
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "start")), time());
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), 0);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")), 0);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")), 0);
+    database.setBytes32(keccak256(abi.encodePacked(_proposalID, "Proposal", "assetID")), _assetID);
     emit Propose(msg.sender, _proposalID);
   }
 
@@ -319,7 +319,7 @@ contract TimedVote {
     return (
       proposalOpen(_proposalID),
       proposalAge(_proposalID),
-      body,
+      body[database.bytes32Storage(keccak256(abi.encodePacked(_proposalID, "Proposal", "assetID")))],
       database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted"))),
       database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval"))),
       database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")))
@@ -329,19 +329,20 @@ contract TimedVote {
   /**
    * Withdraw committed MYB
    * @notice
-   * Withdraws all of your committed MYB to the original address. Fails if you
+   * Withdraws all of your committed token to the original address. Fails if you
    * have no active commitment. Fails if your commitment is locked. Emits
    * Withdraw on success.
+   * @param _assetID - The assetID of the locked tokens
    */
-  function withdraw()
+  function withdraw(bytes32 _assetID)
   external
-  onlyCommitted(msg.sender)
-  onlyUnlocked(msg.sender) {
-    uint256 _value = database.uintStorage(keccak256(abi.encodePacked(msg.sender, "Commitment", "value")));
-    body = body.sub(_value);
-    database.deleteUint(keccak256(abi.encodePacked(msg.sender, "Commitment", "value")));
-    database.deleteUint(keccak256(abi.encodePacked(msg.sender, "Commitment", "time")));
-    bool transferred = token.transfer(msg.sender, _value);
+  onlyCommitted(msg.sender, _assetID)
+  onlyUnlocked(msg.sender, _assetID) {
+    uint256 _value = database.uintStorage(keccak256(abi.encodePacked(msg.sender, _assetID, "Commitment", "value")));
+    body[_assetID] = body[_assetID].sub(_value);
+    database.deleteUint(keccak256(abi.encodePacked(msg.sender, _assetID, "Commitment", "value")));
+    database.deleteUint(keccak256(abi.encodePacked(msg.sender, _assetID, "Commitment", "time")));
+    bool transferred = ERC20(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))).transfer(msg.sender, _value);
     require(transferred, "Transfer failed");
     emit Withdraw(msg.sender, _value);
   }
@@ -386,11 +387,11 @@ contract TimedVote {
    * @param _account - Account owning commitment to get age of.
    * @return age - Commitment age.
    */
-  function commitmentAge(address _account)
+  function commitmentAge(address _account, bytes32 _assetID)
   internal
   view
   returns (uint256 age) {
-    return time().sub(database.uintStorage(keccak256(abi.encodePacked(_account, "Commitment", "time"))));
+    return time().sub(database.uintStorage(keccak256(abi.encodePacked(_account, _assetID, "Commitment", "time"))));
   }
 
   /**
@@ -402,11 +403,11 @@ contract TimedVote {
    * @param _account - Account owning commitment to check.
    * @return locked - Whether commitment is locked.
    */
-  function commitmentLocked(address _account)
+  function commitmentLocked(address _account, bytes32 _assetID)
   internal
   view
   returns (bool locked) {
-    uint256 age = commitmentAge(_account);
+    uint256 age = commitmentAge(_account, _assetID);
     return (age <= voteDuration);
   }
 
@@ -419,11 +420,11 @@ contract TimedVote {
    * @param _account - Account owning commitment to check.
    * @return tier2 - Whether commitment is tier 2.
    */
-  function commitmentTier2(address _account)
+  function commitmentTier2(address _account, bytes32 _assetID)
   internal
   view
   returns (bool tier2) {
-    uint256 age = commitmentAge(_account);
+    uint256 age = commitmentAge(_account, _assetID);
     return (age > TIER_2_AGE);
   }
 
@@ -436,11 +437,11 @@ contract TimedVote {
    * @param _account - Account owning commitment to check.
    * @return tier3 - Whether commitment is tier 3.
    */
-  function commitmentTier3(address _account)
+  function commitmentTier3(address _account, bytes32 _assetID)
   internal
   view
   returns (bool tier3) {
-    uint256 age = commitmentAge(_account);
+    uint256 age = commitmentAge(_account, _assetID);
     return (age > TIER_3_AGE);
   }
 
@@ -578,7 +579,7 @@ contract TimedVote {
   returns (uint8 percent) {
     return percentage(
       database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted"))),
-      body
+      body[database.bytes32Storage(keccak256(abi.encodePacked(_proposalID, "Proposal", "assetID")))]
     );
   }
 
@@ -618,9 +619,9 @@ contract TimedVote {
    * Throws if account does not have a commitment.
    * @param _account - Account that must be committed.
    */
-  modifier onlyCommitted(address _account) {
+  modifier onlyCommitted(address _account, bytes32 _assetID) {
     require(
-      accountCommitted(_account),
+      accountCommitted(_account, _assetID),
       "Commitment required"
     );
     _;
@@ -722,9 +723,9 @@ contract TimedVote {
    * Throws if account has active commitment.
    * @param _account - Account that must be uncommitted.
    */
-  modifier onlyUncommitted(address _account) {
+  modifier onlyUncommitted(address _account, bytes32 _assetID) {
     require(
-      !accountCommitted(_account),
+      !accountCommitted(_account, _assetID),
       "Commitment disallows"
     );
     _;
@@ -736,9 +737,9 @@ contract TimedVote {
    * Throws if commitment is locked. Assumes active commitment.
    * @param _account - Account owning commitment that must be unlocked.
    */
-  modifier onlyUnlocked(address _account) {
+  modifier onlyUnlocked(address _account, bytes32 _assetID) {
     require(
-      !commitmentLocked(_account),
+      !commitmentLocked(_account, _assetID),
       "Unlocked commitment required"
     );
     _;
@@ -763,10 +764,24 @@ contract TimedVote {
    * @dev
    * Throws if voting body MYB amount is 0.
    */
-  modifier onlyVotingBody {
+  modifier onlyVotingBody(bytes32 _assetID) {
     require(
-      body > 0,
+      body[_assetID] > 0,
       "Voting body required"
+    );
+    _;
+  }
+
+  /**
+   * Require asset ID is valid
+   * @dev
+   * Throws if address is the null address.
+   * @param _assetID - AssetID that must have a valid token address.
+   */
+  modifier onlyAsset(bytes32 _assetID){
+    require(
+      !addressNull(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))),
+      "Valid asset required"
     );
     _;
   }
