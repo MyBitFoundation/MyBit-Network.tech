@@ -400,10 +400,10 @@ contract('TimedVote', () => {
 
       it('Terrible 2s', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        increaseTime(221);
+        increaseTime(222);
         const age = await timedVote._commitmentAge(user1, platformAssetID);
         console.log(age);
-        assert.isTrue(BigNumber(age).isEqualTo(222));
+        assert.isTrue(BigNumber(age).isGreaterThanOrEqualTo(222));
       });
     });
 
@@ -452,10 +452,10 @@ contract('TimedVote', () => {
 
       it('Terrible 2s', async() => {
         await timedVote._addProposal(proposalID, platformAssetID);
-        increaseTime(221);
+        increaseTime(222);
         const age = await timedVote._proposalAge(proposalID);
         console.log(age);
-        assert.isTrue(BigNumber(age).isEqualTo(222));
+        assert.isTrue(BigNumber(age).isGreaterThanOrEqualTo(222));
       });
     });
 
@@ -995,9 +995,9 @@ contract('TimedVote', () => {
       it('Aged', async() => {
         await timedVote._setBody(platformAssetID, 10);
         await timedVote._addProposal(proposalID, platformAssetID);
-        increaseTime(221);
+        increaseTime(222);
         const [ , age ] = await timedVote.status(proposalID);
-        assert.isTrue(BigNumber(age).isEqualTo(222));
+        assert.isTrue(BigNumber(age).isGreaterThanOrEqualTo(222));
       });
 
       it('Approval', async() => {
