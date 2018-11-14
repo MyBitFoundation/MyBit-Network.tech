@@ -11,6 +11,7 @@ var ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 var AccessHierarchy = artifacts.require("./access/AccessHierarchy.sol");
 var PlatformFunds = artifacts.require("./ecosystem/PlatformFunds.sol");
 var Operators = artifacts.require("./roles/Operators.sol");
+var AssetGovernance = artifacts.require("./ownership/AssetGovernance.sol");
 var AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
 var AssetManagerFunds = artifacts.require("./roles/AssetManagerFunds.sol");
 var AssetGenerator = artifacts.require("./ecosystem/AssetGenerator.sol");
@@ -27,7 +28,8 @@ var tokenPerAccount = 100*decimals;
 
 var safemath, MyB, db, events, cm, api, owned, pausible, burner, access,
     platform, operators, escrow, managerFunds, assetGenerator, crowdsaleETH,
-    crowdsaleGeneratorETH, crowdsaleERC20, crowdsaleGeneratorERC20, dax;
+    crowdsaleGeneratorETH, crowdsaleERC20, crowdsaleGeneratorERC20, dax,
+    governance;
 
 module.exports = function(deployer, network, accounts) {
   deployer.then(function(){
@@ -40,6 +42,7 @@ module.exports = function(deployer, network, accounts) {
     deployer.link(SafeMath,
                   API,
                   MyBitToken,
+                  AssetGovernance,
                   AssetManagerEscrow,
                   Operators,
                   CrowdsaleETH,
@@ -148,7 +151,15 @@ module.exports = function(deployer, network, accounts) {
     console.log('AccessHierarchy.sol: ' + access.address);
     cm.addContract('AccessHierarchy', access.address);
 
-    return AssetManagerEscrow.new(db.address, events.address);
+    return AssetGovernance.new(db.address, events.address);
+
+  }).then(function(instance) {
+
+    governance = instance;
+    console.log('AssetGovernance.sol: ' + governance.address);
+    cm.addContract('AssetGovernance', governance.address);
+
+    return AssetManagerEscrow.new(db.address, events.address, governance.address);
 
   }).then(function(instance) {
 
@@ -240,6 +251,7 @@ module.exports = function(deployer, network, accounts) {
       "AccessHierarchy" : access.address,
       "PlatformFunds" : platform.address,
       "Operators" : operators.address,
+      "AssetGovernance" : governance.address,
       "AssetManagerEscrow" : escrow.address,
       "AssetManagerFunds" : managerFunds.address,
       "AssetGenerator" : assetGenerator.address,

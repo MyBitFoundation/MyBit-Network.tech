@@ -41,35 +41,35 @@ contract API {
 
 
   // @notice returns the amount of tokens unlocked and free to spend for _ser
-  function getNumTokensAvailable(bytes32 _assetID, address _investor)
+  function getNumTokensAvailable(bytes32 _proposalID, address _investor)
   public
   view
   returns (uint) {
-    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", _assetID, _investor)));
-    address assetToken = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)));
+    address assetToken = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _proposalID)));
+    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", assetToken, _investor)));
     uint balance = TokenView(assetToken).balanceOf(_investor);
     return balance.sub(amountLocked);
   }
 
-  function getInvestorVotes(bytes32 _executionID, address _investor)
+  function getInvestorVotes(bytes32 _proposalID, address _investor)
   public
   view
   returns (uint) {
-    return database.uintStorage(keccak256(abi.encodePacked("investorVotes", _executionID, _investor)));
+    return database.uintStorage(keccak256(abi.encodePacked("investorVotes", _proposalID, _investor)));
   }
 
-  function getTotalVotes(bytes32 _executionID)
+  function getTotalVotes(bytes32 _proposalID)
   public
   view
   returns (uint) {
-  return database.uintStorage(keccak256(abi.encodePacked("voteTotal", _executionID)));
+  return database.uintStorage(keccak256(abi.encodePacked("voteTotal", _proposalID)));
   }
 
-  function getCurrentConsensus(bytes32 _executionID, address _assetToken)
+  function getCurrentConsensus(bytes32 _proposalID, address _assetToken)
   public
   view
   returns (uint) {
-    uint totalVotes = getTotalVotes(_executionID);
+    uint totalVotes = getTotalVotes(_proposalID);
     return ( ( (totalVotes * 100) * scalingFactor) / TokenView(_assetToken).totalSupply() / scalingFactor);
   }
 
@@ -80,7 +80,7 @@ contract API {
     return keccak256(abi.encodePacked(_assetID, _oldAssetManager, _newAssetManager, _amount, _burn));
   }
 
-  function getExecutionID(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash)
+  function getProposalID(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash)
   public
   pure
   returns (bytes32) {
@@ -126,6 +126,13 @@ contract API {
   returns(bytes32) {
     bytes32 assetID = database.bytes32Storage(keccak256(abi.encodePacked("assetTokenID", _tokenAddress)));
     return assetID;
+  }
+
+  function getPlatformAssetID()
+  external
+  pure
+  returns(bytes32){
+    return keccak256(abi.encodePacked("platformAssetID"));
   }
 
   function getAssetAddress(bytes32 _assetID)
@@ -292,7 +299,7 @@ contract API {
   public
   view
   returns(address) {
-    address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platformToken")));
+    address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", keccak256(abi.encodePacked("platformAssetID")))));
     return tokenAddress;
   }
 

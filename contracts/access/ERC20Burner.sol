@@ -21,7 +21,7 @@ contract ERC20Burner {
   public {
     database = DBInterface(_database);
     events = Events(_events);
-    token = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
+    token = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", keccak256(abi.encodePacked("platformAssetID"))))));
     require(address(token) != address(0));
   }
 

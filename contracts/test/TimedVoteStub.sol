@@ -14,13 +14,12 @@ contract TimedVoteStub is TimedVote {
   /** Relay all arguments */
   constructor(
     address _database,
-    address _tokenAddress,
     uint256 _voteDuration,
     uint8 _quorum,
     uint8 _threshold
   )
   public
-  TimedVote(_database, _tokenAddress, _voteDuration, _quorum, _threshold) {
+  TimedVote(_database, _voteDuration, _quorum, _threshold) {
     timestamp = now;
   }
 
@@ -44,35 +43,35 @@ contract TimedVoteStub is TimedVote {
   }
 
   /** Get commitment age */
-  function _commitmentAge(address _account)
+  function _commitmentAge(address _account, bytes32 _assetID)
   external
   view
   returns (uint256 age) {
-    return commitmentAge(_account);
+    return commitmentAge(_account, _assetID);
   }
 
   /** Check commitment locked */
-  function _commitmentLocked(address _account)
+  function _commitmentLocked(address _account, bytes32 _assetID)
   external
   view
   returns (bool locked) {
-    return commitmentLocked(_account);
+    return commitmentLocked(_account, _assetID);
   }
 
   /** Check commitment tier 2 */
-  function _commitmentTier2(address _account)
+  function _commitmentTier2(address _account, bytes32 _assetID)
   external
   view
   returns (bool tier2) {
-    return commitmentTier2(_account);
+    return commitmentTier2(_account, _assetID);
   }
 
   /** Check commitment tier 3 */
-  function _commitmentTier3(address _account)
+  function _commitmentTier3(address _account, bytes32 _assetID)
   external
   view
   returns (bool tier3) {
-    return commitmentTier3(_account);
+    return commitmentTier3(_account, _assetID);
   }
 
   /** Check account has voted */
@@ -106,10 +105,10 @@ contract TimedVoteStub is TimedVote {
   onlyClosed(_proposalID) {}
 
   /** Require sender committed */
-  function _onlyCommitted()
+  function _onlyCommitted(bytes32 _assetID)
   external
   view
-  onlyCommitted(msg.sender) {}
+  onlyCommitted(msg.sender, _assetID) {}
 
   /** Require proposal extant */
   function _onlyExtant(bytes32 _proposalID)
@@ -147,16 +146,16 @@ contract TimedVoteStub is TimedVote {
   onlyPositive(_number) {}
 
   /** Require sender uncommitted */
-  function _onlyUncommitted()
+  function _onlyUncommitted(bytes32 _assetID)
   external
   view
-  onlyUncommitted(msg.sender) {}
+  onlyUncommitted(msg.sender, _assetID) {}
 
   /** Require commitment unlocked */
-  function _onlyUnlocked()
+  function _onlyUnlocked(bytes32 _assetID)
   external
   view
-  onlyUnlocked(msg.sender) {}
+  onlyUnlocked(msg.sender, _assetID) {}
 
   /** Require address valid */
   function _onlyValidAddress(address _address)
@@ -165,10 +164,10 @@ contract TimedVoteStub is TimedVote {
   onlyValid(_address) {}
 
   /** Require voting body */
-  function _onlyVotingBody()
+  function _onlyVotingBody(bytes32 _assetID)
   external
   view
-  onlyVotingBody {}
+  onlyVotingBody(_assetID) {}
 
   /** Percentage */
   function _percentage(uint256 _portion, uint256 _total)
@@ -233,13 +232,13 @@ contract TimedVoteStub is TimedVote {
    * Add proposal
    * @param _proposalID - Identifier of new proposal.
    */
-  function _addProposal(bytes32 _proposalID)
+  function _addProposal(bytes32 _proposalID, bytes32 _assetID)
   external {
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "start")), time());
-    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "body")), body);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), 0);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")), 0);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")), 0);
+    database.setBytes32(keccak256(abi.encodePacked(_proposalID, "Proposal", "assetID")), _assetID);
   }
 
   /**
@@ -258,9 +257,9 @@ contract TimedVoteStub is TimedVote {
    * Set voting body amount
    * @param _amount - Voting body amount.
    */
-  function _setBody(uint256 _amount)
+  function _setBody(bytes32 _assetID, uint256 _amount)
   external {
-    body = _amount;
+    body[_assetID] = _amount;
   }
 
   /**
@@ -268,11 +267,11 @@ contract TimedVoteStub is TimedVote {
    * @param _account - Account to set commitment of.
    * @param _amount - MYB commitment amount.
    */
-  function _setCommitment(address _account, uint256 _amount)
+  function _setCommitment(address _account, bytes32 _assetID, uint256 _amount)
   external {
-    body = body.add(_amount);
-    database.setUint(keccak256(abi.encodePacked(_account, "Commitment", "value")), _amount);
-    database.setUint(keccak256(abi.encodePacked(_account, "Commitment", "time")), time());
+    body[_assetID] = body[_assetID].add(_amount);
+    database.setUint(keccak256(abi.encodePacked(_account, _assetID, "Commitment", "value")), _amount);
+    database.setUint(keccak256(abi.encodePacked(_account, _assetID, "Commitment", "time")), time());
   }
 
   /**
