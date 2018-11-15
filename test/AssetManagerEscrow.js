@@ -1,6 +1,7 @@
 var bn = require('bignumber.js');
 
 const AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
+const AssetGovernance = artifacts.require("./ownership/AssetGovernance");
 const Database = artifacts.require("./database/Database.sol");
 const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
@@ -41,6 +42,7 @@ contract('AssetManager Escrow', async() => {
   let api;
   let hash;
   let escrow;
+  let governance;
   let platform;
   let operators;
 
@@ -76,6 +78,11 @@ contract('AssetManager Escrow', async() => {
     burnToken = await MyBitToken.new('MyB', 10000*ETH);
   });
 
+  it("Deploy asset goverance", async() => {
+    governance = await AssetGovernance.new(db.address, events.address);
+    await cm.addContract('AssetGovernance', governance.address);
+  })
+
   it("Transfer token to assetManager", async() => {
     await burnToken.transfer(assetManager, 100*ETH);
     assetManagerBalance = await burnToken.balanceOf(assetManager);
@@ -90,7 +97,7 @@ contract('AssetManager Escrow', async() => {
   });
 
   it('Deploy assetManager escrow', async() => {
-    escrow = await AssetManagerEscrow.new(db.address, events.address);
+    escrow = await AssetManagerEscrow.new(db.address, events.address, governance.address);
     await cm.addContract('AssetManagerEscrow', escrow.address);
   });
 

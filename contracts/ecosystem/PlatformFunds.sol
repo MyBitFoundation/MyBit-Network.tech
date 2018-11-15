@@ -29,6 +29,8 @@ contract PlatformFunds {
   function setPlatformToken(address _tokenAddress)
   external
   onlyOwner {
+    //@dev Set the address for the platform token, using keccak256(abi.encodePacked("platformAssetID")) as the assetID for the platform
+    database.setAddress(keccak256(abi.encodePacked("tokenAddress", keccak256(abi.encodePacked("platformAssetID")))), _tokenAddress);
     database.setAddress(keccak256(abi.encodePacked("platformToken")), _tokenAddress);
     //emit LogPlatformToken(_tokenAddress);
     events.registration('Platform token', _tokenAddress);
