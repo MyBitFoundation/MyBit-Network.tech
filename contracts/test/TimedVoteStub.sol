@@ -193,14 +193,6 @@ contract TimedVoteStub is TimedVote {
     return proposalOpen(_proposalID);
   }
 
-  /** Abstracted current time */
-  function _time()
-  external
-  view
-  returns (uint256 abstractedInstant, uint256 realInstant) {
-    return (super.time(), now);
-  }
-
   /** Proposal total votes */
   function _totalVotes(bytes32 _proposalID)
   external
@@ -234,7 +226,7 @@ contract TimedVoteStub is TimedVote {
    */
   function _addProposal(bytes32 _proposalID, bytes32 _assetID)
   external {
-    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "start")), time());
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "start")), now);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), 0);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")), 0);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")), 0);
@@ -271,7 +263,7 @@ contract TimedVoteStub is TimedVote {
   external {
     body[_assetID] = body[_assetID].add(_amount);
     database.setUint(keccak256(abi.encodePacked(_account, _assetID, "Commitment", "value")), _amount);
-    database.setUint(keccak256(abi.encodePacked(_account, _assetID, "Commitment", "time")), time());
+    database.setUint(keccak256(abi.encodePacked(_account, _assetID, "Commitment", "time")), now);
   }
 
   /**
@@ -306,60 +298,5 @@ contract TimedVoteStub is TimedVote {
   function _setVoter(bytes32 _proposalID, address _account)
   external {
     database.setBool(keccak256(abi.encodePacked(_proposalID, "Proposal", _account)), true);
-  }
-
-  /**
-   * Advance time by seconds
-   * @param _seconds - Seconds to advance.
-   */
-  function _timeTravelSeconds(uint256 _seconds)
-  public {
-    timestamp = timestamp.add(_seconds);
-  }
-
-  /**
-   * Advance time by minutes
-   * @param _minutes - Minutes to advance.
-   */
-  function _timeTravelMinutes(uint256 _minutes)
-  public {
-    uint256 _seconds = _minutes.mul(60);
-    _timeTravelSeconds(_seconds);
-  }
-
-  /**
-   * Advance time by hours
-   * @param _hours - Hours to advance.
-   */
-  function _timeTravelHours(uint256 _hours)
-  public {
-    uint256 _minutes = _hours.mul(60);
-    _timeTravelMinutes(_minutes);
-  }
-
-  /**
-   * Advance time by days
-   * @param _days - Days to advance.
-   */
-  function _timeTravelDays(uint256 _days)
-  external {
-    uint256 _hours = _days.mul(24);
-    _timeTravelHours(_hours);
-  }
-
-  // --------
-  // Override
-
-  /**
-   * Get artificial current time
-   * @dev
-   * Provides an artificial now timestamp. Enables control of time in tests.
-   * @return instant - Artificial current instant.
-   */
-  function time()
-  internal
-  view
-  returns (uint256 instant) {
-    return timestamp;
   }
 }

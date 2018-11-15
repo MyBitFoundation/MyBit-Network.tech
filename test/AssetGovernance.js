@@ -11,6 +11,7 @@ const Operators = artifacts.require("./roles/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
 const API = artifacts.require("./database/API.sol");
 const GovernedToken = artifacts.require("./tokens/ERC20/GovernedToken.sol");
+const TimedVote = artifacts.require('./tokens/ERC20/TimedVote.sol');
 const PlatformToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Promisify = (inner) =>
@@ -32,6 +33,11 @@ const assetManager = web3.eth.accounts[4];
 const operator = web3.eth.accounts[5];
 const newAssetManager = web3.eth.accounts[6];
 const tokenHolders = [user1, user2, user3];
+//Time vote constants
+const voteDurationDays = 15;
+const voteDuration = voteDurationDays * 24 * 60 * 60; // In seconds
+const quorum = 20; // 20%
+const threshold = 51; // 51%
 
 const ETH = 1000000000000000000;
 let tokenPerAccount;
@@ -49,6 +55,7 @@ contract('AssetGovernance', async() => {
   let govToken;
   let platformToken;
   let governance;
+  let timedVote;
 
   let methodID;
   let parameterHash;
@@ -349,6 +356,42 @@ contract('AssetGovernance', async() => {
       err = e;
     }
     assert.notEqual(err, undefined);
+  });
+
+  it("Deploy new voting contract", async() => {
+    timedVote = await TimedVote.new(
+      db.address,
+      voteDuration,
+      quorum,
+      threshold
+    );
+    await cm.addContract("TimedVote", timedVote.address);
+  });
+
+  it("Start vote to change voting process", async() => {
+    let methodString = "changeVotingProcess(address)";
+    methodID = await api.getMethodID(methodString);
+    parameterHash = await api.getVotingProcessParameterHash(timedVote.address);
+    platformAssetID = await api.getPlatformAssetID();
+    await governance.propose(escrow.address, platformAssetID, methodID, parameterHash);
+    proposalID = await api.getProposalID(escrow.address, platformAssetID, methodID, parameterHash);
+  });
+
+  it("Owner votes to change", async() => {
+    let ownerBalance = await platformToken.balanceOf(owner);
+    await governance.voteForExecution(proposalID, ownerBalance, {from: owner});
+    let consensusProgress = await api.getCurrentConsensus(proposalID, platformToken.address);
+    console.log("Owner vote received, consensus is : " , Number(consensusProgress));
+    console.log("Owner voted with : ", ownerBalance);
+    console.log("Votes for execution from owner is : ", Number(await api.getInvestorVotes(proposalID, owner)));
+    console.log("Total votes for execution are: ", Number(await api.getTotalVotes(proposalID)));
+    console.log("Total token supply is: ", Number(await platformToken.totalSupply()));
+    assert.equal(bn(consensusProgress).gt(66), true);
+  });
+
+  it("Change voting process", async() => {
+    await escrow.changeVotingProcess(timedVote.address);
+    assert.equal(await escrow.votingProcess(), timedVote.address);
   });
 
   it("Destroy", async() => {

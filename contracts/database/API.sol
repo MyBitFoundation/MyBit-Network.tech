@@ -73,6 +73,13 @@ contract API {
     return ( ( (totalVotes * 100) * scalingFactor) / TokenView(_assetToken).totalSupply() / scalingFactor);
   }
 
+  function getVotingProcessParameterHash(address _newVotingContract)
+  public
+  pure
+  returns (bytes32){
+    return keccak256(abi.encodePacked(_newVotingContract));
+  }
+
   function getAssetManagerParameterHash(bytes32 _assetID, address _oldAssetManager, address _newAssetManager, uint _amount, bool _burn)
   public
   pure

@@ -50,6 +50,13 @@ async function rejects (promise) {
   }
 }
 
+function increaseTime (seconds) {
+  web3.currentProvider.send({
+    jsonrpc: "2.0",
+    method: "evm_increaseTime",
+    params: [seconds], id: 0
+  });
+}
 
 contract('TimedVote', () => {
   // ----
@@ -145,7 +152,7 @@ contract('TimedVote', () => {
 
       it('Unlocked', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         const locked = await timedVote._commitmentLocked(user1, platformAssetID);
         assert.isFalse(locked);
       });
@@ -160,7 +167,7 @@ contract('TimedVote', () => {
 
       it('Tier 2', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(tier2Days);
+        increaseTime(86400*tier2Days);
         const tier2 = await timedVote._commitmentTier2(user1, platformAssetID);
         assert.isTrue(tier2);
       });
@@ -175,7 +182,7 @@ contract('TimedVote', () => {
 
       it('Tier 3', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(tier3Days);
+        increaseTime(86400*tier3Days);
         const tier3 = await timedVote._commitmentTier3(user1, platformAssetID);
         assert.isTrue(tier3);
       });
@@ -282,7 +289,7 @@ contract('TimedVote', () => {
 
       it('Closed', async() => {
         await timedVote._addProposal(proposalID, platformAssetID);
-        await timedVote._timeTravelDays(closeDays);
+        increaseTime(86400*closeDays);
         const open = await timedVote._proposalOpen(proposalID);
         assert.isFalse(open);
       });
@@ -387,14 +394,16 @@ contract('TimedVote', () => {
       it('Birth', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
         const age = await timedVote._commitmentAge(user1, platformAssetID);
+        console.log(age);
         assert.isTrue(BigNumber(age).isEqualTo(0));
       });
 
       it('Terrible 2s', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelSeconds(222);
+        increaseTime(222);
         const age = await timedVote._commitmentAge(user1, platformAssetID);
-        assert.isTrue(BigNumber(age).isEqualTo(222));
+        console.log(age);
+        assert.isTrue(BigNumber(age).isGreaterThanOrEqualTo(222));
       });
     });
 
@@ -420,14 +429,14 @@ contract('TimedVote', () => {
 
       it('Tier 2', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(tier2Days);
+        increaseTime(86400*tier2Days);
         const multiplier = await timedVote.multiplierOf(user1, platformAssetID);
         assert.isTrue(BigNumber(multiplier).isEqualTo(tier2Multiplier));
       });
 
       it('Tier 3', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(tier3Days);
+        increaseTime(86400*tier3Days);
         const multiplier = await timedVote.multiplierOf(user1, platformAssetID);
         assert.isTrue(BigNumber(multiplier).isEqualTo(tier3Multiplier));
       });
@@ -437,22 +446,16 @@ contract('TimedVote', () => {
       it('Birth', async() => {
         await timedVote._addProposal(proposalID, platformAssetID);
         const age = await timedVote._proposalAge(proposalID);
+        console.log(age);
         assert.isTrue(BigNumber(age).isEqualTo(0));
       });
 
       it('Terrible 2s', async() => {
         await timedVote._addProposal(proposalID, platformAssetID);
-        await timedVote._timeTravelSeconds(222);
+        increaseTime(222);
         const age = await timedVote._proposalAge(proposalID);
-        assert.isTrue(BigNumber(age).isEqualTo(222));
-      });
-    });
-
-    describe('~time', () => {
-      it('Current time', async() => {
-        const [ abstractedInstant, realInstant ] =
-          await timedVote._time();
-        assert.isTrue(BigNumber(abstractedInstant).isEqualTo(realInstant));
+        console.log(age);
+        assert.isTrue(BigNumber(age).isGreaterThanOrEqualTo(222));
       });
     });
 
@@ -489,7 +492,7 @@ contract('TimedVote', () => {
     describe('~votingPercentage', () => {
       it('None', async() => {
         await timedVote._setCommitment(user1, platformAssetID, tokenSupply / 2);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         const percent = await timedVote._votingPercentage(proposalID);
         assert.isTrue(BigNumber(percent).isEqualTo(0));
@@ -498,7 +501,7 @@ contract('TimedVote', () => {
       it('Half approve', async() => {
         await timedVote._setCommitment(user1, platformAssetID, tokenSupply / 4);
         await timedVote._setCommitment(user2, platformAssetID, tokenSupply / 4);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         await timedVote.approve(proposalID, {from: user1});
         const percent = await timedVote._votingPercentage(proposalID);
@@ -508,7 +511,7 @@ contract('TimedVote', () => {
       it('Half decline', async() => {
         await timedVote._setCommitment(user1, platformAssetID, tokenSupply / 4);
         await timedVote._setCommitment(user2, platformAssetID, tokenSupply / 4);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         await timedVote.decline(proposalID, {from: user1});
         const percent = await timedVote._votingPercentage(proposalID);
@@ -519,7 +522,7 @@ contract('TimedVote', () => {
         await timedVote._setCommitment(user1, platformAssetID, tokenSupply / 8);
         await timedVote._setCommitment(user2, platformAssetID, tokenSupply / 8);
         await timedVote._setCommitment(user3, platformAssetID, tokenSupply / 4);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         await timedVote.approve(proposalID, {from: user1});
         await timedVote.decline(proposalID, {from: user2});
@@ -529,7 +532,7 @@ contract('TimedVote', () => {
 
       it('Full approve', async() => {
         await timedVote._setCommitment(user1, platformAssetID, tokenSupply / 2);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         await timedVote.approve(proposalID, {from: user1});
         const percent = await timedVote._votingPercentage(proposalID);
@@ -538,7 +541,7 @@ contract('TimedVote', () => {
 
       it('Full decline', async() => {
         await timedVote._setCommitment(user1, platformAssetID, tokenSupply / 2);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         await timedVote.decline(proposalID, {from: user1});
         const percent = await timedVote._votingPercentage(proposalID);
@@ -548,7 +551,7 @@ contract('TimedVote', () => {
       it('Full mixed', async() => {
         await timedVote._setCommitment(user1, platformAssetID, tokenSupply / 4);
         await timedVote._setCommitment(user2, platformAssetID, tokenSupply / 4);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         await timedVote.approve(proposalID, {from: user1});
         await timedVote.decline(proposalID, {from: user2});
@@ -566,7 +569,7 @@ contract('TimedVote', () => {
     describe('~onlyClosed(proposal)', () => {
       it('Accept closed', async() => {
         await timedVote._addProposal(proposalID, platformAssetID);
-        await timedVote._timeTravelDays(closeDays);
+        increaseTime(86400*closeDays);
         await timedVote._onlyClosedProposal(proposalID);
       });
 
@@ -652,7 +655,7 @@ contract('TimedVote', () => {
 
       it('Reject closed', async() => {
         await timedVote._addProposal(proposalID, platformAssetID);
-        await timedVote._timeTravelDays(closeDays);
+        increaseTime(86400*closeDays);
         await rejects(timedVote._onlyOpenProposal(proposalID));
       });
     });
@@ -685,7 +688,7 @@ contract('TimedVote', () => {
     describe('~onlyUnlocked', () => {
       it('Accept unlocked', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._onlyUnlocked(platformAssetID, {from: user1});
       });
 
@@ -736,21 +739,21 @@ contract('TimedVote', () => {
 
       it('Fail with missing proposal', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await rejects(timedVote.approve(proposalID, {from: user1}));
       });
 
       it('Fail with closed proposal', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
-        await timedVote._timeTravelDays(closeDays);
+        increaseTime(86400*closeDays);
         await rejects(timedVote.approve(proposalID, {from: user1}));
       });
 
       it('Fail on plural vote', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         await timedVote._setVoter(proposalID, user1);
         await rejects(timedVote.approve(proposalID, {from: user1}));
@@ -758,14 +761,14 @@ contract('TimedVote', () => {
 
       it('Succeed', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         await timedVote.approve(proposalID, {from: user1});
       });
 
       it('Emit Approve', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         const { logs: events } = await timedVote.approve(
           proposalID,
@@ -841,21 +844,21 @@ contract('TimedVote', () => {
 
       it('Fail with missing proposal', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await rejects(timedVote.decline(proposalID, {from: user1}));
       });
 
       it('Fail with closed proposal', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
-        await timedVote._timeTravelDays(closeDays);
+        increaseTime(86400*closeDays);
         await rejects(timedVote.decline(proposalID, {from: user1}));
       });
 
       it('Fail on plural vote', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         await timedVote._setVoter(proposalID, user1);
         await rejects(timedVote.decline(proposalID, {from: user1}));
@@ -863,14 +866,14 @@ contract('TimedVote', () => {
 
       it('Succeed', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         await timedVote.decline(proposalID, {from: user1});
       });
 
       it('Emit Decline', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         const { logs: events } = await timedVote.decline(
           proposalID,
@@ -930,10 +933,10 @@ contract('TimedVote', () => {
       it('Defeated under quorum', async() => {
         await timedVote._setBody(platformAssetID, 10000);
         await timedVote._setCommitment(user1, platformAssetID, 10);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         await timedVote.approve(proposalID, {from: user1});
-        await timedVote._timeTravelDays(closeDays);
+        increaseTime(86400*closeDays);
         const result = await timedVote.result(proposalID);
         assert.isFalse(result);
       });
@@ -941,11 +944,11 @@ contract('TimedVote', () => {
       it('Defeated under threshold', async() => {
         await timedVote._setCommitment(user1, platformAssetID, tokenSupply / 4);
         await timedVote._setCommitment(user2, platformAssetID, tokenSupply / 4);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         await timedVote.approve(proposalID, {from: user1});
         await timedVote.decline(proposalID, {from: user2});
-        await timedVote._timeTravelDays(closeDays);
+        increaseTime(86400*closeDays);
         const result = await timedVote.result(proposalID);
         assert.isFalse(result);
       });
@@ -953,11 +956,11 @@ contract('TimedVote', () => {
       it('Passed', async() => {
         await timedVote._setCommitment(user1, platformAssetID, tokenSupply / 2);
         await timedVote._setCommitment(user2, platformAssetID, tokenSupply / 4);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         await timedVote.approve(proposalID, {from: user1});
         await timedVote.decline(proposalID, {from: user2});
-        await timedVote._timeTravelDays(closeDays);
+        increaseTime(86400*closeDays);
         const result = await timedVote.result(proposalID);
         assert.isTrue(result);
       });
@@ -984,7 +987,7 @@ contract('TimedVote', () => {
       it('Closed', async() => {
         await timedVote._setBody(platformAssetID, 10);
         await timedVote._addProposal(proposalID, platformAssetID);
-        await timedVote._timeTravelDays(closeDays);
+        increaseTime(86400*closeDays);
         const [ open ] = await timedVote.status(proposalID);
         assert.isFalse(open);
       });
@@ -992,14 +995,14 @@ contract('TimedVote', () => {
       it('Aged', async() => {
         await timedVote._setBody(platformAssetID, 10);
         await timedVote._addProposal(proposalID, platformAssetID);
-        await timedVote._timeTravelSeconds(222);
+        increaseTime(222);
         const [ , age ] = await timedVote.status(proposalID);
-        assert.isTrue(BigNumber(age).isEqualTo(222));
+        assert.isTrue(BigNumber(age).isGreaterThanOrEqualTo(222));
       });
 
       it('Approval', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         await timedVote.approve(proposalID, {from: user1});
         const [ , , , voted, approval ] = await timedVote.status(proposalID);
@@ -1009,7 +1012,7 @@ contract('TimedVote', () => {
 
       it('Dissent', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         await timedVote.decline(proposalID, {from: user1});
         const [ , , , voted, , dissent ] = await timedVote.status(proposalID);
@@ -1020,7 +1023,7 @@ contract('TimedVote', () => {
       it('Mixed', async() => {
         await timedVote._setCommitment(user1, platformAssetID, 5);
         await timedVote._setCommitment(user2, platformAssetID, 5);
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote._addProposal(proposalID, platformAssetID);
         await timedVote.approve(proposalID, {from: user1});
         await timedVote.decline(proposalID, {from: user2});
@@ -1048,7 +1051,7 @@ contract('TimedVote', () => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
         await timedVote.commit(100, platformAssetID, {from: user1});
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await token._failNextTransfer();
         await rejects(timedVote.withdraw(platformAssetID, {from: user1}));
       });
@@ -1057,7 +1060,7 @@ contract('TimedVote', () => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
         await timedVote.commit(100, platformAssetID, {from: user1});
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         await timedVote.withdraw(platformAssetID, {from: user1});
       });
 
@@ -1065,7 +1068,7 @@ contract('TimedVote', () => {
         await token.transfer(user1, 100);
         await token.approve(timedVote.address, 100, {from: user1});
         await timedVote.commit(100, platformAssetID, {from: user1});
-        await timedVote._timeTravelDays(unlockDays);
+        increaseTime(86400*unlockDays);
         const { logs: events } = await timedVote.withdraw(platformAssetID, {from: user1});
         assert.isAtLeast(events.length, 1);
         const event = events.pop();

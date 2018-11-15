@@ -35,59 +35,14 @@ contract TimedVote {
   uint8 constant TIER_2_MULTIPLIER = 150;       // Tier 2 multiplier
   uint8 constant TIER_3_MULTIPLIER = 200;       // Tier 3 multiplier
 
-  // ----
-  // Type
-
-  // Commitment of MYB tokens to voting
-  /*
-  struct Commitment {
-    uint256 value;                              // MYB amount
-    uint256 time;                               // Commit instant
-  }
-  database.setUint(keccak256(abi.encodePacked(_address, "Commitment", "value")), _value);
-  database.setUint(keccak256(abi.encodePacked(_address, "Commitment", "time")), _time);
-
-  database.uintStorage(keccak256(abi.encodePacked(_address, "Commitment", "value")));
-  database.uintStorage(keccak256(abi.encodePacked(_address, "Commitment", "time")));
-  */
-
-  // Proposal for the MYB community
-  /*
-  struct Proposal {
-    uint256 start;                              // Create instant
-    uint256 body;                               // Voting body MYB amount
-    uint256 voted;                              // Voting MYB amount
-    uint256 approval;                           // Weighted approval amount
-    uint256 dissent;                            // Weighted dissent amount
-    mapping(address => bool) voters;            // Voting accounts
-  }
-  database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "start")), _start);
-  database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "body")), _body);
-  database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), _voted);
-  database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")), _approval);
-  database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")), _dissent);
-  database.setBool(keccak256(abi.encodePacked(_proposalID, "Proposal", _address)), _bool);
-
-  database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "start")));
-  database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "body")));
-  database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")));
-  database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")));
-  database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")));
-  database.boolStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", _address)));
-  */
-
   // -----
   // State
 
   DBInterface database;                         //Database contract
-  //MyBitToken token;                             // MYB token contract
   uint256 voteDuration;                         // Vote duration
   uint8 quorum;                                 // Quorum
   uint8 threshold;                              // Approval threshold
   mapping(bytes32 => uint256) body;             // Voting body token amount, by assetID
-
-  //mapping(address => Commitment) commitments;   // Active commitments
-  //mapping(bytes32 => Proposal) proposals;       // Created proposals
 
   // -----------
   // Constructor
@@ -174,7 +129,7 @@ contract TimedVote {
     require(_value > 0, "Nonzero value required");
     body[_assetID] = body[_assetID].add(_value);
     database.setUint(keccak256(abi.encodePacked(msg.sender, _assetID, "Commitment", "value")), _value);
-    database.setUint(keccak256(abi.encodePacked(msg.sender, _assetID, "Commitment", "time")), time());
+    database.setUint(keccak256(abi.encodePacked(msg.sender, _assetID, "Commitment", "time")), now);
     bool transferred = ERC20(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))).transferFrom(msg.sender, address(this), _value);
     require(transferred, "Transfer failed");
     emit Commit(msg.sender, _value);
@@ -264,7 +219,7 @@ contract TimedVote {
   onlyVotingBody(_assetID)
   onlyNew(_proposalID)
   onlyAsset(_assetID){
-    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "start")), time());
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "start")), now);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), 0);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")), 0);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")), 0);
@@ -391,7 +346,7 @@ contract TimedVote {
   internal
   view
   returns (uint256 age) {
-    return time().sub(database.uintStorage(keccak256(abi.encodePacked(_account, _assetID, "Commitment", "time"))));
+    return now.sub(database.uintStorage(keccak256(abi.encodePacked(_account, _assetID, "Commitment", "time"))));
   }
 
   /**
@@ -515,7 +470,7 @@ contract TimedVote {
   internal
   view
   returns (uint256 age) {
-    return time().sub(database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "start"))));
+    return now.sub(database.uintStorage(keccak256(abi.encodePacked(_proposalID, "Proposal", "start"))));
   }
 
   /**
@@ -533,19 +488,6 @@ contract TimedVote {
   returns (bool open) {
     uint256 age = proposalAge(_proposalID);
     return (age <= voteDuration);
-  }
-
-  /**
-   * Get current time
-   * @dev
-   * Abstracted interface to the current time. Enables overriding in tests.
-   * @return instant - Current instant.
-   */
-  function time()
-  internal
-  view
-  returns (uint256 instant) {
-    return now;
   }
 
   /**

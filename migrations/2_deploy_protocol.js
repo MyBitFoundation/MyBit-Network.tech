@@ -62,6 +62,8 @@ module.exports = function(deployer, network, accounts) {
       MyB.transfer(accounts[i], tokenPerAccount);
     }
 
+    console.log(MyB);
+
     return Database.new([accounts[0]], true);
 
   }).then(function(instance) {
@@ -262,16 +264,29 @@ module.exports = function(deployer, network, accounts) {
       "AssetExchange" : dax.address
     }
 
-    var addresses_json = JSON.stringify(addresses, null, 4);
+    var contracts_json = JSON.stringify(addresses, null, 4);
     var accounts_json = JSON.stringify(accounts, null, 4);
-    fs.writeFile(network + '-addresses.json', addresses_json, (err) => {
-     if (err) throw err;
-     console.log('Contracts Saved');
+    fs.writeFile('networks/' + network + '/contracts.json', contracts_json, (err) => {
+      if (err) throw err;
+      console.log('Contracts Saved');
     });
-    fs.writeFile(network + '-accounts.json', accounts_json, (err) => {
-     if (err) throw err;
-     console.log('Accounts Saved');
+    fs.writeFile('networks/' + network + '/accounts.json', accounts_json, (err) => {
+      if (err) throw err;
+      console.log('Accounts Saved');
     });
+
+    instanceList = [MyB, burner, db, events, cm, api, owned, pausible, access,
+                    platform, operators, governance, escrow, managerFunds,
+                    assetGenerator, crowdsaleETH, crowdsaleGeneratorETH,
+                    crowdsaleERC20, crowdsaleGeneratorERC20, dax];
+
+    for(var i=0; i<instanceList.length; i++){
+      var instanceName = instanceList[i].constructor._json.contractName;
+      var instance_json = JSON.stringify(instanceList[i].abi, null, 4);
+      fs.writeFile('networks/' + network + '/' + instanceName + '.json', instance_json, (err) => {
+        if (err) throw err;
+      });
+    }
   });
 
 };
