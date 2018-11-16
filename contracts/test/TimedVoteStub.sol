@@ -14,13 +14,12 @@ contract TimedVoteStub is TimedVote {
   /** Relay all arguments */
   constructor(
     address _database,
-    address _tokenAddress,
     uint256 _voteDuration,
     uint8 _quorum,
     uint8 _threshold
   )
   public
-  TimedVote(_database, _tokenAddress, _voteDuration, _quorum, _threshold) {
+  TimedVote(_database, _voteDuration, _quorum, _threshold) {
     timestamp = now;
   }
 
@@ -44,35 +43,35 @@ contract TimedVoteStub is TimedVote {
   }
 
   /** Get commitment age */
-  function _commitmentAge(address _account)
+  function _commitmentAge(address _account, bytes32 _assetID)
   external
   view
   returns (uint256 age) {
-    return commitmentAge(_account);
+    return commitmentAge(_account, _assetID);
   }
 
   /** Check commitment locked */
-  function _commitmentLocked(address _account)
+  function _commitmentLocked(address _account, bytes32 _assetID)
   external
   view
   returns (bool locked) {
-    return commitmentLocked(_account);
+    return commitmentLocked(_account, _assetID);
   }
 
   /** Check commitment tier 2 */
-  function _commitmentTier2(address _account)
+  function _commitmentTier2(address _account, bytes32 _assetID)
   external
   view
   returns (bool tier2) {
-    return commitmentTier2(_account);
+    return commitmentTier2(_account, _assetID);
   }
 
   /** Check commitment tier 3 */
-  function _commitmentTier3(address _account)
+  function _commitmentTier3(address _account, bytes32 _assetID)
   external
   view
   returns (bool tier3) {
-    return commitmentTier3(_account);
+    return commitmentTier3(_account, _assetID);
   }
 
   /** Check account has voted */
@@ -106,10 +105,10 @@ contract TimedVoteStub is TimedVote {
   onlyClosed(_proposalID) {}
 
   /** Require sender committed */
-  function _onlyCommitted()
+  function _onlyCommitted(bytes32 _assetID)
   external
   view
-  onlyCommitted(msg.sender) {}
+  onlyCommitted(msg.sender, _assetID) {}
 
   /** Require proposal extant */
   function _onlyExtant(bytes32 _proposalID)
@@ -147,16 +146,16 @@ contract TimedVoteStub is TimedVote {
   onlyPositive(_number) {}
 
   /** Require sender uncommitted */
-  function _onlyUncommitted()
+  function _onlyUncommitted(bytes32 _assetID)
   external
   view
-  onlyUncommitted(msg.sender) {}
+  onlyUncommitted(msg.sender, _assetID) {}
 
   /** Require commitment unlocked */
-  function _onlyUnlocked()
+  function _onlyUnlocked(bytes32 _assetID)
   external
   view
-  onlyUnlocked(msg.sender) {}
+  onlyUnlocked(msg.sender, _assetID) {}
 
   /** Require address valid */
   function _onlyValidAddress(address _address)
@@ -165,10 +164,10 @@ contract TimedVoteStub is TimedVote {
   onlyValid(_address) {}
 
   /** Require voting body */
-  function _onlyVotingBody()
+  function _onlyVotingBody(bytes32 _assetID)
   external
   view
-  onlyVotingBody {}
+  onlyVotingBody(_assetID) {}
 
   /** Percentage */
   function _percentage(uint256 _portion, uint256 _total)
@@ -192,14 +191,6 @@ contract TimedVoteStub is TimedVote {
   view
   returns (bool open) {
     return proposalOpen(_proposalID);
-  }
-
-  /** Abstracted current time */
-  function _time()
-  external
-  view
-  returns (uint256 abstractedInstant, uint256 realInstant) {
-    return (super.time(), now);
   }
 
   /** Proposal total votes */
@@ -233,13 +224,13 @@ contract TimedVoteStub is TimedVote {
    * Add proposal
    * @param _proposalID - Identifier of new proposal.
    */
-  function _addProposal(bytes32 _proposalID)
+  function _addProposal(bytes32 _proposalID, bytes32 _assetID)
   external {
-    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "start")), time());
-    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "body")), body);
+    database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "start")), now);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), 0);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")), 0);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")), 0);
+    database.setBytes32(keccak256(abi.encodePacked(_proposalID, "Proposal", "assetID")), _assetID);
   }
 
   /**
@@ -258,9 +249,9 @@ contract TimedVoteStub is TimedVote {
    * Set voting body amount
    * @param _amount - Voting body amount.
    */
-  function _setBody(uint256 _amount)
+  function _setBody(bytes32 _assetID, uint256 _amount)
   external {
-    body = _amount;
+    body[_assetID] = _amount;
   }
 
   /**
@@ -268,11 +259,11 @@ contract TimedVoteStub is TimedVote {
    * @param _account - Account to set commitment of.
    * @param _amount - MYB commitment amount.
    */
-  function _setCommitment(address _account, uint256 _amount)
+  function _setCommitment(address _account, bytes32 _assetID, uint256 _amount)
   external {
-    body = body.add(_amount);
-    database.setUint(keccak256(abi.encodePacked(_account, "Commitment", "value")), _amount);
-    database.setUint(keccak256(abi.encodePacked(_account, "Commitment", "time")), time());
+    body[_assetID] = body[_assetID].add(_amount);
+    database.setUint(keccak256(abi.encodePacked(_account, _assetID, "Commitment", "value")), _amount);
+    database.setUint(keccak256(abi.encodePacked(_account, _assetID, "Commitment", "time")), now);
   }
 
   /**
@@ -307,60 +298,5 @@ contract TimedVoteStub is TimedVote {
   function _setVoter(bytes32 _proposalID, address _account)
   external {
     database.setBool(keccak256(abi.encodePacked(_proposalID, "Proposal", _account)), true);
-  }
-
-  /**
-   * Advance time by seconds
-   * @param _seconds - Seconds to advance.
-   */
-  function _timeTravelSeconds(uint256 _seconds)
-  public {
-    timestamp = timestamp.add(_seconds);
-  }
-
-  /**
-   * Advance time by minutes
-   * @param _minutes - Minutes to advance.
-   */
-  function _timeTravelMinutes(uint256 _minutes)
-  public {
-    uint256 _seconds = _minutes.mul(60);
-    _timeTravelSeconds(_seconds);
-  }
-
-  /**
-   * Advance time by hours
-   * @param _hours - Hours to advance.
-   */
-  function _timeTravelHours(uint256 _hours)
-  public {
-    uint256 _minutes = _hours.mul(60);
-    _timeTravelMinutes(_minutes);
-  }
-
-  /**
-   * Advance time by days
-   * @param _days - Days to advance.
-   */
-  function _timeTravelDays(uint256 _days)
-  external {
-    uint256 _hours = _days.mul(24);
-    _timeTravelHours(_hours);
-  }
-
-  // --------
-  // Override
-
-  /**
-   * Get artificial current time
-   * @dev
-   * Provides an artificial now timestamp. Enables control of time in tests.
-   * @return instant - Artificial current instant.
-   */
-  function time()
-  internal
-  view
-  returns (uint256 instant) {
-    return timestamp;
   }
 }

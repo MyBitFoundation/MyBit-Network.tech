@@ -40,13 +40,14 @@ contract TimedVote {
   uint8 constant TIER_2_MULTIPLIER = 150;       // Tier 2 multiplier
   uint8 constant TIER_3_MULTIPLIER = 200;       // Tier 3 multiplier
 
+  // -----
+  // State
 
-  DB database;                         //Database contract
-  MyBitToken token;                             // MYB token contract
+  DBInterface database;                         //Database contract
   uint256 voteDuration;                         // Vote duration
   uint8 quorum;                                 // Quorum
   uint8 threshold;                              // Approval threshold
-  uint256 body;                                 // Voting body MYB amount
+  mapping(bytes32 => uint256) body;             // Voting body token amount, by assetID
 
 
 
@@ -106,7 +107,7 @@ contract TimedVote {
   external {
     require(_value > 0, "Nonzero value required");
     require(database.uintStorage(keccak256(abi.encodePacked(msg.sender, "Commitment", "value"))) == 0, "Commitment disallows");
-    body = body.add(_value);
+    body[_assetID] = body[_assetID].add(_value);
     database.setUint(keccak256(abi.encodePacked(msg.sender, "Commitment", "value")), _value);
     database.setUint(keccak256(abi.encodePacked(msg.sender, "Commitment", "time")), now);
     bool transferred = token.transferFrom(msg.sender, address(this), _value);
@@ -142,7 +143,7 @@ contract TimedVote {
    * @param _account - Account owning commitment to get the multiplier of.
    * @return multiplier - Current commitment multiplier.
    */
-  function multiplierOf(address _account)
+  function multiplierOf(address _account, bytes32 _assetID)
   public
   view
   returns (uint8 multiplier) {
@@ -170,13 +171,15 @@ contract TimedVote {
    * @param _proposalID - Identifier of new proposal.
    */
   function propose(bytes32 _proposalID)
-  external {
+  external
+  onlyAsset(_assetID) {
     require(body > 0, "Voting body required");
     require(!proposalExtant(_proposalID), "Proposal exists");
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "start")), now);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "voted")), 0);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "approval")), 0);
     database.setUint(keccak256(abi.encodePacked(_proposalID, "Proposal", "dissent")), 0);
+    database.setBytes32(keccak256(abi.encodePacked(_proposalID, "Proposal", "assetID")), _assetID);
     emit Propose(msg.sender, _proposalID);
   }
 
@@ -219,7 +222,7 @@ contract TimedVote {
    * @param _account - Account owning commitment to get age of.
    * @return age - Commitment age.
    */
-  function commitmentAge(address _account)
+  function commitmentAge(address _account, bytes32 _assetID)
   internal
   view
   returns (uint256 age) {
@@ -291,6 +294,20 @@ contract TimedVote {
     _;
   }
 
+
+  /**
+   * Require asset ID is valid
+   * @dev
+   * Throws if address is the null address.
+   * @param _assetID - AssetID that must have a valid token address.
+   */
+  modifier onlyAsset(bytes32 _assetID){
+    require(
+      !addressNull(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))),
+      "Valid asset required"
+    );
+    _;
+  }
 
   // -----
   // Event
