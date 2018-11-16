@@ -1,5 +1,5 @@
-var bn = require('bignumber.js');
-
+const bn = require('bignumber.js');
+const abi = require("web3-eth-abi");
 
 const AssetGovernance = artifacts.require("./ownership/AssetGovernance.sol");
 const AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
@@ -14,6 +14,7 @@ const GovernedToken = artifacts.require("./tokens/ERC20/GovernedToken.sol");
 const TimedVote = artifacts.require('./tokens/ERC20/TimedVote.sol');
 const PlatformToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
+const RawCall = artifacts.require("./ownership/RawCall.sol");
 const Promisify = (inner) =>
     new Promise((resolve, reject) =>
         inner((err, res) => {
@@ -56,6 +57,7 @@ contract('AssetGovernance', async() => {
   let platformToken;
   let governance;
   let timedVote;
+  let rawCall;
 
   let methodID;
   let parameterHash;
@@ -112,6 +114,10 @@ contract('AssetGovernance', async() => {
     await cm.addContract('PlatformFunds', platform.address);
     await platform.setPlatformWallet(owner);
     await platform.setPlatformToken(platformToken.address);
+  });
+
+  it('Deploy raw call', async() => {
+    rawCall = await RawCall.new();
   });
 
   it('Deploy assetManager escrow', async() => {
@@ -336,7 +342,7 @@ contract('AssetGovernance', async() => {
     assert.equal(bn(consensusProgress).gt(66), true);
   });
 
-
+/*
   it("Change AssetManager", async() => {
     await platformToken.approve(escrow.address, 10*ETH, {from: newAssetManager});
     let consensus = await governance.isConsensusReached(proposalID);
@@ -346,6 +352,18 @@ contract('AssetGovernance', async() => {
     // console.log('Consensus: ', consensus);
     // console.log(logs[0].args);
     await escrow.becomeAssetManager(assetID, assetManager, 10*ETH, true, {from:newAssetManager});
+  });
+*/
+  it("Change AssetManager", async() => {
+    let methodString = "becomeAssetManager(bytes32,address,uint256,bool)";
+    methodID = await api.getMethodID(methodString);
+    await platformToken.approve(escrow.address, 10*ETH, {from: newAssetManager});
+    let consensus = await governance.isConsensusReached(proposalID);
+    console.log("consensus is reached?  ", consensus);
+    let num = Number(bn(ETH).multipliedBy(10)).toString();
+    let params = await abi.encodeParameters(['bytes32', 'address', 'uint256', 'bool'], [assetID, assetManager, num, true]);
+    await rawCall.execute(escrow.address, methodID, params, proposalID, governance.address, {from: newAssetManager});
+    assert.equal(newAssetManager, await api.getAssetManager(assetID));
   });
 
   it("Fail to destroy, not owner", async() => {
