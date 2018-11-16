@@ -1,11 +1,18 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 import "../math/SafeMath.sol";
 import "../interfaces/ERC20.sol";
-import "../interfaces/DBInterface.sol";
-import "../database/Events.sol";
 import "../interfaces/EtherDividendInterface.sol";
 // import "../access/ERC20Burner.sol";
+
+interface Events {  function transaction(string _message, address _from, address _to, uint _amount, bytes32 _id)  external; }
+interface DB {
+  function addressStorage(bytes32 _key) external view returns (address);
+  function uintStorage(bytes32 _key) external view returns (uint);
+  function deleteUint(bytes32 _key) external;
+  function setBool(bytes32 _key, bool _value) external;
+  function boolStorage(bytes32 _key) external view returns (bool);
+}
 
 // @title An asset crowdsale contract, which accepts Ether for funding.
 // @author Kyle Dewhurst & Peter Phillips, MyBit Foundation
@@ -14,7 +21,7 @@ import "../interfaces/EtherDividendInterface.sol";
 contract CrowdsaleETH {
     using SafeMath for uint256;
 
-    DBInterface public database;
+    DB public database;
     Events public events;
     // ERC20Burner public burner;
 
@@ -22,7 +29,7 @@ contract CrowdsaleETH {
     // @param: The address for the database contract
     constructor(address _database, address _events)
     public {
-        database = DBInterface(_database);
+        database = DB(_database);
         events = Events(_events);
         // burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
     }

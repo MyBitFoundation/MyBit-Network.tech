@@ -1,11 +1,18 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 import "../math/SafeMath.sol";
 import "../interfaces/ERC20.sol";
-import "../interfaces/DBInterface.sol";
 import "../interfaces/ERC20DividendInterface.sol";
 // import "../access/ERC20Burner.sol";
-import "../database/Events.sol";
+
+interface Events {  function transaction(string _message, address _from, address _to, uint _amount, bytes32 _id)  external; }
+interface DB {
+  function addressStorage(bytes32 _key) external view returns (address);
+  function uintStorage(bytes32 _key) external view returns (uint);
+  function deleteUint(bytes32 _key) external;
+  function setBool(bytes32 _key, bool _value) external;
+  function boolStorage(bytes32 _key) external view returns (bool);
+}
 
 // @title An asset crowdsale contract which accepts funding from ERC20 tokens.
 // @notice Begins a crowdfunding period for a digital asset, minting asset dividend tokens to investors when particular ERC20 token is received
@@ -14,7 +21,7 @@ import "../database/Events.sol";
 contract CrowdsaleERC20{
   using SafeMath for uint256;
 
-  DBInterface public database;
+  DB public database;
   Events public events;
   // ERC20Burner public burner;
 
@@ -22,7 +29,7 @@ contract CrowdsaleERC20{
   // @param: The address for the platform database
   constructor(address _database, address _events)
   public{
-      database = DBInterface(_database);
+      database = DB(_database);
       events = Events(_events);
       // burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
@@ -32,7 +39,7 @@ contract CrowdsaleERC20{
   // @dev investor must approve this contract to transfer tokens
   // @param (bytes32) _assetID = The ID of the asset tokens, investor wishes to purchase
   // @param (uint) _amount = The amount to spend purchasing this asset
-  function buyAssetOrderERC20(bytes32 _assetID, address _investor, uint _amount)
+  function buyAssetOrderERC20(bytes32 _assetID, uint _amount)
   external
   validAsset(_assetID)
   betweenDeadlines(_assetID)
@@ -44,18 +51,18 @@ contract CrowdsaleERC20{
     uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID)));
     uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
     if (_amount >= tokensRemaining) {
-      require(fundingToken.transferFrom(_investor, address(this), tokensRemaining));    // transfer investors tokens into contract
+      require(fundingToken.transferFrom(msg.sender, address(this), tokensRemaining));    // transfer investors tokens into contract
       require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID))) ));
       require(finalizeCrowdsale(_assetID));
-      require(assetToken.mint(_investor, tokensRemaining));   // Send remaining asset tokens to investor
+      require(assetToken.mint(msg.sender, tokensRemaining));   // Send remaining asset tokens to investor
       require(assetToken.finishMinting());
       require(payoutERC20(_assetID, amountToRaise));          // 1 token = 1 wei
     }
     else {
-      require(fundingToken.transferFrom(_investor, address(this), _amount));
-      require(assetToken.mint(_investor, _amount));
+      require(fundingToken.transferFrom(msg.sender, address(this), _amount));
+      require(assetToken.mint(msg.sender, _amount));
     }
-    events.transaction('Asset purchased', _investor, address(this), _amount, _assetID);
+    events.transaction('Asset purchased', msg.sender, address(this), _amount, _assetID);
     return true;
   }
 

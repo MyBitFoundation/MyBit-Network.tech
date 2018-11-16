@@ -1,8 +1,8 @@
- pragma solidity ^0.4.24;
+ pragma solidity 0.4.24;
 
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
-import "../access/ERC20Burner.sol";
+// import "../access/ERC20Burner.sol";
 import "../tokens/erc20/DividendTokenERC20.sol";
 import "../database/Events.sol";
 
@@ -14,7 +14,7 @@ contract CrowdsaleGeneratorERC20 {
 
   DBInterface private database;
   Events private events;
-  ERC20Burner private burner;
+  // ERC20Burner private burner;
 
   uint constant scalingFactor = 1e32;
 
@@ -24,7 +24,7 @@ contract CrowdsaleGeneratorERC20 {
   public{
       database = DBInterface(_database);
       events = Events(_events);
-      burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
+      // burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
   // @notice AssetManagers can initiate a crowdfund for a new asset here
@@ -38,7 +38,8 @@ contract CrowdsaleGeneratorERC20 {
   // @param (address) _fundingToken = The ERC20 token to be used to fund the crowdsale (Operator must accept this token as payment)
   function createAssetOrderERC20(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc, address _fundingToken)
   external
-  burnRequired {
+  // burnRequired
+  {
     require(_amountToRaise > 0);
     require(_assetManagerPerc < 100);
     require(database.boolStorage(keccak256(abi.encodePacked("acceptsToken", _operatorID, _fundingToken))));
@@ -78,12 +79,12 @@ contract CrowdsaleGeneratorERC20 {
   //                                            Modifiers
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // @notice reverts if AssetManager hasn't approved burner to burn platform token
-  modifier burnRequired {
-    //emit LogSig(msg.sig);
-    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
-    _;
-  }
+  // // @notice reverts if AssetManager hasn't approved burner to burn platform token
+  // modifier burnRequired {
+  //   //emit LogSig(msg.sig);
+  //   require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
+  //   _;
+  // }
 
   // @notice Sender must be a registered owner
   modifier onlyOwner {
