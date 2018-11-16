@@ -62,8 +62,6 @@ module.exports = function(deployer, network, accounts) {
       MyB.transfer(accounts[i], tokenPerAccount);
     }
 
-    console.log(MyB);
-
     return Database.new([accounts[0]], true);
 
   }).then(function(instance) {
