@@ -207,7 +207,7 @@ contract('AssetGovernance', async() => {
   });
 
   it("Initiate a vote", async() => {
-    let methodString = "becomeAssetManager(bytes32,address,uint256,bool)";
+    let methodString = "becomeAssetManager(bytes32,address,address,uint256,bool)";
     methodID = await api.getMethodID(methodString);
     parameterHash = await api.getAssetManagerParameterHash(assetID, assetManager, newAssetManager, 10*ETH, true);
     await governance.propose(escrow.address, assetID, methodID, parameterHash);
@@ -355,13 +355,13 @@ contract('AssetGovernance', async() => {
   });
 */
   it("Change AssetManager", async() => {
-    let methodString = "becomeAssetManager(bytes32,address,uint256,bool)";
+    let methodString = "becomeAssetManager(bytes32,address,address,uint256,bool)";
     methodID = await api.getMethodID(methodString);
     await platformToken.approve(escrow.address, 10*ETH, {from: newAssetManager});
     let consensus = await governance.isConsensusReached(proposalID);
     console.log("consensus is reached?  ", consensus);
     let num = Number(bn(ETH).multipliedBy(10)).toString();
-    let params = await abi.encodeParameters(['bytes32', 'address', 'uint256', 'bool'], [assetID, assetManager, num, true]);
+    let params = await abi.encodeParameters(['bytes32', 'address', 'address', 'uint256', 'bool'], [assetID, assetManager, newAssetManager, num, true]);
     await rawCall.execute(escrow.address, methodID, params, proposalID, governance.address, {from: newAssetManager});
     assert.equal(newAssetManager, await api.getAssetManager(assetID));
   });
