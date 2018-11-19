@@ -11,7 +11,7 @@ import '../interfaces/ERC20.sol';
 // @notice Token holders can unlock their tokens, removing their vote
 // @dev An owner has already been initialized when database is deployed
 // @author Kyle Dewhurst, MyBit Foundation
-contract TokenGovernance {
+contract GovernanceLevels {
   using SafeMath for uint256;
 
   Database public database;
@@ -31,10 +31,8 @@ contract TokenGovernance {
   // @notice quorum level dictates the number of votes required for that function to be executed
   constructor(address _database, address _events, uint256 _baseQuorum)
   public  {
-    governanceToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", keccak256(abi.encodePacked("platformAssetID"))))));
     database = Database(_database);
     events = Events(_events);
-    governanceToken = ERC20(governanceToken);
     bytes4 methodID = bytes4(keccak256(abi.encodePacked("setQuorumLevel(address, bytes4, uint256)")));
     bytes32 functionID = keccak256(abi.encodePacked(address(this), methodID));
     database.setUint(functionID, _baseQuorum);   // the initial quorum level to set further quorum levels
@@ -50,30 +48,26 @@ contract TokenGovernance {
     return true;
   }
 
-  // @param (bytes32) _parameterHash = The hash of the exact parameter to be called for function...ie sha3(true, 55)
-  function voteForExecution(address _contractAddress, bytes4 _methodID, bytes32 _parameterHash, uint256 _voteAmount)
+  function setThreshold(address _contractAddress, bytes4 _methodID, uint256 _stake)
   external
   returns (bool) {
-    bytes32 executionID = keccak256(abi.encodePacked(_contractAddress, _methodID, _parameterHash));
-    bytes32 numVotesID = keccak256(abi.encodePacked("numberOfVotes", executionID));
-    require(lockTokens(_voteAmount, executionID));
-    uint256 numVotes = database.uintStorage(numVotesID);
-    database.setUint(numVotesID, numVotes.add(_voteAmount));
+    return true;
+  }
+
+  function setBurnRatio(address _contractAddress, bytes4 _methodID, uint256 _stake)
+  external
+  returns (bool) {
     return true;
   }
 
 
-  function unlockTokens(bytes32 _executionID)
+  function setStakeAmount(address _contractAddress, bytes4 _methodID, uint256 _stake)
   external
   returns (bool) {
-    bytes32 voteID = keccak256(abi.encodePacked("tokenVotesLocked", _executionID, msg.sender));
-    bytes32 numVotesID = keccak256(abi.encodePacked("numberOfVotes", _executionID));
-    uint256 amountLocked = database.uintStorage(voteID);
-    uint256 numVotes = database.uintStorage(numVotesID);
-    database.setUint(numVotesID, numVotes.sub(amountLocked));
-    governanceToken.transfer(msg.sender, amountLocked);
     return true;
   }
+
+
 
   // @notice platform owners can destroy contract here
   function destroy()
@@ -82,25 +76,6 @@ contract TokenGovernance {
     events.transaction('TokenGovernance destroyed', address(this), msg.sender, address(this).balance, '');
     selfdestruct(msg.sender);
   }
-
-  //------------------------------------------------------------------------------------------------------------------
-  //                                                Internal Functions
-  //------------------------------------------------------------------------------------------------------------------
-
-  function lockTokens(uint _amountToLock, bytes32 _executionID)
-  internal
-  returns (bool) {
-    bytes32 voteID = keccak256(abi.encodePacked("tokenVotesLocked", _executionID, msg.sender));
-    require(governanceToken.transferFrom(msg.sender, address(this), _amountToLock));
-    uint256 amountLocked = database.uintStorage(voteID);
-    database.setUint(voteID, amountLocked.add(_amountToLock));
-    return true;
-  }
-
-
-  //------------------------------------------------------------------------------------------------------------------
-  //                                                View Functions
-  //------------------------------------------------------------------------------------------------------------------
 
   function isQuorumReached(address _contractAddress, bytes4 _methodID, bytes32 _parameterHash)
   public

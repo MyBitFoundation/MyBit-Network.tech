@@ -5,6 +5,7 @@ interface DB {
   function uintStorage(bytes32 _key) external view returns (uint);
   function boolStorage(bytes32 _key) external view returns (bool);
   function setUint(bytes32 _key, uint _value) external;
+  function setBool(bytes32 _key, bool _value) external; 
   function deleteUint(bytes32 _key) external;
   function deleteBool(bytes32 _key) external;
 }

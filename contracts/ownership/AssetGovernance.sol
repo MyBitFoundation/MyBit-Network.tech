@@ -36,9 +36,9 @@ contract AssetGovernance is VotingInterface{
   }
 
   function propose(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash)
-  public
-  onlyNew(keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash))){
+  public {
     bytes32 proposalID = keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash));
+    require(database.addressStorage(keccak256(abi.encodePacked("proposal.token", proposalID))) == address(0));
     address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)));
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", proposalID)), tokenAddress);
     //emit Propose(msg.sender, proposalID);
@@ -117,8 +117,8 @@ contract AssetGovernance is VotingInterface{
   function result(bytes32 _proposalID)
   external
   view
-  onlyExtant(_proposalID)
   returns (bool passed) {
+    require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _proposalID))) != address(0), "proposalID isnt created");
     bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", _proposalID));
     uint256 numTokens = TokenView(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _proposalID)))).totalSupply();
     events.consensus('Current consensus', _proposalID, numVotesID, database.uintStorage(numVotesID), numTokens, database.uintStorage(numVotesID).mul(100).div(numTokens));
@@ -173,20 +173,5 @@ contract AssetGovernance is VotingInterface{
       _;
   }
 
-  modifier onlyNew(bytes32 _proposalID) {
-    require(
-      !proposalExtant(_proposalID),
-      "Proposal exists"
-    );
-    _;
-  }
-
-  modifier onlyExtant(bytes32 _proposalID) {
-    require(
-      proposalExtant(_proposalID),
-      "Proposal not found"
-    );
-    _;
-  }
 
 }

@@ -16,7 +16,7 @@ contract CrowdsaleGeneratorERC20 {
   Events private events;
   // ERC20Burner private burner;
 
-  uint constant scalingFactor = 1e32;
+  uint constant scalingFactor = 10**32;
 
   // @notice This contract
   // @param: The address for the database contract used by this platform
