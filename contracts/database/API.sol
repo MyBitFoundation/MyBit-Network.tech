@@ -34,6 +34,131 @@ contract API {
     database = DBView(_database);
   }
 
+  function getAddr(bytes32 _key)
+  public
+  view
+  returns (address) {
+    return database.addressStorage(_key);
+  }
+
+  function getUint(bytes32 _key)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(_key);
+  }
+
+  function hashSB(string _a, bytes32 _b)
+  public
+  view
+  returns (bytes32) {
+    return keccak256(abi.encodePacked(_a, _b));
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                            Token Info
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function tokenGoverned(address _token)
+  public
+  view
+  returns (bool) {
+    return database.boolStorage(keccak256(abi.encodePacked("token.governed", _token)));
+  }
+
+  function tokenVoteDuration(address _token)
+  public
+  view
+  returns (bool) {
+    return database.boolStorage(keccak256(abi.encodePacked("token.voteduration", _token)));
+  }
+
+  function tokenQuorum(address _token)
+  public
+  view
+  returns (bool) {
+    return database.boolStorage(keccak256(abi.encodePacked("token.quorum", _token)));
+  }
+
+  function tokenThreshold(address _token)
+  public
+  view
+  returns (bool) {
+    return database.boolStorage(keccak256(abi.encodePacked("token.threshold", _token)));
+  }
+
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                            Proposals
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Commitments
+
+  function commitmentValue(address _token, address _tokenHolder)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256(abi.encodePacked("commitment.value", _token, _tokenHolder)));
+  }
+
+  function commitmentStart(address _token, address _tokenHolder)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256(abi.encodePacked("commitment.start", _token, _tokenHolder)));
+  }
+
+  function commitmentReleaseTime(address _token, address _tokenHolder)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256(abi.encodePacked("commitment.releasetime", _token, _tokenHolder)));
+  }
+
+
+  //Proposals
+
+  function proposalToken(bytes32 _proposalID)
+  public
+  view
+  returns (address) {
+    return database.addressStorage(hashSB("proposal.token", _proposalID));
+  }
+
+  function proposalStart(bytes32 _proposalID)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256(abi.encodePacked("proposal.start", _proposalID)));
+  }
+
+  function proposalVoteCount(bytes32 _proposalID)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(hashSB("proposal.votecount", _proposalID));
+  }
+
+  function proposalVoted(bytes32 _proposalID, address _tokenHolder)
+  public
+  view
+  returns (bool) {
+    return database.boolStorage(hashSB("proposal.voted", _proposalID));
+  }
+
+  function proposalDissent(bytes32 _proposalID)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(hashSB("proposal.dissent", _proposalID));
+  }
+
+  function proposalApproval(bytes32 _proposalID)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(hashSB("proposal.approval", _proposalID));
+  }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                            Governance + Function ID's
