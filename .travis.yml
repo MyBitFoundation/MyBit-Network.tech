@@ -15,7 +15,7 @@ install:
   - npm install
 
 before_script:
-  - yarn blockchain
+  - yarn blockchain &&
 
 script:
   - truffle test
