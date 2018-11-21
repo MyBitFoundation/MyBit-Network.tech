@@ -1,6 +1,6 @@
 const HDWalletProvider = require("truffle-hdwallet-provider");
 const fs = require('fs');
-
+/*
 if (fs.existsSync('secrets.json')) {
   const secrets = JSON.parse(fs.readFileSync('secrets.json', 'utf8'));
   ({ mnemonic } = secrets);
@@ -10,6 +10,9 @@ if (fs.existsSync('apiKey.json')) {
   const key = JSON.parse(fs.readFileSync('apiKey.json', 'utf8'));
   ({ apiKey } = key);
 }
+*/
+const MNEMONIC = process.env.MNEMONIC_PHRASE;
+const INFURA_API_KEY = process.env.INFURA_API_KEY;
 
 module.exports = {
   networks: {
@@ -22,11 +25,10 @@ module.exports = {
     },
     ropsten: {
       provider: function() {
-        return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/v3/"+apiKey)
+        return new HDWalletProvider(MNEMONIC, "https://ropsten.infura.io/v3/"+INFURA_API_KEY)
       },
       network_id: 3
     },
-
     ethpm: {
       ipfs_host: "127.0.0.1",
       ipfs_protocol: "http",
@@ -50,4 +52,12 @@ module.exports = {
         version: "0.4.24"
     }
   }
+
+  /*
+  compilers: {
+    solc: {
+        version: "node_modules/solc"
+    }
+  }
+  */
 };
