@@ -11,7 +11,7 @@ const Operators = artifacts.require("./roles/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
 const API = artifacts.require("./database/API.sol");
 const GovernedToken = artifacts.require("./tokens/ERC20/GovernedToken.sol");
-const TimedVote = artifacts.require('./tokens/ERC20/TimedVote.sol');
+const Proposals = artifacts.require('./ownership/Proposals.sol');
 const PlatformToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const RawCall = artifacts.require("./ownership/RawCall.sol");
@@ -56,7 +56,7 @@ contract('AssetGovernance', async() => {
   let govToken;
   let platformToken;
   let governance;
-  let timedVote;
+  let proposals;
   let rawCall;
 
   let methodID;
@@ -377,19 +377,14 @@ contract('AssetGovernance', async() => {
   });
 
   it("Deploy new voting contract", async() => {
-    timedVote = await TimedVote.new(
-      db.address,
-      voteDuration,
-      quorum,
-      threshold
-    );
-    await cm.addContract("TimedVote", timedVote.address);
+    proposals = await Proposals.new(db.address);
+    await cm.addContract("Proposals", proposals.address);
   });
 
   it("Start vote to change voting process", async() => {
     let methodString = "changeVotingProcess(address)";
     methodID = await api.getMethodID(methodString);
-    parameterHash = await api.getVotingProcessParameterHash(timedVote.address);
+    parameterHash = await api.getVotingProcessParameterHash(proposals.address);
     platformAssetID = await api.getPlatformAssetID();
     await governance.propose(escrow.address, platformAssetID, methodID, parameterHash);
     proposalID = await api.getProposalID(escrow.address, platformAssetID, methodID, parameterHash);
@@ -408,8 +403,8 @@ contract('AssetGovernance', async() => {
   });
 
   it("Change voting process", async() => {
-    await escrow.changeVotingProcess(timedVote.address);
-    assert.equal(await escrow.votingProcess(), timedVote.address);
+    await escrow.changeVotingProcess(proposals.address);
+    assert.equal(await escrow.votingProcess(), proposals.address);
   });
 
   it("Destroy", async() => {
