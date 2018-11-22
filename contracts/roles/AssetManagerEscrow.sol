@@ -76,19 +76,19 @@
 
     // @notice investors can vote to call this function for the new assetManager to then call
     // @dev new assetManager must approve this contract to transfer in and lock _ amount of platform tokens
-    function becomeAssetManager(bytes32 _assetID, address _oldAssetManager, uint256 _amount, bool _burn)
+    function becomeAssetManager(bytes32 _assetID, address _oldAssetManager, address _newAssetManager, uint256 _amount, bool _burn)
     external
-    hasConsensus(_assetID, msg.sig, keccak256(abi.encodePacked(_assetID, _oldAssetManager, msg.sender, _amount, _burn)))
+    hasConsensus(_assetID, msg.sig, keccak256(abi.encodePacked(_assetID, _oldAssetManager, _newAssetManager, _amount, _burn)))
     returns (bool) {
       address currentAssetManager = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID)));
-      require(currentAssetManager != msg.sender && currentAssetManager == _oldAssetManager);
+      require(currentAssetManager != _newAssetManager && currentAssetManager == _oldAssetManager);
       bytes32 oldAssetManagerEscrowID = keccak256(abi.encodePacked(_assetID, _oldAssetManager));
       uint oldEscrowRemaining = database.uintStorage(keccak256(abi.encodePacked("assetManagerEscrow", oldAssetManagerEscrowID))).sub(database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", oldAssetManagerEscrowID))));
       BurnableERC20 token = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", keccak256(abi.encodePacked("platformAssetID"))))));
       require(removeAssetManager(_assetID, oldAssetManagerEscrowID));
       if (_burn) { require(token.burn(oldEscrowRemaining)); }
       else { require(token.transfer(_oldAssetManager, oldEscrowRemaining));  }
-      require(lockEscrowInternal(msg.sender, _assetID, _amount));
+      require(lockEscrowInternal(_newAssetManager, _assetID, _amount));
       return true;
     }
 
