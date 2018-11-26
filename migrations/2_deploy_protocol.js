@@ -262,37 +262,39 @@ module.exports = function(deployer, network, accounts) {
       }
     }
 
-  }).then(function() {
-
-    burner.setFee('0x667de2cd', crowdsaleGeneratorETH.address,  250*decimals, {gas:70000}); //CrowdsaleGeneratorETH
+    return true;
 
   }).then(function() {
 
-    burner.setFee('0xa71d4c6a', crowdsaleETH.address,  250*decimals, {gas:70000}); //CrowdsaleETH
+    return burner.setFee('0x667de2cd', crowdsaleGeneratorETH.address,  250*decimals, {gas:70000}); //CrowdsaleGeneratorETH
 
   }).then(function() {
 
-    burner.setFee('0x40aedf24', crowdsaleGeneratorERC20.address,  250*decimals, {gas:70000});
+    return burner.setFee('0xa71d4c6a', crowdsaleETH.address,  250*decimals, {gas:70000}); //CrowdsaleETH
 
   }).then(function() {
 
-    burner.setFee('0xc9cd97eb', crowdsaleERC20.address,  250*decimals, {gas:70000});
+    return burner.setFee('0x40aedf24', crowdsaleGeneratorERC20.address,  250*decimals, {gas:70000});
 
   }).then(function() {
 
-    burner.setFee('0xf08fa7b0', dax.address,  250*decimals, {gas:70000});
+    return burner.setFee('0xc9cd97eb', crowdsaleERC20.address,  250*decimals, {gas:70000});
 
   }).then(function() {
 
-    burner.setFee('0xf5e20d6f', dax.address,  250*decimals, {gas:70000});
+    return burner.setFee('0xf08fa7b0', dax.address,  250*decimals, {gas:70000});
 
   }).then(function() {
 
-    burner.setFee('0xf76c5c55', assetGenerator.address,  250*decimals, {gas:70000});
+    return burner.setFee('0xf5e20d6f', dax.address,  250*decimals, {gas:70000});
 
   }).then(function() {
 
-    burner.setFee('0x4e38c7f4', assetGenerator.address,  250*decimals, {gas:70000});
+    return burner.setFee('0xf76c5c55', assetGenerator.address,  250*decimals, {gas:70000});
+
+  }).then(function() {
+
+    return burner.setFee('0x4e38c7f4', assetGenerator.address,  250*decimals, {gas:70000});
 
   }).then(function() {
     var addresses = {

@@ -26,7 +26,7 @@ after_success: |
     CURRENT_DIR=$PWD
     cd "$TRAVIS_BUILD_DIR"
     # This clones the directory for the contract addresses.
-    git clone git@github.com:PeterMPhillips/MyBit-Network.contracts.git
+    git clone https://github.com/PeterMPhillips/MyBit-Network.contracts.git
     cd MyBit-Network.contracts
     cp $CURRENT_DIR/networks/ropsten/contracts.json  MyBit-Network.contracts/networks/ropsten/contracts.json
     git add .
