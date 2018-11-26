@@ -11,16 +11,17 @@ if (fs.existsSync('apiKey.json')) {
   ({ INFURA_API_KEY } = key);
 }
 */
-/*
+
 const MNEMONIC = process.env.MNEMONIC_PHRASE;
 const INFURA_API_KEY = process.env.INFURA_API_KEY;
-*/
+
+/*
 if (fs.existsSync('mnemonic.json')) {
   var json = JSON.parse(fs.readFileSync('mnemonic.json', 'utf8'));
   var MNEMONIC = json.mnemonic;
   var INFURA_API_KEY = json.infura;
 }
-
+*/
 module.exports = {
   networks: {
     development: {
