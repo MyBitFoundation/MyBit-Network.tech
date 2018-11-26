@@ -27,7 +27,8 @@ after_success: |
     cd "$TRAVIS_BUILD_DIR"
     # This clones the directory for the contract addresses.
     git clone git@github.com:PeterMPhillips/MyBit-Network.contracts.git
-    cp $CURRENT_DIR/networks/ropsten/contracts.json  $TRAVIS_BUILD_DIR/MyBit-Network.contracts/networks/ropsten/contracts.json
+    cd MyBit-Network.contracts
+    cp $CURRENT_DIR/networks/ropsten/contracts.json  MyBit-Network.contracts/networks/ropsten/contracts.json
     git add .
     git commit -m "Updated contracts"
     git push -f -q https://<me>:$GITHUB_API_KEY@github.com/<me>/MyBit-Network.contracts.git
