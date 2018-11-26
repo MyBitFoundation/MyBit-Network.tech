@@ -51,15 +51,22 @@ module.exports = function(deployer, network, accounts) {
                   CrowdsaleGeneratorERC20,
                   AssetExchange);
 
-    return MyBitToken.new('MyBit', tokenSupply);
+    if(network != 'mainnet'){
+      return MyBitToken.new('MyBit', tokenSupply);
+    } else {
+      return MyBitToken.at('0x5d60d8d7ef6d37e16ebabc324de3be57f135e0bc');
+    }
 
   }).then(function(instance) {
 
     MyB = instance;
     console.log('MyBitToken: ' + MyB.address);
-    //Give 100 MyB tokens to all accounts
-    for(var i=1; i<accounts.length; i++){
-      MyB.transfer(accounts[i], tokenPerAccount);
+
+    if(network != 'mainnet'){
+      //Give 100 MyB tokens to all accounts
+      for(var i=1; i<accounts.length; i++){
+        MyB.transfer(accounts[i], tokenPerAccount);
+      }
     }
 
     return Database.new([accounts[0]], true);

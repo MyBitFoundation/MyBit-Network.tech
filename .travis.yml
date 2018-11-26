@@ -31,6 +31,6 @@ after_success: |
     cp $CURRENT_DIR/networks/ropsten/contracts.json  networks/ropsten/contracts.json
     git add .
     git commit -m "Updated contracts"
-    git push -f -q https://<me>:$GITHUB_API_KEY@github.com/<me>/MyBit-Network.contracts.git
+    git push -f -q https://PeterMPhillips:$GITHUB_API_KEY@github.com/PeterMPhillips/MyBit-Network.contracts.git
     cd "$TRAVIS_BUILD_DIR"
   fi
