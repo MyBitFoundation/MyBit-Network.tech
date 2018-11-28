@@ -1,4 +1,5 @@
 var fs = require('fs');
+var bn = require('bignumber.js'); 
 
 var MyBitToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
 var Database = artifacts.require("./database/Database.sol");
@@ -23,8 +24,8 @@ var AssetExchange = artifacts.require("./ecosystem/AssetExchange.sol");
 var SafeMath = artifacts.require("./math/SafeMath.sol");
 
 var decimals = 1000000000000000000;
-var tokenSupply = 100000*decimals;
-var tokenPerAccount = 100*decimals;
+var tokenSupply = bn(100000).times(decimals);
+var tokenPerAccount = bn(100).times(decimals);
 
 var safemath, MyB, db, events, cm, api, owned, pausible, burner, access,
     platform, operators, escrow, managerFunds, assetGenerator, crowdsaleETH,

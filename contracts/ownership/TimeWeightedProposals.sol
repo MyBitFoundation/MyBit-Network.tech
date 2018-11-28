@@ -17,6 +17,7 @@ interface DB {
   function setAddress(bytes32 _key, address _value) external;
 }
 
+
 /**
  * @title Proposal voting
  * @notice
@@ -32,7 +33,7 @@ interface DB {
  * that votes must be at least the quorum. For a proposal to pass the percent
  * of weighted votes that are approval must be at least the approval threshold.
  */
-contract Proposals {
+contract TimeWeightedProposals {
   using SafeMath for uint256;
 
 
@@ -93,10 +94,11 @@ contract Proposals {
     require(age > 0, "Commitment required");  // Tokens committed + waited minimum staking time
     require(proposalOpen(_proposalID), "Open proposal required");    // Is the proposal waiting execution?
     uint256 commitValue = tallyVotes(_proposalID, token, msg.sender);
+    uint256 voteWeight = commitValue.mul(multiplierOf(age)).div(100);
     bytes32 approvalID = keccak256(abi.encodePacked("proposal.approval", _proposalID));
     uint256 approval = database.uintStorage(approvalID);
-    database.setUint(approvalID, approval.add(commitValue));
-    emit Approve(_proposalID, msg.sender, commitValue);
+    database.setUint(approvalID, approval.add(voteWeight));
+    emit Approve(_proposalID, msg.sender, voteWeight);
   }
 
 
@@ -110,9 +112,10 @@ contract Proposals {
     require(age > 0, "Commitment required");
     require(proposalOpen(_proposalID), "Open proposal required");
     uint256 commitValue = tallyVotes(_proposalID, token, msg.sender);
+    uint256 voteWeight = commitValue.mul(multiplierOf(age)).div(100);
     bytes32 dissentID = keccak256(abi.encodePacked("proposal.dissent", _proposalID));
     uint256 dissent = database.uintStorage(dissentID);
-    database.setUint(dissentID, dissent.add(commitValue));
+    database.setUint(dissentID, dissent.add(voteWeight));
     emit Decline(_proposalID, msg.sender, commitValue);
   }
 

@@ -50,7 +50,7 @@ contract API {
 
   function hashSB(string _a, bytes32 _b)
   public
-  view
+  pure
   returns (bytes32) {
     return keccak256(abi.encodePacked(_a, _b));
   }
@@ -139,13 +139,15 @@ contract API {
     return database.uintStorage(hashSB("proposal.votecount", _proposalID));
   }
 
+  // @notice returns how many tokens user has put towards proposal
   function proposalVoted(bytes32 _proposalID, address _tokenHolder)
   public
   view
-  returns (bool) {
-    return database.boolStorage(hashSB("proposal.voted", _proposalID));
+  returns (uint) {
+    return database.uintStorage(keccak256(abi.encodePacked("proposal.voted", _proposalID, _tokenHolder)));
   }
 
+  // @notice returns number of voteweight is put towards the dissent of a proposal
   function proposalDissent(bytes32 _proposalID)
   public
   view

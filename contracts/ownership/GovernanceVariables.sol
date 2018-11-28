@@ -11,7 +11,7 @@ import '../interfaces/ERC20.sol';
 // @notice Token holders can unlock their tokens, removing their vote
 // @dev An owner has already been initialized when database is deployed
 // @author Kyle Dewhurst, MyBit Foundation
-contract GovernanceLevels {
+contract GovernanceVariables {
   using SafeMath for uint256;
 
   Database public database;
@@ -33,47 +33,68 @@ contract GovernanceLevels {
   public  {
     database = Database(_database);
     events = Events(_events);
-    bytes4 methodID = bytes4(keccak256(abi.encodePacked("setQuorumLevel(address, bytes4, uint256)")));
+    bytes4 methodID = bytes4(keccak256(abi.encodePacked("setQuorumLevel(address, address, bytes4, uint256)")));
     bytes32 functionID = keccak256(abi.encodePacked(address(this), methodID));
     database.setUint(functionID, _baseQuorum);   // the initial quorum level to set further quorum levels
   }
 
+  // @notice initiates governance for this token
+  // @param _tokenAddress - MYB token contract address.
+  // @param _voteDuration - Vote duration. Voting period of each proposal. Must be positive.
+  // @param _quorum - Amount of supply that must vote to make a proposal valid. Integer percent, eg 20 for 20%. In range 1-100 inclusive.
+  // @param _threshold - Amount of weighted votes that must be approval for a proposal to pass. Integer percent, eg 51 for 51%. In range 1-100 inclusive.
+  function startGovernance(address _tokenAddress, uint256 _voteDuration, uint8 _quorum, uint8 _threshold, uint256 _stakeRequirement)
+  public
+  returns (bool){
+    // TODO: only allow initiating by platform contract
+    require(_quorum > 0 && _quorum < 100);
+    require(_threshold > 0 && _threshold < 100);
+    bytes32 tokenID = keccak256(abi.encodePacked("token.governed", _tokenAddress));
+    require(!database.boolStorage(tokenID));
+    database.setBool(tokenID, true);
+    database.setUint(keccak256(abi.encodePacked("token.voteduration", _tokenAddress)), _voteDuration);
+    database.setUint(keccak256(abi.encodePacked("token.quorum", _tokenAddress)), _quorum);
+    database.setUint(keccak256(abi.encodePacked("token.threshold", _tokenAddress)), _threshold);
+    database.setUint(keccak256(abi.encodePacked("token.stakerequirement", _tokenAddress)), _stakeRequirement);
+    return true;
+  }
+
   // @notice If restricted it will have to be called from address(this) using a voting proccess on signForFunctionCall
-  function setQuorumLevel(address _contractAddress, bytes4 _methodID, uint256 _quorumLevel)
+  function setQuorumLevel(address _contractAddress, address _tokenAddress, bytes4 _methodID, uint256 _quorumLevel)
   external
-  isRestricted(msg.sig, keccak256(abi.encodePacked(_contractAddress, _methodID, _quorumLevel)))
+  isRestricted(msg.sig, keccak256(abi.encodePacked(_contractAddress, _tokenAddress, _methodID, _quorumLevel)))
   returns (bool) {
     bytes32 functionID = keccak256(abi.encodePacked(_contractAddress, _methodID));
     database.setUint(functionID, _quorumLevel);
     return true;
   }
 
-  function setThreshold(address _contractAddress, bytes4 _methodID, uint256 _stake)
-  external
-  returns (bool) {
-    return true;
-  }
-
-  function setBurnRatio(address _contractAddress, bytes4 _methodID, uint256 _stake)
-  external
-  returns (bool) {
-    return true;
-  }
-
-
-  function setStakeAmount(address _contractAddress, bytes4 _methodID, uint256 _stake)
-  external
-  returns (bool) {
-    return true;
-  }
-
+  // function setThreshold()
+  // external
+  // returns (bool) {
+  //   return true;
+  // }
+  //
+  // function setBurnRatio()
+  // external
+  // returns (bool) {
+  //   return true;
+  // }
+  //
+  //
+  // function setStakeAmount()
+  // external
+  // returns (bool) {
+  //   return true;
+  // }
+  //
 
 
   // @notice platform owners can destroy contract here
   function destroy()
   onlyOwner
   external {
-    events.transaction('TokenGovernance destroyed', address(this), msg.sender, address(this).balance, '');
+    events.transaction('Governance levels destroyed', address(this), msg.sender, address(this).balance, '');
     selfdestruct(msg.sender);
   }
 

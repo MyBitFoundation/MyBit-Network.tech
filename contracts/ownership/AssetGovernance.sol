@@ -121,7 +121,7 @@ contract AssetGovernance is VotingInterface{
     require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _proposalID))) != address(0), "proposalID isnt created");
     bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", _proposalID));
     uint256 numTokens = TokenView(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _proposalID)))).totalSupply();
-    events.consensus('Current consensus', _proposalID, numVotesID, database.uintStorage(numVotesID), numTokens, database.uintStorage(numVotesID).mul(100).div(numTokens));
+    // events.consensus('Current consensus', _proposalID, numVotesID, database.uintStorage(numVotesID), numTokens, database.uintStorage(numVotesID).mul(100).div(numTokens));
     //emit LogConsensus(numVotesID, database.uintStorage(numVotesID), numTokens, keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash)), database.uintStorage(numVotesID).mul(100).div(numTokens));
     return(database.uintStorage(numVotesID).mul(100).div(numTokens) >= consensus);
   }
