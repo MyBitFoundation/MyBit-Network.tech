@@ -1,4 +1,5 @@
 var fs = require('fs');
+var bn = require('bignumber.js'); 
 
 var MyBitToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
 var Database = artifacts.require("./database/Database.sol");
@@ -11,6 +12,7 @@ var ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 var AccessHierarchy = artifacts.require("./access/AccessHierarchy.sol");
 var PlatformFunds = artifacts.require("./ecosystem/PlatformFunds.sol");
 var Operators = artifacts.require("./roles/Operators.sol");
+var AssetGovernance = artifacts.require("./ownership/AssetGovernance.sol");
 var AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
 var AssetManagerFunds = artifacts.require("./roles/AssetManagerFunds.sol");
 var AssetGenerator = artifacts.require("./ecosystem/AssetGenerator.sol");
@@ -22,12 +24,13 @@ var AssetExchange = artifacts.require("./ecosystem/AssetExchange.sol");
 var SafeMath = artifacts.require("./math/SafeMath.sol");
 
 var decimals = 1000000000000000000;
-var tokenSupply = 100000*decimals;
-var tokenPerAccount = 100*decimals;
+var tokenSupply = bn(100000).times(decimals);
+var tokenPerAccount = bn(100).times(decimals);
 
 var safemath, MyB, db, events, cm, api, owned, pausible, burner, access,
     platform, operators, escrow, managerFunds, assetGenerator, crowdsaleETH,
-    crowdsaleGeneratorETH, crowdsaleERC20, crowdsaleGeneratorERC20, dax;
+    crowdsaleGeneratorETH, crowdsaleERC20, crowdsaleGeneratorERC20, dax,
+    governance;
 
 module.exports = function(deployer, network, accounts) {
   deployer.then(function(){
@@ -40,6 +43,7 @@ module.exports = function(deployer, network, accounts) {
     deployer.link(SafeMath,
                   API,
                   MyBitToken,
+                  AssetGovernance,
                   AssetManagerEscrow,
                   Operators,
                   CrowdsaleETH,
@@ -148,7 +152,15 @@ module.exports = function(deployer, network, accounts) {
     console.log('AccessHierarchy.sol: ' + access.address);
     cm.addContract('AccessHierarchy', access.address);
 
-    return AssetManagerEscrow.new(db.address, events.address);
+    return AssetGovernance.new(db.address, events.address);
+
+  }).then(function(instance) {
+
+    governance = instance;
+    console.log('AssetGovernance.sol: ' + governance.address);
+    cm.addContract('AssetGovernance', governance.address);
+
+    return AssetManagerEscrow.new(db.address, events.address, governance.address);
 
   }).then(function(instance) {
 
@@ -240,6 +252,7 @@ module.exports = function(deployer, network, accounts) {
       "AccessHierarchy" : access.address,
       "PlatformFunds" : platform.address,
       "Operators" : operators.address,
+      "AssetGovernance" : governance.address,
       "AssetManagerEscrow" : escrow.address,
       "AssetManagerFunds" : managerFunds.address,
       "AssetGenerator" : assetGenerator.address,
@@ -250,16 +263,29 @@ module.exports = function(deployer, network, accounts) {
       "AssetExchange" : dax.address
     }
 
-    var addresses_json = JSON.stringify(addresses, null, 4);
+    var contracts_json = JSON.stringify(addresses, null, 4);
     var accounts_json = JSON.stringify(accounts, null, 4);
-    fs.writeFile(network + '-addresses.json', addresses_json, (err) => {
-     if (err) throw err;
-     console.log('Contracts Saved');
+    fs.writeFile('networks/' + network + '/contracts.json', contracts_json, (err) => {
+      if (err) throw err;
+      console.log('Contracts Saved');
     });
-    fs.writeFile(network + '-accounts.json', accounts_json, (err) => {
-     if (err) throw err;
-     console.log('Accounts Saved');
+    fs.writeFile('networks/' + network + '/accounts.json', accounts_json, (err) => {
+      if (err) throw err;
+      console.log('Accounts Saved');
     });
+
+    instanceList = [MyB, burner, db, events, cm, api, owned, pausible, access,
+                    platform, operators, governance, escrow, managerFunds,
+                    assetGenerator, crowdsaleETH, crowdsaleGeneratorETH,
+                    crowdsaleERC20, crowdsaleGeneratorERC20, dax];
+
+    for(var i=0; i<instanceList.length; i++){
+      var instanceName = instanceList[i].constructor._json.contractName;
+      var instance_json = JSON.stringify(instanceList[i].abi, null, 4);
+      fs.writeFile('networks/' + network + '/' + instanceName + '.json', instance_json, (err) => {
+        if (err) throw err;
+      });
+    }
   });
 
 };

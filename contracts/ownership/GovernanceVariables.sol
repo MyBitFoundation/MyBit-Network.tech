@@ -11,7 +11,7 @@ import '../interfaces/ERC20.sol';
 // @notice Token holders can unlock their tokens, removing their vote
 // @dev An owner has already been initialized when database is deployed
 // @author Kyle Dewhurst, MyBit Foundation
-contract TokenGovernance {
+contract GovernanceVariables {
   using SafeMath for uint256;
 
   Database public database;
@@ -31,76 +31,72 @@ contract TokenGovernance {
   // @notice quorum level dictates the number of votes required for that function to be executed
   constructor(address _database, address _events, uint256 _baseQuorum)
   public  {
-    governanceToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
     database = Database(_database);
     events = Events(_events);
-    governanceToken = ERC20(governanceToken);
-    bytes4 methodID = bytes4(keccak256(abi.encodePacked("setQuorumLevel(address, bytes4, uint256)")));
+    bytes4 methodID = bytes4(keccak256(abi.encodePacked("setQuorumLevel(address, address, bytes4, uint256)")));
     bytes32 functionID = keccak256(abi.encodePacked(address(this), methodID));
     database.setUint(functionID, _baseQuorum);   // the initial quorum level to set further quorum levels
   }
 
+  // @notice initiates governance for this token
+  // @param _tokenAddress - MYB token contract address.
+  // @param _voteDuration - Vote duration. Voting period of each proposal. Must be positive.
+  // @param _quorum - Amount of supply that must vote to make a proposal valid. Integer percent, eg 20 for 20%. In range 1-100 inclusive.
+  // @param _threshold - Amount of weighted votes that must be approval for a proposal to pass. Integer percent, eg 51 for 51%. In range 1-100 inclusive.
+  function startGovernance(address _tokenAddress, uint256 _voteDuration, uint8 _quorum, uint8 _threshold, uint256 _stakeRequirement)
+  public
+  returns (bool){
+    // TODO: only allow initiating by platform contract
+    require(_quorum > 0 && _quorum < 100);
+    require(_threshold > 0 && _threshold < 100);
+    bytes32 tokenID = keccak256(abi.encodePacked("token.governed", _tokenAddress));
+    require(!database.boolStorage(tokenID));
+    database.setBool(tokenID, true);
+    database.setUint(keccak256(abi.encodePacked("token.voteduration", _tokenAddress)), _voteDuration);
+    database.setUint(keccak256(abi.encodePacked("token.quorum", _tokenAddress)), _quorum);
+    database.setUint(keccak256(abi.encodePacked("token.threshold", _tokenAddress)), _threshold);
+    database.setUint(keccak256(abi.encodePacked("token.stakerequirement", _tokenAddress)), _stakeRequirement);
+    return true;
+  }
+
   // @notice If restricted it will have to be called from address(this) using a voting proccess on signForFunctionCall
-  function setQuorumLevel(address _contractAddress, bytes4 _methodID, uint256 _quorumLevel)
+  function setQuorumLevel(address _contractAddress, address _tokenAddress, bytes4 _methodID, uint256 _quorumLevel)
   external
-  isRestricted(msg.sig, keccak256(abi.encodePacked(_contractAddress, _methodID, _quorumLevel)))
+  isRestricted(msg.sig, keccak256(abi.encodePacked(_contractAddress, _tokenAddress, _methodID, _quorumLevel)))
   returns (bool) {
     bytes32 functionID = keccak256(abi.encodePacked(_contractAddress, _methodID));
     database.setUint(functionID, _quorumLevel);
     return true;
   }
 
-  // @param (bytes32) _parameterHash = The hash of the exact parameter to be called for function...ie sha3(true, 55)
-  function voteForExecution(address _contractAddress, bytes4 _methodID, bytes32 _parameterHash, uint256 _voteAmount)
-  external
-  returns (bool) {
-    bytes32 executionID = keccak256(abi.encodePacked(_contractAddress, _methodID, _parameterHash));
-    bytes32 numVotesID = keccak256(abi.encodePacked("numberOfVotes", executionID));
-    require(lockTokens(_voteAmount, executionID));
-    uint256 numVotes = database.uintStorage(numVotesID);
-    database.setUint(numVotesID, numVotes.add(_voteAmount));
-    return true;
-  }
+  // function setThreshold()
+  // external
+  // returns (bool) {
+  //   return true;
+  // }
+  //
+  // function setBurnRatio()
+  // external
+  // returns (bool) {
+  //   return true;
+  // }
+  //
+  //
+  // function setStakeAmount()
+  // external
+  // returns (bool) {
+  //   return true;
+  // }
+  //
 
-
-  function unlockTokens(bytes32 _executionID)
-  external
-  returns (bool) {
-    bytes32 voteID = keccak256(abi.encodePacked("tokenVotesLocked", _executionID, msg.sender));
-    bytes32 numVotesID = keccak256(abi.encodePacked("numberOfVotes", _executionID));
-    uint256 amountLocked = database.uintStorage(voteID);
-    uint256 numVotes = database.uintStorage(numVotesID);
-    database.setUint(numVotesID, numVotes.sub(amountLocked));
-    governanceToken.transfer(msg.sender, amountLocked);
-    return true;
-  }
 
   // @notice platform owners can destroy contract here
   function destroy()
   onlyOwner
   external {
-    events.transaction('TokenGovernance destroyed', address(this), msg.sender, address(this).balance, '');
+    events.transaction('Governance levels destroyed', address(this), msg.sender, address(this).balance, '');
     selfdestruct(msg.sender);
   }
-
-  //------------------------------------------------------------------------------------------------------------------
-  //                                                Internal Functions
-  //------------------------------------------------------------------------------------------------------------------
-
-  function lockTokens(uint _amountToLock, bytes32 _executionID)
-  internal
-  returns (bool) {
-    bytes32 voteID = keccak256(abi.encodePacked("tokenVotesLocked", _executionID, msg.sender));
-    require(governanceToken.transferFrom(msg.sender, address(this), _amountToLock));
-    uint256 amountLocked = database.uintStorage(voteID);
-    database.setUint(voteID, amountLocked.add(_amountToLock));
-    return true;
-  }
-
-
-  //------------------------------------------------------------------------------------------------------------------
-  //                                                View Functions
-  //------------------------------------------------------------------------------------------------------------------
 
   function isQuorumReached(address _contractAddress, bytes4 _methodID, bytes32 _parameterHash)
   public

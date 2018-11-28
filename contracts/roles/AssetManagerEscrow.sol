@@ -2,6 +2,7 @@
 
   import "../math/SafeMath.sol";
   import "../interfaces/DBInterface.sol";
+  import "../interfaces/VotingInterface.sol";
   import "../database/Events.sol";
   import "../interfaces/DivToken.sol";
   import "../interfaces/BurnableERC20.sol";
@@ -16,15 +17,17 @@
 
     DBInterface public database;
     Events public events;
+    VotingInterface public votingProcess;
 
-    uint public consensus = 66;
+    //uint public consensus = 66;
 
     // @notice constructor: initializes database
     // @param: the address for the database contract used by this platform
-    constructor(address _database, address _events)
+    constructor(address _database, address _events, address _voting)
     public {
       database = DBInterface(_database);
       events = Events(_events);
+      votingProcess = VotingInterface(_voting);
     }
 
     // @dev assetID can be computed beforehand with sha3(msg.sender, _amountToRaise, _operatorID, _assetURI))
@@ -46,7 +49,7 @@
     returns (bool) {
       require(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))) == msg.sender);
       require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))) < now);
-      BurnableERC20 burnToken = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
+      BurnableERC20 burnToken = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", keccak256(abi.encodePacked("platformAssetID"))))));
       bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetID, msg.sender));
       uint escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", assetManagerEscrowID)));
       uint unlockAmount = database.uintStorage(keccak256(abi.encodePacked("assetManagerEscrow", assetManagerEscrowID))).sub(escrowRedeemed);
@@ -73,20 +76,27 @@
 
     // @notice investors can vote to call this function for the new assetManager to then call
     // @dev new assetManager must approve this contract to transfer in and lock _ amount of platform tokens
-    function becomeAssetManager(bytes32 _assetID, address _oldAssetManager, uint256 _amount, bool _burn)
+    function becomeAssetManager(bytes32 _assetID, address _oldAssetManager, address _newAssetManager, uint256 _amount, bool _burn)
     external
-    hasConsensus(_assetID, msg.sig, keccak256(abi.encodePacked(_assetID, _oldAssetManager, msg.sender, _amount, _burn)))
+    hasConsensus(_assetID, msg.sig, keccak256(abi.encodePacked(_assetID, _oldAssetManager, _newAssetManager, _amount, _burn)))
     returns (bool) {
       address currentAssetManager = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID)));
-      require(currentAssetManager != msg.sender && currentAssetManager == _oldAssetManager);
+      require(currentAssetManager != _newAssetManager && currentAssetManager == _oldAssetManager);
       bytes32 oldAssetManagerEscrowID = keccak256(abi.encodePacked(_assetID, _oldAssetManager));
       uint oldEscrowRemaining = database.uintStorage(keccak256(abi.encodePacked("assetManagerEscrow", oldAssetManagerEscrowID))).sub(database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", oldAssetManagerEscrowID))));
-      BurnableERC20 token = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
+      BurnableERC20 token = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", keccak256(abi.encodePacked("platformAssetID"))))));
       require(removeAssetManager(_assetID, oldAssetManagerEscrowID));
       if (_burn) { require(token.burn(oldEscrowRemaining)); }
       else { require(token.transfer(_oldAssetManager, oldEscrowRemaining));  }
-      require(lockEscrowInternal(msg.sender, _assetID, _amount));
+      require(lockEscrowInternal(_newAssetManager, _assetID, _amount));
       return true;
+    }
+
+    function changeVotingProcess(address _newVotingContract)
+    external
+    hasConsensus(keccak256(abi.encodePacked("platformAssetID")), msg.sig, keccak256(abi.encodePacked(_newVotingContract)))
+    returns (bool) {
+      votingProcess = VotingInterface(_newVotingContract);
     }
 
     // @notice platform owners can destroy contract here
@@ -117,7 +127,7 @@
     returns (bool) {
       require(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))) == address(0));
       bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetID, _assetManager));
-      address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platformToken")));
+      address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", keccak256(abi.encodePacked("platformAssetID")))));
       require(BurnableERC20(tokenAddress).transferFrom(_assetManager, address(this), _amount));
       database.setUint(keccak256(abi.encodePacked("assetManagerEscrow", assetManagerEscrowID)), _amount);
       database.setAddress(keccak256(abi.encodePacked("assetManager", _assetID)), _assetManager);
@@ -134,12 +144,9 @@
 
     // @notice add this modifer to functions that you want multi-sig requirements for
     // @dev function can only be called after at least n >= quorumLevel owners have agreed to call it
-    modifier hasConsensus(bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash) {
-      bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash))));
-      uint256 numTokens = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))).totalSupply();
-      events.consensus('Current consensus', keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash)), numVotesID, database.uintStorage(numVotesID), numTokens, database.uintStorage(numVotesID).mul(100).div(numTokens));
-      //emit LogConsensus(numVotesID, database.uintStorage(numVotesID), numTokens, keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash)), database.uintStorage(numVotesID).mul(100).div(numTokens));
-      require(database.uintStorage(numVotesID).mul(100).div(numTokens) >= consensus, 'Consensus not reached');
+    modifier hasConsensus(bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash){
+      bytes32 proposalID = keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash));
+      require(votingProcess.result(proposalID));
       _;
     }
 

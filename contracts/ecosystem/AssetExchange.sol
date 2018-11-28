@@ -3,7 +3,7 @@ import '../database/Database.sol';
 import '../database/Events.sol';
 import '../math/SafeMath.sol';
 import '../interfaces/DivToken.sol';
-import "../access/ERC20Burner.sol";
+// import "../access/ERC20Burner.sol";
 
 
 // @title Simple decentralized exchange contract
@@ -15,7 +15,7 @@ contract AssetExchange {
 
   Database public database;
   Events public events;
-  ERC20Burner private burner;
+  // ERC20Burner private burner;
 
   mapping (address => mapping (bytes32 => bool)) public orders;  // Hash of (assetID, sellerAddress, amountToBuy, price, boolean(BuyOrder = true))
 
@@ -30,7 +30,7 @@ contract AssetExchange {
   public {
     database = Database(_database);
     events = Events(_events);
-    burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
+    // burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
   // Gives Ether sent to initatior of this sellOrder and transfers ownership units of asset to purchaser
@@ -44,7 +44,7 @@ contract AssetExchange {
   payable
   whenNotPaused
   isAllowed(_assetID, _seller, _amount)
-  burnRequired
+  // burnRequired
   returns (bool){
     bytes32 thisOrder = keccak256(abi.encodePacked(_assetID, _seller, _amount, _price, false));
     require(orders[_seller][thisOrder]);
@@ -91,7 +91,7 @@ contract AssetExchange {
   requiresEther
   aboveZero(_amount, _price)
   validAsset(_assetID)
-  burnRequired
+  // burnRequired
   returns (bool) {
     require(msg.value == _amount.mul(_price).div(decimals));
     bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, true));
@@ -203,12 +203,12 @@ contract AssetExchange {
     _;
   }
 
-  // @notice reverts if user hasn't approved burner to burn platform token
-  modifier burnRequired {
-    //emit LogSig(msg.sig);
-    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
-    _;
-  }
+  // // @notice reverts if user hasn't approved burner to burn platform token
+  // modifier burnRequired {
+  //   //emit LogSig(msg.sig);
+  //   require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
+  //   _;
+  // }
 
   //------------------------------------------------------------------------------------------------------------------
   // Verify contract isn't paused
