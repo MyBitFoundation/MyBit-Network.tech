@@ -2,6 +2,11 @@ pragma solidity 0.4.24;
 
 import "../interfaces/VotingInterface.sol";
 
+interface ProposalAction {
+  function withdraw() external returns (bool);
+  function withdraw(address _user) external returns (bool);
+}
+
 contract RawCall{
   address private contractAddress;
   bytes private functionParams;

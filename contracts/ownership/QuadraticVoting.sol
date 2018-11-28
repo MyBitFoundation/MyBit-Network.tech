@@ -1,6 +1,7 @@
 pragma solidity 0.4.24;
 
 import "../math/SafeMath.sol";
+import "../math/Logarithm.sol";
 
 interface ERC20 {
   function transfer(address _to, uint256 _value) external returns (bool);
@@ -32,11 +33,13 @@ interface DB {
  * that votes must be at least the quorum. For a proposal to pass the percent
  * of weighted votes that are approval must be at least the approval threshold.
  */
-contract Proposals {
+contract QuadraticVoting {
   using SafeMath for uint256;
+  using Logarithm for uint256;
 
 
   DB public database;
+
 
 
   // @notice constructor
@@ -92,11 +95,12 @@ contract Proposals {
     uint age = commitmentAge(msg.sender, token);
     require(age > 0, "Commitment required");  // Tokens committed + waited minimum staking time
     require(proposalOpen(_proposalID), "Open proposal required");    // Is the proposal waiting execution?
-    uint256 commitValue = tallyVotes(_proposalID, token, msg.sender);
+    uint256 commitValue = tallyVotes(_proposalID, msg.sender);
+    uint256 voteWeight = commitValue.logBase2();
     bytes32 approvalID = keccak256(abi.encodePacked("proposal.approval", _proposalID));
     uint256 approval = database.uintStorage(approvalID);
-    database.setUint(approvalID, approval.add(commitValue));
-    emit Approve(_proposalID, msg.sender, commitValue);
+    database.setUint(approvalID, approval.add(voteWeight));
+    emit Approve(_proposalID, msg.sender, voteWeight);
   }
 
 
@@ -109,21 +113,23 @@ contract Proposals {
     uint age = commitmentAge(msg.sender, token);
     require(age > 0, "Commitment required");
     require(proposalOpen(_proposalID), "Open proposal required");
-    uint256 commitValue = tallyVotes(_proposalID, token, msg.sender);
+    uint256 commitValue = tallyVotes(_proposalID, msg.sender);
+    uint256 voteWeight = commitValue.logBase2();
     bytes32 dissentID = keccak256(abi.encodePacked("proposal.dissent", _proposalID));
     uint256 dissent = database.uintStorage(dissentID);
-    database.setUint(dissentID, dissent.add(commitValue));
+    database.setUint(dissentID, dissent.add(voteWeight));
     emit Decline(_proposalID, msg.sender, commitValue);
   }
 
 
   // @notice Updates users vote and the total vote count for this proposal
-  function tallyVotes(bytes32 _proposalID, address _token, address _tokenHolder)
+  function tallyVotes(bytes32 _proposalID, address _tokenHolder)
   internal
   returns (uint commitValue) {
     bytes32 userVoteID = keccak256(abi.encodePacked("proposal.voted", _proposalID, _tokenHolder));
+    address token = database.addressStorage(keccak256(abi.encodePacked("proposal.token", _proposalID)));
     require(database.uintStorage(userVoteID) == 0);  // make sure token holder hasn't already voted
-    commitValue = database.uintStorage(keccak256(abi.encodePacked("commitment.value", _token, _tokenHolder)));
+    commitValue = database.uintStorage(keccak256(abi.encodePacked("commitment.value", token, _tokenHolder)));
     assert (commitValue > 0);
     database.setUint(userVoteID, commitValue);
     bytes32 voteID = keccak256(abi.encodePacked("proposal.votecount", _proposalID));
@@ -151,7 +157,7 @@ contract Proposals {
   function withdrawTokens(address _tokenHolder, address _token)
   external
   returns (bool){
-    require(commitmentAge(_tokenHolder, _token) > 0, "token holder hasnt committed tokens");
+    require(commitmentAge(_tokenHolder, _token) == 0, "token holder hasnt committed tokens");
     bytes32 releaseTimeID = keccak256(abi.encodePacked("commitment.releasetime", _token, _tokenHolder));
     uint releaseTime = database.uintStorage(releaseTimeID);
     require(now > releaseTime && releaseTime > 0);
