@@ -11,29 +11,19 @@ const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
 const API = artifacts.require("./database/API.sol");
-const Promisify = (inner) =>
-    new Promise((resolve, reject) =>
-        inner((err, res) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(res);
-            }
-        })
-    );
 
-const owner = web3.eth.accounts[0];
-const user1 = web3.eth.accounts[1];
-const user2 = web3.eth.accounts[2];
-const user3 = web3.eth.accounts[3];
-const assetManager = web3.eth.accounts[4];
-const operator = web3.eth.accounts[5];
-const tokenHolders = [user1, user2, user3];
-
-const ETH = 1000000000000000000;
+const ETH = bn(10**18);
 let tokenPerAccount;
 
-contract('AssetManager Escrow', async() => {
+contract('AssetManager Escrow', async(accounts) => {
+  const owner = accounts[0];
+  const user1 = accounts[1];
+  const user2 = accounts[2];
+  const user3 = accounts[3];
+  const assetManager = accounts[4];
+  const operator = accounts[5];
+  const tokenHolders = [user1, user2, user3];
+
   let divToken;
   let burnToken
   let db;
@@ -75,7 +65,7 @@ contract('AssetManager Escrow', async() => {
   });
 
   it("Deploy standard token", async() => {
-    burnToken = await MyBitToken.new('MyB', 10000*ETH);
+    burnToken = await MyBitToken.new('MyB', bn(10000).times(ETH));
   });
 
   it("Deploy asset goverance", async() => {
@@ -106,8 +96,7 @@ contract('AssetManager Escrow', async() => {
     await cm.addContract('Operators', operators.address);
     let block = await web3.eth.getBlock('latest');
     await operators.registerOperator(operator, 'Operator', 'Asset Type');
-    let e = events.LogOperator({message: 'Operator registered', origin: owner}, {fromBlock: block.number, toBlock: 'latest'});
-    let logs = await Promisify(callback => e.get(callback));
+    let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: owner}, fromBlock: block.number});
     operatorID = logs[0].args.operatorID;
   });
 
@@ -116,16 +105,16 @@ contract('AssetManager Escrow', async() => {
   });
 
   it("Lock escrow", async() => {
+    let escrowAmount = bn(2).times(ETH);
     let balanceBefore = await burnToken.balanceOf(assetManager);
-    await burnToken.approve(escrow.address, 2*ETH, {from:assetManager});
+    await burnToken.approve(escrow.address, escrowAmount, {from:assetManager});
     let block = await web3.eth.getBlock('latest');
-    await escrow.lockEscrow(assetID, 2*ETH, {from:assetManager});
-    let e = events.LogEscrow({message: 'Escrow locked', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
-    let logs = await Promisify(callback => e.get(callback));
+    await escrow.lockEscrow(assetID, escrowAmount, {from:assetManager});
+    let logs = await events.getPastEvents('LogEscrow', {filter: {messageID: web3.utils.sha3('Escrow locked'), origin: assetManager}, fromBlock: block.number});
     assetManagerEscrowID = logs[0].args.escrowID;
     let balanceAfter = await burnToken.balanceOf(assetManager);
     let diff = bn(balanceBefore).minus(balanceAfter);
-    assert.equal(diff, 2*ETH);
+    assert.equal(diff.eq(escrowAmount), true);
   });
 
   //Funding deadline is passed but didn't raise enough funds
@@ -138,21 +127,22 @@ contract('AssetManager Escrow', async() => {
   });
 
   it("Lock escrow", async() => {
+    let escrowAmount = bn(2).times(ETH);
     let balanceBefore = await burnToken.balanceOf(assetManager);
     let assetManagerID = await api.getAssetManagerEscrowID(assetID, assetManager);
-    await burnToken.approve(escrow.address, 2*ETH, {from:assetManager});
-    await escrow.lockEscrow(assetID, 2*ETH, {from:assetManager});
+    await burnToken.approve(escrow.address, escrowAmount, {from:assetManager});
+    await escrow.lockEscrow(assetID, escrowAmount, {from:assetManager});
     let balanceAfter = await burnToken.balanceOf(assetManager);
     let diff = bn(balanceBefore).minus(balanceAfter);
-    assert.equal(await api.getAssetManagerEscrow(assetManagerID), 2*ETH);
-    assert.equal(diff, 2*ETH);
+    assert.equal(bn(await api.getAssetManagerEscrow(assetManagerID)).eq(escrowAmount), true);
+    assert.equal(diff.eq(escrowAmount), true);
   });
 
   it("Fail to lock escrow", async() => {
     let err;
     //Fail because asset already exists
     try{
-      await escrow.lockEscrow(assetID, 2*ETH, {from:assetManager});
+      await escrow.lockEscrow(assetID, bn(2).times(ETH), {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -178,7 +168,7 @@ contract('AssetManager Escrow', async() => {
     let totalSupply = bn(8).times(ETH);
     tokenPerAccount = totalSupply / tokenHolders.length;   // TODO: getting error with bignumber.js here
     for (var i = 0; i < tokenHolders.length; i++) {
-      //console.log(web3.eth.accounts[i]);
+      //console.log(accounts[i]);
       await divToken.mint(tokenHolders[i], tokenPerAccount);
       userBalance = await divToken.balanceOf(tokenHolders[i]);
       assert.equal(userBalance, tokenPerAccount);
@@ -217,15 +207,17 @@ contract('AssetManager Escrow', async() => {
     let err;
     //Fail because funding not complete
     let fundingHash = await hash.stringBytes('fundingDeadline', assetID);
-    let currentTime = await web3.eth.getBlock('latest').timestamp;
-    await db.setUint(fundingHash, currentTime+10);
+    let block = await web3.eth.getBlock('latest');
+    let currentTime = bn(block.timestamp);
+    console.log(currentTime);
+    await db.setUint(fundingHash, currentTime.plus(10));
     try{
       await escrow.unlockEscrow(assetID, {from:assetManager});
     } catch(e){
       err = e;
     }
     assert.notEqual(err, undefined);
-    await db.setUint(fundingHash, currentTime-10);
+    await db.setUint(fundingHash, currentTime.minus(10));
   });
 
 
