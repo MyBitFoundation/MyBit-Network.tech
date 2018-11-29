@@ -80,6 +80,8 @@
     external
     hasConsensus(_assetID, msg.sig, keccak256(abi.encodePacked(_assetID, _oldAssetManager, _newAssetManager, _amount, _burn)))
     returns (bool) {
+      //Check for approval
+      require(msg.sender == _newAssetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _newAssetManager, msg.sender, address(this), msg.sig))));
       address currentAssetManager = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID)));
       require(currentAssetManager != _newAssetManager && currentAssetManager == _oldAssetManager);
       bytes32 oldAssetManagerEscrowID = keccak256(abi.encodePacked(_assetID, _oldAssetManager));
@@ -147,6 +149,12 @@
     modifier hasConsensus(bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash){
       bytes32 proposalID = keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash));
       require(votingProcess.result(proposalID));
+      _;
+    }
+
+    // @notice This modifier checks is msg.sender has approval to call the function
+    modifier hasApproval(address _approver, bytes4 _sig){
+      require(msg.sender == _approver || database.boolStorage(keccak256(abi.encodePacked("approval", _approver, msg.sender, address(this), _sig))));
       _;
     }
 

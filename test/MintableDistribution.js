@@ -3,22 +3,21 @@ var bn = require('bignumber.js');
 /* Contracts  */
 const Token = artifacts.require("./tokens/distribution/MintableDistribution.sol");
 
-const owner = web3.eth.accounts[0];
-const user1 = web3.eth.accounts[1];
-const user2 = web3.eth.accounts[2];
-const user3 = web3.eth.accounts[3];
-const tokenHolders = [user1, user2];
-
 const ETH = 1000000000000000000;
 const scaling = 1000000000000000000000000000000000000;
 //const tokenSupply = 180000000000000000000000000;
 const tokenPerAccount = 1000000000000000000000;
-const tokenSupply = tokenHolders.length * tokenPerAccount;
-
-let tokenURI = 'MintyMint';
 
 contract('Mintable Distribution', async (accounts) => {
+  const owner = accounts[0];
+  const user1 = accounts[1];
+  const user2 = accounts[2];
+  const user3 = accounts[3];
+  const tokenHolders = [user1, user2];
+  const tokenSupply = tokenHolders.length * tokenPerAccount;
+
   let token;
+  let tokenURI = 'MintyMint';
 
   it('Deploy Token', async() => {
     token = await Token.new(tokenURI, owner);
@@ -27,7 +26,7 @@ contract('Mintable Distribution', async (accounts) => {
   it("Spread tokens to users", async() => {
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
-      console.log(web3.eth.accounts[i]);
+      console.log(accounts[i]);
       await token.mint(tokenHolders[i], tokenPerAccount);
       userBalance = await token.balanceOf(tokenHolders[i]);
       assert.equal(userBalance, tokenPerAccount);
