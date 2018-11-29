@@ -8,8 +8,8 @@ const KYC = artifacts.require('./access/KYC.sol');
 const ETH = 1000000000000000000;
 
 contract('KYC', async (accounts) => {
-  const owner = web3.eth.accounts[0];
-  const user = web3.eth.accounts[1];
+  const owner = accounts[0];
+  const user = accounts[1];
 
   let database;
   let events;

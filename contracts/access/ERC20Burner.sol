@@ -101,5 +101,5 @@ contract ERC20Burner {
 
   event LogMYBBurned(address _tokenHolder, address _burningContract, uint _amount);
   event LogFeeAdded(address indexed _contractAddress, bytes4 _methodID, uint _amount);
-
+  event LogTokenAddress(address tokenAddress);
 }

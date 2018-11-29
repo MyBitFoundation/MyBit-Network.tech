@@ -13,12 +13,11 @@ const Promisify = (inner) =>
         })
     );
 
+contract('Operators', async(accounts) => {
+  const owner = accounts[0];
+  const operator = accounts[1];
+  const operator2 = accounts[2];
 
-const owner = web3.eth.accounts[0];
-const operator = web3.eth.accounts[1];
-const operator2 = web3.eth.accounts[2];
-
-contract('Operators', async() => {
   let db;
   let events;
   let cm;

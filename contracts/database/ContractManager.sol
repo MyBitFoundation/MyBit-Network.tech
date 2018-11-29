@@ -94,31 +94,31 @@ contract ContractManager{
   // ------------------------------------------------------------------------------------------------
 
   modifier isUpgradeable {
-    require(database.boolStorage(keccak256(abi.encodePacked("upgradeable"))));
+    require(database.boolStorage(keccak256(abi.encodePacked("upgradeable"))), "Not upgradeable");
     _;
   }
 
   // @notice Verify that sender is an owner
   modifier anyOwner {
-    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))), "Not owner");
     _;
   }
 
   // @notice add this modifer to functions that you want multi-sig requirements for
   // @dev function can only be called after at least n >= quorumLevel owners have agreed to call it
   modifier isRestricted(bytes4 _methodID, bytes32 _parameterHash) {
-      require(database.boolStorage(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash))));  // owners must have agreed on function + parameters
+    require(database.boolStorage(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash))));  // owners must have agreed on function + parameters
     _;
-      database.deleteBool(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash)));
+    database.deleteBool(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash)));
   }
 
   modifier contractExists(address _contract) {
-    require(database.boolStorage(keccak256(abi.encodePacked("contract", _contract))));
+    require(database.boolStorage(keccak256(abi.encodePacked("contract", _contract))), "Contract does not exist");
     _;
   }
 
   modifier isTrue(bool _conditional) {
-    require(_conditional);
+    require(_conditional, "Not true");
     _;
   }
 

@@ -3,22 +3,21 @@ var bn = require('bignumber.js');
 const Token = artifacts.require("./tokens/ERC20/DividendToken.sol");
 const ApproveAndCall = artifacts.require("./test/ApproveAndCallTest.sol");
 
-const owner = web3.eth.accounts[0];
-const user1 = web3.eth.accounts[1];
-const user2 = web3.eth.accounts[2];
-const user3 = web3.eth.accounts[3];
-const tokenHolders = [user1, user2];
-
 const ETH = 1000000000000000000;
 const scaling = 1000000000000000000000000000000000000;
 //const tokenSupply = 180000000000000000000000000;
 const tokenPerAccount = 1000000000000000000000;
-const tokenSupply = tokenHolders.length * tokenPerAccount;
 
-let tokenURI = 'https://mybit.io';
+contract('Dividend Token Ether', async(accounts) => {
+  const owner = accounts[0];
+  const user1 = accounts[1];
+  const user2 = accounts[2];
+  const user3 = accounts[3];
+  const tokenHolders = [user1, user2];
+  const tokenSupply = tokenHolders.length * tokenPerAccount;
 
-contract('Dividend Token Ether', async() => {
   let token;
+  let tokenURI = 'https://mybit.io';
 
   it('Deploy Token', async() => {
     token = await Token.new(tokenURI, owner);
@@ -27,7 +26,7 @@ contract('Dividend Token Ether', async() => {
   it("Spread tokens to users", async() => {
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
-      console.log(web3.eth.accounts[i]);
+      console.log(accounts[i]);
       await token.mint(tokenHolders[i], tokenPerAccount);
       userBalance = await token.balanceOf(tokenHolders[i]);
       assert.equal(userBalance, tokenPerAccount);

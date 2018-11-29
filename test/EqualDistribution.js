@@ -8,11 +8,11 @@ const WithdrawTest = artifacts.require("./test/WithdrawTest.sol");
 const ETH = 1000000000000000000;
 
 contract('Equal Distribution', async (accounts) => {
-  const owner = web3.eth.accounts[0];
-  const distributor = web3.eth.accounts[1];
-  const beneficiary = web3.eth.accounts[2];
-  const beneficiary2 = web3.eth.accounts[3];
-  const beneficiary3 = web3.eth.accounts[4];
+  const owner = accounts[0];
+  const distributor = accounts[1];
+  const beneficiary = accounts[2];
+  const beneficiary2 = accounts[3];
+  const beneficiary3 = accounts[4];
   const beneficiaries = [beneficiary, beneficiary2, beneficiary3];
 
   const tokenSupply = 100000;
@@ -53,7 +53,7 @@ contract('Equal Distribution', async (accounts) => {
 /*
   it('Fail to get funds', async() => {
     try{
-      await eqDistribution.getFunds(web3.eth.accounts[9], {from: distributor});
+      await eqDistribution.getFunds(accounts[9], {from: distributor});
     } catch(e) {
       console.log('Cant get funds from that address');
     }
@@ -65,7 +65,7 @@ contract('Equal Distribution', async (accounts) => {
     console.log('Distributor Address: ' + distributor);
     console.log('Withdraw Address: ' + withdrawTest.address);
     console.log('Eq Address: ' + eqDistribution.address);
-    console.log('Account 9: ' + web3.eth.accounts[9]);
+    console.log('Account 9: ' + accounts[9]);
     await eqDistribution.getFunds(withdrawTest.address, {from:beneficiary});
   });
 

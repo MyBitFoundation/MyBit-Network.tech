@@ -25,22 +25,20 @@ const Promisify = (inner) =>
         })
     );
 
-
-const owner = web3.eth.accounts[0];
-const user1 = web3.eth.accounts[1];
-const user2 = web3.eth.accounts[2];
-const user3 = web3.eth.accounts[3];
-const assetManager = web3.eth.accounts[4];
-const operator = web3.eth.accounts[5];
-const tokenHolders = [user1, user2, user3, assetManager, operator];
-
-
 const ETH = 1000000000000000000;
 const scaling = 1000000000000000000000000000000000000;
 const tokenSupply = 180000000000000000000000000;
 const tokenPerAccount = 1000000000000000000000;
 
-contract('ERC20 Crowdsale', async() => {
+contract('ERC20 Crowdsale', async(accounts) => {
+  const owner = accounts[0];
+  const user1 = accounts[1];
+  const user2 = accounts[2];
+  const user3 = accounts[3];
+  const assetManager = accounts[4];
+  const operator = accounts[5];
+  const tokenHolders = [user1, user2, user3, assetManager, operator];
+  
   let assetToken;
   let erc20;
   let platformToken;
@@ -88,14 +86,14 @@ contract('ERC20 Crowdsale', async() => {
 
   it("Spread tokens to users", async() => {
     let userBalance;
-    for (var i = 1; i < web3.eth.accounts.length; i++) {
-      //console.log(web3.eth.accounts[i]);
-      await platformToken.transfer(web3.eth.accounts[i], tokenPerAccount);
-      userBalance = await platformToken.balanceOf(web3.eth.accounts[i]);
+    for (var i = 1; i < accounts.length; i++) {
+      //console.log(accounts[i]);
+      await platformToken.transfer(accounts[i], tokenPerAccount);
+      userBalance = await platformToken.balanceOf(accounts[i]);
       assert.equal(userBalance, tokenPerAccount);
     }
     // Check token ledger is correct
-    let totalTokensCirculating = (web3.eth.accounts.length-1) * tokenPerAccount;
+    let totalTokensCirculating = (accounts.length-1) * tokenPerAccount;
     let remainingTokens = bn(tokenSupply).minus(totalTokensCirculating);
     let ledgerTrue = bn(await platformToken.balanceOf(owner)).eq(remainingTokens);
     assert.equal(ledgerTrue, true);
@@ -130,7 +128,7 @@ contract('ERC20 Crowdsale', async() => {
   it("Spread erc20 to users", async() => {
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
-      //console.log(web3.eth.accounts[i]);
+      //console.log(accounts[i]);
       await erc20.transfer(tokenHolders[i], tokenPerAccount);
       userBalance = await erc20.balanceOf(tokenHolders[i]);
       assert.equal(userBalance, tokenPerAccount);
@@ -161,9 +159,9 @@ contract('ERC20 Crowdsale', async() => {
   });
 
   it('Give platform burning permission', async() => {
-    for(var i=1; i<web3.eth.accounts.length; i++){
-      await cm.setContractStatePreferences(true, true, {from: web3.eth.accounts[i]});
-      await platformToken.approve(burner.address, tokenSupply, {from:web3.eth.accounts[i]});
+    for(var i=1; i<accounts.length; i++){
+      await cm.setContractStatePreferences(true, true, {from: accounts[i]});
+      await platformToken.approve(burner.address, tokenSupply, {from:accounts[i]});
     }
   });
 

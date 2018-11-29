@@ -6,7 +6,7 @@ jobs:
       - image: circleci/node:9.6.1
     steps:
         - checkout
-        - run: yarn
+        - run: npm install
         - run:
             name: testrpc
             command: yarn blockchain
