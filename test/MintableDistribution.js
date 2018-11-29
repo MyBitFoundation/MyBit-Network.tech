@@ -1,12 +1,11 @@
-var bn = require('bignumber.js');
+const bn = require('bignumber.js');
 
 /* Contracts  */
 const Token = artifacts.require("./tokens/distribution/MintableDistribution.sol");
 
-const ETH = 1000000000000000000;
-const scaling = 1000000000000000000000000000000000000;
-//const tokenSupply = 180000000000000000000000000;
-const tokenPerAccount = 1000000000000000000000;
+const ETH = bn(10**18);
+const scaling = bn(10**36);
+const tokenPerAccount = bn(1000).times(ETH);
 
 contract('Mintable Distribution', async (accounts) => {
   const owner = accounts[0];
@@ -28,14 +27,14 @@ contract('Mintable Distribution', async (accounts) => {
     for (var i = 0; i < tokenHolders.length; i++) {
       console.log(accounts[i]);
       await token.mint(tokenHolders[i], tokenPerAccount);
-      userBalance = await token.balanceOf(tokenHolders[i]);
-      assert.equal(userBalance, tokenPerAccount);
+      userBalance = bn(await token.balanceOf(tokenHolders[i]));
+      assert.equal(userBalance.eq(tokenPerAccount), true);
     }
     // Check token ledger is correct
     //let totalTokensCirculating = tokenHolders.length * tokenPerAccount;
     //let remainingTokens = bn(tokenSupply).minus(totalTokensCirculating);
     //let ledgerTrue = bn(await token.balanceOf(owner)).eq(remainingTokens);
-    assert.equal(await token.balanceOf(owner), 0);
+    assert.equal(bn(await token.balanceOf(owner)).eq(0), true);
   });
 
   it('Finish minting', async() => {
@@ -45,7 +44,7 @@ contract('Mintable Distribution', async (accounts) => {
   it('Fail to mint tokens', async() => {
     let err;
     try{
-      await token.mint(user3, 100*ETH, {from:user3});
+      await token.mint(user3, bn(100).times(ETH), {from:user3});
     } catch(e){
       err = e;
     }
@@ -53,7 +52,7 @@ contract('Mintable Distribution', async (accounts) => {
   });
 
   it('Send money to token contract', async() => {
-    await web3.eth.sendTransaction({from:owner, to:token.address, value:10*ETH});
+    await web3.eth.sendTransaction({from:owner, to:token.address, value:bn(10).times(ETH)});
     await web3.eth.sendTransaction({from:owner, to:token.address, value:0});
   });
 
