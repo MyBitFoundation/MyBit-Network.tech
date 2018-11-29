@@ -1,11 +1,11 @@
-var BigNumber = require('bignumber.js');
+var bn = require('bignumber.js');
 
 const Database = artifacts.require('./database/Database.sol');
 const Events = artifacts.require('./database/Events.sol');
 const ContractManager = artifacts.require('./database/ContractManager.sol');
 const Expirable = artifacts.require('./access/Expirable.sol');
 
-const ETH = 1000000000000000000;
+const ETH = bn(10**18);
 
 contract('Access Hierarchy', async (accounts) => {
   const owner = accounts[0];
@@ -49,7 +49,7 @@ contract('Access Hierarchy', async (accounts) => {
   it('Fail to chage expiration', async() => {
     let err;
     try{
-      await expirable.changeExpirationLength(60*60*24*30, {from:user});
+      await expirable.changeExpirationLength(bn(60).times(60).times(24).times(30), {from:user});
     } catch(e){
       err = e;
     }
@@ -57,7 +57,7 @@ contract('Access Hierarchy', async (accounts) => {
   });
 
   it('Change expiration', async() => {
-    await expirable.changeExpirationLength(60*60*24*30);
+    await expirable.changeExpirationLength(bn(60).times(60).times(24).times(30));
   });
 
   it('Add user', async() => {

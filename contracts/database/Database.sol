@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 
 // @title A shared storage contract for platform contracts to store and retrieve data

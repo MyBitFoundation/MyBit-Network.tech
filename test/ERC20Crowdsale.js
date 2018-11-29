@@ -14,21 +14,11 @@ const CrowdsaleGenerator = artifacts.require("./crowdsale/CrowdsaleGeneratorERC2
 const Operators = artifacts.require("./roles/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
 const API = artifacts.require("./database/API.sol");
-const Promisify = (inner) =>
-    new Promise((resolve, reject) =>
-        inner((err, res) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(res);
-            }
-        })
-    );
 
-const ETH = 1000000000000000000;
-const scaling = 1000000000000000000000000000000000000;
-const tokenSupply = 180000000000000000000000000;
-const tokenPerAccount = 1000000000000000000000;
+const ETH = bn(10**18);
+const scaling = bn(10**36);
+const tokenSupply = bn(180000000).times(ETH);
+const tokenPerAccount = bn(1000).times(ETH);
 
 contract('ERC20 Crowdsale', async(accounts) => {
   const owner = accounts[0];
@@ -38,7 +28,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
   const assetManager = accounts[4];
   const operator = accounts[5];
   const tokenHolders = [user1, user2, user3, assetManager, operator];
-  
+
   let assetToken;
   let erc20;
   let platformToken;
@@ -89,8 +79,8 @@ contract('ERC20 Crowdsale', async(accounts) => {
     for (var i = 1; i < accounts.length; i++) {
       //console.log(accounts[i]);
       await platformToken.transfer(accounts[i], tokenPerAccount);
-      userBalance = await platformToken.balanceOf(accounts[i]);
-      assert.equal(userBalance, tokenPerAccount);
+      userBalance = bn(await platformToken.balanceOf(accounts[i]));
+      assert.equal(userBalance.eq(tokenPerAccount), true);
     }
     // Check token ledger is correct
     let totalTokensCirculating = (accounts.length-1) * tokenPerAccount;
@@ -130,8 +120,8 @@ contract('ERC20 Crowdsale', async(accounts) => {
     for (var i = 0; i < tokenHolders.length; i++) {
       //console.log(accounts[i]);
       await erc20.transfer(tokenHolders[i], tokenPerAccount);
-      userBalance = await erc20.balanceOf(tokenHolders[i]);
-      assert.equal(userBalance, tokenPerAccount);
+      userBalance = bn(await erc20.balanceOf(tokenHolders[i]));
+      assert.equal(userBalance.eq(tokenPerAccount), true);
     }
     // Check token ledger is correct
     let totalTokensCirculating = tokenHolders.length * tokenPerAccount;
@@ -168,8 +158,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
   it('Set operator', async() => {
     let block = await web3.eth.getBlock('latest');
     await operators.registerOperator(operator, 'Operator', 'Asset Type');
-    let e = events.LogOperator({message: 'Operator registered', origin: owner}, {fromBlock: block.number, toBlock: 'latest'});
-    let logs = await Promisify(callback => e.get(callback));
+    let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: owner}, fromBlock: block.number});
     operatorID = logs[0].args.operatorID;
     await operators.acceptERC20Token(operatorID, erc20.address, true, {from: operator});
     await operators.acceptEther(operatorID, true, {from: operator});
@@ -180,9 +169,8 @@ contract('ERC20 Crowdsale', async(accounts) => {
     assetURI = 'ipfs.io/F3b2854A9';
     assetManagerFee = 5;
     let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 100, 0, 20*ETH, assetManagerFee, erc20.address, {from:assetManager});
-    let e = events.LogAsset({message: 'Asset funding started', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
-    let logs = await Promisify(callback => e.get(callback));
+    await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 100, 0, bn(20).times(ETH), assetManagerFee, erc20.address, {from:assetManager});
+    let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), origin: assetManager}, fromBlock: block.number});
     assetID = logs[0].args.assetID;
     assetTokenAddress = logs[0].args.token;
     console.log('Token Address: ' + tokenAddress);
@@ -190,16 +178,16 @@ contract('ERC20 Crowdsale', async(accounts) => {
   });
 
   it('User1 funding', async() => {
-    await erc20.approve(crowdsale.address, 5*ETH, {from:user1});
-    await crowdsale.buyAssetOrderERC20(assetID, 5*ETH, {from:user1});
-    let user1AssetTokens = await assetToken.balanceOf(user1);
+    await erc20.approve(crowdsale.address, bn(5).times(ETH), {from:user1});
+    await crowdsale.buyAssetOrderERC20(assetID, bn(5).times(ETH), {from:user1});
+    let user1AssetTokens = bn(await assetToken.balanceOf(user1));
     console.log('assetToken Address: ' + assetToken.address);
     console.log('User: ' + user1);
-    console.log('User assetTokens: ' + Number(user1AssetTokens));
+    console.log('User assetTokens: ' + user1AssetTokens.toNumber());
 
     let assetTokenSupply = await assetToken.totalSupply()
     console.log('assetToken Supply: ' + assetTokenSupply);
-    assert.equal(user1AssetTokens, 5*ETH);
+    assert.equal(user1AssetTokens.eq(bn(5).times(ETH)), true);
   });
 
   it('Asset already exists fail', async() => {
@@ -207,7 +195,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     let assetManagerFee = 2;
     //Fail because asset already exists
     try{
-      await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 10, 0, 20*ETH, assetManagerFee, erc20.address, {from:assetManager});
+      await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 10, 0, bn(20).times(ETH), assetManagerFee, erc20.address, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -217,8 +205,8 @@ contract('ERC20 Crowdsale', async(accounts) => {
   it('Fail to buy asset, fail to payout. No platform address', async() => {
     let err;
     try{
-      await erc20.approve(crowdsale.address, 15*ETH, {from:user2});
-      await crowdsale.buyAssetOrderERC20(assetID, 15*ETH, {from:user2});
+      await erc20.approve(crowdsale.address, bn(15).times(ETH), {from:user2});
+      await crowdsale.buyAssetOrderERC20(assetID, bn(15).times(ETH), {from:user2});
     } catch(e){
       err = e;
     }
@@ -243,11 +231,11 @@ contract('ERC20 Crowdsale', async(accounts) => {
     console.log(user2);
     ownerBalanceBefore = await erc20.balanceOf(owner);
     operatorBalanceBefore = await erc20.balanceOf(operator);
-    await erc20.approve(crowdsale.address, 15*ETH, {from:user2});
-    await crowdsale.buyAssetOrderERC20(assetID, 15*ETH, {from:user2});
-    let user2AssetTokens = await assetToken.balanceOf(user2);
-    console.log(Number(user2AssetTokens));
-    assert.equal(user2AssetTokens, 15*ETH);
+    await erc20.approve(crowdsale.address, bn(15).times(ETH), {from:user2});
+    await crowdsale.buyAssetOrderERC20(assetID, bn(15).times(ETH), {from:user2});
+    let user2AssetTokens = bn(await assetToken.balanceOf(user2));
+    console.log(user2AssetTokens.toNumber());
+    assert.equal(user2AssetTokens.eq(bn(15).times(ETH)), true);
 
     ownerBalanceAfter = await erc20.balanceOf(owner);
     console.log(Number(ownerBalanceAfter))
@@ -261,8 +249,8 @@ contract('ERC20 Crowdsale', async(accounts) => {
     //Funding finished
     let err;
     try{
-      await erc20.approve(crowdsale.address, 5*ETH, {from:user3});
-      await crowdsale.buyAssetOrderERC20(assetID, 5*ETH, {from:user3});
+      await erc20.approve(crowdsale.address, bn(5).times(ETH), {from:user3});
+      await crowdsale.buyAssetOrderERC20(assetID, bn(5).times(ETH), {from:user3});
     } catch(e){
       err = e;
     }
@@ -317,7 +305,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     assetURI = 'Fail: No operator';
     assetManagerFee = 10;
     try{
-      await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 10, 0, 20*ETH, assetManagerFee, erc20.address, {from:assetManager});
+      await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 10, 0, bn(20).times(ETH), assetManagerFee, erc20.address, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -327,8 +315,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
   it('Set operator', async() => {
     let block = await web3.eth.getBlock('latest');
     await operators.registerOperator(operator, 'Operator', 'Asset Type');
-    let e = events.LogOperator({message: 'Operator registered', origin: owner}, {fromBlock: block.number, toBlock: 'latest'});
-    let logs = await Promisify(callback => e.get(callback));
+    let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: owner}, fromBlock: block.number});
     operatorID = logs[0].args.operatorID;
     await operators.acceptERC20Token(operatorID, erc20.address, true, {from: operator});
     await operators.acceptEther(operatorID, true, {from: operator});
@@ -338,29 +325,34 @@ contract('ERC20 Crowdsale', async(accounts) => {
     assetURI = 'Goooooooaaallllllll';
     assetManagerFee = 20;
     let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 1, 0, 20*ETH, assetManagerFee, erc20.address, {from:assetManager});
-    let e = events.LogAsset({message: 'Asset funding started', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
-    let logs = await Promisify(callback => e.get(callback));
+    await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 1, 0, bn(20).times(ETH), assetManagerFee, erc20.address, {from:assetManager});
+    let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), origin: assetManager}, fromBlock: block.number});
     assetID = logs[0].args.assetID;
     assetTokenAddress = logs[0].args.token;
     assetToken = await AssetToken.at(assetTokenAddress);
   });
 
   it('User3 funding', async() => {
-    await erc20.approve(crowdsale.address, 5*ETH, {from:user3});
-    await crowdsale.buyAssetOrderERC20(assetID, 5*ETH, {from:user3});
-    let user3assetTokens = await assetToken.balanceOf(user3);
-    assert.equal(user3assetTokens, 5*ETH);
+    await erc20.approve(crowdsale.address, bn(5).times(ETH), {from:user3});
+    await crowdsale.buyAssetOrderERC20(assetID, bn(5).times(ETH), {from:user3});
+    let user3assetTokens = bn(await assetToken.balanceOf(user3));
+    assert.equal(user3assetTokens.eq(bn(5).times(ETH)), true);
   });
 
   // TODO: this isn't failing as it should
   it('User1 funding fail', async() => {
-    web3.currentProvider.send({jsonrpc: "2.0", method: "evm_increaseTime", params: [3], id: 0});
+    web3.currentProvider.send({
+        jsonrpc: "2.0",
+        method: "evm_increaseTime",
+        params: [3], id: 0
+    }, function(){
+      console.log('Move forward in time');
+    });
 
     let err;
     try{
-      await erc20.approve(crowdsale.address, 5*ETH, {from:user1});
-      await crowdsale.buyAssetOrderERC20(assetID, 5*ETH, {from:user1});
+      await erc20.approve(crowdsale.address, bn(5).times(ETH), {from:user1});
+      await crowdsale.buyAssetOrderERC20(assetID, bn(5).times(ETH), {from:user1});
     } catch(e){
       err = e;
     }
@@ -409,9 +401,8 @@ contract('ERC20 Crowdsale', async(accounts) => {
     assetURI = 'ipfs.io/F3b285ABA9';
     assetManagerFee = 0;
     let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 100, 0, 2*ETH, assetManagerFee, erc20.address, {from:assetManager});
-    let e = events.LogAsset({message: 'Asset funding started', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
-    let logs = await Promisify(callback => e.get(callback));
+    await crowdsaleGen.createAssetOrderERC20(assetURI, operatorID, 100, 0, bn(2).times(ETH), assetManagerFee, erc20.address, {from:assetManager});
+    let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), origin: assetManager}, fromBlock: block.number});
     assetID = logs[0].args.assetID;
     assetTokenAddress = logs[0].args.token;
     console.log('Token Address: ' + tokenAddress);
@@ -419,15 +410,15 @@ contract('ERC20 Crowdsale', async(accounts) => {
   });
 
   it('Fully fund no fee asset', async() => {
-    await erc20.approve(crowdsale.address, 2*ETH, {from:user1});
+    await erc20.approve(crowdsale.address, bn(2).times(ETH), {from:user1});
     let platformWalletBalance = await erc20.balanceOf(owner);
-    await crowdsale.buyAssetOrderERC20(assetID, 2*ETH, {from:user1});
-    let user1AssetTokens = await assetToken.balanceOf(user1);
-    let assetTokenSupply = await assetToken.totalSupply()
+    await crowdsale.buyAssetOrderERC20(assetID, bn(2).times(ETH), {from:user1});
+    let user1AssetTokens = bn(await assetToken.balanceOf(user1));
+    let assetTokenSupply = bn(await assetToken.totalSupply());
     assert.equal(assetTokenSupply.eq(user1AssetTokens), true);
-    assert.equal(user1AssetTokens, 2*ETH);
+    assert.equal(user1AssetTokens.eq(bn(2).times(ETH)), true);
     assert.equal(await assetToken.mintingFinished(), true);
-    assert.equal(await assetToken.balanceOf(assetManager), 0);
+    assert.equal(bn(await assetToken.balanceOf(assetManager)).eq(0), true);
     assert.equal(await api.crowdsaleFinalized(assetID), true);
     // Check payout to platform and operator
     console.log(platformWalletBalance);

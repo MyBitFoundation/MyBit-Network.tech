@@ -1,11 +1,11 @@
-var BigNumber = require('bignumber.js');
+var bn = require('bignumber.js');
 
 /* Contracts  */
 const EqualDistribution = artifacts.require("./tokens/distribution/EqualDistribution.sol");
 const WithdrawTest = artifacts.require("./test/WithdrawTest.sol");
 
 
-const ETH = 1000000000000000000;
+const ETH = bn(10**18);
 
 contract('Equal Distribution', async (accounts) => {
   const owner = accounts[0];
@@ -18,7 +18,7 @@ contract('Equal Distribution', async (accounts) => {
   const tokenSupply = 100000;
   const tokenPerAccount = 1000;
 
-  let burnFee = 250 * ETH;
+  let burnFee = bn(250).times(ETH);
   let originalBeneficiary; //Original beneficiary
 
   // Contract instances
@@ -45,10 +45,10 @@ contract('Equal Distribution', async (accounts) => {
 
   it('Set up withdraw test', async() => {
     withdrawTest = await WithdrawTest.new();
-    await withdrawTest.deposit(eqDistribution.address, {value: 10*ETH, from: distributor});
-    amount = await withdrawTest.balances(eqDistribution.address);
+    await withdrawTest.deposit(eqDistribution.address, {value: bn(10).times(ETH), from: distributor});
+    amount = bn(await withdrawTest.balances(eqDistribution.address));
     console.log('Equal Distribution:' + eqDistribution.address);
-    assert.equal(amount, 10*ETH);
+    assert.equal(amount.eq(bn(10).times(ETH)), true);
   });
 /*
   it('Fail to get funds', async() => {
@@ -76,7 +76,7 @@ contract('Equal Distribution', async (accounts) => {
     console.log(b1After - b1Before);
     //assert.equal(b1True, true);
     //assert.equal(b1After - b1Before, (14 * ETH)/3); //Need to calculate gas used up to this point
-    assert.equal(BigNumber(b1Before).lt(b1After), true);
+    assert.equal(bn(b1Before).lt(b1After), true);
   });
 */
 

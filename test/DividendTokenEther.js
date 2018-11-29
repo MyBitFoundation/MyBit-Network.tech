@@ -3,10 +3,10 @@ var bn = require('bignumber.js');
 const Token = artifacts.require("./tokens/ERC20/DividendToken.sol");
 const ApproveAndCall = artifacts.require("./test/ApproveAndCallTest.sol");
 
-const ETH = 1000000000000000000;
-const scaling = 1000000000000000000000000000000000000;
+const ETH = bn(10**18);
+const scaling = bn(10**36);
 //const tokenSupply = 180000000000000000000000000;
-const tokenPerAccount = 1000000000000000000000;
+const tokenPerAccount = bn(1000).times(ETH);
 
 contract('Dividend Token Ether', async(accounts) => {
   const owner = accounts[0];
@@ -28,14 +28,14 @@ contract('Dividend Token Ether', async(accounts) => {
     for (var i = 0; i < tokenHolders.length; i++) {
       console.log(accounts[i]);
       await token.mint(tokenHolders[i], tokenPerAccount);
-      userBalance = await token.balanceOf(tokenHolders[i]);
-      assert.equal(userBalance, tokenPerAccount);
+      userBalance = bn(await token.balanceOf(tokenHolders[i]));
+      assert.equal(userBalance.eq(tokenPerAccount), true);
     }
     // Check token ledger is correct
     //let totalTokensCirculating = tokenHolders.length * tokenPerAccount;
     //let remainingTokens = bn(tokenSupply).minus(totalTokensCirculating);
     //let ledgerTrue = bn(await token.balanceOf(owner)).eq(remainingTokens);
-    assert.equal(await token.balanceOf(owner), 0);
+    assert.equal(bn(await token.balanceOf(owner)).eq(0), true);
   });
 
   it('Fail to mint tokens', async() => {
@@ -191,7 +191,7 @@ contract('Dividend Token Ether', async(accounts) => {
 
   it('Approve and call', async() => {
     let approveandcall = await ApproveAndCall.new();
-    tx = await token.approveAndCall(approveandcall.address, 1000, '');
+    tx = await token.approveAndCall(approveandcall.address, 1000, '0x00000000');
     console.log(tx.logs[0].args);
     assert.equal(tx.logs[0].args.value, 1000);
   });

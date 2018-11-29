@@ -36,13 +36,18 @@
             },
             {
                 "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
                 "name": "origin",
                 "type": "address"
             }
         ],
         "name": "LogEvent",
         "type": "event",
-        "signature": "0xf4fabfae4681ba2411b6ffb3a8e22fe66fed3251c51b7d9c576add9f02719b0f"
+        "signature": "0xa8fda057da710952fe2bd7579ffe2fa1a9d238fa2b39323e63c15e289b543ec7"
     },
     {
         "anonymous": false,
@@ -51,6 +56,11 @@
                 "indexed": false,
                 "name": "message",
                 "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
             },
             {
                 "indexed": false,
@@ -80,7 +90,7 @@
         ],
         "name": "LogTransaction",
         "type": "event",
-        "signature": "0xa102be97816a4e671c1a851eacc31624690ee5feaad12aaeeaea71dc1f2a5c7b"
+        "signature": "0xbe993000f400d0a8060e26d30297b9c567fcf5f46579410cd17d4334daba846d"
     },
     {
         "anonymous": false,
@@ -89,6 +99,11 @@
                 "indexed": false,
                 "name": "message",
                 "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
             },
             {
                 "indexed": true,
@@ -103,7 +118,7 @@
         ],
         "name": "LogAddress",
         "type": "event",
-        "signature": "0x6b26c3fc447c71078386bc5ad946c760ce605d2bc61b762901400eb9ac003a9a"
+        "signature": "0xa52a36e76b500c0aeee4e1ea9b294f833a0eba932f01d75395c9ae1aba0a9659"
     },
     {
         "anonymous": false,
@@ -112,6 +127,11 @@
                 "indexed": false,
                 "name": "message",
                 "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
             },
             {
                 "indexed": true,
@@ -131,7 +151,7 @@
         ],
         "name": "LogContractChange",
         "type": "event",
-        "signature": "0xa7558c779c2bd82fcc1a25f9cbc92cffd76216f32d6f912ff8eaaabd12e572ef"
+        "signature": "0xcd9a484b17c708d85e899f6e3f0c8d521fa38d58604427b1d7a3558d2bd0830b"
     },
     {
         "anonymous": false,
@@ -140,6 +160,11 @@
                 "indexed": false,
                 "name": "message",
                 "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
             },
             {
                 "indexed": false,
@@ -169,7 +194,7 @@
         ],
         "name": "LogAsset",
         "type": "event",
-        "signature": "0x9b7ed4b7f1a97e5bf3959d0c71e5f7a05f2d9bc425e9cd43b6d693b0327e0de0"
+        "signature": "0x81e3988b2d4a535c38a8d0bb25f1bf3fc0fae4304f13292258c80460d319048f"
     },
     {
         "anonymous": false,
@@ -178,6 +203,11 @@
                 "indexed": false,
                 "name": "message",
                 "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
             },
             {
                 "indexed": false,
@@ -207,7 +237,7 @@
         ],
         "name": "LogEscrow",
         "type": "event",
-        "signature": "0x57823f76b9c335082da40b57d37a7002fe966d3d635a21c3efb6cbb2ce72fb85"
+        "signature": "0xc312a62cab4612f7e5c6cb6deccb8303683123f4bef011b40d3c5d42aeb3560e"
     },
     {
         "anonymous": false,
@@ -216,6 +246,11 @@
                 "indexed": false,
                 "name": "message",
                 "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
             },
             {
                 "indexed": true,
@@ -240,7 +275,7 @@
         ],
         "name": "LogOrder",
         "type": "event",
-        "signature": "0x688c77b1593a25ed818ebd0fe533b840cd6994c19b4f83a368703d9d79b0e57f"
+        "signature": "0xbfd5c7f40f17c3c4d259746f658e50128286dce2f2a2d374e235b7e4b8055731"
     },
     {
         "anonymous": false,
@@ -249,6 +284,11 @@
                 "indexed": false,
                 "name": "message",
                 "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
             },
             {
                 "indexed": false,
@@ -273,7 +313,7 @@
         ],
         "name": "LogExchange",
         "type": "event",
-        "signature": "0x918ca1246238298b73d51fd2807202a7dcf76f4d49312dc7cc11090e8295cc45"
+        "signature": "0x6463337f6ca771dd572340fc6791e5d1f70bb91de4e93cd088458852e1165109"
     },
     {
         "anonymous": false,
@@ -282,6 +322,11 @@
                 "indexed": false,
                 "name": "message",
                 "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
             },
             {
                 "indexed": false,
@@ -306,7 +351,7 @@
         ],
         "name": "LogOperator",
         "type": "event",
-        "signature": "0x264bfaeb0fe3d9dd26249308bf44683ac6f03960ef4147b656113768aee79361"
+        "signature": "0xd6426a3ba1f4047d5121b172d5742f9de82fb88d3893b3fb3c5a665ef4bf96f1"
     },
     {
         "anonymous": false,
@@ -315,6 +360,11 @@
                 "indexed": false,
                 "name": "message",
                 "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
             },
             {
                 "indexed": false,
@@ -349,7 +399,7 @@
         ],
         "name": "LogConsensus",
         "type": "event",
-        "signature": "0xcd50840ad753dba34640e1dddab2f355f63713c69548b0d3008777180d84a035"
+        "signature": "0x88d1e51c02fdc70db34224fee44c315527d4bc0da934e23b0fd6c06376400a32"
     },
     {
         "constant": false,
