@@ -56,6 +56,10 @@
             {
                 "name": "_assetID",
                 "type": "bytes32"
+            },
+            {
+                "name": "_assetManager",
+                "type": "address"
             }
         ],
         "name": "withdraw",
@@ -68,7 +72,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x8e19899e"
+        "signature": "0x1b258d50"
     },
     {
         "constant": false,
@@ -76,6 +80,10 @@
             {
                 "name": "_assetID",
                 "type": "bytes32[]"
+            },
+            {
+                "name": "_assetManager",
+                "type": "address"
             }
         ],
         "name": "retrieveAssetManagerTokens",
@@ -88,7 +96,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x4a222090"
+        "signature": "0xa2bd4651"
     },
     {
         "constant": false,
@@ -96,6 +104,10 @@
             {
                 "name": "_assetID",
                 "type": "bytes32[]"
+            },
+            {
+                "name": "_assetManager",
+                "type": "address"
             }
         ],
         "name": "retrieveAssetManagerETH",
@@ -108,7 +120,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0xffd4b9ce"
+        "signature": "0x1b1dc691"
     },
     {
         "constant": false,

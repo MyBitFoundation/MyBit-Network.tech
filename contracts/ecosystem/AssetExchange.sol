@@ -39,22 +39,23 @@ contract AssetExchange {
   // @Param: Address of the user who created SellOrder
   // @Param: Number of ownershipUnits being traded
   // @Param: The WEI cost per unit
-  function buyAsset(bytes32 _assetID, address _seller, uint _amount, uint _price)
+  function buyAsset(bytes32 _assetID, address _buyer, address _seller, uint _amount, uint _price)
   external
   payable
   whenNotPaused
   isAllowed(_assetID, _seller, _amount)
   // burnRequired
   returns (bool){
+    require(msg.sender == _buyer || database.boolStorage(keccak256(abi.encodePacked("approval", _buyer, msg.sender, address(this), msg.sig))));
     bytes32 thisOrder = keccak256(abi.encodePacked(_assetID, _seller, _amount, _price, false));
     require(orders[_seller][thisOrder]);
     require(msg.value == _amount.mul(_price).div(decimals));
     DivToken assetToken = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-    require(assetToken.transferFrom(_seller, msg.sender, _amount));
+    require(assetToken.transferFrom(_seller, _buyer, _amount));
     weiOwed[_seller] = weiOwed[_seller].add(msg.value);
     delete orders[_seller][thisOrder];
-    events.exchange('Sell order completed', thisOrder, _assetID, msg.sender);
-    //emit LogSellOrderCompleted(thisOrder, _assetID, msg.sender);
+    events.exchange('Sell order completed', thisOrder, _assetID, _buyer);
+    //emit LogSellOrderCompleted(thisOrder, _assetID, _buyer);
     return true;
   }
 
@@ -63,21 +64,22 @@ contract AssetExchange {
   // @Param: Address of the user who created BuyOrder
   // @Param: Number of ownershipUnits being sold
   // @Param: The WEI cost per unit
-  function sellAsset(bytes32 _assetID, address _buyer, uint _amount, uint _price)
+  function sellAsset(bytes32 _assetID, address _seller, address _buyer, uint _amount, uint _price)
   public
   whenNotPaused
   isAllowed(_assetID, msg.sender, _amount)
   returns (bool){
+    require(msg.sender == _seller || database.boolStorage(keccak256(abi.encodePacked("approval", _seller, msg.sender, address(this), msg.sig))));
     bytes32 thisOrder = keccak256(abi.encodePacked(_assetID, _buyer, _amount, _price, true));       // Get order ID
     require(orders[_buyer][thisOrder]);    // Check order exists
     uint value = _amount.mul(_price).div(decimals);
     DivToken assetToken = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-    require(assetToken.transferFrom(msg.sender, _buyer, _amount));
+    require(assetToken.transferFrom(_seller, _buyer, _amount));
     weiDeposited[_buyer] = weiDeposited[_buyer].sub(value);
-    weiOwed[msg.sender] = weiOwed[msg.sender].add(value);
+    weiOwed[_seller] = weiOwed[_seller].add(value);
     delete orders[_buyer][thisOrder];
-    events.exchange('Buy order completed', thisOrder, _assetID, msg.sender);
-    //emit LogBuyOrderCompleted(thisOrder, _assetID, msg.sender);
+    events.exchange('Buy order completed', thisOrder, _assetID, _seller);
+    //emit LogBuyOrderCompleted(thisOrder, _assetID, _seller);
     return true;
   }
 
@@ -85,7 +87,7 @@ contract AssetExchange {
   // @Param: ID of the asset, which the sender wants to purchase ownershipUnits of
   // @Param: Number of ownershipUnits being bought
   // @Param: The WEI cost per unit
-  function createBuyOrder(bytes32 _assetID, uint _amount, uint _price)
+  function createBuyOrder(bytes32 _assetID, address _buyer, uint _amount, uint _price)
   external
   payable
   requiresEther
@@ -93,14 +95,15 @@ contract AssetExchange {
   validAsset(_assetID)
   // burnRequired
   returns (bool) {
+    require(msg.sender == _buyer || database.boolStorage(keccak256(abi.encodePacked("approval", _buyer, msg.sender, address(this), msg.sig))));
     require(msg.value == _amount.mul(_price).div(decimals));
-    bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, true));
-    require(!orders[msg.sender][orderID]);
-    orders[msg.sender][orderID] = true;
-    weiDeposited[msg.sender] = weiDeposited[msg.sender].add(msg.value);
-    events.exchange('Buy order created', orderID, _assetID, msg.sender);
+    bytes32 orderID = keccak256(abi.encodePacked(_assetID, _buyer, _amount, _price, true));
+    require(!orders[_buyer][orderID]);
+    orders[_buyer][orderID] = true;
+    weiDeposited[_buyer] = weiDeposited[_buyer].add(msg.value);
+    events.exchange('Buy order created', orderID, _assetID, _buyer);
     events.order('Buy order', orderID, _amount, _price);
-    //emit LogBuyOrderCreated(orderID, _assetID, msg.sender);
+    //emit LogBuyOrderCreated(orderID, _assetID, _buyer);
     //emit LogBuyOrderDetails(orderID, _amount, _price);
     return true;
   }
@@ -109,18 +112,18 @@ contract AssetExchange {
   // @Param: ID of the asset, which sender is trying to sell
   // @Param: Number of ownershipUnits being sold
   // @Param: The WEI cost per unit
-  function createSellOrder(bytes32 _assetID, uint _amount, uint _price)
+  function createSellOrder(bytes32 _assetID, address _seller, uint _amount, uint _price)
   external
   aboveZero(_amount, _price)
   validAsset(_assetID)
-  isAllowed(_assetID, msg.sender, _amount)
+  isAllowed(_assetID, _seller, _amount)
   returns (bool) {
-    bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, false));
-    require(!orders[msg.sender][orderID]);
-    orders[msg.sender][orderID] = true;
-    events.exchange('Sell order created', orderID, _assetID, msg.sender);
+    bytes32 orderID = keccak256(abi.encodePacked(_assetID, _seller, _amount, _price, false));
+    require(!orders[_seller][orderID]);
+    orders[_seller][orderID] = true;
+    events.exchange('Sell order created', orderID, _assetID, _seller);
     events.order('Sell order', orderID, _amount, _price);
-    //emit LogSellOrderCreated(orderID, _assetID, msg.sender);
+    //emit LogSellOrderCreated(orderID, _assetID, _seller);
     //emit LogSellOrderDetails(orderID, _amount, _price);
     return true;
   }
@@ -132,17 +135,18 @@ contract AssetExchange {
   // @Param: The WEI cost per unit
   // @Param: Is this order a BuyOrder?
   //------------------------------------------------------------------------------------------------------------------
-  function deleteOrder(bytes32 _assetID, uint _amount, uint _price, bool _buyOrder)
+  function deleteOrder(bytes32 _assetID, address _orderMaker, uint _amount, uint _price, bool _buyOrder)
   external
   returns (bool) {
-    bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, _buyOrder));
-    require(orders[msg.sender][orderID]);
+    require(msg.sender == _orderMaker || database.boolStorage(keccak256(abi.encodePacked("approval", _orderMaker, msg.sender, address(this), msg.sig))));
+    bytes32 orderID = keccak256(abi.encodePacked(_assetID, _orderMaker, _amount, _price, _buyOrder));
+    require(orders[_orderMaker][orderID]);
     if (_buyOrder) {
       uint returnValue = _amount.mul(_price).div(decimals);
-      weiDeposited[msg.sender] = weiDeposited[msg.sender].sub(returnValue);
-      weiOwed[msg.sender] = weiOwed[msg.sender].add(returnValue);
+      weiDeposited[_orderMaker] = weiDeposited[_orderMaker].sub(returnValue);
+      weiOwed[_orderMaker] = weiOwed[_orderMaker].add(returnValue);
     }
-    delete orders[msg.sender][orderID];
+    delete orders[_orderMaker][orderID];
     return true;
   }
   //------------------------------------------------------------------------------------------------------------------

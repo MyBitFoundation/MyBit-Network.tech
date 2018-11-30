@@ -63,25 +63,25 @@ contract('Mintable Distribution', async (accounts) => {
   });
 
   it('Transfer tokens with dividends not withdrawn', async() => {
-    user2Balance1 = web3.eth.getBalance(user2);
+    user2Balance1 = bn(await web3.eth.getBalance(user2));
     await token.withdraw({from: user2})
-    user2Balance2 = web3.eth.getBalance(user2);
-    console.log(user2Balance2 - user2Balance1);
+    user2Balance2 = bn(await web3.eth.getBalance(user2));
+    console.log(user2Balance2.minus(user2Balance1).toNumber());
 
     await token.issueDividends({from:owner, value:10*ETH})
 
     await token.withdraw({from: user2})
-    user2Balance3 = web3.eth.getBalance(user2);
-    console.log(user2Balance3 - user2Balance2);
+    user2Balance3 = bn(await web3.eth.getBalance(user2));
+    console.log(user2Balance3.minus(user2Balance2).toNumber());
 
     await token.withdraw({from: user2})
-    user2Balance4 = web3.eth.getBalance(user2);
-    console.log(user2Balance4 - user2Balance3);
+    user2Balance4 = bn(await web3.eth.getBalance(user2));
+    console.log(user2Balance4.minus(user2Balance3).toNumber());
 
-    user1Balance1 = web3.eth.getBalance(user1);
+    user1Balance1 = bn(await web3.eth.getBalance(user1));
     await token.withdraw({from: user1})
-    user1Balance2 = web3.eth.getBalance(user1);
-    console.log(user1Balance2 - user1Balance1);
+    user1Balance2 = bn(await web3.eth.getBalance(user1));
+    console.log(user1Balance2.minus(user1Balance1).toNumber());
   });
 
   it('Get totalSupply', async() => {

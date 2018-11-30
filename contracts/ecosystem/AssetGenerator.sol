@@ -28,40 +28,42 @@ contract AssetGenerator {
 
   // @notice users can on-board non-tradeable assets here
   // @dev creates an ERC20 dividend token (tradeable) or distribution token (not-tradeable)
-  function createAsset(string _tokenURI, address[] _tokenHolders, uint[] _amount)
+  function createAsset(string _tokenURI, address _assetManager, address[] _tokenHolders, uint[] _amount)
   external
   // burnRequired
   returns (bool) {
+    require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
     require (_tokenHolders.length == _amount.length && _tokenHolders.length <= 100);
-    bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _tokenURI));
+    bytes32 assetID = keccak256(abi.encodePacked(_assetManager, _tokenURI));
     require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))) == address(0));
     FixedDistribution assetInstance = new FixedDistribution(_tokenURI, _tokenHolders, _amount);
-    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
+    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), _assetManager);
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetInstance));
-    //emit LogAssetCreated(assetID, address(assetInstance), msg.sender, _tokenURI);
-    events.asset('Asset created', _tokenURI, assetID, address(assetInstance), msg.sender);
+    //emit LogAssetCreated(assetID, address(assetInstance), _assetManager, _tokenURI);
+    events.asset('Asset created', _tokenURI, assetID, address(assetInstance), _assetManager);
     return true;
   }
 
   // @notice users can on-board tradeable assets here
   // @dev creates an ERC20 dividend token (tradeable) or
-  function createTradeableAsset(string _tokenURI, address[] _tokenHolders, uint[] _amount)
+  function createTradeableAsset(string _tokenURI, address _assetManager, address[] _tokenHolders, uint[] _amount)
   external
   // burnRequired
   returns (bool) {
+    require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
     require (_tokenHolders.length == _amount.length && _tokenHolders.length <= uint8(100));
     address assetGeneratorAddress = database.addressStorage(keccak256(abi.encodePacked("contract", "AssetGenerator")));
-    bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _tokenURI));
+    bytes32 assetID = keccak256(abi.encodePacked(_assetManager, _tokenURI));
     require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))) == address(0));
     DividendToken assetInstance = new DividendToken(_tokenURI, assetGeneratorAddress);   // Gives this contract all new asset tokens
     for (uint8 i = 0; i < _tokenHolders.length; i++) {
       assetInstance.mint(_tokenHolders[i], _amount[i]);
     }
     assetInstance.finishMinting();
-    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
+    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), _assetManager);
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetInstance));
-    //emit LogTradeableAssetCreated(assetID, address(assetInstance), msg.sender, _tokenURI);
-    events.asset('Tradeable asset created', _tokenURI, assetID, address(assetInstance), msg.sender);
+    //emit LogTradeableAssetCreated(assetID, address(assetInstance), _assetManager, _tokenURI);
+    events.asset('Tradeable asset created', _tokenURI, assetID, address(assetInstance), _assetManager);
     return true;
   }
 

@@ -46,6 +46,7 @@ contract CrowdsaleETH {
     notFinalized(_assetID)
     // burnRequired
     returns (bool) {
+      require(msg.sender == _investor || database.boolStorage(keccak256(abi.encodePacked("approval", _investor, msg.sender, address(this), msg.sig))));
       EtherDividendInterface assetToken = EtherDividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
       uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID)));
       uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
@@ -56,7 +57,7 @@ contract CrowdsaleETH {
         require(assetToken.mint(_investor, tokensRemaining), "Investor tokens not minted");   // Send remaining asset tokens
         require(assetToken.finishMinting(), "Minting not finished");
         require(payoutETH(_assetID, amountToRaise), "Payout failed");          // 1 token = 1 wei
-        _investor.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI after cost of tokens calculated and subtracted from msg.value
+        msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI after cost of tokens calculated and subtracted from msg.value to msg.sender *NOT _investor
       }
       else {
         require(assetToken.mint(_investor, msg.value), "Investor tokens not minted");
