@@ -147,7 +147,7 @@ contract('AssetGovernance', async(accounts) => {
     let balanceBefore = await platformToken.balanceOf(assetManager);
     await platformToken.approve(escrow.address, 2*ETH, {from:assetManager});
     let block = await web3.eth.getBlock('latest');
-    await escrow.lockEscrow(assetID, 2*ETH, {from:assetManager});
+    await escrow.lockEscrow(assetID, assetManager, 2*ETH, {from:assetManager});
     let logs = await events.getPastEvents('LogEscrow', {filter: {messageID: web3.utils.sha3('Escrow locked'), origin: assetManager}, fromBlock: block.number});
     assetManagerEscrowID = logs[0].args.escrowID;
     let balanceAfter = await platformToken.balanceOf(assetManager);
