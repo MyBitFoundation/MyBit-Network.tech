@@ -18,9 +18,9 @@ contract MintableToken is StandardToken {
   // @notice constructor: initialized
   constructor(string _tokenURI, address _minter)
   public {
-      tokenURI = _tokenURI;                         // Set the id for reference
-      minter = _minter;
-      supply = 0;
+    tokenURI = _tokenURI;                         // Set the id for reference
+    minter = _minter;
+    supply = 0;
   }
 
 
