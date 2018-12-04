@@ -2,23 +2,12 @@ const Database = artifacts.require("./database/Database.sol");
 const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
-const Promisify = (inner) =>
-    new Promise((resolve, reject) =>
-        inner((err, res) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(res);
-            }
-        })
-    );
 
+contract('Operators', async(accounts) => {
+  const owner = accounts[0];
+  const operator = accounts[1];
+  const operator2 = accounts[2];
 
-const owner = web3.eth.accounts[0];
-const operator = web3.eth.accounts[1];
-const operator2 = web3.eth.accounts[2];
-
-contract('Operators', async() => {
   let db;
   let events;
   let cm;
@@ -56,8 +45,7 @@ contract('Operators', async() => {
   it('Set operator', async() => {
     let block = await web3.eth.getBlock('latest');
     await operators.registerOperator(operator, 'Operator', 'Asset Type');
-    let e = events.LogOperator({message: 'Operator registered', origin: owner}, {fromBlock: block.number, toBlock: 'latest'});
-    let logs = await Promisify(callback => e.get(callback));
+    let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: owner}, fromBlock: block.number});
     operatorID = logs[0].args.operatorID;
   });
 

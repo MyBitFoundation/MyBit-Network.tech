@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 
 // @title A shared storage contract for platform contracts to store and retrieve data
@@ -36,9 +36,9 @@ contract Database{
     function enableContractManagement(address _contractManager)
     external
     returns (bool){
-        require(_contractManager != address(0));
-        require(boolStorage[keccak256(abi.encodePacked("owner", msg.sender))]);
-        require(addressStorage[keccak256(abi.encodePacked("contract", "ContractManager"))] == address(0));
+        require(_contractManager != address(0), "Empty address");
+        require(boolStorage[keccak256(abi.encodePacked("owner", msg.sender))], "Not owner");
+        require(addressStorage[keccak256(abi.encodePacked("contract", "ContractManager"))] == address(0), "There is already a contract manager");
         addressStorage[keccak256(abi.encodePacked("contract", "ContractManager"))] = _contractManager;
         boolStorage[keccak256(abi.encodePacked("contract", _contractManager))] = true;
         return true;

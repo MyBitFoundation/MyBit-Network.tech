@@ -6,10 +6,10 @@ const ContractManager = artifacts.require("./database/ContractManager.sol");
 const SingleOwned = artifacts.require("./ownership/SingleOwned.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 
-const owner = web3.eth.accounts[0];
-const newOwner = web3.eth.accounts[1];
+contract('SingleOwned', async(accounts) => {
+  const owner = accounts[0];
+  const newOwner = accounts[1];
 
-contract('SingleOwned', async() => {
   let db;
   let events;
   let cm;

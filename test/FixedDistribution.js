@@ -3,22 +3,20 @@ var bn = require('bignumber.js');
 /* Contracts  */
 const Token = artifacts.require("./tokens/distribution/FixedDistribution.sol");
 
-const owner = web3.eth.accounts[0];
-const user1 = web3.eth.accounts[1];
-const user2 = web3.eth.accounts[2];
-const tokenHolders = [user1, user2];
-
-const ETH = 1000000000000000000;
-const scaling = 1000000000000000000000000000000000000;
-const tokenPerAccount = 1000000000000000000000;
-
-let tokenURI = 'FixieFix';
+const ETH = bn(10**18);
+const tokenPerAccount = bn(1000).times(ETH);
 
 contract('Fixed Distribution', async (accounts) => {
+  const owner = accounts[0];
+  const user1 = accounts[1];
+  const user2 = accounts[2];
+  const tokenHolders = [user1, user2];
+
   let token;
+  let tokenURI = 'FixieFix';
 
   it('Deploy Token', async() => {
-    token = await Token.new(tokenURI, tokenHolders, [tokenPerAccount, tokenPerAccount*2]);
+    token = await Token.new(tokenURI, tokenHolders, [tokenPerAccount, tokenPerAccount.times(2)]);
   });
 
 });

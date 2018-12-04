@@ -11,40 +11,33 @@ const Operators = artifacts.require("./roles/Operators.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
 const API = artifacts.require("./database/API.sol");
 const GovernedToken = artifacts.require("./tokens/ERC20/GovernedToken.sol");
-const TimedVote = artifacts.require('./tokens/ERC20/TimedVote.sol');
+const Proposals = artifacts.require('./ownership/Proposals.sol');
 const PlatformToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const RawCall = artifacts.require("./ownership/RawCall.sol");
-const Promisify = (inner) =>
-    new Promise((resolve, reject) =>
-        inner((err, res) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(res);
-            }
-        })
-    );
+const Approval = artifacts.require("./access/Approval.sol");
 
-const owner = web3.eth.accounts[0];
-const user1 = web3.eth.accounts[1];
-const user2 = web3.eth.accounts[2];
-const user3 = web3.eth.accounts[3];
-const assetManager = web3.eth.accounts[4];
-const operator = web3.eth.accounts[5];
-const newAssetManager = web3.eth.accounts[6];
-const tokenHolders = [user1, user2, user3];
 //Time vote constants
 const voteDurationDays = 15;
 const voteDuration = voteDurationDays * 24 * 60 * 60; // In seconds
 const quorum = 20; // 20%
 const threshold = 51; // 51%
 
-const ETH = 1000000000000000000;
-let tokenPerAccount;
+const ETH = 10**18;
+const tokenSupply = bn(180000000).times(ETH);
 
 // This test will check that the voting mechanisms are working properly and will test the functionality of changing assetManagers
-contract('AssetGovernance', async() => {
+contract('AssetGovernance', async(accounts) => {
+  const owner = accounts[0];
+  const user1 = accounts[1];
+  const user2 = accounts[2];
+  const user3 = accounts[3];
+  const assetManager = accounts[4];
+  const operator = accounts[5];
+  const newAssetManager = accounts[6];
+  const tokenHolders = [user1, user2, user3];
+
+  let tokenPerAccount;
   let db;
   let events;
   let cm;
@@ -56,8 +49,9 @@ contract('AssetGovernance', async() => {
   let govToken;
   let platformToken;
   let governance;
-  let timedVote;
+  let proposals;
   let rawCall;
+  let approval;
 
   let methodID;
   let parameterHash;
@@ -92,16 +86,17 @@ contract('AssetGovernance', async() => {
   });
 
   it("Deploy standard token", async() => {
-    platformToken = await PlatformToken.new('MyB', 180000000*ETH);
+    platformToken = await PlatformToken.new('MyB', tokenSupply);
   });
 
   it("Transfer token to assetManagers", async() => {
-    await platformToken.transfer(assetManager, 100*ETH);
-    assetManagerBalance = await platformToken.balanceOf(assetManager);
-    assert.equal(assetManagerBalance, 100*ETH);
-    await platformToken.transfer(newAssetManager, 100*ETH);
-    newAssetManagerBalance = await platformToken.balanceOf(newAssetManager);
-    assert.equal(newAssetManagerBalance, 100*ETH);
+    let transferAmount = bn(100).times(ETH);
+    await platformToken.transfer(assetManager, transferAmount);
+    assetManagerBalance = bn(await platformToken.balanceOf(assetManager));
+    assert.equal(assetManagerBalance.eq(transferAmount), true);
+    await platformToken.transfer(newAssetManager, transferAmount);
+    newAssetManagerBalance = bn(await platformToken.balanceOf(newAssetManager));
+    assert.equal(newAssetManagerBalance.eq(transferAmount), true);
   });
 
   it('Deploy api', async() => {
@@ -114,6 +109,11 @@ contract('AssetGovernance', async() => {
     await cm.addContract('PlatformFunds', platform.address);
     await platform.setPlatformWallet(owner);
     await platform.setPlatformToken(platformToken.address);
+  });
+
+  it('Deploy approval', async() => {
+    approval = await Approval.new(db.address, events.address);
+    await cm.addContract('Approval', approval.address);
   });
 
   it('Deploy raw call', async() => {
@@ -135,8 +135,7 @@ contract('AssetGovernance', async() => {
     await cm.addContract('Operators', operators.address);
     let block = await web3.eth.getBlock('latest');
     await operators.registerOperator(operator, 'Operator', 'Asset Type');
-    let e = events.LogOperator({message: 'Operator registered', origin: owner}, {fromBlock: block.number, toBlock: 'latest'});
-    let logs = await Promisify(callback => e.get(callback));
+    let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: owner}, fromBlock: block.number});
     operatorID = logs[0].args.operatorID;
   });
 
@@ -148,9 +147,8 @@ contract('AssetGovernance', async() => {
     let balanceBefore = await platformToken.balanceOf(assetManager);
     await platformToken.approve(escrow.address, 2*ETH, {from:assetManager});
     let block = await web3.eth.getBlock('latest');
-    await escrow.lockEscrow(assetID, 2*ETH, {from:assetManager});
-    let e = events.LogEscrow({message: 'Escrow locked', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
-    let logs = await Promisify(callback => e.get(callback));
+    await escrow.lockEscrow(assetID, assetManager, 2*ETH, {from:assetManager});
+    let logs = await events.getPastEvents('LogEscrow', {filter: {messageID: web3.utils.sha3('Escrow locked'), origin: assetManager}, fromBlock: block.number});
     assetManagerEscrowID = logs[0].args.escrowID;
     let balanceAfter = await platformToken.balanceOf(assetManager);
     let diff = bn(balanceBefore).minus(balanceAfter);
@@ -185,25 +183,28 @@ contract('AssetGovernance', async() => {
   // Each token holder has 25% of total supply  (assetmanager has 25%)
   it("Spread tokens to users", async() => {
     let userBalance;
-    let totalSupply = 999999999999999999999999999999999999;
-    let supplyCheck;
-    tokenPerAccount = totalSupply / tokenHolders.length;   // TODO: getting error with bignumber.js here
+    //Anything above 9007199254740991 loses precision
+    let totalSupply = bn(10**36);
+    let supplyCheck = bn(0);
+    tokenPerAccount = totalSupply.dividedBy(tokenHolders.length).integerValue();
+    //tokenPerAccount = totalSupply/tokenHolders.length
+    console.log(tokenPerAccount);
     for (var i = 0; i < tokenHolders.length; i++) {
-      //console.log(web3.eth.accounts[i]);
+      //console.log(accounts[i]);
       await govToken.mint(tokenHolders[i], tokenPerAccount);
-      supplyCheck += tokenPerAccount;
-      userBalance = await govToken.balanceOf(tokenHolders[i]);
-      assert.equal(userBalance, tokenPerAccount);
+      supplyCheck = supplyCheck.times(tokenPerAccount);
+      userBalance = bn(await govToken.balanceOf(tokenHolders[i]));
+      assert.equal(userBalance.eq(tokenPerAccount), true);
     }
-    assert.equal(await govToken.balanceOf(owner), 0);
-    console.log("each user has a potential vote percentage of ", (tokenPerAccount * 100) / await govToken.totalSupply());
+    assert.equal(bn(await govToken.balanceOf(owner)).eq(0), true);
+    console.log("each user has a potential vote percentage of ", tokenPerAccount.times(100).dividedBy(await govToken.totalSupply()).toNumber());
     // assert.equal(supplyCheck, await govToken.totalSupply());
   });
 
   it("Transfer token to assetManager assets", async() => {
     await govToken.mint(assetManagerFunds.address, tokenPerAccount);
-    assetManagerBalance = await govToken.balanceOf(assetManagerFunds.address);
-    assert.equal(assetManagerBalance, tokenPerAccount);
+    assetManagerBalance = bn(await govToken.balanceOf(assetManagerFunds.address));
+    assert.equal(assetManagerBalance.eq(tokenPerAccount), true);
   });
 
   it("Initiate a vote", async() => {
@@ -228,8 +229,8 @@ contract('AssetGovernance', async() => {
   it("Try to transfer tokens", async() => {
     let err;
     //Fail because tokens are locked in vote for firing assetManager
-    assert.equal(0, await api.getNumTokensAvailable(proposalID, user1));
-    assert.equal(await govToken.balanceOf(user1), tokenPerAccount);
+    assert.equal(bn(await api.getNumTokensAvailable(proposalID, user1)).eq(0), true);
+    assert.equal(bn(await govToken.balanceOf(user1)).eq(tokenPerAccount), true);
     try{
       await govToken.transfer(user2, tokenPerAccount, {from: user1});
     } catch(e){
@@ -347,10 +348,6 @@ contract('AssetGovernance', async() => {
     await platformToken.approve(escrow.address, 10*ETH, {from: newAssetManager});
     let consensus = await governance.isConsensusReached(proposalID);
     console.log("consensus is reached?  ", consensus);
-    // let e = await governance.LogConsensus({}, {fromBlock: 0, toBlock: 'latest'});
-    // let logs = await Promisify(callback => e.get(callback));
-    // console.log('Consensus: ', consensus);
-    // console.log(logs[0].args);
     await escrow.becomeAssetManager(assetID, assetManager, 10*ETH, true, {from:newAssetManager});
   });
 */
@@ -362,6 +359,7 @@ contract('AssetGovernance', async() => {
     console.log("consensus is reached?  ", consensus);
     let num = Number(bn(ETH).multipliedBy(10)).toString();
     let params = await abi.encodeParameters(['bytes32', 'address', 'address', 'uint256', 'bool'], [assetID, assetManager, newAssetManager, num, true]);
+    await approval.approve(rawCall.address, escrow.address, methodID, {from: newAssetManager});
     await rawCall.execute(escrow.address, methodID, params, proposalID, governance.address, {from: newAssetManager});
     assert.equal(newAssetManager, await api.getAssetManager(assetID));
   });
@@ -377,19 +375,14 @@ contract('AssetGovernance', async() => {
   });
 
   it("Deploy new voting contract", async() => {
-    timedVote = await TimedVote.new(
-      db.address,
-      voteDuration,
-      quorum,
-      threshold
-    );
-    await cm.addContract("TimedVote", timedVote.address);
+    proposals = await Proposals.new(db.address);
+    await cm.addContract("Proposals", proposals.address);
   });
 
   it("Start vote to change voting process", async() => {
     let methodString = "changeVotingProcess(address)";
     methodID = await api.getMethodID(methodString);
-    parameterHash = await api.getVotingProcessParameterHash(timedVote.address);
+    parameterHash = await api.getVotingProcessParameterHash(proposals.address);
     platformAssetID = await api.getPlatformAssetID();
     await governance.propose(escrow.address, platformAssetID, methodID, parameterHash);
     proposalID = await api.getProposalID(escrow.address, platformAssetID, methodID, parameterHash);
@@ -408,8 +401,8 @@ contract('AssetGovernance', async() => {
   });
 
   it("Change voting process", async() => {
-    await escrow.changeVotingProcess(timedVote.address);
-    assert.equal(await escrow.votingProcess(), timedVote.address);
+    await escrow.changeVotingProcess(proposals.address);
+    assert.equal(await escrow.votingProcess(), proposals.address);
   });
 
   it("Destroy", async() => {

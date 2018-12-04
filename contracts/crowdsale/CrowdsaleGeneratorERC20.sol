@@ -1,4 +1,4 @@
- pragma solidity 0.4.24;
+ pragma solidity ^0.4.24;
 
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
@@ -36,10 +36,11 @@ contract CrowdsaleGeneratorERC20 {
   // @param (uint) _amountToRaise = The amount of tokens required to raise for the crowdsale to be a success
   // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
   // @param (address) _fundingToken = The ERC20 token to be used to fund the crowdsale (Operator must accept this token as payment)
-  function createAssetOrderERC20(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc, address _fundingToken)
+  function createAssetOrderERC20(string _assetURI, address _assetManager, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc, address _fundingToken)
   external
   // burnRequired
   {
+    require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
     require(_amountToRaise > 0);
     require(_assetManagerPerc < 100);
     require(database.boolStorage(keccak256(abi.encodePacked("acceptsToken", _operatorID, _fundingToken))));

@@ -1,4 +1,4 @@
-  pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
   import "../math/SafeMath.sol";
   import "../interfaces/DBInterface.sol";
@@ -30,12 +30,13 @@
       votingProcess = VotingInterface(_voting);
     }
 
-    // @dev assetID can be computed beforehand with sha3(msg.sender, _amountToRaise, _operatorID, _assetURI))
+    // @dev assetID can be computed beforehand with sha3(_assetManager, _amountToRaise, _operatorID, _assetURI))
     // @dev anybody can make the assetManager escrow if he leaves this contract with approval to transfer
-    function lockEscrow(bytes32 _assetID, uint _amount)
+    function lockEscrow(bytes32 _assetID, address _assetManager, uint _amount)
     public
     returns (bool) {
-      require(lockEscrowInternal(msg.sender, _assetID, _amount));
+      require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
+      require(lockEscrowInternal(_assetManager, _assetID, _amount));
       return true;
     }
 
@@ -44,13 +45,14 @@
     // @notice assetManager can unlock his escrow here once funding fails or asset returns sufficient ROI
     // @dev asset must have fundingDeadline = 0 or have ROI > 25%
     // @dev returns escrow according to ROI. 25% ROI returns 25% of escrow, 50% ROI returns 50% of escrow etc...
-    function unlockEscrow(bytes32 _assetID)
+    function unlockEscrow(bytes32 _assetID, address _assetManager)
     public
     returns (bool) {
-      require(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))) == msg.sender);
+      require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
+      require(database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))) == _assetManager);
       require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))) < now);
       BurnableERC20 burnToken = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", keccak256(abi.encodePacked("platformAssetID"))))));
-      bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetID, msg.sender));
+      bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetID, _assetManager));
       uint escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", assetManagerEscrowID)));
       uint unlockAmount = database.uintStorage(keccak256(abi.encodePacked("assetManagerEscrow", assetManagerEscrowID))).sub(escrowRedeemed);
       if(!database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)))){
@@ -69,7 +71,7 @@
         require(unlockAmount > 0);
         database.setUint(keccak256(abi.encodePacked("escrowRedeemed", assetManagerEscrowID)), escrowRedeemed.add(unlockAmount));
       }
-      require(burnToken.transfer(msg.sender, unlockAmount));
+      require(burnToken.transfer(_assetManager, unlockAmount));
       return true;
     }
 
@@ -80,6 +82,8 @@
     external
     hasConsensus(_assetID, msg.sig, keccak256(abi.encodePacked(_assetID, _oldAssetManager, _newAssetManager, _amount, _burn)))
     returns (bool) {
+      //Check for approval
+      require(msg.sender == _newAssetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _newAssetManager, msg.sender, address(this), msg.sig))));
       address currentAssetManager = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID)));
       require(currentAssetManager != _newAssetManager && currentAssetManager == _oldAssetManager);
       bytes32 oldAssetManagerEscrowID = keccak256(abi.encodePacked(_assetID, _oldAssetManager));
@@ -147,6 +151,12 @@
     modifier hasConsensus(bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash){
       bytes32 proposalID = keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash));
       require(votingProcess.result(proposalID));
+      _;
+    }
+
+    // @notice This modifier checks is msg.sender has approval to call the function
+    modifier hasApproval(address _approver, bytes4 _sig){
+      require(msg.sender == _approver || database.boolStorage(keccak256(abi.encodePacked("approval", _approver, msg.sender, address(this), _sig))));
       _;
     }
 

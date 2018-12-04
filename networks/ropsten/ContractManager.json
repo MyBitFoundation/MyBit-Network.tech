@@ -1,0 +1,233 @@
+[
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "database",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "events",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_database",
+                "type": "address"
+            },
+            {
+                "name": "_events",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "_contractAddress",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "_name",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "_blockNumber",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogContractAdded",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "contractToDelete",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "_name",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "_blockNumber",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogContractRemoved",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "oldAddress",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "_name",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "_blockNumber",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogContractUpdated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "_contractAddress",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "_name",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "_blockNumber",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogNewContractLocation",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "name": "_user",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "_currentStateAcceptance",
+                "type": "bool"
+            },
+            {
+                "indexed": false,
+                "name": "_ignoreStateChanges",
+                "type": "bool"
+            }
+        ],
+        "name": "LogContractStatePreferenceChanged",
+        "type": "event"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_name",
+                "type": "string"
+            },
+            {
+                "name": "_contractAddress",
+                "type": "address"
+            }
+        ],
+        "name": "addContract",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_name",
+                "type": "string"
+            }
+        ],
+        "name": "removeContract",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_name",
+                "type": "string"
+            },
+            {
+                "name": "_newContractAddress",
+                "type": "address"
+            }
+        ],
+        "name": "updateContract",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_acceptCurrentState",
+                "type": "bool"
+            },
+            {
+                "name": "_ignoreStateChanges",
+                "type": "bool"
+            }
+        ],
+        "name": "setContractStatePreferences",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+]

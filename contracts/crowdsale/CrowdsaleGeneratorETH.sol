@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
@@ -34,10 +34,11 @@ contract CrowdsaleGeneratorETH {
   // @param (uint) _fundingLength = The number of seconds this crowdsale is to go on for until it fails
   // @param (uint) _amountToRaise = The amount of WEI required to raise for the crowdsale to be a success
   // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
-  function createAssetOrderETH(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc)
+  function createAssetOrderETH(string _assetURI, address _assetManager, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc)
   external
   // burnRequired
   returns (bool) {
+    require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
     require(_amountToRaise > 0);
     require(_assetManagerPerc < 100);
     require(database.boolStorage(keccak256(abi.encodePacked("acceptsEther", _operatorID))));

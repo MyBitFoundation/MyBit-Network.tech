@@ -117,6 +117,10 @@
                 "type": "bytes32"
             },
             {
+                "name": "_buyer",
+                "type": "address"
+            },
+            {
                 "name": "_seller",
                 "type": "address"
             },
@@ -139,7 +143,7 @@
         "payable": true,
         "stateMutability": "payable",
         "type": "function",
-        "signature": "0xf08fa7b0"
+        "signature": "0x737d2f24"
     },
     {
         "constant": false,
@@ -147,6 +151,10 @@
             {
                 "name": "_assetID",
                 "type": "bytes32"
+            },
+            {
+                "name": "_seller",
+                "type": "address"
             },
             {
                 "name": "_buyer",
@@ -171,7 +179,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0xf9fe2497"
+        "signature": "0x315ee445"
     },
     {
         "constant": false,
@@ -179,6 +187,10 @@
             {
                 "name": "_assetID",
                 "type": "bytes32"
+            },
+            {
+                "name": "_buyer",
+                "type": "address"
             },
             {
                 "name": "_amount",
@@ -199,7 +211,7 @@
         "payable": true,
         "stateMutability": "payable",
         "type": "function",
-        "signature": "0xf5e20d6f"
+        "signature": "0xd9c3ffcc"
     },
     {
         "constant": false,
@@ -207,6 +219,10 @@
             {
                 "name": "_assetID",
                 "type": "bytes32"
+            },
+            {
+                "name": "_seller",
+                "type": "address"
             },
             {
                 "name": "_amount",
@@ -227,7 +243,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0xa4bc92cd"
+        "signature": "0xb8ea6864"
     },
     {
         "constant": false,
@@ -235,6 +251,10 @@
             {
                 "name": "_assetID",
                 "type": "bytes32"
+            },
+            {
+                "name": "_orderMaker",
+                "type": "address"
             },
             {
                 "name": "_amount",
@@ -259,7 +279,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x2ec008e3"
+        "signature": "0x38a6a737"
     },
     {
         "constant": false,
