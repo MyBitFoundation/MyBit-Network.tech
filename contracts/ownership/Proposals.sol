@@ -1,6 +1,7 @@
 pragma solidity 0.4.24;
 
 import "../math/SafeMath.sol";
+import "../database/Events.sol";
 
 interface ERC20 {
   function transfer(address _to, uint256 _value) external returns (bool);
@@ -37,13 +38,15 @@ contract Proposals {
 
 
   DB public database;
+  Events public events;
 
 
   // @notice constructor
   // @param _database instance
-  constructor(address _database)
+  constructor(address _database, address _events)
   public {
     database = DB(_database);
+    events = Events(_events); 
   }
 
 

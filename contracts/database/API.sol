@@ -66,25 +66,32 @@ contract API {
     return database.boolStorage(keccak256(abi.encodePacked("token.governed", _token)));
   }
 
+  function tokenStakeRequirement(address _token)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256(abi.encodePacked("token.stakerequirement", _token)));
+  }
+
   function tokenVoteDuration(address _token)
   public
   view
-  returns (bool) {
-    return database.boolStorage(keccak256(abi.encodePacked("token.voteduration", _token)));
+  returns (uint) {
+    return database.uintStorage(keccak256(abi.encodePacked("token.voteduration", _token)));
   }
 
   function tokenQuorum(address _token)
   public
   view
-  returns (bool) {
-    return database.boolStorage(keccak256(abi.encodePacked("token.quorum", _token)));
+  returns (uint) {
+    return database.uintStorage(keccak256(abi.encodePacked("token.quorum", _token)));
   }
 
   function tokenThreshold(address _token)
   public
   view
-  returns (bool) {
-    return database.boolStorage(keccak256(abi.encodePacked("token.threshold", _token)));
+  returns (uint) {
+    return database.uintStorage(keccak256(abi.encodePacked("token.threshold", _token)));
   }
 
 

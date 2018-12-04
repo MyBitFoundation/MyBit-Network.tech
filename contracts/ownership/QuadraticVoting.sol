@@ -19,8 +19,12 @@ interface DB {
 }
 
 /**
- * @title Proposal voting
+ * @title Log weighted voting
  * @notice
+ *
+ * Vote weight decreases exponentially with more tokens held. Vote weight is
+ * log2(balance)
+ *
  * Anyone can create a proposal. An token holder can lock their tokens to become
  * a voter. Voters may approve or decline proposals. Vote weight increases as
  * tokens are locked for longer periods. A proposal closes after a configurable

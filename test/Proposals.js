@@ -5,6 +5,7 @@ const Proposals = artifacts.require('Proposals');
 const Database = artifacts.require('Database');
 const Events = artifacts.require('Events');
 const ContractManager = artifacts.require('ContractManager');
+const GovernanceControls = artifacts.require('GovernanceControls');
 const API = artifacts.require('API');
 const PlatformFunds = artifacts.require('PlatformFunds');
 
@@ -39,17 +40,79 @@ contract('Proposals', async (accounts) => {
   const tokenSupply = bn(180000000000000000000000000);
   const voteDurationDays = bn(15);
   const voteDuration = bn(voteDurationDays).times(24).times(60).times(60); // In seconds
-  const unlockDays = voteDurationDays + 1;
-  const closeDays = voteDurationDays + 1;
-  const tier2Days = bn(180 + 1);
-  const tier3Days = bn(365 + 1);
-  const tier1Multiplier = 100;
-  const tier2Multiplier = 150;
-  const tier3Multiplier = 200;
+  const unlockDays = voteDurationDays.plus(1);
   const quorum = bn(20); // 20%
   const threshold = bn(51); // 51%
 
-  let token, timedVote, db, ev, cm, api, platformFunds, platformAssetID, governedToken;
+  let users = [user1, user2, user3];
 
+  let tokensPerUser = tokenSupply.dividedBy(users.length);
+
+  // Contract instances
+  let token, proposals, gc, db, cm, events, api, platformFunds;
+
+
+  it('Deploy database contract', async() => {
+    db = await Database.new([owner], true);
+  });
+
+  it('Deploy API', async() => {
+    api = await API.new(db.address);
+  });
+
+  it('Deploy Events', async() => {
+    events = await Events.new(db.address);
+  });
+
+  it('Deploy contract manager contract', async() => {
+    cm = await ContractManager.new(db.address, events.address);
+    await db.enableContractManagement(cm.address);
+  });
+
+  it('Deploy proposal contract', async() => {
+    proposals = await Proposals.new(db.address, events.address);
+    await cm.addContract("Proposals", proposals.address);
+  });
+
+  it("Deploy standard token", async() => {
+    token = await Token.new('MYB', tokenSupply);
+    assert.equal(tokenSupply.eq(await token.balanceOf(owner)), true);
+  });
+
+  it('Deploy governance controls', async() => {
+    gc = await GovernanceControls.new(db.address, events.address);
+    await cm.addContract("GovernanceControls", gc.address);
+  });
+
+  it('Set token as governed on platform', async() => {
+    await gc.startGovernance(token.address, voteDuration, quorum, threshold, 1);
+    assert.equal(await api.tokenGoverned(token.address), true);
+    console.log("token vote duration is: ", await api.tokenVoteDuration(token.address));
+    assert.equal(voteDuration.eq(await api.tokenVoteDuration(token.address)), true);
+    assert.equal(quorum.eq(await api.tokenQuorum(token.address)), true);
+    assert.equal(threshold.eq(await api.threshold(token.address)), true);
+    assert.equal(await api.tokenStakeRequirement(token.address), 1);
+  });
+
+  it('Deploy platform', async() => {
+    platform = await PlatformFunds.new(db.address, events.address);
+    await cm.addContract('PlatformFunds', platform.address);
+    await platform.setPlatformWallet(owner);
+    await platform.setPlatformToken(token.address);
+  });
+
+  it('Spread token to users', async() => {
+    for (let i = 0; i < user.length; i++){
+      await token.transfer(user[i], tokensPerUser);
+      assert.equal(tokensPerUser.eq(await token.balanceOf(user[i])));
+    }
+  });
+
+  it('Commit users 1 and 2', async() => {
+    for (let i = 0; i < user.length-1; i++){
+      await token.approve(proposals, tokensPerUser, {from: users[i]});
+      await proposals.commit(tokensPerUser, token.address, {from: users[i]}); 
+    }
+  });
 
   });
