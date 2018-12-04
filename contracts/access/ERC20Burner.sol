@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 interface BurnToken {  function burnFrom(address _from, uint _amount) external returns (bool success); }
 interface LogTransaction {  function transaction(string _message, address _from, address _to, uint _amount, bytes32 _id)  external; }
@@ -101,5 +101,5 @@ contract ERC20Burner {
 
   event LogMYBBurned(address _tokenHolder, address _burningContract, uint _amount);
   event LogFeeAdded(address indexed _contractAddress, bytes4 _methodID, uint _amount);
-
+  event LogTokenAddress(address tokenAddress);
 }

@@ -448,4 +448,4 @@ GIT_USER=<GIT_USER> \
 
 ⚠️ This application is unstable and has not undergone any rigorous security audits. Use at your own risk.
 
- MyBit Platform™ CHE-177.186.963  
+ MyBit Platform™ CHE-177.186.963   

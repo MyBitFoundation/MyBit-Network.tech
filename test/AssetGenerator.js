@@ -10,34 +10,21 @@ const ContractManager = artifacts.require("./database/ContractManager.sol");
 const FixedDistribution = artifacts.require("./tokens/distribution/FixedDistribution.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
-const Promisify = (inner) =>
-    new Promise((resolve, reject) =>
-        inner((err, res) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(res);
-            }
-        })
-    );
 
+const ETH = 10**18;
+const scaling = 10**36;
+const tokenSupply = bn(180000000).times(ETH);
+const tokenPerAccount = bn(1000).times(ETH);
+const assetManagerFee = tokenPerAccount.dividedBy(10);
 
-const owner = web3.eth.accounts[0];
-const user1 = web3.eth.accounts[1];
-const user2 = web3.eth.accounts[2];
-const user3 = web3.eth.accounts[3];
-const assetManager = web3.eth.accounts[4];
-const operator = web3.eth.accounts[5];
-const tokenHolders = [assetManager, user1, user2, user3];
-
-
-const ETH = 1000000000000000000;
-const scaling = 1000000000000000000000000000000000000;
-const tokenSupply = 180000000000000000000000000;
-const tokenPerAccount = 1000000000000000000000;
-const assetManagerFee = tokenPerAccount/10;
-
-contract('Asset Generator', async() => {
+contract('Asset Generator', async(accounts) => {
+  const owner = accounts[0];
+  const user1 = accounts[1];
+  const user2 = accounts[2];
+  const user3 = accounts[3];
+  const assetManager = accounts[4];
+  const operator = accounts[5];
+  const tokenHolders = [assetManager, user1, user2, user3];
 
   let token;
   let platformToken;
@@ -75,14 +62,14 @@ contract('Asset Generator', async() => {
 
   it("Spread tokens to users", async() => {
     let userBalance;
-    for (var i = 1; i < web3.eth.accounts.length; i++) {
-      //console.log(web3.eth.accounts[i]);
-      await platformToken.transfer(web3.eth.accounts[i], tokenPerAccount);
-      userBalance = await platformToken.balanceOf(web3.eth.accounts[i]);
-      assert.equal(userBalance, tokenPerAccount);
+    for (var i = 1; i < accounts.length; i++) {
+      //console.log(accounts[i]);
+      await platformToken.transfer(accounts[i], tokenPerAccount);
+      userBalance = bn(await platformToken.balanceOf(accounts[i]));
+      assert.equal(userBalance.eq(tokenPerAccount), true);
     }
     // Check token ledger is correct
-    let totalTokensCirculating = (web3.eth.accounts.length-1) * tokenPerAccount;
+    let totalTokensCirculating = (accounts.length-1) * tokenPerAccount;
     let remainingTokens = bn(tokenSupply).minus(totalTokensCirculating);
     let ledgerTrue = bn(await platformToken.balanceOf(owner)).eq(remainingTokens);
     assert.equal(ledgerTrue, true);
@@ -107,20 +94,18 @@ contract('Asset Generator', async() => {
   });
 
   it('Give permission to contract state', async() => {
-    for(var i=1; i<web3.eth.accounts.length; i++){
-      await cm.setContractStatePreferences(true, true, {from: web3.eth.accounts[i]});
-      await platformToken.approve(burner.address, tokenSupply, {from:web3.eth.accounts[i]});
+    for(var i=1; i<accounts.length; i++){
+      await cm.setContractStatePreferences(true, true, {from: accounts[i]});
+      await platformToken.approve(burner.address, tokenSupply, {from:accounts[i]});
     }
   });
 
   it('Create Non-transferable Asset', async() => {
     assetURI = 'ASSET';
     let block = await web3.eth.getBlock('latest');
-    await assetGen.createAsset(assetURI, tokenHolders, [assetManagerFee, tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
-    let e = events.LogAsset({message: 'Asset created', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
-    let logs = await Promisify(callback => e.get(callback));
-    console.log(logs[0].args);
-    token = FixedDistribution.at(logs[0].args.token);
+    await assetGen.createAsset(assetURI, assetManager, tokenHolders, [assetManagerFee, tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
+    let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset created'), origin: assetManager}, fromBlock: block.number});
+    token = await FixedDistribution.at(logs[0].args.token);
     assetManagerBalance = await token.balanceOf(assetManager);
     user1Balance = await token.balanceOf(user1);
     user2Balance = await token.balanceOf(user2);
@@ -136,7 +121,7 @@ contract('Asset Generator', async() => {
     //Fail because user tokenHolder != amount
     try{
       assetURI = 'ASSETFail';
-      await assetGen.createAsset(assetURI, tokenHolders, [tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
+      await assetGen.createAsset(assetURI, assetManager, tokenHolders, [tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -146,11 +131,9 @@ contract('Asset Generator', async() => {
   it('Create Tradeable Asset', async() => {
     assetURI = 'ASSETASSET';
     let block = await web3.eth.getBlock('latest');
-    await assetGen.createTradeableAsset(assetURI, tokenHolders, [assetManagerFee, tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
-    let e = events.LogAsset({message: 'Tradeable asset created', origin: assetManager}, {fromBlock: block.number, toBlock: 'latest'});
-    let logs = await Promisify(callback => e.get(callback));
-    console.log(logs[0].args);
-    token = FixedDistribution.at(logs[0].args.token);
+    await assetGen.createTradeableAsset(assetURI, assetManager, tokenHolders, [assetManagerFee, tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
+    let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Tradeable asset created'), origin: assetManager}, fromBlock: block.number});
+    token = await FixedDistribution.at(logs[0].args.token);
     assetManagerBalance = await token.balanceOf(assetManager);
     user1Balance = await token.balanceOf(user1);
     user2Balance = await token.balanceOf(user2);
@@ -166,7 +149,7 @@ contract('Asset Generator', async() => {
     //Fail because user tokenHolder != amount
     try{
       assetURI = 'ASSETASSETFail';
-      await assetGen.createTradeableAsset(assetURI, tokenHolders, [tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
+      await assetGen.createTradeableAsset(assetURI, assetManager, tokenHolders, [tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
     } catch(e){
       err = e;
     }

@@ -1,0 +1,598 @@
+[
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "database",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_database",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "message",
+                "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "origin",
+                "type": "address"
+            }
+        ],
+        "name": "LogEvent",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "message",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "from",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "amount",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "name": "id",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "name": "origin",
+                "type": "address"
+            }
+        ],
+        "name": "LogTransaction",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "message",
+                "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "account",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "name": "origin",
+                "type": "address"
+            }
+        ],
+        "name": "LogAddress",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "message",
+                "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "account",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "name",
+                "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "origin",
+                "type": "address"
+            }
+        ],
+        "name": "LogContractChange",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "message",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "uri",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "assetID",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "name": "token",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "name": "manager",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "name": "origin",
+                "type": "address"
+            }
+        ],
+        "name": "LogAsset",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "message",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "assetID",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "name": "escrowID",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "name": "manager",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "amount",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
+                "name": "origin",
+                "type": "address"
+            }
+        ],
+        "name": "LogEscrow",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "message",
+                "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "orderID",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "name": "amount",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "name": "price",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
+                "name": "origin",
+                "type": "address"
+            }
+        ],
+        "name": "LogOrder",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "message",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "orderID",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "name": "assetID",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "name": "account",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "name": "origin",
+                "type": "address"
+            }
+        ],
+        "name": "LogExchange",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "message",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "operatorID",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "name": "operatorURI",
+                "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "account",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "name": "origin",
+                "type": "address"
+            }
+        ],
+        "name": "LogOperator",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "message",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "executionID",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "name": "votesID",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "name": "votes",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "name": "tokens",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "name": "quorum",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
+                "name": "origin",
+                "type": "address"
+            }
+        ],
+        "name": "LogConsensus",
+        "type": "event"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_message",
+                "type": "string"
+            }
+        ],
+        "name": "message",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_message",
+                "type": "string"
+            },
+            {
+                "name": "_from",
+                "type": "address"
+            },
+            {
+                "name": "_to",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_id",
+                "type": "bytes32"
+            }
+        ],
+        "name": "transaction",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_message",
+                "type": "string"
+            },
+            {
+                "name": "_account",
+                "type": "address"
+            }
+        ],
+        "name": "registration",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_message",
+                "type": "string"
+            },
+            {
+                "name": "_account",
+                "type": "address"
+            },
+            {
+                "name": "_name",
+                "type": "string"
+            }
+        ],
+        "name": "contractChange",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_message",
+                "type": "string"
+            },
+            {
+                "name": "_uri",
+                "type": "string"
+            },
+            {
+                "name": "_assetID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_token",
+                "type": "address"
+            },
+            {
+                "name": "_manager",
+                "type": "address"
+            }
+        ],
+        "name": "asset",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_message",
+                "type": "string"
+            },
+            {
+                "name": "_assetID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_escrowID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_manager",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "escrow",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_message",
+                "type": "string"
+            },
+            {
+                "name": "_orderID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_price",
+                "type": "uint256"
+            }
+        ],
+        "name": "order",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_message",
+                "type": "string"
+            },
+            {
+                "name": "_orderID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_assetID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_account",
+                "type": "address"
+            }
+        ],
+        "name": "exchange",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_message",
+                "type": "string"
+            },
+            {
+                "name": "_operatorID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_operatorURI",
+                "type": "string"
+            },
+            {
+                "name": "_account",
+                "type": "address"
+            }
+        ],
+        "name": "operator",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_message",
+                "type": "string"
+            },
+            {
+                "name": "_executionID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_votesID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_votes",
+                "type": "uint256"
+            },
+            {
+                "name": "_tokens",
+                "type": "uint256"
+            },
+            {
+                "name": "_quorum",
+                "type": "uint256"
+            }
+        ],
+        "name": "consensus",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+]

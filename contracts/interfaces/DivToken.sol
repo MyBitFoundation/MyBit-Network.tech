@@ -93,7 +93,7 @@ interface DivToken {
     // @notice Calculates how much wei user is owed. (points + incomeClaimed) / 10**32
     function getOwedDividends(address _user)
     external
-    constant
+    view
     returns (uint);
 
     function assetIncome()

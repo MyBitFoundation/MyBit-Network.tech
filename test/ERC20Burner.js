@@ -8,17 +8,16 @@ const ContractManager = artifacts.require("./database/ContractManager.sol");
 const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
 const TestBurner = artifacts.require("./test/TestBurner.sol");
 
-
-const owner = web3.eth.accounts[0];
-const user1 = web3.eth.accounts[1];
-const user2 = web3.eth.accounts[2];
-const tokenHolders = [user1, user2];
-
-const tokenSupply = 180000000000000000000000000;
-const tokenPerAccount = 1000000000000000000000;
+const tokenSupply = bn(18).times(10**25);
+const tokenPerAccount = bn(10**21);
 
 
-contract('Burner', async() => {
+contract('Burner', async(accounts) => {
+  const owner = accounts[0];
+  const user1 = accounts[1];
+  const user2 = accounts[2];
+  const tokenHolders = [user1, user2];
+
   let burner;
   let token;
   let db;
@@ -46,7 +45,7 @@ contract('Burner', async() => {
     /*
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
-      //console.log(web3.eth.accounts[i]);
+      //console.log(accounts[i]);
       await token.transfer(tokenHolders[i], tokenPerAccount);
       userBalance = await token.balanceOf(tokenHolders[i]);
       assert.equal(userBalance, tokenPerAccount);

@@ -3,20 +3,18 @@ var BigNumber = require('bignumber.js');
 const Database = artifacts.require('./database/Database.sol');
 const Events = artifacts.require('./database/Events.sol');
 const ContractManager = artifacts.require('./database/ContractManager.sol');
-const Promisify = (inner) =>
-    new Promise((resolve, reject) =>
-        inner((err, res) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(res);
-            }
-        })
-    );
 
 contract('Database', async (accounts) => {
-  const manager1 = web3.eth.accounts[0];
-  const manager2 = web3.eth.accounts[1];
+  const manager1 = accounts[0];
+  const manager2 = accounts[1];
+
+  const addressHash = web3.utils.sha3('Address');
+  const uintHash = web3.utils.sha3('Uint');
+  const stringHash = web3.utils.sha3('String');
+  const bytesHash = web3.utils.sha3('Bytes');
+  const bytes32Hash = web3.utils.sha3('Bytes32');
+  const boolHash = web3.utils.sha3('Bool');
+  const intHash = web3.utils.sha3('Int');
 
   let database;
   let events;
@@ -129,9 +127,7 @@ contract('Database', async (accounts) => {
   it('Add user to manager', async() => {
     let block = await web3.eth.getBlock('latest');
     await contractManager.addContract('User', manager1);
-    let e = events.LogContractChange({}, {fromBlock: block.number, toBlock: 'latest'});
-    let logs = await Promisify(callback => e.get(callback));
-    console.log(logs[0].args);
+    let logs = await events.getPastEvents('LogContractChange', {fromBlock: block.number});
     //assert.equal(await contractManager.contractExists(manager1), true);
   });
 
@@ -204,7 +200,7 @@ contract('Database', async (accounts) => {
   it('Fail to set address', async() => {
     let err;
     try{
-      await database.setAddress('Address', manager1, {from: manager2});
+      await database.setAddress(addressHash, manager1, {from: manager2});
     } catch(e){
       err = e;
     }
@@ -212,66 +208,66 @@ contract('Database', async (accounts) => {
   });
 
   it('Set address', async() => {
-    await database.setAddress('Address', manager1);
-    assert.equal(await database.addressStorage('Address'), manager1);
+    await database.setAddress(addressHash, manager1);
+    assert.equal(await database.addressStorage(addressHash), manager1);
   });
 
   it('Set uint', async() => {
-    await database.setUint('Uint', 1);
-    assert.equal(await database.uintStorage('Uint'), 1);
+    await database.setUint(uintHash, 1);
+    assert.equal(await database.uintStorage(uintHash), 1);
   });
 
   it('Set string', async() => {
-    await database.setString('String', 'string');
-    assert.equal(await database.stringStorage('String'), 'string');
+    await database.setString(stringHash, 'string');
+    assert.equal(await database.stringStorage(stringHash), 'string');
   });
 
   it('Set bytes', async() => {
-    await database.setBytes('Bytes', 0x6279746573);
-    assert.equal(await database.bytesStorage('Bytes'), 0x6279746573);
+    await database.setBytes(bytesHash, '0x6279746573');
+    assert.equal(await database.bytesStorage(bytesHash), '0x6279746573');
   });
 
   it('Set bytes32', async() => {
-    await database.setBytes32('Bytes32', 0x0000000000000000000000000000000000000000000000000000000000000000);
-    assert.equal(await database.bytes32Storage('Bytes'), 0x0000000000000000000000000000000000000000000000000000000000000000);
+    await database.setBytes32(bytes32Hash, '0x0000000000000000000000000000000000000000000000000000000000000000');
+    assert.equal(await database.bytes32Storage(bytesHash), '0x0000000000000000000000000000000000000000000000000000000000000000');
   });
 
   it('Set bool', async() => {
-    await database.setBool('Bool', true);
-    assert.equal(await database.boolStorage('Bool'), true);
+    await database.setBool(boolHash, true);
+    assert.equal(await database.boolStorage(boolHash), true);
   });
 
   it('Set int', async() => {
-    await database.setInt('Int', 1);
-    assert.equal(await database.intStorage('Int'), 1);
+    await database.setInt(intHash, 1);
+    assert.equal(await database.intStorage(intHash), 1);
   });
 
   it('Delete address', async() => {
-    await database.deleteAddress('Address');
+    await database.deleteAddress(addressHash);
   });
 
   it('Delete Uint', async() => {
-    await database.deleteUint('Uint');
+    await database.deleteUint(uintHash);
   });
 
   it('Delete string', async() => {
-    await database.deleteString('String');
+    await database.deleteString(stringHash);
   });
 
   it('Delete bytes', async() => {
-    await database.deleteBytes('Bytes');
+    await database.deleteBytes(bytesHash);
   });
 
   it('Delete bytes32', async() => {
-    await database.deleteBytes32('Bytes32');
+    await database.deleteBytes32(bytes32Hash);
   });
 
   it('Delete bool', async() => {
-    await database.deleteBool('Bool');
+    await database.deleteBool(boolHash);
   });
 
   it('Delete int', async() => {
-    await database.deleteInt('Int');
+    await database.deleteInt(intHash);
   });
 
 });

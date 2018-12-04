@@ -72,6 +72,10 @@
                 "type": "bytes32"
             },
             {
+                "name": "_assetManager",
+                "type": "address"
+            },
+            {
                 "name": "_amount",
                 "type": "uint256"
             }
@@ -86,7 +90,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x83b30ad4"
+        "signature": "0x03e55f1c"
     },
     {
         "constant": false,
@@ -94,6 +98,10 @@
             {
                 "name": "_assetID",
                 "type": "bytes32"
+            },
+            {
+                "name": "_assetManager",
+                "type": "address"
             }
         ],
         "name": "unlockEscrow",
@@ -106,7 +114,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x914b857e"
+        "signature": "0x6d005028"
     },
     {
         "constant": false,
