@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 import '../database/Database.sol';
 import '../database/Events.sol';
 
-contract PlatformFunds {
+contract Platform {
 
   Database public database;
   Events public events;
@@ -34,6 +34,13 @@ contract PlatformFunds {
     database.setAddress(keccak256(abi.encodePacked("platformToken")), _tokenAddress);
     //emit LogPlatformToken(_tokenAddress);
     events.registration('Platform token', _tokenAddress);
+  }
+
+  function setBurnrate(uint _percent)
+  external
+  onlyOwner {
+    require(_percent < 100 && _percent >= 0);
+    database.setUint(keccak256(abi.encodePacked("burnrate")), _percent);
   }
 
   // @notice platform owners can destroy contract here

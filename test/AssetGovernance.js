@@ -8,7 +8,7 @@ const Database = artifacts.require("./database/Database.sol");
 const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
-const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
+const Platform = artifacts.require("./ecosystem/Platform.sol");
 const API = artifacts.require("./database/API.sol");
 const GovernedToken = artifacts.require("./tokens/ERC20/GovernedToken.sol");
 const Proposals = artifacts.require('./ownership/Proposals.sol');
@@ -106,7 +106,7 @@ contract('AssetGovernance', async(accounts) => {
 
   it('Deploy platform', async() => {
     platform = await Platform.new(db.address, events.address);
-    await cm.addContract('PlatformFunds', platform.address);
+    await cm.addContract('Platform', platform.address);
     await platform.setPlatformWallet(owner);
     await platform.setPlatformToken(platformToken.address);
   });

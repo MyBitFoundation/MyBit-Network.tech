@@ -12,7 +12,7 @@ const Pausible = artifacts.require("./ownership/Pausible.sol");
 const AssetManagerFunds = artifacts.require("./roles/AssetManagerFunds.sol");
 const CrowdsaleGenerator = artifacts.require("./crowdsale/CrowdsaleGeneratorERC20.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
-const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
+const Platform = artifacts.require("./ecosystem/Platform.sol");
 const API = artifacts.require("./database/API.sol");
 
 const ETH = bn(10**18);
@@ -91,7 +91,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
 
   it('Deploy platform funds', async() => {
     platform = await Platform.new(db.address, events.address);
-    await cm.addContract('PlatformFunds', platform.address);
+    await cm.addContract('Platform', platform.address);
     await platform.setPlatformToken(platformToken.address);
   });
 
@@ -170,7 +170,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     assetManagerFee = 5;
     let block = await web3.eth.getBlock('latest');
     await crowdsaleGen.createAssetOrderERC20(assetURI, assetManager, operatorID, 100, 0, bn(20).times(ETH), assetManagerFee, erc20.address, {from:assetManager});
-    let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), origin: assetManager}, fromBlock: block.number});
+    let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: assetManager}, fromBlock: block.number});
     assetID = logs[0].args.assetID;
     assetTokenAddress = logs[0].args.token;
     console.log('Token Address: ' + tokenAddress);
@@ -326,7 +326,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     assetManagerFee = 20;
     let block = await web3.eth.getBlock('latest');
     await crowdsaleGen.createAssetOrderERC20(assetURI, assetManager, operatorID, 1, 0, bn(20).times(ETH), assetManagerFee, erc20.address, {from:assetManager});
-    let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), origin: assetManager}, fromBlock: block.number});
+    let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: assetManager}, fromBlock: block.number});
     assetID = logs[0].args.assetID;
     assetTokenAddress = logs[0].args.token;
     assetToken = await AssetToken.at(assetTokenAddress);
@@ -402,7 +402,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     assetManagerFee = 0;
     let block = await web3.eth.getBlock('latest');
     await crowdsaleGen.createAssetOrderERC20(assetURI, assetManager, operatorID, 100, 0, bn(2).times(ETH), assetManagerFee, erc20.address, {from:assetManager});
-    let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), origin: assetManager}, fromBlock: block.number});
+    let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: assetManager}, fromBlock: block.number});
     assetID = logs[0].args.assetID;
     assetTokenAddress = logs[0].args.token;
     console.log('Token Address: ' + tokenAddress);

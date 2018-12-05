@@ -62,7 +62,7 @@ contract AssetGenerator {
     database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), _assetManager);
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetInstance));
     //emit LogTradeableAssetCreated(assetID, address(assetInstance), _assetManager, _tokenURI);
-    events.asset('Tradeable asset created', _tokenURI, assetID, address(assetInstance), _assetManager);
+    events.asset('Asset created', _tokenURI, assetID, address(assetInstance), _assetManager);
     return true;
   }
 
