@@ -19,21 +19,12 @@ contract GovernanceControls {
 
 
 
-  // @dev methodID = bytes4(sha3("functionName(parameterType, parameterType)")
-  // @dev functionID = sha3(contractAddress, methodID)
-  // @dev numVotes is sha3(contractAddress, methodID, sha3(parameter, parameter)))
-  // @dev quorumLevel = percentage of tokens required to be locked for the execution of a function
-
-
   // @notice initiator of the platform sets the initial functions quorum level
   // @notice quorum level dictates the number of votes required for that function to be executed
   constructor(address _database, address _events)
   public  {
     database = Database(_database);
     events = Events(_events);
-    // bytes4 methodID = bytes4(keccak256(abi.encodePacked("setQuorumLevel(address, address, bytes4, uint256)")));
-    // bytes32 functionID = keccak256(abi.encodePacked(address(this), methodID));
-    // database.setUint(functionID, _baseQuorum);   // the initial quorum level to set further quorum levels
   }
 
   // @notice initiates governance for this token
@@ -57,6 +48,7 @@ contract GovernanceControls {
     return true;
   }
 
+
   // // @notice If restricted it will have to be called from address(this) using a voting proccess on signForFunctionCall
   // function setQuorumLevel(address _contractAddress, address _tokenAddress, bytes4 _methodID, uint256 _quorumLevel)
   // external
@@ -67,20 +59,12 @@ contract GovernanceControls {
   //   return true;
   // }
 
-  // function setThreshold()
-  // external
-  // returns (bool) {
-  //   return true;
-  // }
+
+  // function updateGovernance()
+
+
   //
   // function setBurnRatio()
-  // external
-  // returns (bool) {
-  //   return true;
-  // }
-  //
-  //
-  // function setStakeAmount()
   // external
   // returns (bool) {
   //   return true;

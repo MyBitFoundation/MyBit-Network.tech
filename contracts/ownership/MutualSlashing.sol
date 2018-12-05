@@ -20,8 +20,9 @@ interface DB {
 }
 
 
-// @notice an extension to proposals that allows token holders to slash proposers stake
+// @notice a proposal/voting system that allows token holders to slash proposers stake
 // @notice token holder must slash a proportional, but lower amount of their own tokens to slash the stake
+// @dev use function burnStake() in any of the other voting systems to add slashing functionality
 contract MutualSlashing {
   using SafeMath for uint256;
 

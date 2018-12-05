@@ -2,6 +2,7 @@ var bn = require('bignumber.js');
 
 const Token = artifacts.require('MyBitToken');
 const Proposals = artifacts.require('Proposals');
+const Commitment = artifacts.require('Commitment');
 const Database = artifacts.require('Database');
 const Events = artifacts.require('Events');
 const ContractManager = artifacts.require('ContractManager');
@@ -49,7 +50,7 @@ contract('Proposals', async (accounts) => {
   let tokensPerUser = tokenSupply.dividedBy(users.length);
 
   // Contract instances
-  let token, proposals, gc, db, cm, events, api, platformFunds;
+  let token, proposals, commitment, gc, db, cm, events, api, platformFunds;
 
 
   it('Deploy database contract', async() => {
@@ -74,6 +75,11 @@ contract('Proposals', async (accounts) => {
     await cm.addContract("Proposals", proposals.address);
   });
 
+  it('Deploy commitment contract', async() => {
+    commitment = await Commitment.new(db.address, events.address);
+    await cm.addContract("Commitment", commitment.address);
+  });
+
   it("Deploy standard token", async() => {
     token = await Token.new('MYB', tokenSupply);
     assert.equal(tokenSupply.eq(await token.balanceOf(owner)), true);
@@ -84,15 +90,7 @@ contract('Proposals', async (accounts) => {
     await cm.addContract("GovernanceControls", gc.address);
   });
 
-  it('Set token as governed on platform', async() => {
-    await gc.startGovernance(token.address, voteDuration, quorum, threshold, 1);
-    assert.equal(await api.tokenGoverned(token.address), true);
-    console.log("token vote duration is: ", await api.tokenVoteDuration(token.address));
-    assert.equal(voteDuration.eq(await api.tokenVoteDuration(token.address)), true);
-    assert.equal(quorum.eq(await api.tokenQuorum(token.address)), true);
-    assert.equal(threshold.eq(await api.threshold(token.address)), true);
-    assert.equal(await api.tokenStakeRequirement(token.address), 1);
-  });
+
 
   it('Deploy platform', async() => {
     platform = await PlatformFunds.new(db.address, events.address);
@@ -108,11 +106,43 @@ contract('Proposals', async (accounts) => {
     }
   });
 
-  it('Commit users 1 and 2', async() => {
+  it('Try to commit user 1 before token is set as governed', async() => {
+    await token.approve(commitment.address, tokensPerUser, {from: user1});
+    await commitment.commit(tokensPerUser, token.address, {from: user1});
+  });
+
+  it('Set token as governed on platform', async() => {
+    await gc.startGovernance(token.address, voteDuration, quorum, threshold, 1);
+    assert.equal(await api.tokenGoverned(token.address), true);
+    console.log("token vote duration is: ", await api.tokenVoteDuration(token.address));
+    assert.equal(voteDuration.eq(await api.tokenVoteDuration(token.address)), true);
+    assert.equal(quorum.eq(await api.tokenQuorum(token.address)), true);
+    assert.equal(threshold.eq(await api.threshold(token.address)), true);
+    assert.equal(await api.tokenStakeRequirement(token.address), 1);
+  });
+
+  it("Try to commit with 0 tokens", async() => {
+    await token.approve(commitment.address, tokensPerUser, {from: user1});
+    await rejects(commitment.commit(0, token.address, {from: user1}));
+  });
+
+  it("Try to commit without approving transferFrom", async() => {
+    await token.approve(commitment.address, 0, {from: user1});
+    await rejects(commitment.commit(tokensPerUser, token.address, {from: user1}));
+  });
+
+  it('Commit users n-1', async() => {
     for (let i = 0; i < user.length-1; i++){
-      await token.approve(proposals, tokensPerUser, {from: users[i]});
-      await proposals.commit(tokensPerUser, token.address, {from: users[i]}); 
+      await token.approve(commitment.address, tokensPerUser, {from: users[i]});
+      await commitment.commit(tokensPerUser, token.address, {from: users[i]});
     }
   });
+
+  it('Try to commit user 1 again', async() => {
+    await token.approve(commitment.address, tokensPerUser, {from: user1});
+    await commitment.commit(tokensPerUser, token.address, {from: user1});
+  });
+
+
 
   });
