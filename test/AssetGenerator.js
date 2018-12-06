@@ -9,7 +9,7 @@ const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const FixedDistribution = artifacts.require("./tokens/distribution/FixedDistribution.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
-const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
+const Platform = artifacts.require("./ecosystem/Platform.sol");
 
 const ETH = 10**18;
 const scaling = 10**36;
@@ -77,7 +77,7 @@ contract('Asset Generator', async(accounts) => {
 
   it('Deploy platform funds', async() => {
     platform = await Platform.new(db.address, events.address);
-    await cm.addContract('PlatformFunds', platform.address);
+    await cm.addContract('Platform', platform.address);
     await platform.setPlatformToken(platformToken.address);
   });
 
@@ -132,7 +132,7 @@ contract('Asset Generator', async(accounts) => {
     assetURI = 'ASSETASSET';
     let block = await web3.eth.getBlock('latest');
     await assetGen.createTradeableAsset(assetURI, assetManager, tokenHolders, [assetManagerFee, tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
-    let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Tradeable asset created'), origin: assetManager}, fromBlock: block.number});
+    let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset created'), origin: assetManager}, fromBlock: block.number});
     token = await FixedDistribution.at(logs[0].args.token);
     assetManagerBalance = await token.balanceOf(assetManager);
     user1Balance = await token.balanceOf(user1);

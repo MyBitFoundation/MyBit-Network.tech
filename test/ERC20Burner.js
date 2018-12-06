@@ -5,7 +5,7 @@ const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 const Database = artifacts.require("./database/Database.sol");
 const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
-const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
+const Platform = artifacts.require("./ecosystem/Platform.sol");
 const TestBurner = artifacts.require("./test/TestBurner.sol");
 
 const tokenSupply = bn(18).times(10**25);
@@ -60,7 +60,7 @@ contract('Burner', async(accounts) => {
 
   it('Set platform', async() => {
     platform = await Platform.new(db.address, events.address);
-    await cm.addContract('PlatformFunds', platform.address);
+    await cm.addContract('Platform', platform.address);
     await platform.setPlatformToken(token.address);
   });
 

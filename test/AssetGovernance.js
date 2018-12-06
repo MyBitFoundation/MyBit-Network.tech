@@ -8,7 +8,7 @@ const Database = artifacts.require("./database/Database.sol");
 const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
-const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
+const Platform = artifacts.require("./ecosystem/Platform.sol");
 const API = artifacts.require("./database/API.sol");
 const GovernedToken = artifacts.require("./tokens/ERC20/GovernedToken.sol");
 const Proposals = artifacts.require('./ownership/Proposals.sol');
@@ -106,7 +106,7 @@ contract('AssetGovernance', async(accounts) => {
 
   it('Deploy platform', async() => {
     platform = await Platform.new(db.address, events.address);
-    await cm.addContract('PlatformFunds', platform.address);
+    await cm.addContract('Platform', platform.address);
     await platform.setPlatformWallet(owner);
     await platform.setPlatformToken(platformToken.address);
   });
@@ -208,9 +208,9 @@ contract('AssetGovernance', async(accounts) => {
   });
 
   it("Initiate a vote", async() => {
-    let methodString = "becomeAssetManager(bytes32,address,address,uint256,bool)";
+    let methodString = "becomeAssetManager(bytes32,address,address,uint256,bool,bool)";
     methodID = await api.getMethodID(methodString);
-    parameterHash = await api.getAssetManagerParameterHash(assetID, assetManager, newAssetManager, 10*ETH, true);
+    parameterHash = await api.getAssetManagerParameterHash(assetID, assetManager, newAssetManager, 10*ETH, true, false);
     await governance.propose(escrow.address, assetID, methodID, parameterHash);
     proposalID = await api.getProposalID(escrow.address, assetID, methodID, parameterHash);
   });
@@ -259,7 +259,7 @@ contract('AssetGovernance', async(accounts) => {
     // assert.equal(await govToken.allowance(newAssetManager, escrow.address), 10*ETH);
     //Fail because consensus is not yet reached
     try{
-      await escrow.becomeAssetManager(assetID, assetManager, 10*ETH, true, {from:newAssetManager});
+      await escrow.becomeAssetManager(assetID, assetManager, 10*ETH, true, false, {from:newAssetManager});
     } catch(e){
       err = e;
     }
@@ -325,7 +325,7 @@ contract('AssetGovernance', async(accounts) => {
     // assert.equal(await govToken.allowance(newAssetManager, escrow.address), 10*ETH);
     //Fail because consensus is not yet reached
     try{
-      await escrow.becomeAssetManager(assetID, assetManager, 10*ETH, true, {from:newAssetManager});
+      await escrow.becomeAssetManager(assetID, assetManager, 10*ETH, true, false, {from:newAssetManager});
     } catch(e){
       err = e;
     }
@@ -348,17 +348,17 @@ contract('AssetGovernance', async(accounts) => {
     await platformToken.approve(escrow.address, 10*ETH, {from: newAssetManager});
     let consensus = await governance.isConsensusReached(proposalID);
     console.log("consensus is reached?  ", consensus);
-    await escrow.becomeAssetManager(assetID, assetManager, 10*ETH, true, {from:newAssetManager});
+    await escrow.becomeAssetManager(assetID, assetManager, 10*ETH, true, false, {from:newAssetManager});
   });
 */
   it("Change AssetManager", async() => {
-    let methodString = "becomeAssetManager(bytes32,address,address,uint256,bool)";
+    let methodString = "becomeAssetManager(bytes32,address,address,uint256,bool,bool)";
     methodID = await api.getMethodID(methodString);
     await platformToken.approve(escrow.address, 10*ETH, {from: newAssetManager});
     let consensus = await governance.isConsensusReached(proposalID);
     console.log("consensus is reached?  ", consensus);
     let num = Number(bn(ETH).multipliedBy(10)).toString();
-    let params = await abi.encodeParameters(['bytes32', 'address', 'address', 'uint256', 'bool'], [assetID, assetManager, newAssetManager, num, true]);
+    let params = await abi.encodeParameters(['bytes32', 'address', 'address', 'uint256', 'bool', 'bool'], [assetID, assetManager, newAssetManager, num, true, false]);
     await approval.approve(rawCall.address, escrow.address, methodID, {from: newAssetManager});
     await rawCall.execute(escrow.address, methodID, params, proposalID, governance.address, {from: newAssetManager});
     assert.equal(newAssetManager, await api.getAssetManager(assetID));
