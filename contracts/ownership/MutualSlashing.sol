@@ -53,6 +53,7 @@ contract MutualSlashing {
     emit Commit(msg.sender, _value);
   }
 
+  
   function propose(address _token, uint256 _stake, address _contractAddress, bytes4 _methodID, bytes32 _parameterHash)
   external
   returns (bool){
@@ -60,7 +61,6 @@ contract MutualSlashing {
     require(tokenIsGoverned(_token));
     bytes32 proposalID = keccak256(abi.encodePacked(msg.sender, _token, _contractAddress, _methodID, _parameterHash));
     require(!proposalOpen(proposalID), "proposal is already open");
-    require(database.uintStorage(keccak256(abi.encodePacked("commitment.value", _token, msg.sender))) >= database.uintStorage(keccak256(abi.encodePacked("token.stakerequirement", _token))));
     database.setAddress(keccak256(abi.encodePacked("proposal.initiator", proposalID)), msg.sender);
     database.setUint(keccak256(abi.encodePacked("proposal.stake", proposalID, msg.sender)), _stake);
     database.setUint(keccak256(abi.encodePacked("proposal.start", proposalID)), now);

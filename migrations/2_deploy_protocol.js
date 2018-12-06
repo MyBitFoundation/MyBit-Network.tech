@@ -1,5 +1,5 @@
 var fs = require('fs');
-var bn = require('bignumber.js'); 
+var bn = require('bignumber.js');
 
 var MyBitToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
 var Database = artifacts.require("./database/Database.sol");
@@ -23,7 +23,7 @@ var CrowdsaleERC20 = artifacts.require("./crowdsale/CrowdsaleERC20.sol");
 var AssetExchange = artifacts.require("./ecosystem/AssetExchange.sol");
 var SafeMath = artifacts.require("./math/SafeMath.sol");
 
-var decimals = 1000000000000000000;
+var decimals = bn(1000000000000000000);
 var tokenSupply = bn(100000).times(decimals);
 var tokenPerAccount = bn(100).times(decimals);
 
@@ -183,7 +183,7 @@ module.exports = function(deployer, network, accounts) {
 
   }).then(function() {
 
-    return AssetManagerEscrow.new(db.address, events.address, governance.address);
+    return AssetManagerEscrow.new(db.address, events.address);
 
   }).then(function(instance) {
 

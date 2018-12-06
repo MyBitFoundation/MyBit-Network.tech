@@ -44,9 +44,9 @@ contract Commitment {
     require(_value > 0, "Non zero value required");
     require(commitmentAge(msg.sender, _token) == 0, "commitment already made");
     require(database.uintStorage(keccak256(abi.encodePacked("commitment.releasetime", _token, msg.sender))) == 0);
-    require(database.boolStorage(keccak256(abi.encodePacked("token.governed", _token))));
+    require(database.boolStorage(keccak256(abi.encodePacked("asset.governed", _token))));
     require(ERC20(_token).transferFrom(msg.sender, address(this), _value), "transferFrom failed");
-    database.setUint(keccak256(abi.encodePacked("commitment.value",  _token, msg.sender)), _value);
+    database.setUint(keccak256(abi.encodePacked("commitment.value", _token, msg.sender)), _value);
     database.setUint(keccak256(abi.encodePacked("commitment.start", _token, msg.sender)), now);
     emit Commit(msg.sender, _value);
   }
@@ -60,7 +60,7 @@ contract Commitment {
     bytes32 releaseTimeID = keccak256(abi.encodePacked("commitment.releasetime", _token, msg.sender));
     require(now < database.uintStorage(releaseTimeID));
     database.deleteUint(keccak256(abi.encodePacked("commitment.start", _token, msg.sender)));   // remove reference to start date which is the authortiy check
-    database.setUint(releaseTimeID, now.add(database.uintStorage(keccak256(abi.encodePacked("token.voteduration")))));
+    database.setUint(releaseTimeID, now.add(database.uintStorage(keccak256(abi.encodePacked("asset.voteduration")))));
     return true;
   }
 

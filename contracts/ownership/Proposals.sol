@@ -59,7 +59,7 @@ contract Proposals {
     require(!proposalOpen(proposalID), "proposal is already open");
     database.setUint(keccak256(abi.encodePacked("proposal.start", proposalID)), now);
     database.setAddress(keccak256(abi.encodePacked("proposal.token", proposalID)), _token);
-    database.setAddress(keccak256(abi.encodePacked("proposal.token", proposalID)), _token);
+    database.setAddress(keccak256(abi.encodePacked("proposal.initiator", proposalID)), msg.sender);
     emit Propose(msg.sender, proposalID);
     emit ProposalDetails(proposalID, _contractAddress, _methodID, _parameterHash);
   }
@@ -110,7 +110,6 @@ contract Proposals {
     bytes32 userVoteID = keccak256(abi.encodePacked("proposal.voted", _proposalID, _tokenHolder));
     require(database.uintStorage(userVoteID) == 0);  // make sure token holder hasn't already voted
     commitValue = database.uintStorage(keccak256(abi.encodePacked("commitment.value", _token, _tokenHolder)));
-    assert (commitValue > 0);
     database.setUint(userVoteID, commitValue);
     bytes32 voteID = keccak256(abi.encodePacked("proposal.votecount", _proposalID));
     uint256 voteCount = database.uintStorage(voteID);
@@ -143,7 +142,7 @@ contract Proposals {
   returns (bool open) {
     uint256 age = now.sub(database.uintStorage(keccak256(abi.encodePacked("proposal.start", _proposalID))));
     address token = database.addressStorage(keccak256(abi.encodePacked("proposal.token", _proposalID)));
-    return (age <= database.uintStorage(keccak256(abi.encodePacked("token.voteduration", token))) && age > 0);
+    return (age <= database.uintStorage(keccak256(abi.encodePacked("asset.voteduration", token))) && age > 0);
   }
 
 

@@ -32,35 +32,38 @@ contract GovernanceControls {
   // @param _voteDuration - Vote duration. Voting period of each proposal. Must be positive.
   // @param _quorum - Amount of supply that must vote to make a proposal valid. Integer percent, eg 20 for 20%. In range 1-100 inclusive.
   // @param _threshold - Amount of weighted votes that must be approval for a proposal to pass. Integer percent, eg 51 for 51%. In range 1-100 inclusive.
-  function startGovernance(address _tokenAddress, uint256 _voteDuration, uint8 _quorum, uint8 _threshold, uint256 _stakeRequirement)
+  function startGovernance(address _tokenAddress, address _governanceContract, uint256 _voteDuration, uint8 _quorum, uint8 _threshold, uint256 _stakeRequirement)
   public
   returns (bool){
     // TODO: only allow initiating by platform contract
     require(_quorum > 0 && _quorum < 100);
     require(_threshold > 0 && _threshold < 100);
-    bytes32 tokenID = keccak256(abi.encodePacked("token.governed", _tokenAddress));
+    bytes32 tokenID = keccak256(abi.encodePacked("asset.governed", _tokenAddress));
     require(!database.boolStorage(tokenID));
     database.setBool(tokenID, true);
-    database.setUint(keccak256(abi.encodePacked("token.voteduration", _tokenAddress)), _voteDuration);
-    database.setUint(keccak256(abi.encodePacked("token.quorum", _tokenAddress)), _quorum);
-    database.setUint(keccak256(abi.encodePacked("token.threshold", _tokenAddress)), _threshold);
-    database.setUint(keccak256(abi.encodePacked("token.stakerequirement", _tokenAddress)), _stakeRequirement);
+    database.setAddress(keccak256(abi.encodePacked("asset.governanceContract", _governanceContract)), _governanceContract);
+    database.setUint(keccak256(abi.encodePacked("asset.voteduration", _tokenAddress)), _voteDuration);
+    database.setUint(keccak256(abi.encodePacked("asset.quorum", _tokenAddress)), _quorum);
+    database.setUint(keccak256(abi.encodePacked("asset.threshold", _tokenAddress)), _threshold);
+    database.setUint(keccak256(abi.encodePacked("asset.stakerequirement", _tokenAddress)), _stakeRequirement);
     return true;
   }
 
 
   // // @notice If restricted it will have to be called from address(this) using a voting proccess on signForFunctionCall
-  // function setQuorumLevel(address _contractAddress, address _tokenAddress, bytes4 _methodID, uint256 _quorumLevel)
+  // function addFunctionality(address _contractAddress, address _tokenAddress, bytes4 _methodID, uint256 _quorumLevel, uint256 _threshold)
   // external
   // isRestricted(msg.sig, keccak256(abi.encodePacked(_contractAddress, _tokenAddress, _methodID, _quorumLevel)))
   // returns (bool) {
-  //   bytes32 functionID = keccak256(abi.encodePacked(_contractAddress, _methodID));
-  //   database.setUint(functionID, _quorumLevel);
   //   return true;
   // }
 
 
-  // function updateGovernance()
+  // function updateGovernance(address token address newContract)
+  // external
+  // returns (bool) {
+  //
+  // }
 
 
   //
