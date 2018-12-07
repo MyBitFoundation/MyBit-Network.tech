@@ -56,15 +56,14 @@ contract CrowdsaleGeneratorERC20 {
     address assetAddress = address(new DividendTokenERC20(_assetURI, database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleERC20"))), _fundingToken));
     database.setUint(keccak256(abi.encodePacked("startTime", assetID)), startTime);
     database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), startTime.add(_fundingLength));
-    uint assetManagerFee = _amountToRaise.mul(uint(100).mul(scalingFactor).div(uint(100).sub(_assetManagerPerc)).sub(scalingFactor)).div(scalingFactor);
     database.setUint(keccak256(abi.encodePacked("amountToRaise", assetID)), _amountToRaise);
-    database.setUint(keccak256(abi.encodePacked("assetManagerFee", assetID)), assetManagerFee);
+    database.setUint(keccak256(abi.encodePacked("assetManagerFee", assetID)), _amountToRaise.mul(uint(100).mul(scalingFactor).div(uint(100).sub(_assetManagerPerc)).sub(scalingFactor)).div(scalingFactor));
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), assetAddress);
     database.setBytes32(keccak256(abi.encodePacked("assetTokenID", assetAddress)), assetID);
-    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
+    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), _assetManager);
     database.setAddress(keccak256(abi.encodePacked("operator", assetID)), database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))));
     database.setAddress(keccak256(abi.encodePacked("fundingToken", assetID)), _fundingToken);
-    events.asset('Asset funding started', _assetURI, assetID, assetAddress, msg.sender);
+    events.asset('Asset funding started', _assetURI, assetID, assetAddress, _assetManager);
   }
 
   // @notice platform owners can destroy contract here

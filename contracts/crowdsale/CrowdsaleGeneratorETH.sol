@@ -54,15 +54,14 @@ contract CrowdsaleGeneratorETH {
     address assetAddress = address(new DividendToken(_assetURI, database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleETH")))));   // Gives this contract all new asset tokens
     database.setUint(keccak256(abi.encodePacked("startTime", assetID)), startTime);
     database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), startTime.add(_fundingLength));
-    uint assetManagerFee = _amountToRaise.mul(uint(100).mul(scalingFactor).div(uint(100).sub(_assetManagerPerc)).sub(scalingFactor)).div(scalingFactor);
-    database.setUint(keccak256(abi.encodePacked("assetManagerFee", assetID)), assetManagerFee);
+    database.setUint(keccak256(abi.encodePacked("assetManagerFee", assetID)), _amountToRaise.mul(uint(100).mul(scalingFactor).div(uint(100).sub(_assetManagerPerc)).sub(scalingFactor)).div(scalingFactor));
     database.setUint(keccak256(abi.encodePacked("amountToRaise", assetID)), _amountToRaise);
     database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), assetAddress);
     database.setBytes32(keccak256(abi.encodePacked("assetTokenID", assetAddress)), assetID);
-    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
+    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), _assetManager);
     database.setAddress(keccak256(abi.encodePacked("operator", assetID)), database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))));
     //emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, address(assetAddress));
-    events.asset('Asset funding started', _assetURI, assetID, assetAddress, msg.sender);
+    events.asset('Asset funding started', _assetURI, assetID, assetAddress, _assetManager);
     return true;
   }
 

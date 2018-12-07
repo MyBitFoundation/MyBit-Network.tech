@@ -51,7 +51,7 @@ contract GovernedToken is DividendToken, BurnableToken {
   public
   view
   returns (uint) {
-    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", address(this), _investor)));
+    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("commitment.value", address(this), _investor)));
     uint balance = balances[_investor];
     uint available = balance.sub(amountLocked);
     return available;
