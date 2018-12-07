@@ -10,9 +10,8 @@ var SingleOwned = artifacts.require("./ownership/SingleOwned.sol");
 var Pausible = artifacts.require("./ownership/Pausible.sol");
 var ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 var AccessHierarchy = artifacts.require("./access/AccessHierarchy.sol");
-var PlatformFunds = artifacts.require("./ecosystem/PlatformFunds.sol");
+var Platform = artifacts.require("./ecosystem/Platform.sol");
 var Operators = artifacts.require("./roles/Operators.sol");
-var AssetGovernance = artifacts.require("./ownership/AssetGovernance.sol");
 var AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
 var AssetManagerFunds = artifacts.require("./roles/AssetManagerFunds.sol");
 var AssetGenerator = artifacts.require("./ecosystem/AssetGenerator.sol");
@@ -29,8 +28,7 @@ var tokenPerAccount = bn(100).times(decimals);
 
 var safemath, MyB, db, events, cm, api, owned, pausible, burner, access,
     platform, operators, escrow, managerFunds, assetGenerator, crowdsaleETH,
-    crowdsaleGeneratorETH, crowdsaleERC20, crowdsaleGeneratorERC20, dax,
-    governance;
+    crowdsaleGeneratorETH, crowdsaleERC20, crowdsaleGeneratorERC20, dax;
 
 module.exports = function(deployer, network, accounts) {
   deployer.then(function(){
@@ -43,7 +41,6 @@ module.exports = function(deployer, network, accounts) {
     deployer.link(SafeMath,
                   API,
                   MyBitToken,
-                  AssetGovernance,
                   AssetManagerEscrow,
                   Operators,
                   CrowdsaleETH,
@@ -124,14 +121,14 @@ module.exports = function(deployer, network, accounts) {
 
   }).then(function() {
 
-    return PlatformFunds.new(db.address, events.address);
+    return Platform.new(db.address, events.address);
 
   }).then(function(instance) {
 
     platform = instance;
-    console.log('PlatformFunds.sol: ' + platform.address);
+    console.log('Platform.sol: ' + platform.address);
 
-    return cm.addContract('PlatformFunds', platform.address, {gas:190000});
+    return cm.addContract('Platform', platform.address, {gas:190000});
 
   }).then(function(){
 
@@ -170,16 +167,6 @@ module.exports = function(deployer, network, accounts) {
     access = instance;
     console.log('AccessHierarchy.sol: ' + access.address);
     return cm.addContract('AccessHierarchy', access.address, {gas:190000});
-
-  }).then(function() {
-
-    return AssetGovernance.new(db.address, events.address);
-
-  }).then(function(instance) {
-
-    governance = instance;
-    console.log('AssetGovernance.sol: ' + governance.address);
-    return cm.addContract('AssetGovernance', governance.address, {gas:190000});
 
   }).then(function() {
 
@@ -315,9 +302,8 @@ module.exports = function(deployer, network, accounts) {
       "SingleOwned" : owned.address,
       "Pausible" : pausible.address,
       "AccessHierarchy" : access.address,
-      "PlatformFunds" : platform.address,
+      "Platform" : platform.address,
       "Operators" : operators.address,
-      "AssetGovernance" : governance.address,
       "AssetManagerEscrow" : escrow.address,
       "AssetManagerFunds" : managerFunds.address,
       "AssetGenerator" : assetGenerator.address,
@@ -340,7 +326,7 @@ module.exports = function(deployer, network, accounts) {
     });
 
     instanceList = [MyB, burner, db, events, cm, api, owned, pausible, access,
-                    platform, operators, governance, escrow, managerFunds,
+                    platform, operators, escrow, managerFunds,
                     assetGenerator, crowdsaleETH, crowdsaleGeneratorETH,
                     crowdsaleERC20, crowdsaleGeneratorERC20, dax];
 

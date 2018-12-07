@@ -9,6 +9,7 @@ const ContractManager = artifacts.require('ContractManager');
 const GovernanceControls = artifacts.require('GovernanceControls');
 const API = artifacts.require('API');
 const PlatformFunds = artifacts.require('PlatformFunds');
+const ConsensusTest = artifacts.require('ConsensusTest');
 
 
 
@@ -45,12 +46,15 @@ contract('Proposals', async (accounts) => {
   const quorum = bn(20); // 20%
   const threshold = bn(51); // 51%
 
+  let methodID;
+  let parameterHash;
+
   let users = [user1, user2, user3];
 
   let tokensPerUser = tokenSupply.dividedBy(users.length);
 
   // Contract instances
-  let token, proposals, commitment, gc, db, cm, events, api, platformFunds;
+  let token, proposals, commitment, gc, ctest, db, cm, events, api, platformFunds;
 
 
   it('Deploy database contract', async() => {
@@ -90,6 +94,9 @@ contract('Proposals', async (accounts) => {
     await cm.addContract("GovernanceControls", gc.address);
   });
 
+  it('Deploy consensus test', async() => {
+    ctest = await ConsensusTest.new(api.address);
+  });
 
 
   it('Deploy platform', async() => {
@@ -143,6 +150,10 @@ contract('Proposals', async (accounts) => {
     await commitment.commit(tokensPerUser, token.address, {from: user1});
   });
 
-
+  it('Create proposal from user1', async() => {
+    methodID = await api.getMethodID("checkConsensus(address, address, uint256)");
+    parameterHash = await ctest.consensusTestParameterHash(user1, token.address, 69);
+    await proposals.propose(token.address, ctest.address, methodID, parameterHash);
+  });
 
   });

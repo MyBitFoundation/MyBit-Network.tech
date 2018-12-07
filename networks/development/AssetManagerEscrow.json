@@ -138,6 +138,10 @@
             {
                 "name": "_burn",
                 "type": "bool"
+            },
+            {
+                "name": "_withhold",
+                "type": "bool"
             }
         ],
         "name": "becomeAssetManager",
@@ -150,7 +154,30 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x8321aa90"
+        "signature": "0x57d2de42"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_oldAssetManager",
+                "type": "address"
+            },
+            {
+                "name": "_currentAssetManager",
+                "type": "address"
+            }
+        ],
+        "name": "returnEscrow",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x943289e4"
     },
     {
         "constant": false,

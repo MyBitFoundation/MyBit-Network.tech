@@ -13,11 +13,11 @@ fi
 mkdir chain
 #Run ganache in background with db set to chain folder (kill any running ganache first)
 pkill -f ganache-cli
-ganache-cli -d --mnemonic "myth like bonus scare over problem client lizard pioneer submit female collect" --networkId 70 --accounts 20 --db chain &
+npx ganache-cli -d --mnemonic "myth like bonus scare over problem client lizard pioneer submit female collect" --networkId 70 --accounts 20 --db chain &
 #Move back to directory this program is run from
 cd $CURRENT_DIR
 #Deploy contracts
-truffle migrate --reset
+npx truffle migrate --reset
 #Kill ganache
 pkill -f ganache-cli
 #Move addresses.json to chain directory

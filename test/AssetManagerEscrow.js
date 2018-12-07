@@ -1,7 +1,6 @@
 var bn = require('bignumber.js');
 
 const AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
-const AssetGovernance = artifacts.require("./ownership/AssetGovernance");
 const Database = artifacts.require("./database/Database.sol");
 const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
@@ -9,7 +8,7 @@ const DivToken = artifacts.require("./tokens/ERC20/DividendToken.sol");
 const MyBitToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
-const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
+const Platform = artifacts.require("./ecosystem/Platform.sol");
 const API = artifacts.require("./database/API.sol");
 
 const ETH = bn(10**18);
@@ -32,7 +31,6 @@ contract('AssetManager Escrow', async(accounts) => {
   let api;
   let hash;
   let escrow;
-  let governance;
   let platform;
   let operators;
 
@@ -68,11 +66,6 @@ contract('AssetManager Escrow', async(accounts) => {
     burnToken = await MyBitToken.new('MyB', bn(10000).times(ETH));
   });
 
-  it("Deploy asset goverance", async() => {
-    governance = await AssetGovernance.new(db.address, events.address);
-    await cm.addContract('AssetGovernance', governance.address);
-  })
-
   it("Transfer token to assetManager", async() => {
     await burnToken.transfer(assetManager, 100*ETH);
     assetManagerBalance = await burnToken.balanceOf(assetManager);
@@ -81,13 +74,13 @@ contract('AssetManager Escrow', async(accounts) => {
 
   it('Deploy platform', async() => {
     platform = await Platform.new(db.address, events.address);
-    await cm.addContract('PlatformFunds', platform.address);
+    await cm.addContract('Platform', platform.address);
     await platform.setPlatformWallet(owner);
     await platform.setPlatformToken(burnToken.address);
   });
 
   it('Deploy assetManager escrow', async() => {
-    escrow = await AssetManagerEscrow.new(db.address, events.address, governance.address);
+    escrow = await AssetManagerEscrow.new(db.address, events.address);
     await cm.addContract('AssetManagerEscrow', escrow.address);
   });
 

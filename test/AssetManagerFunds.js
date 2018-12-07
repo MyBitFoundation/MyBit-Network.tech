@@ -9,7 +9,7 @@ const DivTokenERC20 = artifacts.require("./tokens/ERC20/DividendTokenERC20.sol")
 const MyBitToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
-const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
+const Platform = artifacts.require("./ecosystem/Platform.sol");
 const API = artifacts.require("./database/API.sol");
 
 const ETH = bn(10**18);
@@ -98,7 +98,7 @@ contract('AssetManagerFunds', async(accounts) => {
 
   it('Deploy platform', async() => {
     platform = await Platform.new(db.address, events.address);
-    await cm.addContract('PlatformFunds', platform.address);
+    await cm.addContract('Platform', platform.address);
     await platform.setPlatformWallet(owner);
     await platform.setPlatformToken(burnToken.address);
   });
