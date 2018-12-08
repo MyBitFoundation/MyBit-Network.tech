@@ -40,6 +40,8 @@ contract Proposals {
   DB public database;
   Events public events;
 
+  uint256 public nonce;
+
 
   // @notice constructor
   // @param _database instance
@@ -51,101 +53,130 @@ contract Proposals {
 
 
   // @notice Creates a new proposal with the specified identifier. Fails if there is no voting committed. Fails if a proposal with the same identifier already exists.
-  // @param _proposalID - Identifier of new proposal.
-  function propose(address _token, address _contractAddress, bytes4 _methodID, bytes32 _parameterHash)
+  // @param proposalID - Identifier of new proposal.
+  function propose(address token, address contractAddress, bytes4 methodID, bytes32 _parameterHash)
   external {
-    require(commitmentAge(msg.sender, _token) > 0, "user has no commitment");
-    bytes32 proposalID = keccak256(abi.encodePacked(_token, _contractAddress, _methodID, _parameterHash));
+    require(commitmentAge(msg.sender, token) > 0, "user has no commitment");
+    nonce++;
+    bytes32 proposalID = keccak256(abi.encodePacked(token, contractAddress, methodID, _parameterHash, address(this), nonce));
     require(!proposalOpen(proposalID), "proposal is already open");
     database.setUint(keccak256(abi.encodePacked("proposal.start", proposalID)), now);
-    database.setAddress(keccak256(abi.encodePacked("proposal.token", proposalID)), _token);
+    database.setAddress(keccak256(abi.encodePacked("proposal.token", proposalID)), token);
     database.setAddress(keccak256(abi.encodePacked("proposal.initiator", proposalID)), msg.sender);
     emit Propose(msg.sender, proposalID);
-    emit ProposalDetails(proposalID, _contractAddress, _methodID, _parameterHash);
+    emit ProposalDetails(proposalID, contractAddress, methodID, _parameterHash, nonce);
   }
 
-
+  // TODO: test gas returns vs gas costs
+  function removeProposal(bytes32 proposalID, address[] _voters)
+  external
+  returns (bool) {
+    require (_voters.length < 150);
+    require(database.boolStorage(keccak256(abi.encodePacked("proposal.executed", proposalID))));
+    database.deleteUint(keccak256(abi.encodePacked("proposal.start", proposalID)));
+    database.deleteAddress(keccak256(abi.encodePacked("proposal.token", proposalID)));
+    database.deleteAddress(keccak256(abi.encodePacked("proposal.initiator", proposalID)));
+    database.deleteUint(keccak256(abi.encodePacked("proposal.approval", proposalID)));
+    database.deleteUint(keccak256(abi.encodePacked("proposal.dissent", proposalID)));
+    database.deleteUint(keccak256(abi.encodePacked("proposal.votecount", proposalID)));
+    for (uint8 i = 0; i < _voters.length; i++){
+      database.deleteUint(keccak256(abi.encodePacked("proposal.voted", proposalID, _voters[i])));
+    }
+  }
 
   // @notice Approves proposal with all of your committed tokens
-  // @param _proposalID - Identifier of proposal to approve.
-  function approve(bytes32 _proposalID)
+  // @param proposalID - Identifier of proposal to approve.
+  function approve(bytes32 proposalID)
   external
   returns (bool){
-    address token = database.addressStorage(keccak256(abi.encodePacked("proposal.token", _proposalID)));
+    address token = database.addressStorage(keccak256(abi.encodePacked("proposal.token", proposalID)));
     uint age = commitmentAge(msg.sender, token);
     require(age > 0, "Commitment required");  // Tokens committed + waited minimum staking time
-    require(proposalOpen(_proposalID), "Open proposal required");    // Is the proposal waiting execution?
-    uint256 commitValue = tallyVotes(_proposalID, token, msg.sender);
-    bytes32 approvalID = keccak256(abi.encodePacked("proposal.approval", _proposalID));
+    require(proposalOpen(proposalID), "Open proposal required");    // Is the proposal waiting execution?
+    uint256 commitValue = tallyVotes(proposalID, token, msg.sender);
+    bytes32 approvalID = keccak256(abi.encodePacked("proposal.approval", proposalID));
     uint256 approval = database.uintStorage(approvalID);
     database.setUint(approvalID, approval.add(commitValue));
-    emit Approve(_proposalID, msg.sender, commitValue);
+    emit Approve(proposalID, msg.sender, commitValue);
     return true;
   }
 
 
   // @notice Declines proposal with all of your committed tokens. Your vote is weighted differently depending on how long your tokens have been committed.
   // Requires an unlocked commitment and an open proposal you haven't voted on. Emits Decline on success.
-  // @param _proposalID - Identifier of proposal to decline.
-  function decline(bytes32 _proposalID)
+  // @param proposalID - Identifier of proposal to decline.
+  function decline(bytes32 proposalID)
   external
   returns (bool){
-    address token = database.addressStorage(keccak256(abi.encodePacked("proposal.token", _proposalID)));
+    address token = database.addressStorage(keccak256(abi.encodePacked("proposal.token", proposalID)));
     uint age = commitmentAge(msg.sender, token);
     require(age > 0, "Commitment required");
-    require(proposalOpen(_proposalID), "Open proposal required");
-    uint256 commitValue = tallyVotes(_proposalID, token, msg.sender);
-    bytes32 dissentID = keccak256(abi.encodePacked("proposal.dissent", _proposalID));
+    require(proposalOpen(proposalID), "Open proposal required");
+    uint256 commitValue = tallyVotes(proposalID, token, msg.sender);
+    bytes32 dissentID = keccak256(abi.encodePacked("proposal.dissent", proposalID));
     uint256 dissent = database.uintStorage(dissentID);
     database.setUint(dissentID, dissent.add(commitValue));
-    emit Decline(_proposalID, msg.sender, commitValue);
+    emit Decline(proposalID, msg.sender, commitValue);
     return true;
   }
 
 
   // @notice Updates users vote and the total vote count for this proposal
-  function tallyVotes(bytes32 _proposalID, address _token, address _tokenHolder)
+  function tallyVotes(bytes32 proposalID, address token, address tokenHolder)
   internal
   returns (uint commitValue) {
-    bytes32 userVoteID = keccak256(abi.encodePacked("proposal.voted", _proposalID, _tokenHolder));
+    bytes32 userVoteID = keccak256(abi.encodePacked("proposal.voted", proposalID, tokenHolder));
     require(database.uintStorage(userVoteID) == 0);  // make sure token holder hasn't already voted
-    commitValue = database.uintStorage(keccak256(abi.encodePacked("commitment.value", _token, _tokenHolder)));
+    commitValue = database.uintStorage(keccak256(abi.encodePacked("commitment.value", token, tokenHolder)));
     database.setUint(userVoteID, commitValue);
-    bytes32 voteID = keccak256(abi.encodePacked("proposal.votecount", _proposalID));
+    bytes32 voteID = keccak256(abi.encodePacked("proposal.votecount", proposalID));
     uint256 voteCount = database.uintStorage(voteID);
     database.setUint(voteID, voteCount.add(commitValue));
     return commitValue;
   }
 
-  // --------
-  // Internal
+
 
   /**
    * @dev Assumes active commitment.
    * @param _account - Account owning commitment to get age of.
    * @return age - Commitment age.
    */
-  function commitmentAge(address _account, address _token)
+  function commitmentAge(address _account, address token)
   internal
   view
   returns (uint256) {
-    return now.sub(database.uintStorage(keccak256(abi.encodePacked("commitment.start", _token, _account))));
+    return now.sub(database.uintStorage(keccak256(abi.encodePacked("commitment.start", token, _account))));
   }
 
   /**
    * @notice proposal is open for voting until vote duration has elapsed.
    * @return open - Whether proposal is open.
    */
-  function proposalOpen(bytes32 _proposalID)
+  function proposalOpen(bytes32 proposalID)
   internal
   view
   returns (bool open) {
-    uint256 age = now.sub(database.uintStorage(keccak256(abi.encodePacked("proposal.start", _proposalID))));
-    address token = database.addressStorage(keccak256(abi.encodePacked("proposal.token", _proposalID)));
+    uint256 age = now.sub(database.uintStorage(keccak256(abi.encodePacked("proposal.start", proposalID))));
+    address token = database.addressStorage(keccak256(abi.encodePacked("proposal.token", proposalID)));
     return (age <= database.uintStorage(keccak256(abi.encodePacked("asset.voteduration", token))) && age > 0);
   }
 
 
+  // @notice returns true if vote quorum and vote threshold are reached
+  function hasConsensus(address assetToken, address executingContract, bytes4 methodID, bytes32 parameterHash, uint256 nonce)
+  public
+  view
+  returns (bool){
+    bytes32 proposalID = keccak256(abi.encodePacked(assetToken, executingContract, methodID, parameterHash, address(this), nonce));
+    uint approval = database.uintStorage(keccak256(abi.encodePacked("proposal.approval", proposalID)));
+    uint quorum = (approval * 100) / database.uintStorage(keccak256(abi.encodePacked("proposal.votecount", proposalID)));   // what percentage approved ??
+    bool quorumReached = quorum > database.uintStorage(keccak256(abi.encodePacked("asset.quorum", assetToken)));
+    uint totalSupply = ERC20(assetToken).totalSupply();
+    uint voteCount = database.uintStorage(keccak256(abi.encodePacked("proposal.votecount", proposalID)));
+    bool thresholdReached = ( (voteCount * 100) / totalSupply ) >= database.uintStorage(keccak256(abi.encodePacked("asset.threshold", assetToken)));
+    return quorumReached && thresholdReached;
+  }
 
   // -----
   // Event
