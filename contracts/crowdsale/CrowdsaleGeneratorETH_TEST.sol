@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import "../math/SafeMath.sol";
-import "../interfaces/DBInterface.sol";
+import "../database/API_TEST.sol";
 import "../database/Events.sol";
 // import "../access/ERC20Burner.sol";
 import "../tokens/erc20/DividendToken.sol";
@@ -9,10 +9,10 @@ import "../tokens/erc20/DividendToken.sol";
 // @title A crowdsale generator contract
 // @author Kyle Dewhurst, MyBit Foundation
 // @notice AssetManagers can initiate a crowdsale that accepts Ether as payment here
-contract CrowdsaleGeneratorETH {
+contract CrowdsaleGeneratorETH_TEST {
   using SafeMath for uint256;
 
-  DBInterface public database;
+  API_TEST public api;
   Events public events;
   // ERC20Burner public burner;
 
@@ -20,9 +20,9 @@ contract CrowdsaleGeneratorETH {
 
   // @notice This contract
   // @param: The address for the database contract used by this platform
-  constructor(address _database, address _events)
+  constructor(address _api, address _events)
   public{
-      database = DBInterface(_database);
+      api = API_TEST(_api);
       events = Events(_events);
       // burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
@@ -38,26 +38,29 @@ contract CrowdsaleGeneratorETH {
   external
   // burnRequired
   returns (bool) {
-    require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
+    require(msg.sender == _assetManager || api.userApproved(_assetManager, msg.sender, address(this), msg.sig));
     require(_amountToRaise > 0);
     require(_assetManagerPerc < 100);
-    require(database.boolStorage(keccak256(abi.encodePacked("acceptsEther", _operatorID))));
-    require(database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))) != address(0));
-    require(!database.boolStorage(keccak256(abi.encodePacked("assetURI", _assetURI)))); //Check that asset URI is unique
+    require(api.getAssetBool("acceptsEther", _operatorID));
+    require(api.getAssetAddress("operator", _operatorID) != address(0));
     uint startTime;
     if(_startTime < now){
       startTime = now;
     } else {
       startTime = _startTime;
     }
-    address assetAddress = address(new DividendToken(_assetURI, database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleETH")))));   // Gives this contract all new asset tokens
-    database.setUint(keccak256(abi.encodePacked("startTime", assetAddress)), startTime);
-    database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetAddress)), startTime.add(_fundingLength));
-    database.setUint(keccak256(abi.encodePacked("assetManagerFee", assetAddress)), _amountToRaise.mul(uint(100).mul(scalingFactor).div(uint(100).sub(_assetManagerPerc)).sub(scalingFactor)).div(scalingFactor));
-    database.setUint(keccak256(abi.encodePacked("amountToRaise", assetAddress)), _amountToRaise);
-    database.setAddress(keccak256(abi.encodePacked("assetManager", assetAddress)), _assetManager);
-    database.setAddress(keccak256(abi.encodePacked("operator", assetAddress)), database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))));
-    database.setBool(keccak256(abi.encodePacked("assetURI", _assetURI)), true); //Set to ensure a unique asset URI
+    bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
+    require(api.getAssetUint("fundingDeadline", assetID) == 0);
+    address assetAddress = address(new DividendToken(_assetURI, api.getContractAddress("CrowdsaleETH")));   // Gives this contract all new asset tokens
+    api.setAssetUint("startTime", assetID, startTime);
+    api.setAssetUint("fundingDeadline", assetID, startTime.add(_fundingLength));
+    api.setAssetUint("assetManagerFee", assetID, _amountToRaise.mul(uint(100).mul(scalingFactor).div(uint(100).sub(_assetManagerPerc)).sub(scalingFactor)).div(scalingFactor));
+    api.setAssetUint("amountToRaise", assetID, _amountToRaise);
+    api.setAssetAddress("tokenAddress", assetID, assetAddress);
+    api.setAssetBytes32("assetTokenID", assetAddress, assetID);
+    api.setAssetAddress("assetManager", assetID, _assetManager);
+    api.setAssetAddress("operator", assetID, api.getAssetAddress("operator", _operatorID));
+    //emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, address(assetAddress));
     events.asset('Asset funding started', _assetURI, assetAddress, _assetManager);
     return true;
   }
@@ -84,7 +87,7 @@ contract CrowdsaleGeneratorETH {
 
   // @notice Sender must be a registered owner
   modifier onlyOwner {
-    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))), "Not owner");
+    require(api.contractOwner(msg.sender), "Not owner");
     _;
   }
 

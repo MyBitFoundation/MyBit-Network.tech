@@ -29,7 +29,7 @@ module.exports = {
       port: 8545,
       gas: 6500000,
       network_id: "*",
-      gasPrice: 1
+      gasPrice: 7000000000
     },
     ropsten: {
       provider: function() {
