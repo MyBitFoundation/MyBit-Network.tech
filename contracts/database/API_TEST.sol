@@ -19,11 +19,19 @@ interface DBView {
   function bytes32Storage(bytes32 _key) external view returns (bytes32);
   function boolStorage(bytes32 _key) external view returns (bool);
   function intStorage(bytes32 _key) external view returns (bool);
+
+  function setUint(bytes32 _key, uint _value) external;
+  function setString(bytes32 _key, string _value) external;
+  function setAddress(bytes32 _key, address _value) external;
+  function setBytes(bytes32 _key, bytes _value) external;
+  function setBytes32(bytes32 _key, bytes32 _value) external;
+  function setBool(bytes32 _key, bool _value) external;
+  function setInt(bytes32 _key, int _value) external;
 }
 
 // @title A contract that gets variables from the _database
 // @notice The API contract can only view the database. It has no write privileges
-contract API {
+contract API_TEST {
   using SafeMath for uint256;
 
   DBView private database;
@@ -56,42 +64,35 @@ contract API {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //                                            Asset Info
+  //                                            Token Info
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function assetGoverned(address _token)
+  function tokenGoverned(address _token)
   public
   view
   returns (bool) {
-    return database.boolStorage(keccak256(abi.encodePacked("asset.governed", _token)));
+    return database.boolStorage(keccak256(abi.encodePacked("token.governed", _token)));
   }
 
-  function assetVoteDuration(address _token)
+  function tokenVoteDuration(address _token)
   public
   view
-  returns (uint) {
-    return database.uintStorage(keccak256(abi.encodePacked("asset.voteduration", _token)));
+  returns (bool) {
+    return database.boolStorage(keccak256(abi.encodePacked("token.voteduration", _token)));
   }
 
-  function assetQuorum(address _token)
+  function tokenQuorum(address _token)
   public
   view
-  returns (uint) {
-    return database.uintStorage(keccak256(abi.encodePacked("asset.quorum", _token)));
+  returns (bool) {
+    return database.boolStorage(keccak256(abi.encodePacked("token.quorum", _token)));
   }
 
-  function assetThreshold(address _token)
+  function tokenThreshold(address _token)
   public
   view
-  returns (uint) {
-    return database.uintStorage(keccak256(abi.encodePacked("asset.threshold", _token)));
-  }
-
-  function assetStakeRequirement(address _token)
-  public
-  view
-  returns (uint) {
-    return database.uintStorage(keccak256(abi.encodePacked("asset.stakeRequirement", _token)));
+  returns (bool) {
+    return database.boolStorage(keccak256(abi.encodePacked("token.threshold", _token)));
   }
 
 
@@ -146,7 +147,7 @@ contract API {
     return database.uintStorage(hashSB("proposal.votecount", _proposalID));
   }
 
-  // @notice returns how many tokens user has committed towards proposal
+  // @notice returns how many tokens user has put towards proposal
   function proposalVoted(bytes32 _proposalID, address _tokenHolder)
   public
   view
@@ -169,23 +170,6 @@ contract API {
     return database.uintStorage(hashSB("proposal.approval", _proposalID));
   }
 
-  function proposalQuorum(bytes32 _proposalID)
-  public
-  view
-  returns (uint) {
-    uint approval = proposalApproval(_proposalID);
-    uint quorum = (approval * 100) / proposalVoteCount(_proposalID);   // what percentage approved ??
-    return quorum;
-  }
-
-  function proposalThreshold(bytes32 _proposalID)
-  public
-  view
-  returns (uint) {
-    uint totalSupply = TokenView(proposalToken(_proposalID)).totalSupply();
-    return (proposalVoteCount(_proposalID) * 100) / totalSupply;
-  }
-
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                            Governance + Function ID's
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -196,10 +180,32 @@ contract API {
   public
   view
   returns (uint) {
-    address assetToken = database.addressStorage(keccak256(abi.encodePacked("proposal.token", _proposalID)));
-    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("commitment.value", assetToken, _investor)));
+    address assetToken = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _proposalID)));
+    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", assetToken, _investor)));
     uint balance = TokenView(assetToken).balanceOf(_investor);
     return balance.sub(amountLocked);
+  }
+
+  function getInvestorVotes(bytes32 _proposalID, address _investor)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256(abi.encodePacked("investorVotes", _proposalID, _investor)));
+  }
+
+  function getTotalVotes(bytes32 _proposalID)
+  public
+  view
+  returns (uint) {
+  return database.uintStorage(keccak256(abi.encodePacked("voteTotal", _proposalID)));
+  }
+
+  function getCurrentConsensus(bytes32 _proposalID, address _assetToken)
+  public
+  view
+  returns (uint) {
+    uint totalVotes = getTotalVotes(_proposalID);
+    return ( ( (totalVotes * 100) * scalingFactor) / TokenView(_assetToken).totalSupply() / scalingFactor);
   }
 
   function getVotingProcessParameterHash(address _newVotingContract)
@@ -209,18 +215,18 @@ contract API {
     return keccak256(abi.encodePacked(_newVotingContract));
   }
 
-  function getAssetManagerParameterHash(address _assetAddress, address _oldAssetManager, address _newAssetManager, uint _amount, bool _burn, bool _withhold)
+  function getAssetManagerParameterHash(bytes32 _assetID, address _oldAssetManager, address _newAssetManager, uint _amount, bool _burn, bool _withhold)
   public
   pure
   returns (bytes32){
-    return keccak256(abi.encodePacked(_assetAddress, _oldAssetManager, _newAssetManager, _amount, _burn, _withhold));
+    return keccak256(abi.encodePacked(_assetID, _oldAssetManager, _newAssetManager, _amount, _burn, _withhold));
   }
 
-  function getProposalID(address _token, address _contractAddress, bytes4 _methodID, bytes32 _parameterHash)
+  function getProposalID(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash)
   public
   pure
   returns (bytes32) {
-    return keccak256(abi.encodePacked(_token, _contractAddress, _methodID, _parameterHash));
+    return keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash));
   }
 
   function getMethodID(string _functionString)
@@ -230,64 +236,102 @@ contract API {
     return bytes4(keccak256(abi.encodePacked(_functionString)));
   }
 
-  function getOrderID(address _assetAddress, address _investor, uint _amount, uint _price, bool _buyOrder)
+  function getAssetID(address _broker, string _assetURI, uint _amountToRaise, bytes32 _operatorID)
+  public
+  pure
+  returns(bytes32) {
+    return keccak256(abi.encodePacked(_broker, _amountToRaise, _operatorID, _assetURI));
+  }
+
+  function getOrderID(bytes _assetID, address _investor, uint _amount, uint _price, bool _buyOrder)
   external
   pure
   returns(bytes32) {
-    return keccak256(abi.encodePacked(_assetAddress, _investor, _amount, _price, _buyOrder));
+    return keccak256(abi.encodePacked(_assetID, _investor, _amount, _price, _buyOrder));
   }
 
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                        Crowdsale and Assets
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  function getAssetFundingToken(address _assetAddress)
+  function generateAssetID(address _broker, uint _amountToRaise, bytes32 _operatorID, string _assetURI)
+  public
+  pure
+  returns(bytes32) {
+    bytes32 assetID = keccak256(abi.encodePacked(_broker, _amountToRaise, _operatorID, _assetURI));
+    return assetID;
+  }
+
+  function getAssetID(address _tokenAddress)
+  public
+  view
+  returns(bytes32) {
+    bytes32 assetID = database.bytes32Storage(keccak256(abi.encodePacked("assetTokenID", _tokenAddress)));
+    return assetID;
+  }
+
+  function getPlatformAssetID()
+  external
+  pure
+  returns(bytes32){
+    return keccak256(abi.encodePacked("platformAssetID"));
+  }
+
+  function getAssetAddress(bytes32 _assetID)
   public
   view
   returns(address) {
-    address fundingTokenAddress = database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetAddress)));
+    address assetAddress = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)));
+    return assetAddress;
+  }
+
+  function getAssetFundingToken(bytes32 _assetID)
+  public
+  view
+  returns(address) {
+    address fundingTokenAddress = database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID)));
     return fundingTokenAddress;
   }
 
   // IF we decide not to store assetIncome
-  // function getAssetIncome(address _assetAddress)
+  // function getAssetIncome(bytes32 _assetID)
   // public
   // view
   // returns (uint) {
-  //   TokenView asset = TokenView(_assetAddress);
+  //   TokenView asset = TokenView(getAssetAddress(_assetID));
   //   uint valuePerToken =  asset.valuePerToken();
   //   return (valuePerToken * (asset.totalSupply())) / asset.scalingFactor();
   // }
 
-  function getAssetROI(address _assetAddress)
+  function getAssetROI(bytes32 _assetID)
   public
   view
   returns (uint) {
-    TokenView assetToken = TokenView(_assetAddress);
+    TokenView assetToken = TokenView(getAssetAddress(_assetID));
     return (assetToken.assetIncome() * 100) /  assetToken.totalSupply();
   }
 
-  function getAssetFundingGoal(address _assetAddress)
+  function getAssetFundingGoal(bytes32 _assetID)
   public
   view
   returns(uint) {
-    uint fundingGoal = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetAddress)));
+    uint fundingGoal = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID)));
     return fundingGoal;
   }
 
-  function getAssetFundingDeadline(address _assetAddress)
+  function getAssetFundingDeadline(bytes32 _assetID)
   public
   view
   returns(uint) {
-    uint fundingDeadline = database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetAddress)));
+    uint fundingDeadline = database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID)));
     return fundingDeadline;
   }
 
-  function crowdsaleFinalized(address _assetAddress)
+  function crowdsaleFinalized(bytes32 _assetID)
   public
   view
   returns(bool) {
-    bool status = database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetAddress)));
+    bool status = database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)));
     return status;
   }
 
@@ -296,27 +340,27 @@ contract API {
   //                                        Asset Manager and Operator
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function getAssetManager(address _assetAddress)
+  function getAssetManager(bytes32 _assetID)
   public
   view
   returns(address) {
-    address managerAddress = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetAddress)));
+    address managerAddress = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID)));
     return managerAddress;
   }
 
-  function getAssetManagerFee(address _assetAddress)
+  function getAssetManagerFee(bytes32 _assetID)
   public
   view
   returns(uint) {
-    uint managerFee = database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetAddress)));
+    uint managerFee = database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID)));
     return managerFee;
   }
 
-  function getAssetManagerEscrowID(address _assetAddress, address _manager)
+  function getAssetManagerEscrowID(bytes32 _assetID, address _manager)
   public
   pure
   returns(bytes32) {
-    bytes32 managerEscrowID = keccak256(abi.encodePacked(_assetAddress, _manager));
+    bytes32 managerEscrowID = keccak256(abi.encodePacked(_assetID, _manager));
     return managerEscrowID;
   }
 
@@ -344,11 +388,11 @@ contract API {
     return escrowRedeemed;
   }
 
-  function getAssetOperator(address _assetAddress)
+  function getAssetOperator(bytes32 _assetID)
   public
   view
   returns(address) {
-    address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _assetAddress)));
+    address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _assetID)));
     return operatorAddress;
   }
 
@@ -356,7 +400,7 @@ contract API {
   public
   pure
   returns(bytes32) {
-    bytes32 operatorID = keccak256(abi.encodePacked("operatorURI", _operatorURI));
+    bytes32 operatorID = keccak256(abi.encodePacked(_operatorURI));
     return operatorID;
   }
 
@@ -380,11 +424,11 @@ contract API {
   //                                        Stakeholders
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function generateOrderID(address _assetAddress, address _sender, uint _amount, uint _price, bool _buyOrder)
+  function generateOrderID(bytes32 _assetID, address _sender, uint _amount, uint _price, bool _buyOrder)
   public
   pure
   returns(bytes32) {
-    bytes32 orderID = keccak256(abi.encodePacked(_assetAddress, _sender, _amount, _price, _buyOrder));
+    bytes32 orderID = keccak256(abi.encodePacked(_assetID, _sender, _amount, _price, _buyOrder));
     return orderID;
   }
 
@@ -397,7 +441,7 @@ contract API {
   public
   view
   returns(address) {
-    address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platformToken")));
+    address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", keccak256(abi.encodePacked("platformAssetID")))));
     return tokenAddress;
   }
 
@@ -461,4 +505,64 @@ contract API {
     return status;
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                        Approval
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function userApproved(address _approver, address _approved, address _contract, bytes4 _sig)
+  public
+  view
+  returns(bool) {
+    bool status = database.boolStorage(keccak256(abi.encodePacked("approval", _approver, _approved, _contract, _sig)));
+    return status;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                     Database Setters
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function setAssetUint(string _string, bytes32 _assetID, uint _uint)
+  public
+  returns(bool){
+    database.setUint(keccak256(abi.encodePacked(_string, _assetID)), _uint);
+    return true;
+  }
+
+  function setAssetAddress(string _string, bytes32 _assetID, address _address)
+  public
+  returns(bool){
+    database.setAddress(keccak256(abi.encodePacked(_string, _assetID)), _address);
+    return true;
+  }
+
+  function setAssetBytes32(string _string, address _address, bytes32 _bytes32)
+  public
+  returns(bool){
+    database.setBytes32(keccak256(abi.encodePacked(_string, _address)), _bytes32);
+    return true;
+  }
+
+  function getAssetUint(string _string, bytes32 _assetID)
+  public
+  view
+  returns(uint){
+    uint _uint = database.uintStorage(keccak256(abi.encodePacked(_string, _assetID)));
+    return _uint;
+  }
+
+  function getAssetAddress(string _string, bytes32 _assetID)
+  public
+  view
+  returns(address){
+    address _address = database.addressStorage(keccak256(abi.encodePacked(_string, _assetID)));
+    return _address;
+  }
+
+  function getAssetBool(string _string, bytes32 _assetID)
+  public
+  view
+  returns(bool){
+    bool _bool = database.boolStorage(keccak256(abi.encodePacked(_string, _assetID)));
+    return _bool;
+  }
 }
