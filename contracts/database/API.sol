@@ -59,11 +59,11 @@ contract API {
   //                                            Asset Info
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function assetGoverned(address _token)
+  function assetGovernance(address _token)
   public
   view
-  returns (bool) {
-    return database.boolStorage(keccak256(abi.encodePacked("asset.governed", _token)));
+  returns (address) {
+    return database.addressStorage(keccak256(abi.encodePacked("asset.governance", _token)));
   }
 
   function assetVoteDuration(address _token)
@@ -89,10 +89,9 @@ contract API {
 
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //                                            Proposals
+  //                                            Commitments
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // Commitments
 
   function commitmentValue(address _token, address _tokenHolder)
   public
@@ -115,8 +114,16 @@ contract API {
     return database.uintStorage(keccak256(abi.encodePacked("commitment.releasetime", _token, _tokenHolder)));
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                            Proposals
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  //Proposals
+  function getProposalID(address _executingContract, address _assetToken, bytes4 _methodID, bytes32 _parameterHash)
+  public
+  pure
+  returns (bytes32) {
+    return keccak256(abi.encodePacked(_executingContract, _assetToken, _methodID, _parameterHash));
+  }
 
   function proposalToken(bytes32 _proposalID)
   public
@@ -176,11 +183,27 @@ contract API {
   view
   returns (uint) {
     uint totalSupply = TokenView(proposalToken(_proposalID)).totalSupply();
-    return (proposalVoteCount(_proposalID) * 100) / totalSupply; 
+    return (proposalVoteCount(_proposalID) * 100) / totalSupply;
   }
 
+  // @notice for quorum/threshold based time restricted voting
+  function hasConsensus(bytes32 proposalID)
+  public
+  view
+  returns (bool) {
+    address assetToken = database.addressStorage(keccak256(abi.encodePacked("proposal.token", proposalID)));
+    uint approval = database.uintStorage(keccak256(abi.encodePacked("proposal.approval", proposalID)));
+    uint quorum = (approval * 100) / database.uintStorage(keccak256(abi.encodePacked("proposal.votecount", proposalID)));   // what percentage approved ??
+    bool quorumReached = quorum > database.uintStorage(keccak256(abi.encodePacked("asset.quorum", assetToken)));
+    uint totalSupply = TokenView(assetToken).totalSupply();
+    uint voteCount = database.uintStorage(keccak256(abi.encodePacked("proposal.votecount", proposalID)));
+    bool thresholdReached = ( (voteCount * 100) / totalSupply ) >= database.uintStorage(keccak256(abi.encodePacked("asset.threshold", assetToken)));
+    return quorumReached && thresholdReached;
+  }
+
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //                                            Governance + Function ID's
+  //                                            Function ID's
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -195,26 +218,14 @@ contract API {
     return balance.sub(amountLocked);
   }
 
-  function getVotingProcessParameterHash(address _newVotingContract)
+
+  function getAssetManagerParameterHash(bytes32 _assetID, address _oldAssetManager, address _newAssetManager, uint _amount, bool _withhold)
   public
   pure
   returns (bytes32){
-    return keccak256(abi.encodePacked(_newVotingContract));
+    return keccak256(abi.encodePacked(_assetID, _oldAssetManager, _newAssetManager, _amount, _withhold));
   }
 
-  function getAssetManagerParameterHash(bytes32 _assetID, address _oldAssetManager, address _newAssetManager, uint _amount, bool _burn, bool _withhold)
-  public
-  pure
-  returns (bytes32){
-    return keccak256(abi.encodePacked(_assetID, _oldAssetManager, _newAssetManager, _amount, _burn, _withhold));
-  }
-
-  function getProposalID(address _executingContract, bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash)
-  public
-  pure
-  returns (bytes32) {
-    return keccak256(abi.encodePacked(_executingContract, _assetID, _methodID, _parameterHash));
-  }
 
   function getMethodID(string _functionString)
   public
