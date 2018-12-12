@@ -52,8 +52,7 @@ contract GovernedTokenERC20 is DividendTokenERC20, BurnableToken{
   public
   view
   returns (uint) {
-    bytes32 assetID = database.bytes32Storage(keccak256(abi.encodePacked("assetTokenID", address(this))));
-    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("tokensLocked", assetID, _investor)));
+    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("commitment.value", address(this), _investor)));
     uint balance = balances[_investor];
     uint available = balance.sub(amountLocked);
     return available;

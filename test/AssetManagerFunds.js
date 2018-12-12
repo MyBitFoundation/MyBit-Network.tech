@@ -33,7 +33,6 @@ contract('AssetManagerFunds', async(accounts) => {
   let hash;
   let api;
   let escrow;
-  let assetID;
   let platform;
   let operators;
   let operatorID;
@@ -112,16 +111,13 @@ contract('AssetManagerFunds', async(accounts) => {
     operatorID = logs[0].args.operatorID;
   });
 
-  it("Generate assetID", async() => {
-    assetID = await hash.getAssetID(assetURI, 10*ETH, operatorID, {from:assetManager});
-    assetsETH = [assetID];
+  it("Set assets array", async() => {
+    assetsETH = [divToken.address];
   });
 
   it("Set asset variables", async() => {
-    let tokenHash = await hash.stringBytes("tokenAddress", assetID);
-    let assetManagerHash = await hash.stringBytes("assetManager", assetID);
-    let operatorHash = await hash.stringBytes("operator", assetID);
-    await db.setAddress(tokenHash, divToken.address);
+    let assetManagerHash = await hash.stringAddress("assetManager", divToken.address);
+    let operatorHash = await hash.stringAddress("operator", divToken.address);
     await db.setAddress(assetManagerHash, assetManager);
     await db.setAddress(operatorHash, operator);
   });
@@ -205,16 +201,13 @@ contract('AssetManagerFunds', async(accounts) => {
     assert.equal(assetManagerBalance.eq(tokenPerAccount), true);
   });
 
-  it("Generate assetID", async() => {
-    assetID = await hash.getAssetID(assetURI, 10*ETH, operatorID, {from:assetManager});
-    assetsERC = [assetID];
+  it("Setup asset array", async() => {
+    assetsERC = [divTokenERC20.address];
   });
 
   it("Set asset variables", async() => {
-    let tokenHash = await hash.stringBytes("tokenAddress", assetID);
-    let assetManagerHash = await hash.stringBytes("assetManager", assetID);
-    let operatorHash = await hash.stringBytes("operator", assetID);
-    await db.setAddress(tokenHash, divTokenERC20.address);
+    let assetManagerHash = await hash.stringAddress("assetManager", divTokenERC20.address);
+    let operatorHash = await hash.stringAddress("operator", divTokenERC20.address);
     await db.setAddress(assetManagerHash, assetManager);
     await db.setAddress(operatorHash, operator);
   });
@@ -271,7 +264,6 @@ contract('AssetManagerFunds', async(accounts) => {
     let balanceBefore = bn(await burnToken.balanceOf(assetManager));
     let amountOwed = await divTokenERC20.getAmountOwed(assetManagerFunds.address);
     assert.notEqual(amountOwed, 0);
-    assert.equal(divTokenERC20.address, await api.getAssetAddress(assetID));
     assert.equal(bn(await divTokenERC20.balanceOf(assetManagerFunds.address)).eq(tokenPerAccount), true);
     console.log("amount owed");
     console.log(amountOwed);

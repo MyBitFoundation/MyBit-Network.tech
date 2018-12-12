@@ -24,12 +24,12 @@ pkill -f ganache-cli
 mv networks/development/contracts.json  $CHAIN_DIR
 mv networks/development/accounts.json  $CHAIN_DIR
 #Move back to chain directory
-cd $CHAIN_DIR
+#cd $CHAIN_DIR
 #If git exists in folder, update git
-if [ -d .git ]; then
-  echo "Updating git..."
+#if [ -d .git ]; then
+#  echo "Updating git..."
   #Add to git
-  git add .
-  git commit -m "Updated chain"
-  git push origin
-fi
+#  git add .
+#  git commit -m "Updated chain"
+#  git push origin
+#fi

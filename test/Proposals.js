@@ -107,25 +107,25 @@ contract('Proposals', async (accounts) => {
   });
 
   it('Spread token to users', async() => {
-    for (let i = 0; i < user.length; i++){
-      await token.transfer(user[i], tokensPerUser);
-      assert.equal(tokensPerUser.eq(await token.balanceOf(user[i])));
+    for (let i = 0; i < users.length; i++){
+      await token.transfer(users[i], tokensPerUser);
+      assert.equal(tokensPerUser.eq(await token.balanceOf(users[i])), true);
     }
   });
 
   it('Try to commit user 1 before token is set as governed', async() => {
     await token.approve(commitment.address, tokensPerUser, {from: user1});
-    await commitment.commit(tokensPerUser, token.address, {from: user1});
+    await rejects(commitment.commit(tokensPerUser, token.address, {from: user1}));
   });
 
   it('Set token as governed on platform', async() => {
-    await gc.startGovernance(token.address, voteDuration, quorum, threshold, 1);
-    assert.equal(await api.tokenGoverned(token.address), true);
-    console.log("token vote duration is: ", await api.tokenVoteDuration(token.address));
-    assert.equal(voteDuration.eq(await api.tokenVoteDuration(token.address)), true);
-    assert.equal(quorum.eq(await api.tokenQuorum(token.address)), true);
-    assert.equal(threshold.eq(await api.threshold(token.address)), true);
-    assert.equal(await api.tokenStakeRequirement(token.address), 1);
+    await gc.startGovernance(token.address, commitment.address, voteDuration, quorum, threshold, 1);
+    assert.equal(await api.assetGoverned(token.address), true);
+    console.log("token vote duration is: ", await api.assetVoteDuration(token.address));
+    assert.equal(voteDuration.eq(await api.assetVoteDuration(token.address)), true);
+    assert.equal(quorum.eq(await api.assetQuorum(token.address)), true);
+    assert.equal(threshold.eq(await api.assetThreshold(token.address)), true);
+    assert.equal(await api.assetStakeRequirement(token.address), 1);
   });
 
   it("Try to commit with 0 tokens", async() => {
@@ -139,7 +139,7 @@ contract('Proposals', async (accounts) => {
   });
 
   it('Commit users n-1', async() => {
-    for (let i = 0; i < user.length-1; i++){
+    for (let i = 0; i < users.length-1; i++){
       await token.approve(commitment.address, tokensPerUser, {from: users[i]});
       await commitment.commit(tokensPerUser, token.address, {from: users[i]});
     }
@@ -147,7 +147,7 @@ contract('Proposals', async (accounts) => {
 
   it('Try to commit user 1 again', async() => {
     await token.approve(commitment.address, tokensPerUser, {from: user1});
-    await commitment.commit(tokensPerUser, token.address, {from: user1});
+    await rejects(commitment.commit(tokensPerUser, token.address, {from: user1}));
   });
 
   it('Create proposal from user1', async() => {

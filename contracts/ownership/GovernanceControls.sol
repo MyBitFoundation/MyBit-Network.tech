@@ -45,7 +45,7 @@ contract GovernanceControls {
     database.setUint(keccak256(abi.encodePacked("asset.voteduration", _tokenAddress)), _voteDuration);
     database.setUint(keccak256(abi.encodePacked("asset.quorum", _tokenAddress)), _quorum);
     database.setUint(keccak256(abi.encodePacked("asset.threshold", _tokenAddress)), _threshold);
-    database.setUint(keccak256(abi.encodePacked("asset.stakerequirement", _tokenAddress)), _stakeRequirement);
+    database.setUint(keccak256(abi.encodePacked("asset.stakeRequirement", _tokenAddress)), _stakeRequirement);
     return true;
   }
 

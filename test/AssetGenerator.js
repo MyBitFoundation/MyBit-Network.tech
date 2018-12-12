@@ -105,7 +105,7 @@ contract('Asset Generator', async(accounts) => {
     let block = await web3.eth.getBlock('latest');
     await assetGen.createAsset(assetURI, assetManager, tokenHolders, [assetManagerFee, tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
     let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset created'), origin: assetManager}, fromBlock: block.number});
-    token = await FixedDistribution.at(logs[0].args.token);
+    token = await FixedDistribution.at(logs[0].args.asset);
     assetManagerBalance = await token.balanceOf(assetManager);
     user1Balance = await token.balanceOf(user1);
     user2Balance = await token.balanceOf(user2);
@@ -133,7 +133,7 @@ contract('Asset Generator', async(accounts) => {
     let block = await web3.eth.getBlock('latest');
     await assetGen.createTradeableAsset(assetURI, assetManager, tokenHolders, [assetManagerFee, tokenPerAccount, tokenPerAccount, tokenPerAccount], {from:assetManager});
     let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset created'), origin: assetManager}, fromBlock: block.number});
-    token = await FixedDistribution.at(logs[0].args.token);
+    token = await FixedDistribution.at(logs[0].args.asset);
     assetManagerBalance = await token.balanceOf(assetManager);
     user1Balance = await token.balanceOf(user1);
     user2Balance = await token.balanceOf(user2);

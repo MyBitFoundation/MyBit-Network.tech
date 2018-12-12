@@ -44,9 +44,8 @@ contract('ERC20 Crowdsale', async(accounts) => {
   let assetManagerFee;
   let operators;
   let operatorID;
-  let assetID;
   let assetURI;
-  let tokenAddress;
+  let assetAddress;
   let pausible;
 
   it('Deploy database contract', async() => {
@@ -171,19 +170,18 @@ contract('ERC20 Crowdsale', async(accounts) => {
     let block = await web3.eth.getBlock('latest');
     await crowdsaleGen.createAssetOrderERC20(assetURI, assetManager, operatorID, 100, 0, bn(20).times(ETH), assetManagerFee, erc20.address, {from:assetManager});
     let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: assetManager}, fromBlock: block.number});
-    assetID = logs[0].args.assetID;
-    assetTokenAddress = logs[0].args.token;
-    console.log('Token Address: ' + tokenAddress);
-    assetToken = await AssetToken.at(assetTokenAddress);
+    assetAddress = logs[0].args.asset;
+    console.log('Asset Address: ' + assetAddress);
+    assetToken = await AssetToken.at(assetAddress);
   });
 
   it('User1 funding', async() => {
     await erc20.approve(crowdsale.address, bn(5).times(ETH), {from:user1});
-    await crowdsale.buyAssetOrderERC20(assetID, user1, bn(5).times(ETH), {from:user1});
+    await crowdsale.buyAssetOrderERC20(assetAddress, user1, bn(5).times(ETH), {from:user1});
     let user1AssetTokens = bn(await assetToken.balanceOf(user1));
-    console.log('assetToken Address: ' + assetToken.address);
+    console.log('Asset Address: ' + assetToken.address);
     console.log('User: ' + user1);
-    console.log('User assetTokens: ' + user1AssetTokens.toNumber());
+    console.log('User asset tokens: ' + user1AssetTokens.toNumber());
 
     let assetTokenSupply = await assetToken.totalSupply()
     console.log('assetToken Supply: ' + assetTokenSupply);
@@ -206,7 +204,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     let err;
     try{
       await erc20.approve(crowdsale.address, bn(15).times(ETH), {from:user2});
-      await crowdsale.buyAssetOrderERC20(assetID, user2, bn(15).times(ETH), {from:user2});
+      await crowdsale.buyAssetOrderERC20(assetAddress, user2, bn(15).times(ETH), {from:user2});
     } catch(e){
       err = e;
     }
@@ -232,7 +230,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     ownerBalanceBefore = await erc20.balanceOf(owner);
     operatorBalanceBefore = await erc20.balanceOf(operator);
     await erc20.approve(crowdsale.address, bn(15).times(ETH), {from:user2});
-    await crowdsale.buyAssetOrderERC20(assetID, user2, bn(15).times(ETH), {from:user2});
+    await crowdsale.buyAssetOrderERC20(assetAddress, user2, bn(15).times(ETH), {from:user2});
     let user2AssetTokens = bn(await assetToken.balanceOf(user2));
     console.log(user2AssetTokens.toNumber());
     assert.equal(user2AssetTokens.eq(bn(15).times(ETH)), true);
@@ -250,7 +248,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     let err;
     try{
       await erc20.approve(crowdsale.address, bn(5).times(ETH), {from:user3});
-      await crowdsale.buyAssetOrderERC20(assetID, user3, bn(5).times(ETH), {from:user3});
+      await crowdsale.buyAssetOrderERC20(assetAddress, user3, bn(5).times(ETH), {from:user3});
     } catch(e){
       err = e;
     }
@@ -260,7 +258,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
   it('Fail to refund', async() => {
     let err;
     try{
-      await crowdsale.refund(assetID, {from:assetManager});
+      await crowdsale.refund(assetAddress, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -292,7 +290,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
 
   it('Asset Manager withdraw dividends', async() => {
     managerBalanceBefore = await erc20.balanceOf(assetManager);
-    await assetManagerFunds.withdraw(assetID, assetManager, {from:assetManager});
+    await assetManagerFunds.withdraw(assetAddress, assetManager, {from:assetManager});
     managerBalanceAfter = await erc20.balanceOf(assetManager);
     assert.equal(bn(managerBalanceAfter).isGreaterThan(managerBalanceBefore), true);
   });
@@ -327,14 +325,13 @@ contract('ERC20 Crowdsale', async(accounts) => {
     let block = await web3.eth.getBlock('latest');
     await crowdsaleGen.createAssetOrderERC20(assetURI, assetManager, operatorID, 1, 0, bn(20).times(ETH), assetManagerFee, erc20.address, {from:assetManager});
     let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: assetManager}, fromBlock: block.number});
-    assetID = logs[0].args.assetID;
-    assetTokenAddress = logs[0].args.token;
-    assetToken = await AssetToken.at(assetTokenAddress);
+    assetAddress = logs[0].args.asset;
+    assetToken = await AssetToken.at(assetAddress);
   });
 
   it('User3 funding', async() => {
     await erc20.approve(crowdsale.address, bn(5).times(ETH), {from:user3});
-    await crowdsale.buyAssetOrderERC20(assetID, user3, bn(5).times(ETH), {from:user3});
+    await crowdsale.buyAssetOrderERC20(assetAddress, user3, bn(5).times(ETH), {from:user3});
     let user3assetTokens = bn(await assetToken.balanceOf(user3));
     assert.equal(user3assetTokens.eq(bn(5).times(ETH)), true);
   });
@@ -352,7 +349,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     let err;
     try{
       await erc20.approve(crowdsale.address, bn(5).times(ETH), {from:user1});
-      await crowdsale.buyAssetOrderERC20(assetID, user1, bn(5).times(ETH), {from:user1});
+      await crowdsale.buyAssetOrderERC20(assetAddress, user1, bn(5).times(ETH), {from:user1});
     } catch(e){
       err = e;
     }
@@ -366,7 +363,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
   it('Fail to refund: paused', async() => {
     let err;
     try{
-      await crowdsale.refund(assetID, {from:user3});
+      await crowdsale.refund(assetAddress, {from:user3});
     } catch(e){
       err = e;
     }
@@ -380,7 +377,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
   it('Refund', async() => {
     let totalassetTokens = await assetToken.totalSupply();
     user3BalanceBefore = await erc20.balanceOf(user3);
-    await crowdsale.refund(assetID);
+    await crowdsale.refund(assetAddress);
     await assetToken.withdraw({from:user3});
     user3BalanceAfter = await erc20.balanceOf(user3);
     assert.equal(bn(user3BalanceAfter).isGreaterThan(user3BalanceBefore), true);
@@ -403,23 +400,22 @@ contract('ERC20 Crowdsale', async(accounts) => {
     let block = await web3.eth.getBlock('latest');
     await crowdsaleGen.createAssetOrderERC20(assetURI, assetManager, operatorID, 100, 0, bn(2).times(ETH), assetManagerFee, erc20.address, {from:assetManager});
     let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: assetManager}, fromBlock: block.number});
-    assetID = logs[0].args.assetID;
-    assetTokenAddress = logs[0].args.token;
-    console.log('Token Address: ' + tokenAddress);
-    assetToken = await AssetToken.at(assetTokenAddress);
+    assetAddress = logs[0].args.asset;
+    console.log('Asset Address: ' + assetAddress);
+    assetToken = await AssetToken.at(assetAddress);
   });
 
   it('Fully fund no fee asset', async() => {
     await erc20.approve(crowdsale.address, bn(2).times(ETH), {from:user1});
     let platformWalletBalance = await erc20.balanceOf(owner);
-    await crowdsale.buyAssetOrderERC20(assetID, user1, bn(2).times(ETH), {from:user1});
+    await crowdsale.buyAssetOrderERC20(assetAddress, user1, bn(2).times(ETH), {from:user1});
     let user1AssetTokens = bn(await assetToken.balanceOf(user1));
     let assetTokenSupply = bn(await assetToken.totalSupply());
     assert.equal(assetTokenSupply.eq(user1AssetTokens), true);
     assert.equal(user1AssetTokens.eq(bn(2).times(ETH)), true);
     assert.equal(await assetToken.mintingFinished(), true);
     assert.equal(bn(await assetToken.balanceOf(assetManager)).eq(0), true);
-    assert.equal(await api.crowdsaleFinalized(assetID), true);
+    assert.equal(await api.crowdsaleFinalized(assetAddress), true);
     // Check payout to platform and operator
     console.log(platformWalletBalance);
     console.log(await erc20.balanceOf(owner));
