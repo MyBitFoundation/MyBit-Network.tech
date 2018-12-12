@@ -34,13 +34,9 @@ contract AssetGenerator {
   returns (bool) {
     require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
     require (_tokenHolders.length == _amount.length && _tokenHolders.length <= 100);
-    bytes32 assetID = keccak256(abi.encodePacked(_assetManager, _tokenURI));
-    require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))) == address(0));
     FixedDistribution assetInstance = new FixedDistribution(_tokenURI, _tokenHolders, _amount);
-    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), _assetManager);
-    database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetInstance));
-    //emit LogAssetCreated(assetID, address(assetInstance), _assetManager, _tokenURI);
-    events.asset('Asset created', _tokenURI, assetID, address(assetInstance), _assetManager);
+    database.setAddress(keccak256(abi.encodePacked("assetManager", address(assetInstance))), _assetManager);
+    events.asset('Asset created', _tokenURI, address(assetInstance), _assetManager);
     return true;
   }
 
@@ -52,17 +48,13 @@ contract AssetGenerator {
   returns (bool) {
     require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
     require (_tokenHolders.length == _amount.length && _tokenHolders.length <= uint8(100));
-    bytes32 assetID = keccak256(abi.encodePacked(_assetManager, _tokenURI));
-    require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", assetID))) == address(0));
     DividendToken assetInstance = new DividendToken(_tokenURI, address(this));   // Gives this contract all new asset tokens
     for (uint8 i = 0; i < _tokenHolders.length; i++) {
       assetInstance.mint(_tokenHolders[i], _amount[i]);
     }
     assetInstance.finishMinting();
-    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), _assetManager);
-    database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), address(assetInstance));
-    //emit LogTradeableAssetCreated(assetID, address(assetInstance), _assetManager, _tokenURI);
-    events.asset('Asset created', _tokenURI, assetID, address(assetInstance), _assetManager);
+    database.setAddress(keccak256(abi.encodePacked("assetManager", address(assetInstance))), _assetManager);
+    events.asset('Asset created', _tokenURI, address(assetInstance), _assetManager);
     return true;
   }
 
@@ -88,8 +80,8 @@ contract AssetGenerator {
   }
 
 
-  //event LogAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
-  //event LogTradeableAssetCreated(bytes32 indexed _assetID, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
+  //event LogAssetCreated(bytes32 indexed _assetAddress, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
+  //event LogTradeableAssetCreated(bytes32 indexed _assetAddress, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
 
 
 }

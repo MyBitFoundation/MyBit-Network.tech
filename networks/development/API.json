@@ -83,7 +83,7 @@
                 "type": "address"
             }
         ],
-        "name": "tokenGoverned",
+        "name": "assetGoverned",
         "outputs": [
             {
                 "name": "",
@@ -93,7 +93,7 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0xeb1cbfb4"
+        "signature": "0xf269271c"
     },
     {
         "constant": true,
@@ -103,7 +103,7 @@
                 "type": "address"
             }
         ],
-        "name": "tokenStakeRequirement",
+        "name": "assetVoteDuration",
         "outputs": [
             {
                 "name": "",
@@ -113,7 +113,7 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0x82ca8ed9"
+        "signature": "0x2188cb5c"
     },
     {
         "constant": true,
@@ -123,7 +123,7 @@
                 "type": "address"
             }
         ],
-        "name": "tokenVoteDuration",
+        "name": "assetQuorum",
         "outputs": [
             {
                 "name": "",
@@ -133,7 +133,7 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0xad90fb07"
+        "signature": "0x327615a7"
     },
     {
         "constant": true,
@@ -143,7 +143,7 @@
                 "type": "address"
             }
         ],
-        "name": "tokenQuorum",
+        "name": "assetThreshold",
         "outputs": [
             {
                 "name": "",
@@ -153,7 +153,7 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0xb6618700"
+        "signature": "0xef25bb2e"
     },
     {
         "constant": true,
@@ -163,7 +163,7 @@
                 "type": "address"
             }
         ],
-        "name": "tokenThreshold",
+        "name": "assetStakeRequirement",
         "outputs": [
             {
                 "name": "",
@@ -173,7 +173,7 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0x68775278"
+        "signature": "0x74a74a55"
     },
     {
         "constant": true,
@@ -377,6 +377,46 @@
             {
                 "name": "_proposalID",
                 "type": "bytes32"
+            }
+        ],
+        "name": "proposalQuorum",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x334ae93a"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_proposalID",
+                "type": "bytes32"
+            }
+        ],
+        "name": "proposalThreshold",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xadf898a4"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_proposalID",
+                "type": "bytes32"
             },
             {
                 "name": "_investor",
@@ -394,74 +434,6 @@
         "stateMutability": "view",
         "type": "function",
         "signature": "0x0bb5082a"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "name": "_proposalID",
-                "type": "bytes32"
-            },
-            {
-                "name": "_investor",
-                "type": "address"
-            }
-        ],
-        "name": "getInvestorVotes",
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xdd48c6fe"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "name": "_proposalID",
-                "type": "bytes32"
-            }
-        ],
-        "name": "getTotalVotes",
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xdd34ef46"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "name": "_proposalID",
-                "type": "bytes32"
-            },
-            {
-                "name": "_assetToken",
-                "type": "address"
-            }
-        ],
-        "name": "getCurrentConsensus",
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xa78772e3"
     },
     {
         "constant": true,
@@ -487,8 +459,8 @@
         "constant": true,
         "inputs": [
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_assetAddress",
+                "type": "address"
             },
             {
                 "name": "_oldAssetManager",
@@ -521,18 +493,18 @@
         "payable": false,
         "stateMutability": "pure",
         "type": "function",
-        "signature": "0x470758cd"
+        "signature": "0xf0487e24"
     },
     {
         "constant": true,
         "inputs": [
             {
-                "name": "_executingContract",
+                "name": "_token",
                 "type": "address"
             },
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_contractAddress",
+                "type": "address"
             },
             {
                 "name": "_methodID",
@@ -553,7 +525,7 @@
         "payable": false,
         "stateMutability": "pure",
         "type": "function",
-        "signature": "0x6bd657c1"
+        "signature": "0xcf0df157"
     },
     {
         "constant": true,
@@ -579,8 +551,8 @@
         "constant": true,
         "inputs": [
             {
-                "name": "_assetID",
-                "type": "bytes"
+                "name": "_assetAddress",
+                "type": "address"
             },
             {
                 "name": "_investor",
@@ -609,133 +581,14 @@
         "payable": false,
         "stateMutability": "pure",
         "type": "function",
-        "signature": "0x2a382d96"
+        "signature": "0x743f95fe"
     },
     {
         "constant": true,
         "inputs": [
             {
-                "name": "_broker",
+                "name": "_assetAddress",
                 "type": "address"
-            },
-            {
-                "name": "_amountToRaise",
-                "type": "uint256"
-            },
-            {
-                "name": "_operatorID",
-                "type": "bytes32"
-            },
-            {
-                "name": "_assetURI",
-                "type": "string"
-            }
-        ],
-        "name": "generateAssetID",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bytes32"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "pure",
-        "type": "function",
-        "signature": "0x399cb25a"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "name": "_tokenAddress",
-                "type": "address"
-            }
-        ],
-        "name": "getAssetID",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bytes32"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x291d896a"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "name": "_broker",
-                "type": "address"
-            },
-            {
-                "name": "_assetURI",
-                "type": "string"
-            },
-            {
-                "name": "_amountToRaise",
-                "type": "uint256"
-            },
-            {
-                "name": "_operatorID",
-                "type": "bytes32"
-            }
-        ],
-        "name": "getAssetID",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bytes32"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "pure",
-        "type": "function",
-        "signature": "0xbbbee3f7"
-    },
-    {
-        "constant": true,
-        "inputs": [],
-        "name": "getPlatformAssetID",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bytes32"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "pure",
-        "type": "function",
-        "signature": "0x180472ba"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "name": "_assetID",
-                "type": "bytes32"
-            }
-        ],
-        "name": "getAssetAddress",
-        "outputs": [
-            {
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x76d02895"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "name": "_assetID",
-                "type": "bytes32"
             }
         ],
         "name": "getAssetFundingToken",
@@ -748,14 +601,14 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0x67d14a81"
+        "signature": "0x06b895b1"
     },
     {
         "constant": true,
         "inputs": [
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_assetAddress",
+                "type": "address"
             }
         ],
         "name": "getAssetROI",
@@ -768,14 +621,14 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0x51cad293"
+        "signature": "0x20fe416e"
     },
     {
         "constant": true,
         "inputs": [
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_assetAddress",
+                "type": "address"
             }
         ],
         "name": "getAssetFundingGoal",
@@ -788,14 +641,14 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0x21bd88d5"
+        "signature": "0x2b8c99fb"
     },
     {
         "constant": true,
         "inputs": [
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_assetAddress",
+                "type": "address"
             }
         ],
         "name": "getAssetFundingDeadline",
@@ -808,14 +661,14 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0x250778ba"
+        "signature": "0x7a50e5e0"
     },
     {
         "constant": true,
         "inputs": [
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_assetAddress",
+                "type": "address"
             }
         ],
         "name": "crowdsaleFinalized",
@@ -828,14 +681,14 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0xc001e3ae"
+        "signature": "0x0109fb82"
     },
     {
         "constant": true,
         "inputs": [
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_assetAddress",
+                "type": "address"
             }
         ],
         "name": "getAssetManager",
@@ -848,14 +701,14 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0xc305183d"
+        "signature": "0x0b98956a"
     },
     {
         "constant": true,
         "inputs": [
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_assetAddress",
+                "type": "address"
             }
         ],
         "name": "getAssetManagerFee",
@@ -868,14 +721,14 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0x86ed3b04"
+        "signature": "0x756224c6"
     },
     {
         "constant": true,
         "inputs": [
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_assetAddress",
+                "type": "address"
             },
             {
                 "name": "_manager",
@@ -892,7 +745,7 @@
         "payable": false,
         "stateMutability": "pure",
         "type": "function",
-        "signature": "0x7626cf8f"
+        "signature": "0xaad01c96"
     },
     {
         "constant": true,
@@ -958,8 +811,8 @@
         "constant": true,
         "inputs": [
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_assetAddress",
+                "type": "address"
             }
         ],
         "name": "getAssetOperator",
@@ -972,7 +825,7 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0xd273c00d"
+        "signature": "0x9d3ca1eb"
     },
     {
         "constant": true,
@@ -1038,8 +891,8 @@
         "constant": true,
         "inputs": [
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_assetAddress",
+                "type": "address"
             },
             {
                 "name": "_sender",
@@ -1068,7 +921,7 @@
         "payable": false,
         "stateMutability": "pure",
         "type": "function",
-        "signature": "0x72997241"
+        "signature": "0x774f32c3"
     },
     {
         "constant": true,

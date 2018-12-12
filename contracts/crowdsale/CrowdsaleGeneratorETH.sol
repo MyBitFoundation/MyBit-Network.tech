@@ -43,26 +43,22 @@ contract CrowdsaleGeneratorETH {
     require(_assetManagerPerc < 100);
     require(database.boolStorage(keccak256(abi.encodePacked("acceptsEther", _operatorID))));
     require(database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))) != address(0));
+    require(!database.boolStorage(keccak256(abi.encodePacked("assetURI", _assetURI)))); //Check that asset URI is unique
     uint startTime;
     if(_startTime < now){
       startTime = now;
     } else {
       startTime = _startTime;
     }
-    bytes32 assetID = keccak256(abi.encodePacked(msg.sender, _amountToRaise, _operatorID, _assetURI));
-    require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", assetID))) == 0);
     address assetAddress = address(new DividendToken(_assetURI, database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleETH")))));   // Gives this contract all new asset tokens
-    database.setUint(keccak256(abi.encodePacked("startTime", assetID)), startTime);
-    database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetID)), startTime.add(_fundingLength));
-    uint assetManagerFee = _amountToRaise.mul(uint(100).mul(scalingFactor).div(uint(100).sub(_assetManagerPerc)).sub(scalingFactor)).div(scalingFactor);
-    database.setUint(keccak256(abi.encodePacked("assetManagerFee", assetID)), assetManagerFee);
-    database.setUint(keccak256(abi.encodePacked("amountToRaise", assetID)), _amountToRaise);
-    database.setAddress(keccak256(abi.encodePacked("tokenAddress", assetID)), assetAddress);
-    database.setBytes32(keccak256(abi.encodePacked("assetTokenID", assetAddress)), assetID);
-    database.setAddress(keccak256(abi.encodePacked("assetManager", assetID)), msg.sender);
-    database.setAddress(keccak256(abi.encodePacked("operator", assetID)), database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))));
-    //emit LogAssetFundingStarted(assetID, msg.sender, _assetURI, address(assetAddress));
-    events.asset('Asset funding started', _assetURI, assetID, assetAddress, msg.sender);
+    database.setUint(keccak256(abi.encodePacked("startTime", assetAddress)), startTime);
+    database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetAddress)), startTime.add(_fundingLength));
+    database.setUint(keccak256(abi.encodePacked("assetManagerFee", assetAddress)), _amountToRaise.mul(uint(100).mul(scalingFactor).div(uint(100).sub(_assetManagerPerc)).sub(scalingFactor)).div(scalingFactor));
+    database.setUint(keccak256(abi.encodePacked("amountToRaise", assetAddress)), _amountToRaise);
+    database.setAddress(keccak256(abi.encodePacked("assetManager", assetAddress)), _assetManager);
+    database.setAddress(keccak256(abi.encodePacked("operator", assetAddress)), database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))));
+    database.setBool(keccak256(abi.encodePacked("assetURI", _assetURI)), true); //Set to ensure a unique asset URI
+    events.asset('Asset funding started', _assetURI, assetAddress, _assetManager);
     return true;
   }
 

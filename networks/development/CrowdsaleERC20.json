@@ -49,8 +49,8 @@
         "constant": false,
         "inputs": [
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_assetAddress",
+                "type": "address"
             },
             {
                 "name": "_investor",
@@ -71,14 +71,14 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0xc674f7fe"
+        "signature": "0xe8500335"
     },
     {
         "constant": false,
         "inputs": [
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_assetAddress",
+                "type": "address"
             }
         ],
         "name": "refund",
@@ -91,7 +91,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x7249fbb6"
+        "signature": "0xfa89401a"
     },
     {
         "constant": false,

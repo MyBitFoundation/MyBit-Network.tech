@@ -61,7 +61,7 @@ contract('Proposals', async (accounts) => {
 
   it('Deploy database contract', async() => {
     db = await Database.new([owner], true);
-    console.log("database address is ", db.address); 
+    console.log("database address is ", db.address);
   });
 
   it('Deploy API', async() => {
@@ -112,7 +112,7 @@ contract('Proposals', async (accounts) => {
   it('Spread token to users', async() => {
     for (let i = 0; i < users.length; i++){
       await token.transfer(users[i], tokensPerUser);
-      assert.equal(tokensPerUser.eq(await token.balanceOf(users[i])));
+      assert.equal(tokensPerUser.eq(await token.balanceOf(users[i])), true);
     }
   });
 

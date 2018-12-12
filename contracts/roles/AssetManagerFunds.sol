@@ -32,14 +32,14 @@ contract AssetManagerFunds {
   }
 
   // @notice asset manager can withdraw his dividend fee from assets here
-  // @param : bytes32 _assetID = the ID of this asset on the platform
-  function withdraw(bytes32 _assetID, address _assetManager)
+  // @param : address _assetAddress = the address of this asset on the platform
+  function withdraw(address _assetAddress, address _assetManager)
   external
   nonReentrant
   returns (bool) {
     require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
-    require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))));
-    DToken token = DToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
+    require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetAddress))));
+    DToken token = DToken( _assetAddress);
     require(address(token) != address(0));
     uint amountOwed;
     uint balanceBefore;
@@ -64,25 +64,25 @@ contract AssetManagerFunds {
     return true;
   }
 
-  function retrieveAssetManagerTokens(bytes32[] _assetID, address _assetManager)
+  function retrieveAssetManagerTokens(address[] _assetAddress, address _assetManager)
   external
   nonReentrant
   returns (bool) {
     require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
-    require(_assetID.length <= 42);
-    uint[] memory payoutAmounts = new uint[](_assetID.length);
-    address[] memory tokenAddresses = new address[](_assetID.length);
+    require(_assetAddress.length <= 42);
+    uint[] memory payoutAmounts = new uint[](_assetAddress.length);
+    address[] memory tokenAddresses = new address[](_assetAddress.length);
     uint8 numEntries;
-    for(uint8 i = 0; i < _assetID.length; i++){
-      require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID[i]))) );
-      DToken token = DToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID[i]))));
+    for(uint8 i = 0; i < _assetAddress.length; i++){
+      require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetAddress[i]))) );
+      DToken token = DToken(_assetAddress[i]);
       require(address(token) != address(0));
       uint tokensOwed = token.getAmountOwed(address(this));
       require(tokensOwed > 0);
       DToken fundingToken = DToken(token.getERC20());
       uint balanceBefore = fundingToken.balanceOf(address(this));
       uint8 tokenIndex = containsAddress(tokenAddresses, address(token));
-      if (tokenIndex < _assetID.length) {  payoutAmounts[tokenIndex] = payoutAmounts[tokenIndex].add(tokensOwed); }
+      if (tokenIndex < _assetAddress.length) {  payoutAmounts[tokenIndex] = payoutAmounts[tokenIndex].add(tokensOwed); }
       else {
         tokenAddresses[numEntries] = address(fundingToken);
         payoutAmounts[numEntries] = tokensOwed;
@@ -99,16 +99,16 @@ contract AssetManagerFunds {
   }
 
 
-  function retrieveAssetManagerETH(bytes32[] _assetID, address _assetManager)
+  function retrieveAssetManagerETH(address[] _assetAddress, address _assetManager)
   external
   nonReentrant
   returns (bool) {
-    require(_assetID.length <= 93);
+    require(_assetAddress.length <= 93);
     uint weiOwed;
-    for(uint8 i = 0; i < _assetID.length; i++){
+    for(uint8 i = 0; i < _assetAddress.length; i++){
       require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
-      require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID[i]))));
-      DToken token = DToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID[i]))));
+      require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetAddress[i]))));
+      DToken token = DToken(_assetAddress[i]);
       uint balanceBefore = address(this).balance;
       uint amountOwed = token.getAmountOwed(address(this));
       require(amountOwed > 0);

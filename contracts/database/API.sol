@@ -87,6 +87,13 @@ contract API {
     return database.uintStorage(keccak256(abi.encodePacked("asset.threshold", _token)));
   }
 
+  function assetStakeRequirement(address _token)
+  public
+  view
+  returns (uint) {
+    return database.uintStorage(keccak256(abi.encodePacked("asset.stakeRequirement", _token)));
+  }
+
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                            Commitments
@@ -219,11 +226,11 @@ contract API {
   }
 
 
-  function getAssetManagerParameterHash(bytes32 _assetID, address _oldAssetManager, address _newAssetManager, uint _amount, bool _withhold)
+  function getAssetManagerParameterHash(address _assetToken, address _oldAssetManager, address _newAssetManager, uint _amount, bool _withhold)
   public
   pure
   returns (bytes32){
-    return keccak256(abi.encodePacked(_assetID, _oldAssetManager, _newAssetManager, _amount, _withhold));
+    return keccak256(abi.encodePacked(_assetToken, _oldAssetManager, _newAssetManager, _amount, _withhold));
   }
 
 
@@ -234,102 +241,64 @@ contract API {
     return bytes4(keccak256(abi.encodePacked(_functionString)));
   }
 
-  function getAssetID(address _assetManager, string _assetURI, uint _amountToRaise, bytes32 _operatorID)
-  public
-  pure
-  returns(bytes32) {
-    return keccak256(abi.encodePacked(_assetManager, _amountToRaise, _operatorID, _assetURI));
-  }
-
-  function getOrderID(bytes _assetID, address _investor, uint _amount, uint _price, bool _buyOrder)
+  function getOrderID(address _assetAddress, address _investor, uint _amount, uint _price, bool _buyOrder)
   external
   pure
   returns(bytes32) {
-    return keccak256(abi.encodePacked(_assetID, _investor, _amount, _price, _buyOrder));
+    return keccak256(abi.encodePacked(_assetAddress, _investor, _amount, _price, _buyOrder));
   }
 
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                        Crowdsale and Assets
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  function generateAssetID(address _assetManager, uint _amountToRaise, bytes32 _operatorID, string _assetURI)
-  public
-  pure
-  returns(bytes32) {
-    bytes32 assetID = keccak256(abi.encodePacked(_assetManager, _amountToRaise, _operatorID, _assetURI));
-    return assetID;
-  }
-
-  function getAssetID(address _tokenAddress)
-  public
-  view
-  returns(bytes32) {
-    bytes32 assetID = database.bytes32Storage(keccak256(abi.encodePacked("assetTokenID", _tokenAddress)));
-    return assetID;
-  }
-
-  function getPlatformAssetID()
-  external
-  pure
-  returns(bytes32){
-    return keccak256(abi.encodePacked("platformAssetID"));
-  }
-
-  function getAssetAddress(bytes32 _assetID)
+  function getAssetFundingToken(address _assetAddress)
   public
   view
   returns(address) {
-    address assetAddress = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)));
-    return assetAddress;
-  }
-
-  function getAssetFundingToken(bytes32 _assetID)
-  public
-  view
-  returns(address) {
-    address fundingTokenAddress = database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID)));
+    address fundingTokenAddress = database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetAddress)));
     return fundingTokenAddress;
   }
 
   // IF we decide not to store assetIncome
-  // function getAssetIncome(bytes32 _assetID)
+  // function getAssetIncome(address _assetAddress)
   // public
   // view
   // returns (uint) {
-  //   TokenView asset = TokenView(getAssetAddress(_assetID));
+  //   TokenView asset = TokenView(_assetAddress);
   //   uint valuePerToken =  asset.valuePerToken();
   //   return (valuePerToken * (asset.totalSupply())) / asset.scalingFactor();
   // }
 
-  function getAssetROI(bytes32 _assetID)
+  function getAssetROI(address _assetAddress)
   public
   view
   returns (uint) {
-    TokenView assetToken = TokenView(getAssetAddress(_assetID));
+    TokenView assetToken = TokenView(_assetAddress);
     return (assetToken.assetIncome() * 100) /  assetToken.totalSupply();
   }
 
-  function getAssetFundingGoal(bytes32 _assetID)
+  function getAssetFundingGoal(address _assetAddress)
   public
   view
   returns(uint) {
-    uint fundingGoal = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID)));
+    uint fundingGoal = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetAddress)));
     return fundingGoal;
   }
 
-  function getAssetFundingDeadline(bytes32 _assetID)
+  function getAssetFundingDeadline(address _assetAddress)
   public
   view
   returns(uint) {
-    uint fundingDeadline = database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID)));
+    uint fundingDeadline = database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetAddress)));
     return fundingDeadline;
   }
 
-  function crowdsaleFinalized(bytes32 _assetID)
+  function crowdsaleFinalized(address _assetAddress)
   public
   view
   returns(bool) {
-    bool status = database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)));
+    bool status = database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetAddress)));
     return status;
   }
 
@@ -338,27 +307,27 @@ contract API {
   //                                        Asset Manager and Operator
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function getAssetManager(bytes32 _assetID)
+  function getAssetManager(address _assetAddress)
   public
   view
   returns(address) {
-    address managerAddress = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID)));
+    address managerAddress = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetAddress)));
     return managerAddress;
   }
 
-  function getAssetManagerFee(bytes32 _assetID)
+  function getAssetManagerFee(address _assetAddress)
   public
   view
   returns(uint) {
-    uint managerFee = database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID)));
+    uint managerFee = database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetAddress)));
     return managerFee;
   }
 
-  function getAssetManagerEscrowID(bytes32 _assetID, address _manager)
+  function getAssetManagerEscrowID(address _assetAddress, address _manager)
   public
   pure
   returns(bytes32) {
-    bytes32 managerEscrowID = keccak256(abi.encodePacked(_assetID, _manager));
+    bytes32 managerEscrowID = keccak256(abi.encodePacked(_assetAddress, _manager));
     return managerEscrowID;
   }
 
@@ -386,11 +355,11 @@ contract API {
     return escrowRedeemed;
   }
 
-  function getAssetOperator(bytes32 _assetID)
+  function getAssetOperator(address _assetAddress)
   public
   view
   returns(address) {
-    address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _assetID)));
+    address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _assetAddress)));
     return operatorAddress;
   }
 
@@ -398,7 +367,7 @@ contract API {
   public
   pure
   returns(bytes32) {
-    bytes32 operatorID = keccak256(abi.encodePacked(_operatorURI));
+    bytes32 operatorID = keccak256(abi.encodePacked("operatorURI", _operatorURI));
     return operatorID;
   }
 
@@ -422,11 +391,11 @@ contract API {
   //                                        Stakeholders
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function generateOrderID(bytes32 _assetID, address _sender, uint _amount, uint _price, bool _buyOrder)
+  function generateOrderID(address _assetAddress, address _sender, uint _amount, uint _price, bool _buyOrder)
   public
   pure
   returns(bytes32) {
-    bytes32 orderID = keccak256(abi.encodePacked(_assetID, _sender, _amount, _price, _buyOrder));
+    bytes32 orderID = keccak256(abi.encodePacked(_assetAddress, _sender, _amount, _price, _buyOrder));
     return orderID;
   }
 
@@ -439,7 +408,7 @@ contract API {
   public
   view
   returns(address) {
-    address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", keccak256(abi.encodePacked("platformAssetID")))));
+    address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platformToken")));
     return tokenAddress;
   }
 

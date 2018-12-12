@@ -94,7 +94,12 @@ contract Commitment {
   internal
   view
   returns (uint256) {
-    return now.sub(database.uintStorage(keccak256(abi.encodePacked("commitment.start", _token, _account))));
+    uint start = database.uintStorage(keccak256(abi.encodePacked("commitment.start", _token, _account)));
+    if(start == 0){
+      return start;
+    } else {
+      return now.sub(start);
+    }
   }
 
 
