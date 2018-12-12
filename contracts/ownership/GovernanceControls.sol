@@ -14,46 +14,45 @@ import '../interfaces/ERC20.sol';
 contract GovernanceControls {
   using SafeMath for uint256;
 
-  Database public database;
+  Database public db;
   Events public events;
 
 
 
   // @notice initiator of the platform sets the initial functions quorum level
   // @notice quorum level dictates the number of votes required for that function to be executed
-  constructor(address _database, address _events)
+  constructor(address database, address logs)
   public  {
-    database = Database(_database);
-    events = Events(_events);
+    db = Database(database);
+    events = Events(logs);
   }
 
   // @notice initiates governance for this token
-  // @param _tokenAddress - MYB token contract address.
-  // @param _voteDuration - Vote duration. Voting period of each proposal. Must be positive.
-  // @param _quorum - Amount of supply that must vote to make a proposal valid. Integer percent, eg 20 for 20%. In range 1-100 inclusive.
-  // @param _threshold - Amount of weighted votes that must be approval for a proposal to pass. Integer percent, eg 51 for 51%. In range 1-100 inclusive.
-  function startGovernance(address _tokenAddress, address _governanceContract, uint256 _voteDuration, uint8 _quorum, uint8 _threshold, uint256 _stakeRequirement)
+  // @param tokenAddress - MYB token contract address.
+  // @param voteDuration - Vote duration. Voting period of each proposal. Must be positive.
+  // @param quorum - Amount of supply that must vote to make a proposal valid. Integer percent, eg 20 for 20%. In range 1-100 inclusive.
+  // @param threshold - Amount of weighted votes that must be approval for a proposal to pass. Integer percent, eg 51 for 51%. In range 1-100 inclusive.
+  function startGovernance(address tokenAddress, address governanceContract, uint256 voteDuration, uint8 quorum, uint8 threshold)
   public
   returns (bool){
     // TODO: only allow initiating by platform contract
-    require(_quorum > 0 && _quorum < 100);
-    require(_threshold > 0 && _threshold < 100);
-    bytes32 tokenID = keccak256(abi.encodePacked("asset.governed", _tokenAddress));
-    require(!database.boolStorage(tokenID));
-    database.setBool(tokenID, true);
-    database.setAddress(keccak256(abi.encodePacked("asset.governanceContract", _governanceContract)), _governanceContract);
-    database.setUint(keccak256(abi.encodePacked("asset.voteduration", _tokenAddress)), _voteDuration);
-    database.setUint(keccak256(abi.encodePacked("asset.quorum", _tokenAddress)), _quorum);
-    database.setUint(keccak256(abi.encodePacked("asset.threshold", _tokenAddress)), _threshold);
-    database.setUint(keccak256(abi.encodePacked("asset.stakeRequirement", _tokenAddress)), _stakeRequirement);
+    require(quorum > 0 && quorum < 100);
+    require(threshold > 0 && threshold < 100);
+    require(voteDuration > 86400);   // 1 day minimum
+    bytes32 governanceID = keccak256(abi.encodePacked("asset.governance", governanceContract));
+    require(db.addressStorage(governanceID) == address(0));
+    db.setAddress(governanceID, governanceContract);
+    db.setUint(keccak256(abi.encodePacked("asset.voteduration", tokenAddress)), voteDuration);
+    db.setUint(keccak256(abi.encodePacked("asset.quorum", tokenAddress)), quorum);
+    db.setUint(keccak256(abi.encodePacked("asset.threshold", tokenAddress)), threshold);
     return true;
   }
 
 
   // // @notice If restricted it will have to be called from address(this) using a voting proccess on signForFunctionCall
-  // function addFunctionality(address _contractAddress, address _tokenAddress, bytes4 _methodID, uint256 _quorumLevel, uint256 _threshold)
+  // function addFunctionality(address _contractAddress, address tokenAddress, bytes4 _methodID, uint256 quorumLevel, uint256 threshold)
   // external
-  // isRestricted(msg.sig, keccak256(abi.encodePacked(_contractAddress, _tokenAddress, _methodID, _quorumLevel)))
+  // isRestricted(msg.sig, keccak256(abi.encodePacked(_contractAddress, tokenAddress, _methodID, quorumLevel)))
   // returns (bool) {
   //   return true;
   // }
@@ -87,7 +86,7 @@ contract GovernanceControls {
 
   // @notice reverts if caller is not the owner
   modifier onlyOwner {
-    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))) == true);
+    require(db.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))) == true);
     _;
   }
 

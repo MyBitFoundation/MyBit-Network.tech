@@ -20,8 +20,10 @@ contract Database{
 
     // @notice Constructor: Sets the owners of the platform
     // @dev Owners must set the contract manager to add more contracts
-    constructor(address[] _owners, bool _upgradeable) public {
+    constructor(address[] _owners, bool _upgradeable)
+    public {
       for(uint i=0; i<_owners.length; i++){
+        require(_owners[i] != address(0), "Empty address");
         boolStorage[keccak256(abi.encodePacked("owner", _owners[i]))] = true;
         emit LogInitialized(_owners[i], _upgradeable);
       }
@@ -29,7 +31,6 @@ contract Database{
         boolStorage[keccak256("upgradeable")] = true;
       }
     }
-
 
     // @notice ContractManager will be the only contract that can add/remove contracts on the platform.
     // @param (address) _contractManager is the contract which can upgrade/remove contracts to platform
