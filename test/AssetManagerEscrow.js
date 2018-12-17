@@ -19,7 +19,7 @@ contract('AssetManager Escrow', async(accounts) => {
   const user1 = accounts[1];
   const user2 = accounts[2];
   const user3 = accounts[3];
-  const assetManager = accounts[4];
+  const assetManager = accounts[6];
   const operator = accounts[5];
   const tokenHolders = [user1, user2, user3];
 
@@ -93,7 +93,7 @@ contract('AssetManager Escrow', async(accounts) => {
     operatorID = logs[0].args.operatorID;
   });
 
-  it("Generate assetID", async() => {
+  it("Generate asset", async() => {
     assetID = await hash.getAssetID(assetURI, 8*ETH, operatorID, {from:assetManager});
   });
 

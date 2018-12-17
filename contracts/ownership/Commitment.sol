@@ -34,21 +34,23 @@ contract Commitment {
 
 
   /**
-  * Commit MYB to voting
-  * @notice Commits specified amount of your MYB to voting.
+  * Commit asset token to voting
+  * @notice Commits specified amount of your token to voting.
   * @dev Fails if you already have an active commitment. Emits Commit on success.
   * @param _value - MYB amount to commit.
   */
   function commit(uint256 _value, address _token)
-  external {
+  external
+  returns (bool){
     require(_value > 0, "Non zero value required");
     require(commitmentAge(msg.sender, _token) == 0, "commitment already made");
-    require(database.uintStorage(keccak256(abi.encodePacked("commitment.releasetime", _token, msg.sender))) == 0);
-    require(database.boolStorage(keccak256(abi.encodePacked("asset.governed", _token))));
+    require(database.uintStorage(keccak256(abi.encodePacked("commitment.releasetime", _token, msg.sender))) == 0); // make sure user isn't withdrawing tokens
+    require(database.addressStorage(keccak256(abi.encodePacked("asset.governance", _token))) != address(0));  // make sure token is governed
     require(Commitment_ERC20(_token).transferFrom(msg.sender, address(this), _value), "transferFrom failed");
     database.setUint(keccak256(abi.encodePacked("commitment.value", _token, msg.sender)), _value);
     database.setUint(keccak256(abi.encodePacked("commitment.start", _token, msg.sender)), now);
     emit Commit(msg.sender, _value);
+    return true;
   }
 
   // @notice token holder can signal their commitment to be withdrawn after proposal time has elapsed
@@ -60,7 +62,7 @@ contract Commitment {
     bytes32 releaseTimeID = keccak256(abi.encodePacked("commitment.releasetime", _token, msg.sender));
     require(now < database.uintStorage(releaseTimeID));
     database.deleteUint(keccak256(abi.encodePacked("commitment.start", _token, msg.sender)));   // remove reference to start date which is the authortiy check
-    database.setUint(releaseTimeID, now.add(database.uintStorage(keccak256(abi.encodePacked("asset.voteduration")))));
+    database.setUint(releaseTimeID, now.add(database.uintStorage(keccak256(abi.encodePacked("asset.voteDuration")))));
     return true;
   }
 
