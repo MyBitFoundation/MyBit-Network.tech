@@ -3,12 +3,12 @@ pragma solidity ^0.4.24;
 import "../math/SafeMath.sol";
 
 
-interface ERC20 {
+interface MutualSlashing_ERC20 {
   function transfer(address _to, uint256 _value) external returns (bool);
   function transferFrom(address _from, address _to, uint256 _value) external returns (bool);
   function burn(uint256 _amount) external returns (bool);
 }
-interface DB {
+interface MutualSlashing_Database {
   function addressStorage(bytes32 _key) external view returns (address);
   function uintStorage(bytes32 _key) external view returns (uint);
   function boolStorage(bytes32 _key) external view returns (bool);
@@ -26,13 +26,13 @@ interface DB {
 contract MutualSlashing {
   using SafeMath for uint256;
 
-  DB public database;
+  MutualSlashing_Database public database;
 
   // @notice constructor
   // @param _database instance
   constructor(address _database)
   public {
-    database = DB(_database);
+    database = MutualSlashing_Database(_database);
   }
 
   /**
@@ -47,13 +47,13 @@ contract MutualSlashing {
     require(commitmentAge(msg.sender, _token) == 0, "commitment already made");
     require(database.uintStorage(keccak256(abi.encodePacked("commitment.releasetime", _token, msg.sender))) == 0);
     require(tokenIsGoverned(_token));
-    require(ERC20(_token).transferFrom(msg.sender, address(this), _value), "transferFrom failed");
+    require(MutualSlashing_ERC20(_token).transferFrom(msg.sender, address(this), _value), "transferFrom failed");
     database.setUint(keccak256(abi.encodePacked("commitment.value",  _token, msg.sender)), _value);
     database.setUint(keccak256(abi.encodePacked("commitment.start", _token, msg.sender)), now);
     emit Commit(msg.sender, _value);
   }
 
-  
+
   function propose(address _token, uint256 _stake, address _contractAddress, bytes4 _methodID, bytes32 _parameterHash)
   external
   returns (bool){
@@ -134,7 +134,7 @@ contract MutualSlashing {
     uint256 selfBurnAmount = _amountToBurn.mul(database.uintStorage(keccak256(abi.encodePacked("platform.burnrate"))));
     database.setUint(stakeID, proposerStake.sub(_amountToBurn));   // reduce stake amount
     database.setUint(commitmentID, database.uintStorage(commitmentID).sub(_amountToBurn));   // reduce commitment amount
-    require(ERC20(token).burn(_amountToBurn.add(selfBurnAmount)));  // burn both proposer and token holder tokens
+    require(MutualSlashing_ERC20(token).burn(_amountToBurn.add(selfBurnAmount)));  // burn both proposer and token holder tokens
     return true;
   }
 
@@ -165,7 +165,7 @@ contract MutualSlashing {
     bytes32 commitmentValueID = keccak256(abi.encodePacked("commitment.value", _tokenHolder));
     uint256 value = database.uintStorage(commitmentValueID);
     database.deleteUint(commitmentValueID);
-    require(ERC20(_token).transfer(_tokenHolder, value));
+    require(MutualSlashing_ERC20(_token).transfer(_tokenHolder, value));
     emit Withdraw(_tokenHolder, value);
     return true;
   }

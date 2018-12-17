@@ -1,4 +1,4 @@
 module.exports = {
-    skipFiles: ['bancor', 'examples'],
+    skipFiles: ['bancor/', 'examples/'],
     deepSkip: true
 };

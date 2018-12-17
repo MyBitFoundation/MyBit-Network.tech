@@ -14,6 +14,7 @@ pragma solidity ^0.4.24;
   // @author Kyle Dewhurst, MyBit Foundation
   // @notice AssetManager can lock his escrow in this contract and retrieve it if asset funding fails or successfully returns ROI
   contract AssetManagerEscrow {
+    /*
     using SafeMath for uint256;
 
     DBInterface public database;

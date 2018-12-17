@@ -3,11 +3,11 @@ pragma solidity ^0.4.24;
 import "../math/SafeMath.sol";
 import "../database/Events.sol";
 
-interface ERC20 {
+interface Proposals_ERC20 {
   function transfer(address _to, uint256 _value) external returns (bool);
   function transferFrom(address _from, address _to, uint256 _value) external returns (bool);
 }
-interface DB {
+interface Proposals_Database {
   function addressStorage(bytes32 _key) external view returns (address);
   function uintStorage(bytes32 _key) external view returns (uint);
   function boolStorage(bytes32 _key) external view returns (bool);
@@ -37,7 +37,7 @@ contract Proposals {
   using SafeMath for uint256;
 
 
-  DB public database;
+  Proposals_Database public database;
   Events public events;
 
 
@@ -45,7 +45,7 @@ contract Proposals {
   // @param _database instance
   constructor(address _database, address _events)
   public {
-    database = DB(_database);
+    database = Proposals_Database(_database);
     events = Events(_events);
   }
 

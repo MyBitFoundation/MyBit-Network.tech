@@ -70,7 +70,7 @@ contract API {
   public
   view
   returns (uint) {
-    return database.uintStorage(keccak256(abi.encodePacked("asset.voteduration", _token)));
+    return database.uintStorage(keccak256(abi.encodePacked("asset.voteDuration", _token)));
   }
 
   function assetQuorum(address _token)

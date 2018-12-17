@@ -8,11 +8,8 @@ const Events = artifacts.require('Events');
 const ContractManager = artifacts.require('ContractManager');
 const GovernanceControls = artifacts.require('GovernanceControls');
 const API = artifacts.require('API');
-const PlatformFunds = artifacts.require('PlatformFunds');
+const Platform = artifacts.require('Platform');
 const ConsensusTest = artifacts.require('ConsensusTest');
-
-
-
 
 async function rejects (promise) {
   try {
@@ -54,7 +51,7 @@ contract('Proposals', async (accounts) => {
   let tokensPerUser = tokenSupply.dividedBy(users.length);
 
   // Contract instances
-  let token, proposals, commitment, gc, ctest, db, cm, events, api, platformFunds;
+  let token, proposals, commitment, gc, ctest, db, cm, events, api, platform;
 
 
   it('Deploy database contract', async() => {
@@ -100,8 +97,8 @@ contract('Proposals', async (accounts) => {
 
 
   it('Deploy platform', async() => {
-    platform = await PlatformFunds.new(db.address, events.address);
-    await cm.addContract('PlatformFunds', platform.address);
+    platform = await Platform.new(db.address, events.address);
+    await cm.addContract('Platform', platform.address);
     await platform.setPlatformWallet(owner);
     await platform.setPlatformToken(token.address);
   });
@@ -119,7 +116,7 @@ contract('Proposals', async (accounts) => {
   });
 
   it('Set token as governed on platform', async() => {
-    await gc.startGovernance(token.address, commitment.address, voteDuration, quorum, threshold, 1);
+    await gc.startGovernance(token.address, proposals.address, voteDuration, quorum, threshold, 1);
     assert.equal(await api.assetGoverned(token.address), true);
     console.log("token vote duration is: ", await api.assetVoteDuration(token.address));
     assert.equal(voteDuration.eq(await api.assetVoteDuration(token.address)), true);

@@ -42,7 +42,7 @@ contract GovernanceControls {
     require(!database.boolStorage(tokenID));
     database.setBool(tokenID, true);
     database.setAddress(keccak256(abi.encodePacked("asset.governanceContract", _governanceContract)), _governanceContract);
-    database.setUint(keccak256(abi.encodePacked("asset.voteduration", _tokenAddress)), _voteDuration);
+    database.setUint(keccak256(abi.encodePacked("asset.voteDuration", _tokenAddress)), _voteDuration);
     database.setUint(keccak256(abi.encodePacked("asset.quorum", _tokenAddress)), _quorum);
     database.setUint(keccak256(abi.encodePacked("asset.threshold", _tokenAddress)), _threshold);
     database.setUint(keccak256(abi.encodePacked("asset.stakeRequirement", _tokenAddress)), _stakeRequirement);
