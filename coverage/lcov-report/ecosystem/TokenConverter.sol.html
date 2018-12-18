@@ -22,22 +22,22 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>0/16</span>
+        <span class='fraction'>0/13</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>0/6</span>
+        <span class='fraction'>0/10</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>0/2</span>
+        <span class='fraction'>0/4</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>0/21</span>
+        <span class='fraction'>0/19</span>
       </div>
     </div>
   </div>
@@ -107,25 +107,19 @@
 62
 63
 64
-65</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+65
+66
+67
+68
+69
+70
+71</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -144,7 +138,15 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -154,11 +156,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -171,67 +169,87 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity 0.4.24;
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity ^0.4.24;
 &nbsp;
 import "../bancor/IBancorNetwork.sol";
-import "../bancor/token/EtherToken.sol";
 import "../bancor/token/interfaces/IERC20Token.sol";
 import "../bancor/token/interfaces/ISmartToken.sol";
 import "../bancor/token/interfaces/IEtherToken.sol";
-import "../bancor/token/SmartToken.sol";
+import "../interfaces/DBInterface.sol";
 &nbsp;
 &nbsp;
 ///@title A contract for converting any token into MYB (using Bancor's API)
 ///@author Vlad Silviu Farcas
 contract TokenConverter {
+    //DBInterface private database;
+    IERC20Token private myBitToken;
+    IBancorNetwork private bancorNetwork;
+    mapping(address =&gt; IERC20Token[]) private path;
 &nbsp;
-    IBancorNetwork bancorNetwork;
+    address owner;
 &nbsp;
     ///@notice initialise addresses needed for conversion
-<span class="fstat-no" title="function not covered" >    constructor(IBancorNetwork _bancorNetwork) publ</span>ic{
-<span class="cstat-no" title="statement not covered" >        bancorNetwork = _bancorNetwork</span>;
+<span class="fstat-no" title="function not covered" >    constructor(IERC20Token _token, IBancorNetwork _bancorNetwork) publ</span>ic{
+      //database = DBInterface(_database);
+<span class="cstat-no" title="statement not covered" >      myBitToken = _token</span>;
+<span class="cstat-no" title="statement not covered" >      owner = msg.sender</span>;
+<span class="cstat-no" title="statement not covered" >      bancorNetwork = _bancorNetwork</span>;
     }
 &nbsp;
     ///@notice convert some tokens
     ///@param _token the contract of the token that is about to be converted
     ///@param _amount the amount of _token that is about to be converted
     ///@param _minimumReturn the minimum return of MyBit token that is about to be received
-<span class="fstat-no" title="function not covered" >    function convertTokenToMyBit(</span>
-      address _token,
-      uint _amount,
-      uint _minimumReturn,
-      address _toToken,
-      address _ether
-    )
+<span class="fstat-no" title="function not covered" >    function convertTokenToMyBit(address _token, uint _amount, uint _minimumReturn)</span>
     external
     payable {
       IERC20Token token;
-<span class="cstat-no" title="statement not covered" >      IERC20Token[] memory path = new IERC20Token[](3)</span>;
-<span class="cstat-no" title="statement not covered" >      uint amount = _amount</span>;
-<span class="cstat-no" title="statement not covered" >      uint value = 0</span>;
-<span class="cstat-no" title="statement not covered" >      ISmartToken toToken = ISmartToken(_toToken)</span>;
 <span class="cstat-no" title="statement not covered" >      if (msg.value == 0){</span>
           // require(bancorNetwork.etherTokens(_token) == true, "Token not supported");
 <span class="cstat-no" title="statement not covered" >          token = ISmartToken(_token)</span>;
-          token.transferFrom(msg.sender, bancorNetwork, amount);
-          token.approve(bancorNetwork, amount);
+          token.transferFrom(msg.sender, bancorNetwork, _amount);
+          token.approve(bancorNetwork, _amount);
       } else {
-<span class="cstat-no" title="statement not covered" >          token = IEtherToken(_ether)</span>;
-<span class="cstat-no" title="statement not covered" >          amount = msg.value</span>;
-<span class="cstat-no" title="statement not covered" >          value = msg.value</span>;
+<span class="cstat-no" title="statement not covered" >          require(_amount == msg.value)</span>;
+<span class="cstat-no" title="statement not covered" >          token = IEtherToken(_token)</span>;
       }
-<span class="cstat-no" title="statement not covered" >      path[0] = token</span>;
-<span class="cstat-no" title="statement not covered" >      path[1] = toToken</span>;
-<span class="cstat-no" title="statement not covered" >      path[2] = toToken</span>;
 <span class="cstat-no" title="statement not covered" >      uint convertedValue = IBancorNetwork(bancorNetwork).convert(</span>
-          path,
-          amount,
+          path[address(token)],
+          _amount,
           _minimumReturn
       );
 <span class="cstat-no" title="statement not covered" >      require (convertedValue &gt;= _minimumReturn, "Transaction failed.")</span>;
-<span class="cstat-no" title="statement not covered" >      require (toToken.balanceOf(this) == convertedValue, "Transaction failed with different return than expected")</span>;
-      toToken.transfer(msg.sender, convertedValue);
+<span class="cstat-no" title="statement not covered" >      require (myBitToken.balanceOf(this) == convertedValue, "Transaction failed with different return than expected")</span>;
+      myBitToken.transfer(msg.sender, convertedValue);
       token.transfer(msg.sender, token.balanceOf(this));
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function addPath(address token, IERC20Token[] _newPath)</span>
+    public
+    onlyOwner
+    returns (bool){
+<span class="cstat-no" title="statement not covered" >      path[token] = _newPath</span>;
+<span class="cstat-no" title="statement not covered" >      return true;</span>
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    modifier onlyOwne</span>r {
+      //require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
+<span class="cstat-no" title="statement not covered" >      require(owner == msg.sender)</span>;
+      _;
     }
 &nbsp;
 }
@@ -241,7 +259,7 @@ contract TokenConverter {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Nov 15 2018 11:56:44 GMT-0800 (PST)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Dec 13 2018 14:49:35 GMT-0800 (PST)
 </div>
 </div>
 <script src="../prettify.js"></script>

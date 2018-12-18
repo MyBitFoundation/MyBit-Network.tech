@@ -20,28 +20,28 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">0% </span>
+        <span class="strong">62.5% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>0/8</span>
+        <span class='fraction'>5/8</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">0% </span>
+        <span class="strong">50% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>0/4</span>
+        <span class='fraction'>2/4</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">0% </span>
+        <span class="strong">75% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>0/4</span>
+        <span class='fraction'>3/4</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">0% </span>
+        <span class="strong">70% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>0/10</span>
+        <span class='fraction'>7/10</span>
       </div>
     </div>
   </div>
-  <div class='status-line low'></div>
+  <div class='status-line medium'></div>
 <pre><table class="coverage">
 <tr><td class="line-count quiet">1
 2
@@ -100,8 +100,7 @@
 55
 56
 57
-58
-59</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+58</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -126,12 +125,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -140,9 +137,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -161,7 +159,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity ^0.4.24;
 &nbsp;
-&nbsp;
 import '../math/SafeMath.sol';
 import './AccessHierarchy.sol';
 &nbsp;
@@ -172,7 +169,7 @@ contract Expirable is AccessHierarchy {
 &nbsp;
   uint public expirationLength = uint256(31557600);    // 365 days
 &nbsp;
-<span class="fstat-no" title="function not covered" >  constructor(address _database, address _events) public AccessHierarchy(_database, _events)</span>{}
+  constructor(address _database, address _events) public AccessHierarchy(_database, _events){}
 &nbsp;
   //------------------------------------------------------------------------------------------------------------------
   // @notice Owner can manually grant access to a user here. WIll be used for KYC approval
@@ -180,27 +177,27 @@ contract Expirable is AccessHierarchy {
   // @param The level of access granted by owner/burningcontract
   // TODO: does the modifier in AccessHierarchy throw?
   //------------------------------------------------------------------------------------------------------------------
-<span class="fstat-no" title="function not covered" >  function approveTemporaryUser(address _newUser, uint _accessLevel)</span>
+  function approveTemporaryUser(address _newUser, uint _accessLevel)
   onlyOwner
   noEmptyAddress(_newUser)
   public
   returns (bool) {
-<span class="cstat-no" title="statement not covered" >    require(approveUser(_newUser, _accessLevel))</span>;
-<span class="cstat-no" title="statement not covered" >    uint expiry = now.add(expiry)</span>;
+    <span class="missing-if-branch" title="else path not taken" >E</span>require(approveUser(_newUser, _accessLevel));
+    uint expiry = now.add(expiry);
     database.setUint(keccak256(abi.encodePacked("userAccessExpiration", _newUser)), expiry);
-<span class="cstat-no" title="statement not covered" >    return true;</span>
+    return true;
   }
 &nbsp;
 &nbsp;
   // @notice Owner can remove access for users
   // @param User to be removed
-<span class="fstat-no" title="function not covered" >  function removeTemporaryUser(address _user)</span>
+  function removeTemporaryUser(address _user)
   onlyOwner
   public
   returns (bool) {
-<span class="cstat-no" title="statement not covered" >    require(removeUser(_user))</span>;
+    <span class="missing-if-branch" title="else path not taken" >E</span>require(removeUser(_user));
     database.deleteUint(keccak256(abi.encodePacked("userAccessExpiration", _user)));
-<span class="cstat-no" title="statement not covered" >    return true;</span>
+    return true;
   }
 &nbsp;
 &nbsp;
@@ -223,7 +220,7 @@ contract Expirable is AccessHierarchy {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Nov 15 2018 11:56:44 GMT-0800 (PST)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Dec 17 2018 16:07:14 GMT-0800 (PST)
 </div>
 </div>
 <script src="../prettify.js"></script>

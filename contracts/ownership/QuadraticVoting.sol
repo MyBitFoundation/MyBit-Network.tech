@@ -3,11 +3,11 @@ pragma solidity ^0.4.24;
 import "../math/SafeMath.sol";
 import "../math/Logarithm.sol";
 
-interface ERC20 {
+interface QuadtraticVoting_ERC20 {
   function transfer(address _to, uint256 _value) external returns (bool);
   function transferFrom(address _from, address _to, uint256 _value) external returns (bool);
 }
-interface DB {
+interface QuadtraticVoting_Database {
   function addressStorage(bytes32 _key) external view returns (address);
   function uintStorage(bytes32 _key) external view returns (uint);
   function boolStorage(bytes32 _key) external view returns (bool);
@@ -42,7 +42,7 @@ contract QuadraticVoting {
   using Logarithm for uint256;
 
 
-  DB public database;
+  QuadtraticVoting_Database public database;
 
 
 
@@ -50,7 +50,7 @@ contract QuadraticVoting {
   // @param _database instance
   constructor(address _database)
   public {
-    database = DB(_database);
+    database = QuadtraticVoting_Database(_database);
   }
 
 
@@ -67,7 +67,7 @@ contract QuadraticVoting {
     require(commitmentAge(msg.sender, _token) == 0, "commitment already made");
     require(database.uintStorage(keccak256(abi.encodePacked("commitment.releasetime", _token, msg.sender))) == 0);
     require(tokenIsGoverned(_token));
-    require(ERC20(_token).transferFrom(msg.sender, address(this), _value), "transferFrom failed");
+    require(QuadtraticVoting_ERC20(_token).transferFrom(msg.sender, address(this), _value), "transferFrom failed");
     database.setUint(keccak256(abi.encodePacked("commitment.value",  _token, msg.sender)), _value);
     database.setUint(keccak256(abi.encodePacked("commitment.start", _token, msg.sender)), now);
     emit Commit(msg.sender, _value);
@@ -169,7 +169,7 @@ contract QuadraticVoting {
     bytes32 commitmentValueID = keccak256(abi.encodePacked("commitment.value", _tokenHolder));
     uint256 value = database.uintStorage(commitmentValueID);
     database.deleteUint(commitmentValueID);
-    require(ERC20(_token).transfer(_tokenHolder, value));
+    require(QuadtraticVoting_ERC20(_token).transfer(_tokenHolder, value));
     emit Withdraw(_tokenHolder, value);
     return true;
   }

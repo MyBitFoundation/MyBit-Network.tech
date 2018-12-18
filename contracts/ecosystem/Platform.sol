@@ -20,7 +20,7 @@ contract Platform {
   function setPlatformWallet(address _walletAddress)
   external
   onlyOwner {
-    database.setAddress(keccak256(abi.encodePacked("platformWallet")), _walletAddress);
+    database.setAddress(keccak256(abi.encodePacked("platform.wallet")), _walletAddress);
     //emit LogPlatformWallet(_walletAddress);
     events.registration('Platform wallet', _walletAddress);
   }
@@ -30,7 +30,7 @@ contract Platform {
   external
   onlyOwner {
     //@dev Set the address for the platform token
-    database.setAddress(keccak256(abi.encodePacked("platformToken")), _tokenAddress);
+    database.setAddress(keccak256(abi.encodePacked("platform.token")), _tokenAddress);
     events.registration('Platform token', _tokenAddress);
   }
 
@@ -38,7 +38,7 @@ contract Platform {
   external
   onlyOwner {
     require(_percent < 100 && _percent >= 0);
-    database.setUint(keccak256(abi.encodePacked("burnrate")), _percent);
+    database.setUint(keccak256(abi.encodePacked("platform.burnRate")), _percent);
   }
 
   // @notice platform owners can destroy contract here

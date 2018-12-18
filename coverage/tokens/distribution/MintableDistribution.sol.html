@@ -20,28 +20,28 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">0% </span>
+        <span class="strong">60% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>0/10</span>
+        <span class='fraction'>6/10</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">0% </span>
+        <span class="strong">50% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>0/2</span>
+        <span class='fraction'>1/2</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">0% </span>
+        <span class="strong">75% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>0/4</span>
+        <span class='fraction'>3/4</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">0% </span>
+        <span class="strong">63.64% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>0/11</span>
+        <span class='fraction'>7/11</span>
       </div>
     </div>
   </div>
-  <div class='status-line low'></div>
+  <div class='status-line medium'></div>
 <pre><table class="coverage">
 <tr><td class="line-count quiet">1
 2
@@ -131,8 +131,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -154,9 +154,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -166,8 +166,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -197,10 +197,10 @@ contract MintableDistribution is StandardDistribution{
   address public minter;
 &nbsp;
   // @notice constructor: initialized
-<span class="fstat-no" title="function not covered" >  constructor(string _tokenURI, address _minter)</span>
+  constructor(string _tokenURI, address _minter)
   public {
-<span class="cstat-no" title="statement not covered" >      tokenURI = _tokenURI</span>;                         // Set the id for reference
-<span class="cstat-no" title="statement not covered" >      minter = _minter</span>;
+      tokenURI = _tokenURI;                         // Set the id for reference
+      minter = _minter;
   }
 &nbsp;
   // @dev Function to mint tokens
@@ -218,13 +218,13 @@ contract MintableDistribution is StandardDistribution{
 &nbsp;
 &nbsp;
   // @dev Function to stop minting new tokens.
-<span class="fstat-no" title="function not covered" >  function finishMinting()</span>
+  function finishMinting()
   public
   canMint
   returns (bool) {
-<span class="cstat-no" title="statement not covered" >    mintingFinished = true</span>;
-<span class="cstat-no" title="statement not covered" >    emit MintFinished();</span>
-<span class="cstat-no" title="statement not covered" >    return true;</span>
+    mintingFinished = true;
+    emit MintFinished();
+    return true;
   }
 &nbsp;
   // ------------------------------------------------------------------------------------------------
@@ -233,8 +233,8 @@ contract MintableDistribution is StandardDistribution{
 &nbsp;
 &nbsp;
   // @notice modifier: Requires that minting hasn't finished
-<span class="fstat-no" title="function not covered" >  modifier canMint() </span>{
-<span class="cstat-no" title="statement not covered" >    require(!mintingFinished &amp;&amp; msg.sender == minter)</span>;
+  modifier canMint() {
+    <span class="missing-if-branch" title="else path not taken" >E</span>require(!mintingFinished &amp;&amp; msg.sender == minter);
     _;
   }
 &nbsp;
@@ -253,7 +253,7 @@ contract MintableDistribution is StandardDistribution{
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Nov 15 2018 11:56:44 GMT-0800 (PST)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Dec 17 2018 16:07:14 GMT-0800 (PST)
 </div>
 </div>
 <script src="../../prettify.js"></script>

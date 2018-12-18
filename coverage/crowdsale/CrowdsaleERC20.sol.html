@@ -27,7 +27,7 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>0/36</span>
+        <span class='fraction'>0/38</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">7.69% </span>
@@ -35,9 +35,9 @@
         <span class='fraction'>1/13</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">3.45% </span>
+        <span class="strong">3.39% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>2/58</span>
+        <span class='fraction'>2/59</span>
       </div>
     </div>
   </div>
@@ -238,8 +238,14 @@
 193
 194
 195
-196
-197</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+196</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -291,6 +297,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -318,7 +325,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -377,6 +383,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -424,25 +431,23 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity ^0.4.24;
 &nbsp;
 import "../math/SafeMath.sol";
 import "../interfaces/ERC20.sol";
-import "../interfaces/DBInterface.sol";
 import "../interfaces/ERC20DividendInterface.sol";
 // import "../access/ERC20Burner.sol";
-import "../database/Events.sol";
+&nbsp;
+interface Events {  function transaction(string _message, address _from, address _to, uint _amount, bytes32 _id)  external; }
+interface DB {
+  function addressStorage(bytes32 _key) external view returns (address);
+  function uintStorage(bytes32 _key) external view returns (uint);
+  function deleteUint(bytes32 _key) external;
+  function setBool(bytes32 _key, bool _value) external;
+  function boolStorage(bytes32 _key) external view returns (bool);
+}
 &nbsp;
 // @title An asset crowdsale contract which accepts funding from ERC20 tokens.
 // @notice Begins a crowdfunding period for a digital asset, minting asset dividend tokens to investors when particular ERC20 token is received
@@ -451,7 +456,7 @@ import "../database/Events.sol";
 contract CrowdsaleERC20{
   using SafeMath for uint256;
 &nbsp;
-  DBInterface public database;
+  DB public database;
   Events public events;
   // ERC20Burner public burner;
 &nbsp;
@@ -459,7 +464,7 @@ contract CrowdsaleERC20{
   // @param: The address for the platform database
   constructor(address _database, address _events)
   public{
-      database = DBInterface(_database);
+      database = DB(_database);
       events = Events(_events);
       // burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
@@ -467,52 +472,52 @@ contract CrowdsaleERC20{
 &nbsp;
   // @notice Investors can send ERC20 tokens here to fund an asset, receiving an equivalent number of asset-tokens.
   // @dev investor must approve this contract to transfer tokens
-  // @param (bytes32) _assetID = The ID of the asset tokens, investor wishes to purchase
+  // @param (address) _assetAddress = The address of the asset tokens, investor wishes to purchase
   // @param (uint) _amount = The amount to spend purchasing this asset
-<span class="fstat-no" title="function not covered" >  function buyAssetOrderERC20(bytes32 _assetID, address _investor, uint _amount)</span>
+<span class="fstat-no" title="function not covered" >  function buyAssetOrderERC20(address _assetAddress, address _investor, uint _amount)</span>
   external
-  validAsset(_assetID)
-  betweenDeadlines(_assetID)
-  notFinalized(_assetID)
+  validAsset(_assetAddress)
+  betweenDeadlines(_assetAddress)
+  notFinalized(_assetAddress)
   // burnRequired
   returns (bool) {
-<span class="cstat-no" title="statement not covered" >    ERC20DividendInterface assetToken = ERC20DividendInterface(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))))</span>;
-<span class="cstat-no" title="statement not covered" >    ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))))</span>;
-<span class="cstat-no" title="statement not covered" >    uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("amountToRaise", _assetID)))</span>;
+<span class="cstat-no" title="statement not covered" >    require(msg.sender == _investor || database.boolStorage(keccak256(abi.encodePacked("approval", _investor, msg.sender, address(this), msg.sig))), "User not approved")</span>;
+<span class="cstat-no" title="statement not covered" >    ERC20DividendInterface assetToken = ERC20DividendInterface(_assetAddress)</span>;
+<span class="cstat-no" title="statement not covered" >    ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("crowdsale.fundingToken", _assetAddress))))</span>;
+<span class="cstat-no" title="statement not covered" >    uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)))</span>;
 <span class="cstat-no" title="statement not covered" >    uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply())</span>;
 <span class="cstat-no" title="statement not covered" >    if (_amount &gt;= tokensRemaining) {</span>
-<span class="cstat-no" title="statement not covered" >      require(fundingToken.transferFrom(_investor, address(this), tokensRemaining))</span>;    // transfer investors tokens into contract
-<span class="cstat-no" title="statement not covered" >      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("assetManagerFee", _assetID))) ))</span>;
-<span class="cstat-no" title="statement not covered" >      require(finalizeCrowdsale(_assetID))</span>;
-<span class="cstat-no" title="statement not covered" >      require(assetToken.mint(_investor, tokensRemaining))</span>;   // Send remaining asset tokens to investor
-<span class="cstat-no" title="statement not covered" >      require(assetToken.finishMinting())</span>;
-<span class="cstat-no" title="statement not covered" >      require(payoutERC20(_assetID, amountToRaise))</span>;          // 1 token = 1 wei
+<span class="cstat-no" title="statement not covered" >      require(fundingToken.transferFrom(_investor, address(this), tokensRemaining), "Transfer failed")</span>;    // transfer investors tokens into contract
+<span class="cstat-no" title="statement not covered" >      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerFee", _assetAddress)))), "Manager minting failed")</span>;
+<span class="cstat-no" title="statement not covered" >      require(finalizeCrowdsale(_assetAddress), "Crowdsale did not finalize")</span>;
+<span class="cstat-no" title="statement not covered" >      require(assetToken.mint(_investor, tokensRemaining), "Investor minting failed")</span>;   // Send remaining asset tokens to investor
+<span class="cstat-no" title="statement not covered" >      require(assetToken.finishMinting(), "Minting not finished")</span>;
+<span class="cstat-no" title="statement not covered" >      require(payoutERC20(_assetAddress, amountToRaise), "Payout failed")</span>;          // 1 token = 1 wei
     }
     else {
-<span class="cstat-no" title="statement not covered" >      require(fundingToken.transferFrom(_investor, address(this), _amount))</span>;
-<span class="cstat-no" title="statement not covered" >      require(assetToken.mint(_investor, _amount))</span>;
+<span class="cstat-no" title="statement not covered" >      require(fundingToken.transferFrom(_investor, address(this), _amount), "Transfer failed")</span>;
+<span class="cstat-no" title="statement not covered" >      require(assetToken.mint(_investor, _amount), "Investor minting failed")</span>;
     }
-    events.transaction('Asset purchased', _investor, address(this), _amount, _assetID);
+    events.transaction('Asset purchased', _investor, _assetAddress, _amount, '');
 <span class="cstat-no" title="statement not covered" >    return true;</span>
   }
 &nbsp;
 &nbsp;
   // @notice Contributors can retrieve their funds here if crowdsale has paased deadline
-  // @param (bytes32) _assetID =  The ID of the asset which didn't reach it's crowdfunding goals
-<span class="fstat-no" title="function not covered" >  function refund(bytes32 _assetID)</span>
+  // @param (address) _assetAddress =  The address of the asset which didn't reach it's crowdfunding goals
+<span class="fstat-no" title="function not covered" >  function refund(address _assetAddress)</span>
   external
   whenNotPaused
-  validAsset(_assetID)
-  afterDeadline(_assetID)
-  notFinalized(_assetID)
+  validAsset(_assetAddress)
+  afterDeadline(_assetAddress)
+  notFinalized(_assetAddress)
   returns (bool) {
-<span class="cstat-no" title="statement not covered" >    require(database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))) != 0)</span>;
-    database.deleteUint(keccak256(abi.encodePacked("fundingDeadline", _assetID)));
-<span class="cstat-no" title="statement not covered" >    address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))</span>;
-<span class="cstat-no" title="statement not covered" >    ERC20DividendInterface assetToken = ERC20DividendInterface(tokenAddress)</span>;
-<span class="cstat-no" title="statement not covered" >    ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))))</span>;
+<span class="cstat-no" title="statement not covered" >    require(database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress))) != 0)</span>;
+    database.deleteUint(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress)));
+<span class="cstat-no" title="statement not covered" >    ERC20DividendInterface assetToken = ERC20DividendInterface(_assetAddress)</span>;
+<span class="cstat-no" title="statement not covered" >    ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("crowdsale.fundingToken", _assetAddress))))</span>;
 <span class="cstat-no" title="statement not covered" >    uint refundValue = assetToken.totalSupply()</span>; //token=wei
-    fundingToken.approve(tokenAddress, refundValue);
+    fundingToken.approve(_assetAddress, refundValue);
     assetToken.issueDividends(refundValue);
 <span class="cstat-no" title="statement not covered" >    return true;</span>
   }
@@ -523,20 +528,20 @@ contract CrowdsaleERC20{
 &nbsp;
   // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where operator/assetManager can withdraw
   // @dev The contract manager needs to know  the address PlatformDistribution contract
-<span class="fstat-no" title="function not covered" >  function payoutERC20(bytes32 _assetID, uint _amount)</span>
+<span class="fstat-no" title="function not covered" >  function payoutERC20(address _assetAddress, uint _amount)</span>
   private
   whenNotPaused
   returns (bool) {
-<span class="cstat-no" title="statement not covered" >    ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetID))))</span>;
-<span class="cstat-no" title="statement not covered" >    address operator = database.addressStorage(keccak256(abi.encodePacked("operator", _assetID)))</span>;
-<span class="cstat-no" title="statement not covered" >    address platformWallet = database.addressStorage(keccak256(abi.encodePacked("platformWallet")))</span>;
+<span class="cstat-no" title="statement not covered" >    ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("crowdsale.fundingToken", _assetAddress))))</span>;
+<span class="cstat-no" title="statement not covered" >    address operator = database.addressStorage(keccak256(abi.encodePacked("asset.operator", _assetAddress)))</span>;
+<span class="cstat-no" title="statement not covered" >    address platformWallet = database.addressStorage(keccak256(abi.encodePacked("platform.wallet")))</span>;
 <span class="cstat-no" title="statement not covered" >    require(operator != address(0) &amp;&amp; platformWallet != address(0))</span>;
 <span class="cstat-no" title="statement not covered" >    uint operatorPortion = _amount.mul(99).div(100)</span>;
 <span class="cstat-no" title="statement not covered" >    uint platformPortion = _amount.sub(operatorPortion)</span>;
     fundingToken.transfer(platformWallet, platformPortion);
     fundingToken.transfer(operator, operatorPortion);
-    events.transaction('Asset payout', address(this), operator, _amount, _assetID);
-    //emit LogAssetPayout(_assetID, operator, _amount);
+    events.transaction('Asset payout', _assetAddress, operator, _amount, '');
+    //emit LogAssetPayout(_assetAddress, operator, _amount);
 <span class="cstat-no" title="statement not covered" >    return true;</span>
   }
 &nbsp;
@@ -565,13 +570,14 @@ contract CrowdsaleERC20{
 &nbsp;
   // @notice internal function for freeing up storage after crowdsale finishes
   // @param the ID of this asset.
-<span class="fstat-no" title="function not covered" >  function finalizeCrowdsale(bytes32 _assetID)</span>
+<span class="fstat-no" title="function not covered" >  function finalizeCrowdsale(address _assetAddress)</span>
   internal
   whenNotPaused
   returns (bool) {
-      database.setBool(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID)), true);
-      database.deleteUint(keccak256(abi.encodePacked("amountToRaise", _assetID)));
-      database.deleteUint(keccak256(abi.encodePacked("assetManagerFee", _assetID)));
+      database.setBool(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress)), true);
+      database.deleteUint(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));
+      database.deleteUint(keccak256(abi.encodePacked("asset.managerFee", _assetAddress)));
+      database.deleteUint(keccak256(abi.encodePacked("crowdsale.start", _assetAddress)));
 <span class="cstat-no" title="statement not covered" >      return true;</span>
   }
 &nbsp;
@@ -597,39 +603,30 @@ contract CrowdsaleERC20{
   //   _;
   // }
 &nbsp;
-      // @notice reverts if the asset does not have a token address set in the database
-<span class="fstat-no" title="function not covered" >  modifier validAsset(bytes32 _assetID) </span>{
-<span class="cstat-no" title="statement not covered" >    require(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))) != address(0))</span>;
+  // @notice reverts if the asset does not have a token address set in the database
+<span class="fstat-no" title="function not covered" >  modifier validAsset(address _assetAddress) </span>{
+<span class="cstat-no" title="statement not covered" >    require(database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))) != address(0), "Invalid asset")</span>;
     _;
   }
 &nbsp;
   // @notice reverts if the funding deadline has already past
-<span class="fstat-no" title="function not covered" >  modifier betweenDeadlines(bytes32 _assetID) </span>{
-<span class="cstat-no" title="statement not covered" >    require(now &lt;= database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))))</span>;
-<span class="cstat-no" title="statement not covered" >    require(now &gt;= database.uintStorage(keccak256(abi.encodePacked("startTime", _assetID))))</span>;
+<span class="fstat-no" title="function not covered" >  modifier betweenDeadlines(address _assetAddress) </span>{
+<span class="cstat-no" title="statement not covered" >    require(now &lt;= database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress))), "Past deadline")</span>;
+<span class="cstat-no" title="statement not covered" >    require(now &gt;= database.uintStorage(keccak256(abi.encodePacked("crowdsale.start", _assetAddress))), "Before start time")</span>;
     _;
   }
 &nbsp;
   // @notice reverts if the funding deadline has already past
-<span class="fstat-no" title="function not covered" >  modifier afterDeadline(bytes32 _assetID) </span>{
-<span class="cstat-no" title="statement not covered" >    require(now &gt; database.uintStorage(keccak256(abi.encodePacked("fundingDeadline", _assetID))))</span>;
+<span class="fstat-no" title="function not covered" >  modifier afterDeadline(address _assetAddress) </span>{
+<span class="cstat-no" title="statement not covered" >    require(now &gt; database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress))), "Before deadline")</span>;
     _;
   }
 &nbsp;
   // @notice returns true if crowdsale is not finshed
-<span class="fstat-no" title="function not covered" >  modifier notFinalized(bytes32 _assetID) </span>{
-<span class="cstat-no" title="statement not covered" >    require( !database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID))) )</span>;
+<span class="fstat-no" title="function not covered" >  modifier notFinalized(address _assetAddress) </span>{
+<span class="cstat-no" title="statement not covered" >    require( !database.boolStorage(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress))), "Crowdsale finalized")</span>;
     _;
   }
-&nbsp;
-  //------------------------------------------------------------------------------------------------------------------
-  //                                            Events
-  //------------------------------------------------------------------------------------------------------------------
-  /*
-  event LogAssetPurchased(bytes32 indexed _assetID, address indexed _sender, uint _amount);
-  event LogAssetPayout(bytes32 indexed _assetID, address indexed _operator, uint _amount);
-  event LogDestruction(uint _amountSent, address indexed _caller);
-  */
 }
 &nbsp;</pre></td></tr>
 </table></pre>
@@ -637,7 +634,7 @@ contract CrowdsaleERC20{
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Nov 15 2018 11:56:44 GMT-0800 (PST)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Dec 17 2018 16:07:14 GMT-0800 (PST)
 </div>
 </div>
 <script src="../prettify.js"></script>

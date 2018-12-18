@@ -35,7 +35,7 @@ contract AssetGenerator {
     require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
     require (_tokenHolders.length == _amount.length && _tokenHolders.length <= 100);
     FixedDistribution assetInstance = new FixedDistribution(_tokenURI, _tokenHolders, _amount);
-    database.setAddress(keccak256(abi.encodePacked("assetManager", address(assetInstance))), _assetManager);
+    database.setAddress(keccak256(abi.encodePacked("asset.manager", address(assetInstance))), _assetManager);
     events.asset('Asset created', _tokenURI, address(assetInstance), _assetManager);
     return true;
   }
@@ -53,7 +53,7 @@ contract AssetGenerator {
       assetInstance.mint(_tokenHolders[i], _amount[i]);
     }
     assetInstance.finishMinting();
-    database.setAddress(keccak256(abi.encodePacked("assetManager", address(assetInstance))), _assetManager);
+    database.setAddress(keccak256(abi.encodePacked("asset.manager", address(assetInstance))), _assetManager);
     events.asset('Asset created', _tokenURI, address(assetInstance), _assetManager);
     return true;
   }

@@ -116,7 +116,7 @@ contract('AssetManagerFunds', async(accounts) => {
   });
 
   it("Set asset variables", async() => {
-    let assetManagerHash = await hash.stringAddress("assetManager", divToken.address);
+    let assetManagerHash = await hash.stringAddress("asset.manager", divToken.address);
     let operatorHash = await hash.stringAddress("operator", divToken.address);
     await db.setAddress(assetManagerHash, assetManager);
     await db.setAddress(operatorHash, operator);
@@ -206,7 +206,7 @@ contract('AssetManagerFunds', async(accounts) => {
   });
 
   it("Set asset variables", async() => {
-    let assetManagerHash = await hash.stringAddress("assetManager", divTokenERC20.address);
+    let assetManagerHash = await hash.stringAddress("asset.manager", divTokenERC20.address);
     let operatorHash = await hash.stringAddress("operator", divTokenERC20.address);
     await db.setAddress(assetManagerHash, assetManager);
     await db.setAddress(operatorHash, operator);
