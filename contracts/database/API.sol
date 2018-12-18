@@ -209,7 +209,7 @@ contract API {
     uint256 totalSupply = TokenView(assetToken).totalSupply();
     uint256 voteCount = database.uintStorage(keccak256(abi.encodePacked("proposal.votecount", proposalID)));
     uint256 approval = database.uintStorage(keccak256(abi.encodePacked("proposal.approval", proposalID)));
-    if(quorum == 0 || voteCount == 0){
+    if(totalSupply == 0 || voteCount == 0){
       return false;
     } else {
       uint256 quorum = voteCount.mul(100).div(totalSupply);

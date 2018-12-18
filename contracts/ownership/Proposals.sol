@@ -201,14 +201,18 @@ contract Proposals {
   view
   returns (bool){
     address assetToken = db.addressStorage(keccak256(abi.encodePacked("proposal.token", proposalID)));
-    uint totalSupply = Proposals_ERC20(assetToken).totalSupply();
-    uint voteCount = db.uintStorage(keccak256(abi.encodePacked("proposal.votecount", proposalID)));
-    uint approval = db.uintStorage(keccak256(abi.encodePacked("proposal.approval", proposalID)));
-    uint quorum = voteCount.mul(100).div(totalSupply);
-    uint theshold = approval.mul(100).div(voteCount);
-    bool quorumReached = quorum >= db.uintStorage(keccak256(abi.encodePacked("asset.quorum", assetToken)));
-    bool thresholdReached = theshold >= db.uintStorage(keccak256(abi.encodePacked("asset.threshold", assetToken)));
-    return quorumReached && thresholdReached;
+    uint256 totalSupply = Proposals_ERC20(assetToken).totalSupply();
+    uint256 voteCount = db.uintStorage(keccak256(abi.encodePacked("proposal.votecount", proposalID)));
+    uint256 approval = db.uintStorage(keccak256(abi.encodePacked("proposal.approval", proposalID)));
+    if(totalSupply == 0 || voteCount == 0){
+      return false;
+    } else {
+      uint256 quorum = voteCount.mul(100).div(totalSupply);
+      uint256 theshold = approval.mul(100).div(voteCount);
+      bool quorumReached = quorum >= db.uintStorage(keccak256(abi.encodePacked("asset.quorum", assetToken)));
+      bool thresholdReached = theshold >= db.uintStorage(keccak256(abi.encodePacked("asset.threshold", assetToken)));
+      return quorumReached && thresholdReached;
+    }
   }
 
   // -----
