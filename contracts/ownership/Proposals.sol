@@ -82,6 +82,8 @@ contract Proposals {
     bytes32 approvalID = keccak256(abi.encodePacked("proposal.approval", proposalID));
     uint256 approval = db.uintStorage(approvalID);
     db.setUint(approvalID, approval.add(commitValue));
+    uint256 voteCount = db.uintStorage(keccak256(abi.encodePacked("proposal.votecount", proposalID)));
+    db.setUint(keccak256(abi.encodePacked("proposal.votecount", proposalID)), voteCount.add(commitValue));
     emit Approve(proposalID, msg.sender, commitValue);
     return true;
   }
@@ -100,6 +102,8 @@ contract Proposals {
     bytes32 dissentID = keccak256(abi.encodePacked("proposal.dissent", proposalID));
     uint256 dissent = db.uintStorage(dissentID);
     db.setUint(dissentID, dissent.add(commitValue));
+    uint256 voteCount = db.uintStorage(keccak256(abi.encodePacked("proposal.votecount", proposalID)));
+    db.setUint(keccak256(abi.encodePacked("proposal.votecount", proposalID)), voteCount.add(commitValue));
     emit Decline(proposalID, msg.sender, commitValue);
     return true;
   }
@@ -175,9 +179,19 @@ contract Proposals {
   public
   view
   returns (bool open) {
-    uint256 age = now.sub(db.uintStorage(keccak256(abi.encodePacked("proposal.start", proposalID))));
     address token = db.addressStorage(keccak256(abi.encodePacked("proposal.token", proposalID)));
-    return (age <= db.uintStorage(keccak256(abi.encodePacked("asset.voteduration", token))) && age > now);
+    uint256 voteDuration = db.uintStorage(keccak256(abi.encodePacked("asset.voteduration", token)));
+    uint256 start = db.uintStorage(keccak256(abi.encodePacked("proposal.start", proposalID)));
+    if(start > 0){
+      if(voteDuration > 0){
+        return (now.sub(start) <= voteDuration && start <= now);
+      } else {
+        return (start <= now);
+      }
+    } else {
+      return false;
+    }
+
   }
 
 
@@ -187,12 +201,13 @@ contract Proposals {
   view
   returns (bool){
     address assetToken = db.addressStorage(keccak256(abi.encodePacked("proposal.token", proposalID)));
-    uint approval = db.uintStorage(keccak256(abi.encodePacked("proposal.approval", proposalID)));
-    uint quorum = (approval * 100) / db.uintStorage(keccak256(abi.encodePacked("proposal.votecount", proposalID)));   // what percentage approved ??
-    bool quorumReached = quorum >= db.uintStorage(keccak256(abi.encodePacked("asset.quorum", assetToken)));
     uint totalSupply = Proposals_ERC20(assetToken).totalSupply();
     uint voteCount = db.uintStorage(keccak256(abi.encodePacked("proposal.votecount", proposalID)));
-    bool thresholdReached = ( (voteCount * 100) / totalSupply ) >= db.uintStorage(keccak256(abi.encodePacked("asset.threshold", assetToken)));
+    uint approval = db.uintStorage(keccak256(abi.encodePacked("proposal.approval", proposalID)));
+    uint quorum = voteCount.mul(100).div(totalSupply);
+    uint theshold = approval.mul(100).div(voteCount);
+    bool quorumReached = quorum >= db.uintStorage(keccak256(abi.encodePacked("asset.quorum", assetToken)));
+    bool thresholdReached = theshold >= db.uintStorage(keccak256(abi.encodePacked("asset.threshold", assetToken)));
     return quorumReached && thresholdReached;
   }
 

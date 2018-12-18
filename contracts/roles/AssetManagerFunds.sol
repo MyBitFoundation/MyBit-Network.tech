@@ -38,7 +38,7 @@ contract AssetManagerFunds {
   nonReentrant
   returns (bool) {
     require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
-    require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetAddress))));
+    require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))));
     DToken token = DToken( _assetAddress);
     require(address(token) != address(0));
     uint amountOwed;
@@ -74,7 +74,7 @@ contract AssetManagerFunds {
     address[] memory tokenAddresses = new address[](_assetAddress.length);
     uint8 numEntries;
     for(uint8 i = 0; i < _assetAddress.length; i++){
-      require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetAddress[i]))) );
+      require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress[i]))) );
       DToken token = DToken(_assetAddress[i]);
       require(address(token) != address(0));
       uint tokensOwed = token.getAmountOwed(address(this));
@@ -107,7 +107,7 @@ contract AssetManagerFunds {
     uint weiOwed;
     for(uint8 i = 0; i < _assetAddress.length; i++){
       require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
-      require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetAddress[i]))));
+      require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress[i]))));
       DToken token = DToken(_assetAddress[i]);
       uint balanceBefore = address(this).balance;
       uint amountOwed = token.getAmountOwed(address(this));

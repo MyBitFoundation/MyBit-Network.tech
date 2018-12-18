@@ -188,7 +188,7 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   modifier validAsset(address _assetAddress) {
     require (_assetAddress != address(0), "Address does not exist");
-    require (database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetAddress))), "Crowdsale not finalized");
+    require (database.boolStorage(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress))), "Crowdsale not finalized");
     _;
   }
 

@@ -143,7 +143,7 @@ contract('Asset Exchange', async(accounts) => {
     asset1Token = await DivToken.new('Asset1', owner);
     let tokenHash = await hash.stringAddress('tokenAddress', asset1Token.address);
     await db.setAddress(tokenHash, asset1Token.address);
-    let finalizedHash = await hash.stringAddress('crowdsaleFinalized', asset1Token.address);
+    let finalizedHash = await hash.stringAddress('crowdsale.finalized', asset1Token.address);
     db.setBool(finalizedHash, true);
   });
 
@@ -151,7 +151,7 @@ contract('Asset Exchange', async(accounts) => {
     asset2Token = await DivToken.new('Asset2', owner);
     let tokenHash = await hash.stringAddress('tokenAddress', asset2Token.address);
     await db.setAddress(tokenHash, asset2Token.address);
-    let finalizedHash = await hash.stringAddress('crowdsaleFinalized', asset2Token.address);
+    let finalizedHash = await hash.stringAddress('crowdsale.finalized', asset2Token.address);
     db.setBool(finalizedHash, true);
   });
 

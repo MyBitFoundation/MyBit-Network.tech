@@ -20,28 +20,28 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">92.86% </span>
+        <span class="strong">28.57% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>13/14</span>
+        <span class='fraction'>4/14</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">80% </span>
+        <span class="strong">10% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>8/10</span>
+        <span class='fraction'>1/10</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">87.5% </span>
+        <span class="strong">12.5% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>7/8</span>
+        <span class='fraction'>1/8</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">90% </span>
+        <span class="strong">20% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>18/20</span>
+        <span class='fraction'>4/20</span>
       </div>
     </div>
   </div>
-  <div class='status-line high'></div>
+  <div class='status-line low'></div>
 <pre><table class="coverage">
 <tr><td class="line-count quiet">1
 2
@@ -188,9 +188,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4×</span>
-<span class="cline-any cline-yes">2×</span>
-<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -202,9 +202,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">9×</span>
-<span class="cline-any cline-yes">9×</span>
-<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -219,7 +219,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -228,21 +228,21 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">9×</span>
-<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14×</span>
-<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">10×</span>
-<span class="cline-any cline-yes">10×</span>
-<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -281,35 +281,35 @@ contract ERC20Burner {
   public {
     database = DB(_database);
     events = LogTransaction(_events);
-    token = BurnToken(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
-    <span class="missing-if-branch" title="else path not taken" >E</span>require(address(token) != address(0));
+    token = BurnToken(database.addressStorage(keccak256(abi.encodePacked("platform.token"))));
+    <span class="missing-if-branch" title="if path not taken" >I</span>require(address(token) != address(0));
   }
 &nbsp;
   // @notice authorized contracts can burn mybit tokens here if the investor has approved this contract to do so
   // @param (address) _tokenHolder = the address of the mybit token holder who wishes to burn _amount of tokens
   // @param (uint) _amount = the amount of tokens to be burnt (must include decimal places)
-  function burn(address _tokenHolder, uint _amount)
+<span class="fstat-no" title="function not covered" >  function burn(address _tokenHolder, uint _amount)</span>
   external
   onlyPlatformContracts(msg.sender)
   acceptedState(_tokenHolder)
   returns (bool) {
-    require(token.burnFrom(_tokenHolder, _amount));
+<span class="cstat-no" title="statement not covered" >    require(token.burnFrom(_tokenHolder, _amount))</span>;
     events.transaction('Platform Token Burnt', _tokenHolder, msg.sender, _amount, '');
-    return true;
+<span class="cstat-no" title="statement not covered" >    return true;</span>
   }
 &nbsp;
   // @notice owners can set the cost of functionality on the platform here.
   // @dev _amount will be how many platformTokens are burned to call the method at _contractAddress
   // @param (bytes4) _methodID: the methodID of the function which is to require a burning fee
   // @param (address) _contractAddress: the address of the contract where this method is contained
-  function setFee(bytes4 _methodID, address _contractAddress, uint _amount)
+<span class="fstat-no" title="function not covered" >  function setFee(bytes4 _methodID, address _contractAddress, uint _amount)</span>
   external
   onlyOwner
   returns (bool) {
     //Sets the price to burn per function in MyB.
     database.setUint(keccak256(abi.encodePacked(_methodID, _contractAddress)), _amount);
-    emit LogFeeAdded(_contractAddress, _methodID, _amount);
-    return true;
+<span class="cstat-no" title="statement not covered" >    emit LogFeeAdded(_contractAddress, _methodID, _amount);</span>
+<span class="cstat-no" title="statement not covered" >    return true;</span>
   }
 &nbsp;
   // @notice platform owners can destroy contract here
@@ -321,10 +321,10 @@ contract ERC20Burner {
   }
 &nbsp;
   // @notice fallback function. Rejects all ether
-  function ()
+<span class="fstat-no" title="function not covered" >  function ()</span>
   external
   payable {
-    revert();
+<span class="cstat-no" title="statement not covered" >    revert()</span>;
   }
 &nbsp;
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -332,21 +332,21 @@ contract ERC20Burner {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 &nbsp;
   // @notice reverts if msg.sender isn't the owner
-  modifier onlyOwner {
-    <span class="missing-if-branch" title="else path not taken" >E</span>require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
+<span class="fstat-no" title="function not covered" >  modifier onlyOwner </span>{
+<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))))</span>;
     _;
   }
 &nbsp;
   // @notice reverts if address isn't authorized to burn MYB
-  modifier onlyPlatformContracts(address _burner) {
-    require(database.boolStorage(keccak256(abi.encodePacked("contract", _burner))));
+<span class="fstat-no" title="function not covered" >  modifier onlyPlatformContracts(address _burner) </span>{
+<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(keccak256(abi.encodePacked("contract", _burner))))</span>;
     _;
   }
 &nbsp;
   // @notice reverts if investor hasn't accepted current contract state or if he doesn't ignore state changes entirely
-  modifier acceptedState(address _investor) {
-    bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));
-    require(database.boolStorage(keccak256(abi.encodePacked(currentState, _investor))) || database.boolStorage(keccak256(abi.encodePacked("ignoreStateChanges", _investor))));
+<span class="fstat-no" title="function not covered" >  modifier acceptedState(address _investor) </span>{
+<span class="cstat-no" title="statement not covered" >    bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")))</span>;
+<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(keccak256(abi.encodePacked(currentState, _investor))) || database.boolStorage(keccak256(abi.encodePacked("ignoreStateChanges", _investor))))</span>;
     _;
   }
 &nbsp;
@@ -364,7 +364,7 @@ contract ERC20Burner {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Dec 13 2018 14:49:35 GMT-0800 (PST)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Dec 17 2018 16:07:14 GMT-0800 (PST)
 </div>
 </div>
 <script src="../prettify.js"></script>

@@ -38,12 +38,12 @@ contract CrowdsaleGeneratorETH {
   external
   // burnRequired
   returns (bool) {
-    require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
-    require(_amountToRaise > 0);
-    require(_assetManagerPerc < 100);
-    require(database.boolStorage(keccak256(abi.encodePacked("acceptsEther", _operatorID))));
-    require(database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))) != address(0));
-    require(!database.boolStorage(keccak256(abi.encodePacked("assetURI", _assetURI)))); //Check that asset URI is unique
+    require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), "User not approved");
+    require(_amountToRaise > 0, "Crowdsale goal is zero");
+    require(_assetManagerPerc < 100, "Manager percent need to be less than 100");
+    require(database.boolStorage(keccak256(abi.encodePacked("operator.acceptsEther", _operatorID))), "Operator does not accept Ether");
+    require(database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))) != address(0), "Operator does not exist");
+    require(!database.boolStorage(keccak256(abi.encodePacked("asset.uri", _assetURI))), "Asset URI is not unique"); //Check that asset URI is unique
     uint startTime;
     if(_startTime < now){
       startTime = now;
@@ -51,13 +51,13 @@ contract CrowdsaleGeneratorETH {
       startTime = _startTime;
     }
     address assetAddress = address(new DividendToken(_assetURI, database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleETH")))));   // Gives this contract all new asset tokens
-    database.setUint(keccak256(abi.encodePacked("startTime", assetAddress)), startTime);
-    database.setUint(keccak256(abi.encodePacked("fundingDeadline", assetAddress)), startTime.add(_fundingLength));
-    database.setUint(keccak256(abi.encodePacked("assetManagerFee", assetAddress)), _amountToRaise.mul(uint(100).mul(scalingFactor).div(uint(100).sub(_assetManagerPerc)).sub(scalingFactor)).div(scalingFactor));
-    database.setUint(keccak256(abi.encodePacked("amountToRaise", assetAddress)), _amountToRaise);
-    database.setAddress(keccak256(abi.encodePacked("assetManager", assetAddress)), _assetManager);
-    database.setAddress(keccak256(abi.encodePacked("operator", assetAddress)), database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))));
-    database.setBool(keccak256(abi.encodePacked("assetURI", _assetURI)), true); //Set to ensure a unique asset URI
+    database.setUint(keccak256(abi.encodePacked("crowdsale.start", assetAddress)), startTime);
+    database.setUint(keccak256(abi.encodePacked("crowdsale.deadline", assetAddress)), startTime.add(_fundingLength));
+    database.setUint(keccak256(abi.encodePacked("asset.managerFee", assetAddress)), _amountToRaise.mul(uint(100).mul(scalingFactor).div(uint(100).sub(_assetManagerPerc)).sub(scalingFactor)).div(scalingFactor));
+    database.setUint(keccak256(abi.encodePacked("crowdsale.goal", assetAddress)), _amountToRaise);
+    database.setAddress(keccak256(abi.encodePacked("asset.manager", assetAddress)), _assetManager);
+    database.setAddress(keccak256(abi.encodePacked("asset.operator", assetAddress)), database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))));
+    database.setBool(keccak256(abi.encodePacked("asset.uri", _assetURI)), true); //Set to ensure a unique asset URI
     events.asset('Asset funding started', _assetURI, assetAddress, _assetManager);
     return true;
   }

@@ -23,9 +23,11 @@ async function rejects (promise) {
 
 function increaseTime (seconds) {
   web3.currentProvider.send({
-    jsonrpc: "2.0",
-    method: "evm_increaseTime",
-    params: [seconds], id: 0
+      jsonrpc: "2.0",
+      method: "evm_increaseTime",
+      params: [seconds], id: 0
+  }, function(){
+    console.log('Move forward in time');
   });
 }
 
@@ -124,7 +126,7 @@ contract('Proposals', async (accounts) => {
     console.log("token vote duration is: ", await api.assetVoteDuration(token.address));
     assert.equal(voteDuration.eq(await api.assetVoteDuration(token.address)), true);
     assert.equal(quorum.eq(await api.assetQuorum(token.address)), true);
-    assert.equal(threshold.eq(await api.threshold(token.address)), true);
+    assert.equal(threshold.eq(await api.assetThreshold(token.address)), true);
   });
 
   it("Try to commit with 0 tokens", async() => {
@@ -150,23 +152,23 @@ contract('Proposals', async (accounts) => {
   });
 
   it('Try to create proposal from non-commited user', async() => {
-    methodID = await api.getMethodID("checkConsensus(address, address, uint256)");
+    methodID = await api.getMethodID("checkConsensus(address,address,uint256)");
     parameterHash = await ctest.consensusTestParameterHash(user1, token.address, 69);
-    await rejects(proposals.propose(token.address, ctest.address, methodID, parameterHash, {from: users[user.length-1]}));
+    await rejects(proposals.propose(token.address, ctest.address, methodID, parameterHash, {from: users[users.length-1]}));
   });
 
   it('Create proposal from user1', async() => {
-    methodID = await api.getMethodID("checkConsensus(address, address, uint256)");
+    methodID = await api.getMethodID("checkConsensus(address,address,uint256)");
     parameterHash = await ctest.consensusTestParameterHash(user1, token.address, 69);
     await proposals.propose(token.address, ctest.address, methodID, parameterHash, {from: user1});
-    proposalID = await api.getProposalID(ctest.address, token.address, methodID, parameterHash);
+    proposalID = await api.getProposalID(token.address, ctest.address, methodID, parameterHash);
     assert.equal(await api.proposalInitiator(proposalID), user1);
     assert.equal(await api.proposalToken(proposalID), token.address);
     assert.notEqual(await api.proposalStart(proposalID), 0);
   });
 
   it('fast forward 1 vote duration', async() => {
-    increaseTime(voteDuration);
+    await increaseTime(voteDuration.toNumber());
   });
 
   it('should have failed consensus', async() => {
@@ -175,18 +177,18 @@ contract('Proposals', async (accounts) => {
   });
 
   it('Create proposal from user2', async() => {
-    methodID = await api.getMethodID("checkConsensus(address, address, uint256)");
+    methodID = await api.getMethodID("checkConsensus(address,address,uint256)");
     parameterHash = await ctest.consensusTestParameterHash(user2, token.address, 69);
     await proposals.propose(token.address, ctest.address, methodID, parameterHash, {from: user2});
-    proposalID = await api.getProposalID(ctest.address, token.address, methodID, parameterHash);
+    proposalID = await api.getProposalID(token.address, ctest.address, methodID, parameterHash);
     assert.equal(await api.proposalInitiator(proposalID), user2);
     assert.equal(await api.proposalToken(proposalID), token.address);
     assert.notEqual(await api.proposalStart(proposalID), 0);
   });
 
   it('Approve user2 proposal from user1', async() => {
-    let commitValue = await api.commitmentValue(token, user1);
-    await proposal.approve(proposalID, {from: user1});
+    let commitValue = await api.commitmentValue(token.address, user1);
+    await proposals.approve(proposalID, {from: user1});
     let approvalAmount = await api.proposalApproval(proposalID);
     assert.equal(approvalAmount.eq(commitValue), true);
     console.log("proposal quorum is at: ", Number(await api.proposalQuorum(proposalID)));
@@ -194,13 +196,13 @@ contract('Proposals', async (accounts) => {
   });
 
   it('Approve user2 proposal from user2', async() => {
-    let commitValue = await api.commitmentValue(token, user2);
+    let commitValue = await api.commitmentValue(token.address, user2);
     let approvalAmount = await api.proposalApproval(proposalID);
-    await proposal.approve(proposalID, {from: user2});
-    approvalAmount = approvalAmount.plus(commitValue);
+    await proposals.approve(proposalID, {from: user2});
+    approvalAmount = bn(approvalAmount).plus(commitValue);
     assert.equal(approvalAmount.eq(await api.proposalApproval(proposalID)), true);
     console.log("proposal quorum is at: ", Number(await api.proposalQuorum(proposalID)));
     console.log("proposal threshold is at: ", Number(await api.proposalThreshold(proposalID)));
   });
 
-  });
+});

@@ -20,28 +20,28 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">0% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>8/8</span>
+        <span class='fraction'>0/8</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">0% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>4/4</span>
+        <span class='fraction'>0/4</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">0% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>4/4</span>
+        <span class='fraction'>0/4</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">0% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>8/8</span>
+        <span class='fraction'>0/8</span>
       </div>
     </div>
   </div>
-  <div class='status-line high'></div>
+  <div class='status-line low'></div>
 <pre><table class="coverage">
 <tr><td class="line-count quiet">1
 2
@@ -97,29 +97,29 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1×</span>
-<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3×</span>
-<span class="cline-any cline-yes">3×</span>
-<span class="cline-any cline-yes">3×</span>
-<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -135,31 +135,31 @@ contract TestBurner {
 &nbsp;
   uint public amountBurnt;
 &nbsp;
-  constructor(address _database, address _burner)
+<span class="fstat-no" title="function not covered" >  constructor(address _database, address _burner)</span>
   public {
-    burner = ERC20Burner(_burner);
-    database = Database(_database);
+<span class="cstat-no" title="statement not covered" >    burner = ERC20Burner(_burner)</span>;
+<span class="cstat-no" title="statement not covered" >    database = Database(_database)</span>;
   }
 &nbsp;
-  function burnTokensManualFee(uint _amount)
+<span class="fstat-no" title="function not covered" >  function burnTokensManualFee(uint _amount)</span>
   external {
-    require(burner.burn(msg.sender, _amount));
+<span class="cstat-no" title="statement not covered" >    require(burner.burn(msg.sender, _amount))</span>;
   }
 &nbsp;
   // Must set fee in ERC20Burner first
-  function burnTokens()
+<span class="fstat-no" title="function not covered" >  function burnTokens()</span>
   external {
-    bytes4 methodID = bytes4(keccak256(abi.encodePacked("burnTokens()")));
-    uint amountToBurn = database.uintStorage(keccak256(abi.encodePacked(methodID, address(this))));
-    require(burner.burn(msg.sender, amountToBurn));
-    amountBurnt += amountToBurn;
+<span class="cstat-no" title="statement not covered" >    bytes4 methodID = bytes4(keccak256(abi.encodePacked("burnTokens()")))</span>;
+<span class="cstat-no" title="statement not covered" >    uint amountToBurn = database.uintStorage(keccak256(abi.encodePacked(methodID, address(this))))</span>;
+<span class="cstat-no" title="statement not covered" >    require(burner.burn(msg.sender, amountToBurn))</span>;
+<span class="cstat-no" title="statement not covered" >    amountBurnt += amountToBurn</span>;
   }
 &nbsp;
-  function getMethodID()
+<span class="fstat-no" title="function not covered" >  function getMethodID()</span>
   external
   pure
   returns (bytes4) {
-    return bytes4(keccak256(abi.encodePacked("burnTokens()")));
+<span class="cstat-no" title="statement not covered" >    return bytes4(keccak256(abi.encodePacked("burnTokens()")));</span>
   }
 &nbsp;
 }
@@ -169,7 +169,7 @@ contract TestBurner {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Dec 13 2018 14:49:35 GMT-0800 (PST)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Dec 17 2018 16:07:14 GMT-0800 (PST)
 </div>
 </div>
 <script src="../prettify.js"></script>

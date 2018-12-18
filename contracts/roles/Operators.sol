@@ -20,7 +20,7 @@ contract Operators {
   external
   onlyOwner {
     require(_operatorAddress != address(0));
-    bytes32 operatorID = keccak256(abi.encodePacked("operatorURI", _operatorURI));
+    bytes32 operatorID = keccak256(abi.encodePacked("operator.uri", _operatorURI));
     require(database.addressStorage(keccak256(abi.encodePacked("operator", operatorID))) == address(0));
     database.setAddress(keccak256(abi.encodePacked("operator", operatorID)), _operatorAddress);
     database.setBytes32(keccak256(abi.encodePacked("operator", _operatorAddress)), operatorID);
@@ -56,7 +56,7 @@ contract Operators {
   external
   onlyOperator(_operatorID)
   returns (bool) {
-    database.setBool(keccak256(abi.encodePacked("acceptsToken", _operatorID, _tokenAddress)), _accept);
+    database.setBool(keccak256(abi.encodePacked("operator.acceptsToken", _operatorID, _tokenAddress)), _accept);
     return true;
   }
 
@@ -65,7 +65,7 @@ contract Operators {
   external
   onlyOperator(_operatorID)
   returns (bool) {
-    database.setBool(keccak256(abi.encodePacked("acceptsEther", _operatorID)), _accept);
+    database.setBool(keccak256(abi.encodePacked("operator.acceptsEther", _operatorID)), _accept);
     return true;
   }
 

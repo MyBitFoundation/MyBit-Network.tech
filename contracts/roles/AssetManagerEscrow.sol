@@ -4,14 +4,17 @@ pragma solidity ^0.4.24;
   import "../interfaces/DBInterface.sol";
   import "../database/Events.sol";
 
-  interface ERC20 {
+  interface AssetManagerEscrow_ERC20 {
     function transfer(address _to, uint256 _value) external returns (bool);
     function transferFrom(address _from, address _to, uint256 _value) external returns (bool);
-    function totalSupply() external view returns (uint);
     function burn(uint _amount) external returns (bool);
     function burnFrom(address _user, uint _amount) external returns (bool);
-    function assetIncome() external view returns (uint);
     function balanceOf(address _user) external view returns (uint);
+  }
+
+  interface AssetManagerEscrow_DivToken {
+    function totalSupply() external view returns (uint);
+    function assetIncome() external view returns (uint);
   }
 
   interface Consensus { function hasConsensus(address _assetAddress, bytes4 methodID, bytes32 parameterHash) external view returns (bool); }
@@ -41,7 +44,7 @@ pragma solidity ^0.4.24;
     function lockEscrow(address _assetAddress, address _assetManager, uint _amount)
     public
     returns (bool) {
-      require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
+      require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), 'User not approved');
       require(lockEscrowInternal(_assetManager, _assetAddress, _amount));
       return true;
     }
@@ -54,29 +57,31 @@ pragma solidity ^0.4.24;
     function unlockEscrow(address _assetAddress, address _assetManager)
     public
     returns (bool) {
-      require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
-      require(database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))) == _assetManager);
-      require(database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress))) < now);
-      ERC20 burnToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("platform.token"))));
+      require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), 'User not approved');
       bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetAddress, _assetManager));
-      uint escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("escrow.redeemed", assetManagerEscrowID)));
+      require(database.uintStorage(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID))) != 0, 'Asset escrow is zero');
+      require(database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress))) < now, 'Before crowdsale deadline');
+      AssetManagerEscrow_ERC20 burnToken = AssetManagerEscrow_ERC20(database.addressStorage(keccak256(abi.encodePacked("platform.token"))));
+      uint escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("asset.escrowRedeemed", assetManagerEscrowID)));
       uint unlockAmount = database.uintStorage(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID))).sub(escrowRedeemed);
       if(!database.boolStorage(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress)))){
+        emit NotFinalized();
         //If we're past deadline but crowdsale did NOT finalize, release all escrow
         require(removeAssetManager(_assetAddress));
         require(removeEscrowData(assetManagerEscrowID));
       }
       else {
         //Past the deadline with a successful funding. Only pay back based on ROI
-        ERC20 token = ERC20(_assetAddress);
+        AssetManagerEscrow_DivToken token = AssetManagerEscrow_DivToken(_assetAddress);
         uint roi = token.assetIncome().mul(100).div(token.totalSupply());   // Scaled up by 10^2  (approaches 100 as asset income increases)
         uint roiCheckpoints = roi.div(25);       // How many quarterly increments have been reached?
-        uint quarterEscrow = database.uintStorage(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID))).div(4);
+        emit ROICheckpoint(roiCheckpoints);
         require(roiCheckpoints <= 4 && roiCheckpoints > 0);    // Can't unlock escrow past 100% ROI
         //  multiply the number of quarterly increments by a quarter of the escrow and subtract the escrow already redeemed.
+        uint quarterEscrow = database.uintStorage(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID))).div(4);
         unlockAmount = roiCheckpoints.mul(quarterEscrow).sub(escrowRedeemed);
         require(unlockAmount > 0);
-        database.setUint(keccak256(abi.encodePacked("asset.escrowredeemed", assetManagerEscrowID)), escrowRedeemed.add(unlockAmount));
+        database.setUint(keccak256(abi.encodePacked("asset.escrowRedeemed", assetManagerEscrowID)), escrowRedeemed.add(unlockAmount));
       }
       require(burnToken.transfer(_assetManager, unlockAmount));
       return true;
@@ -89,7 +94,7 @@ pragma solidity ^0.4.24;
     external
     returns (bool) {
       //Check for approval
-      require(msg.sender == _newAssetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _newAssetManager, msg.sender, address(this), msg.sig))));
+      require(msg.sender == _newAssetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _newAssetManager, msg.sender, address(this), msg.sig))), 'User not approved');
       address currentAssetManager = database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress)));
       require(passed(_assetAddress, msg.sig, keccak256(abi.encodePacked(_assetAddress, currentAssetManager, _newAssetManager, _amount, _withhold))));
       require(currentAssetManager != _newAssetManager);
@@ -105,7 +110,7 @@ pragma solidity ^0.4.24;
     function returnEscrow(address _assetAddress, address _oldAssetManager, address _currentAssetManager)
     external
     {
-      require(msg.sender == _currentAssetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _currentAssetManager, msg.sender, address(this), msg.sig))));
+      require(msg.sender == _currentAssetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _currentAssetManager, msg.sender, address(this), msg.sig))), 'User not approved');
       require(database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))) == _currentAssetManager);
       processEscrow(_assetAddress, _oldAssetManager);
     }
@@ -118,10 +123,10 @@ pragma solidity ^0.4.24;
       uint escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("asset.escrowRedeemed", assetManagerEscrowID)));
       uint unlockAmount = database.uintStorage(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID))).sub(escrowRedeemed);
       require(unlockAmount >= _amountToBurn, "asset manager has no escrow left");
-      uint256 selfBurnAmount = _amountToBurn.mul(database.uintStorage(keccak256(abi.encodePacked("platform.burnrate"))));
-      require(ERC20(_assetAddress).balanceOf(msg.sender) >= selfBurnAmount);
-      require(ERC20(_assetAddress).burnFrom(msg.sender, selfBurnAmount));  // burn investor tokens
-      require(ERC20(database.addressStorage(keccak256(abi.encodePacked("platform.token")))).burn(_amountToBurn));  // burn manager tokens
+      uint256 selfBurnAmount = _amountToBurn.mul(database.uintStorage(keccak256(abi.encodePacked("platform.burnRate"))));
+      require(AssetManagerEscrow_ERC20(_assetAddress).balanceOf(msg.sender) >= selfBurnAmount);
+      require(AssetManagerEscrow_ERC20(_assetAddress).burnFrom(msg.sender, selfBurnAmount));  // burn investor tokens
+      require(AssetManagerEscrow_ERC20(database.addressStorage(keccak256(abi.encodePacked("platform.token")))).burn(_amountToBurn));  // burn manager tokens
       database.setUint(keccak256(abi.encodePacked("asset.escrowRedeemed", assetManagerEscrowID)), escrowRedeemed.add(_amountToBurn));  // mark burned _assetAddresss as redeemed
       database.setUint(commitmentID, database.uintStorage(commitmentID).sub(selfBurnAmount));   // reduce commitment amount
       return true;
@@ -154,7 +159,7 @@ pragma solidity ^0.4.24;
       bytes32 oldAssetManagerEscrowID = keccak256(abi.encodePacked(_assetAddress, _oldAssetManager));
       uint oldEscrowRemaining = database.uintStorage(keccak256(abi.encodePacked("asset.escrow", oldAssetManagerEscrowID))).sub(database.uintStorage(keccak256(abi.encodePacked("escrowRedeemed", oldAssetManagerEscrowID))));
       require(removeEscrowData(oldAssetManagerEscrowID));
-      require(ERC20(_assetAddress).transfer(_oldAssetManager, oldEscrowRemaining));
+      require(AssetManagerEscrow_ERC20(_assetAddress).transfer(_oldAssetManager, oldEscrowRemaining));
     }
 
     function removeAssetManager(address _assetAddress)
@@ -168,25 +173,21 @@ pragma solidity ^0.4.24;
     private
     returns (bool) {
         database.deleteUint(keccak256(abi.encodePacked("asset.escrow", _assetManagerEscrowID)));
-        database.deleteUint(keccak256(abi.encodePacked("asset.escrowredeemed", _assetManagerEscrowID)));
+        database.deleteUint(keccak256(abi.encodePacked("asset.escrowRedeemed", _assetManagerEscrowID)));
         return true;
     }
-
 
     function lockEscrowInternal(address _assetManager, address _assetAddress, uint _amount)
     private
     returns (bool) {
-      require(database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))) == address(0));
       bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetAddress, _assetManager));
+      require(database.uintStorage(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID))) == 0, 'Asset escrow already set');
       address platformToken = database.addressStorage(keccak256(abi.encodePacked("platform.token")));
-      require(ERC20(platformToken).transferFrom(_assetManager, address(this), _amount));
+      require(AssetManagerEscrow_ERC20(platformToken).transferFrom(_assetManager, address(this), _amount));
       database.setUint(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID)), _amount);
-      database.setAddress(keccak256(abi.encodePacked("asset.manager", _assetAddress)), _assetManager);
-      // events.escrow('Escrow locked', _assetAddress, assetManagerEscrowID, _assetManager, _amount);
+      events.escrow('Escrow locked', _assetAddress, assetManagerEscrowID, _assetManager, _amount);
       return true;
     }
-
-
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                            Modifiers
@@ -204,6 +205,8 @@ pragma solidity ^0.4.24;
       _;
     }
 
+    event NotFinalized();
+    event ROICheckpoint(uint checkpoint);
     /*
     event LogConsensus(bytes32 votesID, uint votes, uint _assetAddresss, bytes32 executionID, uint quorum);
     event LogEscrowBurned(bytes32 indexed _assetAddress, address indexed _assetManager, uint _amountBurnt);

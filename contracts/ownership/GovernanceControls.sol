@@ -39,7 +39,7 @@ contract GovernanceControls {
     require(quorum > 0 && quorum < 100);
     require(threshold > 0 && threshold < 100);
     require(voteDuration > 86400);   // 1 day minimum
-    bytes32 governanceID = keccak256(abi.encodePacked("asset.governance", governanceContract));
+    bytes32 governanceID = keccak256(abi.encodePacked("asset.governance", tokenAddress));
     require(db.addressStorage(governanceID) == address(0));
     db.setAddress(governanceID, governanceContract);
     db.setUint(keccak256(abi.encodePacked("asset.voteDuration", tokenAddress)), voteDuration);
