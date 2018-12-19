@@ -22,7 +22,7 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>0/9</span>
+        <span class='fraction'>0/4</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
@@ -32,12 +32,12 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>0/4</span>
+        <span class='fraction'>0/3</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>0/11</span>
+        <span class='fraction'>0/6</span>
       </div>
     </div>
   </div>
@@ -83,30 +83,7 @@
 38
 39
 40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+41</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -133,13 +110,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -151,39 +121,19 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity ^0.4.24;
 &nbsp;
 import "./DividendTokenERC20.sol";
+import "./GovernedToken.sol";
 import "./BurnableToken.sol";
-import "../../math/SafeMath.sol";
-&nbsp;
-// @notice give GovernedToken access to view uint and bytes32 storage
-interface DBAccess {
-  function uintStorage(bytes32 _key) external view returns (uint);
-  function bytes32Storage(bytes32 _key) external view returns (bytes32);
-}
 &nbsp;
 // @title A Dividend token that has governance features and receives ERC20 tokens as payment
 // @notice This token contract can receive ERC20 tokens as payments and token owners can lock tokens while submitting votes
 // @author Kyle Dewhurst &amp; Peter Phillips, MyBit Foundation
 // @dev Dividend tokens aren't actually locked, but restricted from transferring to avoid locking contravt having to distribute dividends.
-contract GovernedTokenERC20 is DividendTokenERC20, BurnableToken{
-  DBAccess public database;
-&nbsp;
+contract GovernedTokenERC20 is DividendTokenERC20, GovernedToken, BurnableToken{
 &nbsp;
   // @notice constructor: initializes database and DividendTokenERC20
   // @param (address) _database = the address of the platform database
@@ -192,9 +142,8 @@ contract GovernedTokenERC20 is DividendTokenERC20, BurnableToken{
   // @param (address) _erc20Address = The address of the erc20 token to be sent for dividends
 <span class="fstat-no" title="function not covered" >  constructor(address _database, string _tokenURI, address _owner, address _erc20Address)</span>
   public
-  DividendTokenERC20(_tokenURI, _owner, _erc20Address){
-<span class="cstat-no" title="statement not covered" >    database = DBAccess(_database)</span>;
-  }
+  GovernedToken(_database)
+  DividendTokenERC20(_tokenURI, _owner, _erc20Address){}
 &nbsp;
   // @notice Standard DividendToke transfer function, which checks for locked tokens before sending
 <span class="fstat-no" title="function not covered" >  function transfer(address _to, uint _amount)</span>
@@ -213,18 +162,6 @@ contract GovernedTokenERC20 is DividendTokenERC20, BurnableToken{
       super.transferFrom(_from, _to, _amount);
 <span class="cstat-no" title="statement not covered" >      return true;</span>
   }
-&nbsp;
-  // @notice returns the amount of tokens _investor has locked for this asset
-<span class="fstat-no" title="function not covered" >  function getAmountAvailable(address _investor)</span>
-  public
-  view
-  returns (uint) {
-<span class="cstat-no" title="statement not covered" >    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("commitment.value", address(this), _investor)))</span>;
-<span class="cstat-no" title="statement not covered" >    uint balance = balances[_investor]</span>;
-<span class="cstat-no" title="statement not covered" >    uint available = balance.sub(amountLocked)</span>;
-<span class="cstat-no" title="statement not covered" >    return available;</span>
-  }
-&nbsp;
 }
 &nbsp;</pre></td></tr>
 </table></pre>
@@ -232,7 +169,7 @@ contract GovernedTokenERC20 is DividendTokenERC20, BurnableToken{
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Dec 17 2018 16:07:14 GMT-0800 (PST)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Dec 19 2018 13:43:16 GMT-0800 (PST)
 </div>
 </div>
 <script src="../../prettify.js"></script>

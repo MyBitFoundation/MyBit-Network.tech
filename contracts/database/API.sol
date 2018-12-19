@@ -205,17 +205,17 @@ contract API {
   public
   view
   returns (bool) {
-    address assetToken = database.addressStorage(keccak256(abi.encodePacked("proposal.token", proposalID)));
+    address assetToken = proposalToken(proposalID);
     uint256 totalSupply = TokenView(assetToken).totalSupply();
-    uint256 voteCount = database.uintStorage(keccak256(abi.encodePacked("proposal.votecount", proposalID)));
-    uint256 approval = database.uintStorage(keccak256(abi.encodePacked("proposal.approval", proposalID)));
+    uint256 voteCount = proposalVoteCount(proposalID);
+    uint256 approval = proposalApproval(proposalID);
     if(totalSupply == 0 || voteCount == 0){
       return false;
     } else {
       uint256 quorum = voteCount.mul(100).div(totalSupply);
       uint256 theshold = approval.mul(100).div(voteCount);
-      bool quorumReached = quorum >= database.uintStorage(keccak256(abi.encodePacked("asset.quorum", assetToken)));
-      bool thresholdReached = theshold >= database.uintStorage(keccak256(abi.encodePacked("asset.threshold", assetToken)));
+      bool quorumReached = quorum >= assetQuorum(assetToken);
+      bool thresholdReached = theshold >= assetThreshold(assetToken);
       return quorumReached && thresholdReached;
     }
   }
@@ -231,8 +231,8 @@ contract API {
   public
   view
   returns (uint) {
-    address assetToken = database.addressStorage(keccak256(abi.encodePacked("proposal.token", _proposalID)));
-    uint amountLocked = database.uintStorage(keccak256(abi.encodePacked("commitment.value", assetToken, _investor)));
+    address assetToken = proposalToken(_proposalID);
+    uint amountLocked = commitmentValue(assetToken, _investor);
     uint balance = TokenView(assetToken).balanceOf(_investor);
     return balance.sub(amountLocked);
   }
@@ -268,7 +268,7 @@ contract API {
   public
   view
   returns(address) {
-    address fundingTokenAddress = database.addressStorage(keccak256(abi.encodePacked("fundingToken", _assetAddress)));
+    address fundingTokenAddress = database.addressStorage(keccak256(abi.encodePacked("crowdsale.fundingToken", _assetAddress)));
     return fundingTokenAddress;
   }
 
@@ -355,7 +355,7 @@ contract API {
   view
   returns(uint) {
     uint redeemed = getAssetManagerEscrowRedeemed(_managerEscrowID);
-    uint brokerEscrow = database.uintStorage(keccak256(abi.encodePacked("asset.escrow", _managerEscrowID))).sub(redeemed);
+    uint brokerEscrow = getAssetManagerEscrow(_managerEscrowID).sub(redeemed);
     return brokerEscrow;
   }
 

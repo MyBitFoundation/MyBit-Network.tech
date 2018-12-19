@@ -1,24 +1,20 @@
 pragma solidity ^0.4.24;
 
-import "./DividendTokenERC20.sol";
+import "./DividendToken.sol";
 import "./GovernedToken.sol";
 import "./BurnableToken.sol";
 
-// @title A Dividend token that has governance features and receives ERC20 tokens as payment
+// @title A Dividend token that has governance features .
 // @notice This token contract can receive ERC20 tokens as payments and token owners can lock tokens while submitting votes
-// @author Kyle Dewhurst & Peter Phillips, MyBit Foundation
 // @dev Dividend tokens aren't actually locked, but restricted from transferring to avoid locking contravt having to distribute dividends.
-contract GovernedTokenERC20 is DividendTokenERC20, GovernedToken, BurnableToken{
+// @author Kyle Dewhurst & Peter Phillips, MyBit Foundation
+contract GovernedTokenETH is GovernedToken, DividendToken, BurnableToken {
 
-  // @notice constructor: initializes database and DividendTokenERC20
-  // @param (address) _database = the address of the platform database
-  // @param (string) _tokenURI = The URI where details of the token (asse) can be found
-  // @param (address) _owner = The minting authority for this token
-  // @param (address) _erc20Address = The address of the erc20 token to be sent for dividends
-  constructor(address _database, string _tokenURI, address _owner, address _erc20Address)
+  // @notice constructor: initialized
+  constructor(address _database, string _tokenURI, address _owner)
   public
   GovernedToken(_database)
-  DividendTokenERC20(_tokenURI, _owner, _erc20Address){}
+  DividendToken(_tokenURI, _owner){}
 
   // @notice Standard DividendToke transfer function, which checks for locked tokens before sending
   function transfer(address _to, uint _amount)

@@ -20,28 +20,28 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">9.52% </span>
+        <span class="strong">57.14% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>2/21</span>
+        <span class='fraction'>12/21</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">0% </span>
+        <span class="strong">45.83% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>0/24</span>
+        <span class='fraction'>11/24</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">20% </span>
+        <span class="strong">40% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>1/5</span>
+        <span class='fraction'>2/5</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">5.71% </span>
+        <span class="strong">62.86% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>2/35</span>
+        <span class='fraction'>22/35</span>
       </div>
     </div>
   </div>
-  <div class='status-line low'></div>
+  <div class='status-line medium'></div>
 <pre><table class="coverage">
 <tr><td class="line-count quiet">1
 2
@@ -214,32 +214,32 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -335,23 +335,23 @@ contract CrowdsaleGeneratorERC20 {
   // @param (uint) _amountToRaise = The amount of tokens required to raise for the crowdsale to be a success
   // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
   // @param (address) _fundingToken = The ERC20 token to be used to fund the crowdsale (Operator must accept this token as payment)
-<span class="fstat-no" title="function not covered" >  function createAssetOrderERC20(string _assetURI, address _assetManager, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc, uint _escrow, address _fundingToken)</span>
+  function createAssetOrderERC20(string _assetURI, address _assetManager, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc, uint _escrow, address _fundingToken)
   external
   // burnRequired
   {
-<span class="cstat-no" title="statement not covered" >    require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), "User not approved")</span>;
-<span class="cstat-no" title="statement not covered" >    require(_amountToRaise &gt; 0, "Crowdsale goal is zero")</span>;
-<span class="cstat-no" title="statement not covered" >    require(_assetManagerPerc &lt; 100, "Manager percent need to be less than 100")</span>;
-<span class="cstat-no" title="statement not covered" >    require(database.boolStorage(keccak256(abi.encodePacked("operator.acceptsToken", _operatorID, _fundingToken))), "Operator does not accept this token")</span>;
-<span class="cstat-no" title="statement not covered" >    require(database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))) != address(0), "Operator does not exist")</span>;
-<span class="cstat-no" title="statement not covered" >    require(!database.boolStorage(keccak256(abi.encodePacked("asset.uri", _assetURI))), "Asset URI is not unique")</span>; //Check that asset URI is unique
+    <span class="missing-if-branch" title="else path not taken" >E</span>require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), "User not approved");
+    require(_amountToRaise &gt; 0, "Crowdsale goal is zero");
+    <span class="missing-if-branch" title="else path not taken" >E</span>require(_assetManagerPerc &lt; 100, "Manager percent need to be less than 100");
+    <span class="missing-if-branch" title="else path not taken" >E</span>require(database.boolStorage(keccak256(abi.encodePacked("operator.acceptsToken", _operatorID, _fundingToken))), "Operator does not accept this token");
+    require(database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))) != address(0), "Operator does not exist");
+    require(!database.boolStorage(keccak256(abi.encodePacked("asset.uri", _assetURI))), "Asset URI is not unique"); //Check that asset URI is unique
     uint startTime;
-<span class="cstat-no" title="statement not covered" >    if(_startTime &lt; now){</span>
-<span class="cstat-no" title="statement not covered" >      startTime = now</span>;
+    <span class="missing-if-branch" title="else path not taken" >E</span>if(_startTime &lt; now){
+      startTime = now;
     } else {
 <span class="cstat-no" title="statement not covered" >      startTime = _startTime</span>;
     }
-<span class="cstat-no" title="statement not covered" >    address assetAddress = address(new DividendTokenERC20(_assetURI, database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleERC20"))), _fundingToken))</span>;
+    address assetAddress = address(new DividendTokenERC20(_assetURI, database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleERC20"))), _fundingToken));
     database.setUint(keccak256(abi.encodePacked("crowdsale.start", assetAddress)), startTime);
     database.setUint(keccak256(abi.encodePacked("crowdsale.deadline", assetAddress)), startTime.add(_fundingLength));
     database.setUint(keccak256(abi.encodePacked("crowdsale.goal", assetAddress)), _amountToRaise);
@@ -363,7 +363,7 @@ contract CrowdsaleGeneratorERC20 {
     database.setAddress(keccak256(abi.encodePacked("crowdsale.fundingToken", assetAddress)), _fundingToken);
     database.setBool(keccak256(abi.encodePacked("asset.uri", _assetURI)), true); //Set to ensure a unique asset URI
     //If escrow, lock
-<span class="cstat-no" title="statement not covered" >    if(_escrow &gt; 0){ <span class="cstat-no" title="statement not covered" >require(lockEscrowInternal(_assetManager, assetAddress, _escrow))</span>;}</span>
+    <span class="missing-if-branch" title="if path not taken" >I</span>if(_escrow &gt; 0){ <span class="cstat-no" title="statement not covered" >require(lockEscrowInternal(_assetManager, assetAddress, _escrow))</span>;}
     events.asset('Asset funding started', _assetURI, assetAddress, _assetManager);
   }
 &nbsp;
@@ -424,7 +424,7 @@ contract CrowdsaleGeneratorERC20 {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Dec 17 2018 16:07:14 GMT-0800 (PST)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Dec 19 2018 13:43:16 GMT-0800 (PST)
 </div>
 </div>
 <script src="../prettify.js"></script>
