@@ -20,24 +20,24 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">0% </span>
+        <span class="strong">40% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>0/9</span>
+        <span class='fraction'>6/15</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">0% </span>
+        <span class="strong">50% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>0/4</span>
+        <span class='fraction'>6/12</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">0% </span>
+        <span class="strong">50% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>0/4</span>
+        <span class='fraction'>2/4</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">0% </span>
+        <span class="strong">47.37% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>0/11</span>
+        <span class='fraction'>9/19</span>
       </div>
     </div>
   </div>
@@ -103,7 +103,16 @@
 58
 59
 60
-61</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -122,6 +131,15 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -131,12 +149,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -146,16 +158,22 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -165,51 +183,34 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity ^0.4.24;
 &nbsp;
-import "./DividendToken.sol";
-import "./BurnableToken.sol";
+import "./StandardToken.sol";
 import "../../math/SafeMath.sol";
 &nbsp;
 &nbsp;
 // @notice give GovernedToken access to view uint and bytes32 storage
 interface DBAccess {
+  function addressStorage(bytes32 _key) external view returns (address);
   function uintStorage(bytes32 _key) external view returns (uint);
   function bytes32Storage(bytes32 _key) external view returns (bytes32);
+  function setUint(bytes32 _key, uint _value) external;
 }
 &nbsp;
 // @title A Dividend token that has governance features .
 // @notice This token contract can receive ERC20 tokens as payments and token owners can lock tokens while submitting votes
 // @dev Dividend tokens aren't actually locked, but restricted from transferring to avoid locking contravt having to distribute dividends.
 // @author Kyle Dewhurst &amp; Peter Phillips, MyBit Foundation
-contract GovernedToken is DividendToken, BurnableToken {
+contract GovernedToken is StandardToken{
   using SafeMath for uint;
 &nbsp;
   DBAccess public database;
 &nbsp;
 &nbsp;
   // @notice constructor: initialized
-<span class="fstat-no" title="function not covered" >  constructor(address _database, string _tokenURI, address _owner)</span>
-  public
-  DividendToken(_tokenURI, _owner){
-<span class="cstat-no" title="statement not covered" >    database = DBAccess(_database)</span>;
+  constructor(address _database)
+  public{
+    database = DBAccess(_database);
   }
 &nbsp;
-  // @notice Standard DividendToke transfer function, which checks for locked tokens before sending
-<span class="fstat-no" title="function not covered" >  function transfer(address _to, uint _amount)</span>
-  public
-  returns (bool success) {
-<span class="cstat-no" title="statement not covered" >      require(_amount &lt;= getAmountAvailable(msg.sender))</span>;
-      super.transfer(_to, _amount);
-<span class="cstat-no" title="statement not covered" >      return true;</span>
-  }
-&nbsp;
-  // @notice Standard DividendToke transferFrom function, which checks for locked tokens before sending
-<span class="fstat-no" title="function not covered" >  function transferFrom(address _from, address _to, uint _amount)</span>
-  public
-  returns (bool success) {
-<span class="cstat-no" title="statement not covered" >      require(_amount &lt;= getAmountAvailable(_from))</span>;
-      super.transferFrom(_from, _to, _amount);
-<span class="cstat-no" title="statement not covered" >      return true;</span>
-  }
 &nbsp;
   // @notice returns the amount of tokens _investor has locked for this asset
 <span class="fstat-no" title="function not covered" >  function getAmountAvailable(address _investor)</span>
@@ -222,6 +223,32 @@ contract GovernedToken is DividendToken, BurnableToken {
 <span class="cstat-no" title="statement not covered" >    return available;</span>
   }
 &nbsp;
+  // @notice commit tokens for proposals and voting
+  function lock(uint _amount)
+  external
+  returns(bool success) {
+    require(_amount &gt; 0);
+    require(database.addressStorage(keccak256(abi.encodePacked("asset.governance", address(this)))) != address(0));
+    uint totalToLock = database.uintStorage(keccak256(abi.encodePacked("commitment.value", address(this), msg.sender))).add(_amount);
+    require(totalToLock &lt;= balanceOf(msg.sender));
+    database.setUint(keccak256(abi.encodePacked("commitment.start", address(this), msg.sender)), now);
+    database.setUint(keccak256(abi.encodePacked("commitment.releasetime", address(this), msg.sender)), now.add(database.uintStorage(keccak256(abi.encodePacked("asset.voteDuration", address(this))))));
+    database.setUint(keccak256(abi.encodePacked("commitment.value", address(this), msg.sender)), totalToLock);
+    return true;
+  }
+&nbsp;
+  // @notice unlock commited tokens
+<span class="fstat-no" title="function not covered" >  function unlock(uint _amount)</span>
+  external
+  returns(bool success) {
+<span class="cstat-no" title="statement not covered" >    require(database.uintStorage(keccak256(abi.encodePacked("commitment.releasetime", address(this), msg.sender))) &lt;= now)</span>;
+<span class="cstat-no" title="statement not covered" >    uint remainderToLock = database.uintStorage(keccak256(abi.encodePacked("commitment.value", address(this), msg.sender))).sub(_amount)</span>;
+<span class="cstat-no" title="statement not covered" >    require(remainderToLock &gt;= 0)</span>;
+<span class="cstat-no" title="statement not covered" >    if(remainderToLock == 0){ database.setUint(keccak256(abi.encodePacked("commitment.start", address(this), msg.sender)), 0); }</span>
+    database.setUint(keccak256(abi.encodePacked("commitment.value", address(this), msg.sender)), remainderToLock);
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+  }
+&nbsp;
 }
 &nbsp;</pre></td></tr>
 </table></pre>
@@ -229,7 +256,7 @@ contract GovernedToken is DividendToken, BurnableToken {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Dec 17 2018 16:07:14 GMT-0800 (PST)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Dec 19 2018 13:43:16 GMT-0800 (PST)
 </div>
 </div>
 <script src="../../prettify.js"></script>

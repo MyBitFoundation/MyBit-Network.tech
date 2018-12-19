@@ -62,7 +62,7 @@ contract Commitment {
     bytes32 releaseTimeID = keccak256(abi.encodePacked("commitment.releasetime", _token, msg.sender));
     require(now < database.uintStorage(releaseTimeID));
     database.deleteUint(keccak256(abi.encodePacked("commitment.start", _token, msg.sender)));   // remove reference to start date which is the authortiy check
-    database.setUint(releaseTimeID, now.add(database.uintStorage(keccak256(abi.encodePacked("asset.voteDuration")))));
+    database.setUint(releaseTimeID, now.add(database.uintStorage(keccak256(abi.encodePacked("asset.voteDuration", _token)))));
     return true;
   }
 
