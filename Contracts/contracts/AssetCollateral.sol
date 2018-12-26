@@ -41,6 +41,7 @@ contract AssetCollateral{
   returns (uint){
     uint roi = api.assetIncome(_assetID).mul(100).div(api.amountRaised(_assetID));
     uint roiCheckpoints = roi.div(25);
+    if(roiCheckpoints > 4) return totalEscrow[_assetID].sub(escrowWithdrawn[_assetID]);
     if(roiCheckpoints <= 4 && roiCheckpoints > 0){
       uint quarterEscrow = totalEscrow[_assetID].div(4);
       uint unlockAmount = roiCheckpoints.mul(quarterEscrow).sub(escrowWithdrawn[_assetID]);
