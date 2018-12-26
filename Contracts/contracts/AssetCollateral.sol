@@ -70,4 +70,9 @@ contract AssetCollateral{
     uint roi = api.assetIncome(_assetID).mul(100).div(api.amountRaised(_assetID));
     return totalEscrow[_assetID].getFractionalAmount(roi);
   }
+  function changeOwner(address _newOwner)
+  external {
+      require(msg.sender == owner); 
+      owner = _newOwner;
+  }
 }
