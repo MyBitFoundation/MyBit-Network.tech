@@ -21,7 +21,7 @@ contract AssetCollateral{
   returns (bool){
     require(msg.sender == owner);
     require(!escrowBool[keccak256(abi.encodePacked(_assetID, _assetManager))]);
-    escrowBool[keccak256(abi.encodePacked(_assetID, _assetManager))];
+    escrowBool[keccak256(abi.encodePacked(_assetID, _assetManager))] = true;
     assetManager[_assetID] = _assetManager;
     totalEscrow[_assetID] = _escrow;
   }
