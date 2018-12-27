@@ -55,6 +55,9 @@ contract('AssetCollateral', async(accounts) => {
 
    it('Set up escrow', async() => {
      await collateral.lockEscrow(assetID, assetCreator, 100);
+     assert.equal(await collateral.escrowBool(await hfInstance.bytesAddress(assetID, assetCreator)), true);
+     assert.equal(await collateral.assetManager(assetID), assetCreator);
+     assert.equal(await collateral.totalEscrow(assetID), 100);
    });
 
    it('Fail to withdraw', async() => {
@@ -83,7 +86,7 @@ contract('AssetCollateral', async(accounts) => {
      assert.equal(balanceAfter-balanceBefore, 25);
    });
 
-   it('Add too much income', async() => {
+   it('Add over 100% income', async() => {
      await dbInstance.setUint(await hfInstance.stringBytes("assetIncome", assetID), 125);
    });
 
@@ -100,5 +103,97 @@ contract('AssetCollateral', async(accounts) => {
      assert.equal(balanceAfter-balanceBefore, 75);
    });
 
+   it('Add more income', async() => {
+     await dbInstance.setUint(await hfInstance.stringBytes("assetIncome", assetID), 25);
+   });
 
+   it('Fail to withdraw', async() => {
+     let err;
+     try{
+       await collateral.withdrawEscrow(assetID, {from: assetCreator});
+     } catch (e){
+       err = e;
+     }
+     assert.notEqual(err, undefined);
+   });
+
+   it('Set up second asset', async () => {
+     assetID = await hfInstance.stringHash('Asset2');
+     await dbInstance.setUint(await hfInstance.stringBytes("assetIncome", assetID), 0);
+     await dbInstance.setUint(await hfInstance.stringBytes("amountRaised", assetID), 100);
+   });
+
+   it('Fail to escrow 0', async() => {
+     let err;
+     try{
+       await collateral.lockEscrow(assetID, assetCreator, 0);
+     } catch (e){
+       err = e;
+     }
+     assert.notEqual(err, undefined);
+   });
+
+   it('Set up escrow', async() => {
+     await collateral.lockEscrow(assetID, assetCreator, 100);
+     assert.equal(await collateral.escrowBool(await hfInstance.bytesAddress(assetID, assetCreator)), true);
+     assert.equal(await collateral.assetManager(assetID), assetCreator);
+     assert.equal(await collateral.totalEscrow(assetID), 100);
+   });
+
+   it('Add income', async() => {
+     await dbInstance.setUint(await hfInstance.stringBytes("assetIncome", assetID), 24);
+   });
+
+   it('View unlocked', async() => {
+     let unlocked = await collateral.unlockedEscrow(assetID);
+     assert.equal(unlocked, 0);
+   });
+
+   it('Fail to withdraw: hasnt reached quarter roi', async() => {
+     let err;
+     try{
+       await collateral.withdrawEscrow(assetID, {from: assetCreator});
+     } catch (e){
+       err = e;
+     }
+     assert.notEqual(err, undefined);
+   });
+
+   it('Add income', async() => {
+     await dbInstance.setUint(await hfInstance.stringBytes("assetIncome", assetID), 99);
+   });
+
+   it('View unlocked', async() => {
+     let unlocked = await collateral.unlockedEscrow(assetID);
+     assert.equal(unlocked, 75);
+   });
+
+   it('Withdraw 3/4', async() => {
+     let balanceBefore = await myb.balanceOf(assetCreator);
+     await collateral.withdrawEscrow(assetID, {from: assetCreator});
+     let balanceAfter = await myb.balanceOf(assetCreator);
+     assert.equal(balanceAfter-balanceBefore, 75);
+   });
+
+   it('Add income', async() => {
+     await dbInstance.setUint(await hfInstance.stringBytes("assetIncome", assetID), 100);
+   });
+
+   it('Withdraw rest of escrow', async() => {
+     let balanceBefore = await myb.balanceOf(assetCreator);
+     await collateral.withdrawEscrow(assetID, {from: assetCreator});
+     let balanceAfter = await myb.balanceOf(assetCreator);
+     assert.equal(balanceAfter-balanceBefore, 25);
+   });
+
+   it('changeOwner', async() => {
+       await collateral.changeOwner(accounts[1]);
+       assert.equal(await collateral.owner(), accounts[1]);
+   })
+
+   it('withdrawMYB', async() => {
+       let balanceBefore = await myb.balanceOf(collateral.address);
+       await collateral.withdrawMYB({from: accounts[1]});
+       assert.notEqual(await myb.balanceOf(collateral.address), balanceBefore);
+   })
 });
