@@ -68,7 +68,7 @@ using SafeMath for uint;
   atStage(_assetID, uint(4))
   returns (bool) {
     uint owed = database.uintStorage(keccak256(abi.encodePacked("managerIncome", msg.sender)));
-    require(owed > 0);
+    require(owed > 0, "Nothing owed");
     database.setUint(keccak256(abi.encodePacked("managerIncome", msg.sender)), 0);
     msg.sender.transfer(owed);
     emit LogManagerIncomeWithdraw(_assetID, msg.sender, owed);
@@ -173,7 +173,7 @@ using SafeMath for uint;
   // Checks that the asset is at the proper funding stage
   //------------------------------------------------------------------------------------------------------------------
   modifier atStage(bytes32 _assetID, uint _stage) {
-    require(database.uintStorage(keccak256(abi.encodePacked("fundingStage", _assetID))) == _stage);
+    require(database.uintStorage(keccak256(abi.encodePacked("fundingStage", _assetID))) == _stage, "Wrong stage");
     _;
   }
 

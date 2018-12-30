@@ -7,7 +7,7 @@ const Asset = artifacts.require("./Asset.sol");
 const Owned = artifacts.require("./Owned.sol");
 const UserAccess = artifacts.require("./UserAccess.sol");
 const FundingHub = artifacts.require("./FundingHub.sol");
-const StakingBank = artifacts.require("./StakingBank.sol");
+const Staking = artifacts.require("./Staking.sol");
 const AssetExchange = artifacts.require('./AssetExchange.sol');
 const MyBitToken = artifacts.require('./MyBitToken.sol');
 const AssetManager = artifacts.require('./AssetManager.sol');
@@ -30,7 +30,7 @@ contract('Test.sol', async (accounts) => {
   let assetInstance;
   let userAccessInstance;
   let fundingHubInstance;
-  let stakingBankInstance;
+  let stakingInstance;
   let assetExchangeInstance;
   let myBitTokenInstance;
   let tokenStakingInstance;
@@ -114,9 +114,9 @@ contract('Test.sol', async (accounts) => {
      assetInstance = await Asset.new(dbInstance.address);
      await contractManagerInstance.addContract('Asset', assetInstance.address, ownerAddr2);
 
-     // StakingBank Contract
-     stakingBankInstance = await StakingBank.new(dbInstance.address);
-     await contractManagerInstance.addContract('StakingBank', stakingBankInstance.address, ownerAddr2);
+     // Staking Contract
+     stakingInstance = await Staking.new(dbInstance.address);
+     await contractManagerInstance.addContract('Staking', stakingInstance.address, ownerAddr2);
 
      // Asset Exchange Contract
      assetExchangeInstance = await AssetExchange.new(dbInstance.address);

@@ -260,14 +260,17 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 });
 
 it('stress test', async() => {
-    let balanceBefore = web3.eth.getBalance(assetInstance.address);
+    let balanceBefore = await web3.eth.getBalance(assetInstance.address);
+    console.log(balanceBefore.toNumber());
     for (let i = 0; i < 100; i++){
         let newIncome = Math.floor((Math.random() * 1000) + 2);
         await assetInstance.receiveIncome(assetID, '', {value:newIncome});
         await assetInstance.withdraw(assetID, {from:funder1});
         await assetInstance.withdraw(assetID, {from:funder2});
     }
-    await assetInstance.withdrawManagerIncome(assetID);
-    assert.equal(balanceBefore, web3.eth.getBalance(assetInstance.address));
+    await assetInstance.withdrawManagerIncome(assetID, {from: assetCreator});
+    let balanceAfter = await web3.eth.getBalance(assetInstance.address);
+    console.log(balanceAfter.toNumber());
+    assert.equal(BigNumber(balanceAfter).isLessThanOrEqualTo(1), true);
 });
 });
