@@ -244,6 +244,13 @@ contract API {
     return database.uintStorage(keccak256(abi.encodePacked("managerPercentage", _assetID)));
   }
 
+  function assetManagerIncome(address _manager)
+  public
+  view
+  returns (uint) {
+      return database.uintStorage(keccak256(abi.encodePacked("managerIncome", _manager))); 
+  }
+
   // Amount of MYB locked for this asset
   function escrowedForAsset(bytes32 _assetID)
   public
@@ -307,10 +314,10 @@ contract API {
   }
 
   function stakerIncomeShare(bytes32 _assetID)
-  public 
-  view 
-  returns (uint) { 
-    database.uintStorage(keccak256(abi.encodePacked("stakerIncomeShare", _assetID))); 
+  public
+  view
+  returns (uint) {
+    database.uintStorage(keccak256(abi.encodePacked("stakerIncomeShare", _assetID)));
   }
 
   //-----------------------------------------------------------------------------------------------------------------------

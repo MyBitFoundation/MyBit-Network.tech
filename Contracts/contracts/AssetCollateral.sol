@@ -20,6 +20,7 @@ contract AssetCollateral{
   external
   returns (bool){
     require(msg.sender == owner);
+    require(_escrow > 0); 
     require(!escrowBool[keccak256(abi.encodePacked(_assetID, _assetManager))]);
     escrowBool[keccak256(abi.encodePacked(_assetID, _assetManager))] = true;
     assetManager[_assetID] = _assetManager;
@@ -34,6 +35,20 @@ contract AssetCollateral{
     escrowWithdrawn[_assetID] = escrowWithdrawn[_assetID].add(unlockAmount);
     require(myb.transfer(msg.sender, unlockAmount));
     return true;
+  }
+  function changeOwner(address _newOwner)
+  external
+  returns (bool){
+      require(msg.sender == owner);
+      owner = _newOwner;
+      return true;
+  }
+  function withdrawMYB()
+  external
+  returns (bool){
+      require(msg.sender == owner);
+      require(myb.transfer(msg.sender, myb.balanceOf(address(this))));
+      return true;
   }
   function unlockedEscrow(bytes32 _assetID)
   view
@@ -69,10 +84,5 @@ contract AssetCollateral{
   returns (uint) {
     uint roi = api.assetIncome(_assetID).mul(100).div(api.amountRaised(_assetID));
     return totalEscrow[_assetID].getFractionalAmount(roi);
-  }
-  function changeOwner(address _newOwner)
-  external {
-      require(msg.sender == owner); 
-      owner = _newOwner;
   }
 }

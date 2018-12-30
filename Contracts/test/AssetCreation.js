@@ -10,7 +10,7 @@ const Owned = artifacts.require("./Owned.sol");
 const AssetManager = artifacts.require('./AssetManager.sol');
 const UserAccess = artifacts.require('./UserAccess.sol');
 const MyBitToken = artifacts.require('./MyBitToken.sol');
-const TokenBurn = artifacts.require('./TokenBurn.sol'); 
+const TokenBurn = artifacts.require('./TokenBurn.sol');
 const AssetCreation = artifacts.require('./AssetCreation.sol');
 const Asset = artifacts.require('./Asset.sol');
 const FundingHub = artifacts.require('./FundingHub.sol');
@@ -26,7 +26,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
   const funder1 = web3.eth.accounts[5];
   const funder2 = web3.eth.accounts[6];
-  const funder3 = web3.eth.accounts[7]; 
+  const funder3 = web3.eth.accounts[7];
 
   const myBitPayoutAddress = web3.eth.accounts[8];
   const assetEscrowPayoutAddress = web3.eth.accounts[9];
@@ -34,7 +34,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let dbInstance;
   let contractManagerInstance;
   let hfInstance;
-  let api; 
+  let api;
   let initialVariableInstance;
   let ownedInstance;
   let assetManagerInstance;
@@ -55,17 +55,17 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
   let assetID;
   let installerID;
   let assetType;
-  let amountToFundWEI; 
+  let amountToFundWEI;
 
 
-  // EVENTS 
+  // EVENTS
   let LogAssetFundingStarted;
-  
+
 
   it("Owners should be assigned", async () => {
      dbInstance = await Database.new(ownerAddr1, ownerAddr2, ownerAddr3);
      hfInstance = await HashFunctions.new();
-     api = await API.new(dbInstance.address); 
+     api = await API.new(dbInstance.address);
 
      // Database Owners assigned properly
      assert.equal(await api.isOwner(ownerAddr1), true, 'Owner 1 assigned properly');
@@ -195,22 +195,22 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
    it('Deposit Escrow', async () => {
       await assetManagerInstance.depositEscrow(approvalAmount,{from:assetCreator});
-      assert.equal(await api.depositedMYB(assetCreator), approvalAmount); 
+      assert.equal(await api.depositedMYB(assetCreator), approvalAmount);
       assert.equal(await myBitTokenInstance.balanceOf(assetManagerInstance.address), approvalAmount);
-      assert.equal(await myBitTokenInstance.allowance(assetCreator, assetManagerInstance.address), 0); 
+      assert.equal(await myBitTokenInstance.allowance(assetCreator, assetManagerInstance.address), 0);
    });
 
 
    it('Set ETH and MYB prices in USD', async () => {
-     let ethPrice = 470; 
+     let ethPrice = 470;
      let mybPrice = 98;   // floating point 10^3
-     await initialVariableInstance.setDailyPrices(ethPrice, mybPrice); 
-     // Check values set properly 
+     await initialVariableInstance.setDailyPrices(ethPrice, mybPrice);
+     // Check values set properly
      assert.equal(await api.ethUSDPrice(), ethPrice);
-     assert.equal(await api.mybUSDPrice(), mybPrice); 
+     assert.equal(await api.mybUSDPrice(), mybPrice);
 
      let priceExpiration = await api.priceTimeToExpiration();
-     assert.notEqual(priceExpiration, 0); 
+     assert.notEqual(priceExpiration, 0);
    });
 
 
@@ -220,8 +220,8 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      let amountEscrowDeposited = await api.depositedMYB(assetCreator);
      let mybUSDPrice = await api.mybUSDPrice();
      assert.notEqual(approvalAmount, 0);
-     assert.notEqual(managerPercentage); 
-     assert.equal(amountEscrowDeposited, approvalAmount); 
+     assert.notEqual(managerPercentage);
+     assert.equal(amountEscrowDeposited, approvalAmount);
      await assetCreationInstance.newAsset(amountToBeRaised, managerPercentage, approvalAmount, installerID, assetType, 23, {from:assetCreator});
      LogAssetFundingStarted = await assetCreationInstance.LogAssetFundingStarted({},{fromBlock:0, toBlock:'latest'});
    });
@@ -240,8 +240,8 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
     });
   });
 
-   it("check new asset information was set properly", async () => { 
-     let myBPrice = await api.mybUSDPrice(); 
+   it("check new asset information was set properly", async () => {
+     let myBPrice = await api.mybUSDPrice();
      let addressAssigned = await api.assetManager(assetID);
      let escrowedForAsset = await api.escrowedForAsset(assetID);
 
@@ -255,12 +255,12 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
    });
 
   it('Fund asset', async () => {
-    let amountToBeRaised = await api.amountToBeRaised(assetID); 
+    let amountToBeRaised = await api.amountToBeRaised(assetID);
     let ethUSDPrice = await api.ethUSDPrice();
 
     let halfOfUSDValueInEth = ((amountToBeRaised / ethUSDPrice) / 2);
     console.log("amount of ETHER to send is");
-    console.log(halfOfUSDValueInEth); 
+    console.log(halfOfUSDValueInEth);
 
     await fundingHubInstance.fund(assetID, {from:funder1, value:web3.toWei(halfOfUSDValueInEth,'ether')});
     await fundingHubInstance.fund(assetID, {from:funder2, value:web3.toWei(halfOfUSDValueInEth,'ether')});
@@ -274,10 +274,10 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
 
   it('Asset recieves income', async () => {
     amountToFundWEI = 10**18;
-    managerCut = (managerPercentage * amountToFundWEI) / 100; 
+    managerCut = (managerPercentage * amountToFundWEI) / 100;
     await assetInstance.receiveIncome(assetID, '', {value:amountToFundWEI});
-    console.log(await api.assetIncome(assetID)); 
-    assert.equal(await api.assetIncome(assetID), amountToFundWEI - managerCut); 
+    console.log(await api.assetIncome(assetID));
+    assert.equal(await api.assetIncome(assetID), amountToFundWEI - managerCut);
   });
 
 
@@ -285,9 +285,9 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      let funder1OwnershipUnits = await api.ownershipUnits(assetID, funder1);
      let amountRaised = await api.amountRaised(assetID);
      let assetIncome = await api.assetIncome(assetID);
-     let payment = BigNumber(assetIncome).times(funder1OwnershipUnits); 
-     payment = BigNumber(payment).div(amountRaised); 
-     assert.equal(payment * 2, (amountToFundWEI - managerCut)); 
+     let payment = BigNumber(assetIncome).times(funder1OwnershipUnits);
+     payment = BigNumber(payment).div(amountRaised);
+     assert.equal(payment * 2, (amountToFundWEI - managerCut));
 
 
      let withdrawGasEstimate = await assetInstance.withdraw.estimateGas(assetID, {from:funder1});
@@ -299,7 +299,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      await assetInstance.withdraw(assetID, {from:funder1});
 
 
-     let totalPaidToFundersAfter = await api.totalPaidToFunders(assetID); 
+     let totalPaidToFundersAfter = await api.totalPaidToFunders(assetID);
      let totalPaidToFunderAfter = await api.totalPaidToFunder(assetID, funder1);
      let balanceOfUserAfterWithdrawal = web3.eth.getBalance(funder1);
      let shouldBeBalanceAfter = balanceOfUserBeforeWithdrawal - web3.toWei(withdrawGasEstimate,'ether');
@@ -310,11 +310,7 @@ contract('Deploying and storing all contracts + validation', async (accounts) =>
      await assetInstance.withdraw(assetID, {from:funder2});
    });
 
-   // TODO: Continue tests after breaing changes
-   it('Remove Asset', async () => {
-     await ownedInstance.setFunctionAuthorized(assetCreationInstance.address, 'removeAsset', assetID,{from:ownerAddr1});
-     await assetCreationInstance.removeAsset(assetID, ownerAddr1,{from:ownerAddr3});
-   });
+
 
    // it('Create Asset With No Escrow', async () => {
    //   let secondAssetCreator = web3.eth.accounts[6];

@@ -35,38 +35,12 @@ using SafeMath for uint;
   returns (bool)  {
     uint assetIncome = database.uintStorage(keccak256(abi.encodePacked("assetIncome", _assetID)));
     uint managerShare = msg.value.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("managerPercentage", _assetID))));
-    require(distributeStakingShare(_assetID, managerShare)); 
+    require(setManagerIncome(_assetID, managerShare));
     database.setUint(keccak256(abi.encodePacked("assetIncome", _assetID)), assetIncome.add(msg.value.sub(managerShare)));
     emit LogIncomeReceived(msg.sender, msg.value, _assetID, _note);
     return true;
   }
 
-  //------------------------------------------------------------------------------------------------------------------
-  // Revenue produced by the asset will be sent here
-  // Invariants: Requires Eth is sent with transaction | Asset must be "live" (stage 4)
-  // @Param: The ID of the asset earning income
-  // @Param: The amount of WEI owed to the staker or manager
-  //------------------------------------------------------------------------------------------------------------------
-  function distributeStakingShare(bytes32 _assetID, uint _managerAmount)
-  internal 
-  returns (bool) { 
-    address staker = database.addressStorage(keccak256(abi.encodePacked("assetStaker", _assetID))); 
-    address manager = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))); 
-    if (staker != address(0)){ 
-      uint stakerShare = database.uintStorage(keccak256(abi.encodePacked("stakerIncomeShare", _assetID))); 
-      uint stakerPortion = _managerAmount.mul(stakerShare).div(100); 
-      assert (stakerPortion > 0); 
-      assert (setManagerIncome(_assetID, staker, stakerPortion)); 
-      if (stakerPortion < _managerAmount){ 
-        assert (setManagerIncome(_assetID, manager, _managerAmount.sub(stakerPortion))); 
-      }
-      return true;  
-    }
-    else { 
-      assert (setManagerIncome(_assetID, manager, _managerAmount)); 
-      return true;
-    }
-  }
 
   //------------------------------------------------------------------------------------------------------------------
   // Revenue produced by the asset will be sent here
@@ -74,28 +48,30 @@ using SafeMath for uint;
   // @Param: The ID of the asset earning income
   // @Param: The amount of WEI owed to the staker or manager
   //------------------------------------------------------------------------------------------------------------------
-  function setManagerIncome(bytes32 _assetID, address _manager, uint _managerAmount)
-  internal 
-  returns (bool) { 
-      address manager = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID))); 
-      uint managerOwed = database.uintStorage(keccak256(abi.encodePacked("managerIncome", manager))); 
-      database.setUint(keccak256(abi.encodePacked("managerIncome", _manager)), managerOwed.add(_managerAmount)); 
+  function setManagerIncome(bytes32 _assetID, uint _managerAmount)
+  internal
+  returns (bool) {
+      address manager = database.addressStorage(keccak256(abi.encodePacked("assetManager", _assetID)));
+      uint managerOwed = database.uintStorage(keccak256(abi.encodePacked("managerIncome", manager)));
+      database.setUint(keccak256(abi.encodePacked("managerIncome", manager)), managerOwed.add(_managerAmount));
+      emit LogManagerIncomeEarned(_assetID, manager, _managerAmount);
       return true;
   }
 
   //------------------------------------------------------------------------------------------------------------------
   // Revenue produced by the asset will be sent here
   // @dev: Requires Eth is sent with transaction | Asset must be "live" (stage 4)
-  // @param: bytes32: The ID of the asset 
+  // @param: bytes32: The ID of the asset
   //------------------------------------------------------------------------------------------------------------------
   function withdrawManagerIncome(bytes32 _assetID)
   external
   atStage(_assetID, uint(4))
-  returns (bool) { 
-    uint owed = database.uintStorage(keccak256(abi.encodePacked("managerIncome", msg.sender))); 
-    require(owed > 0); 
-    database.setUint(keccak256(abi.encodePacked("managerIncome", msg.sender)), 0); 
-    msg.sender.transfer(owed); 
+  returns (bool) {
+    uint owed = database.uintStorage(keccak256(abi.encodePacked("managerIncome", msg.sender)));
+    require(owed > 0);
+    database.setUint(keccak256(abi.encodePacked("managerIncome", msg.sender)), 0);
+    msg.sender.transfer(owed);
+    emit LogManagerIncomeWithdraw(_assetID, msg.sender, owed);
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -106,7 +82,6 @@ using SafeMath for uint;
   //------------------------------------------------------------------------------------------------------------------
   function withdraw(bytes32 _assetID)
   external
-  whenNotPaused
   returns (bool){
     uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, msg.sender)));
     require (ownershipUnits > uint(0));
@@ -116,7 +91,6 @@ using SafeMath for uint;
     uint assetIncome = database.uintStorage(keccak256(abi.encodePacked("assetIncome", _assetID)));
     uint payment = (assetIncome.mul(ownershipUnits).div(amountRaised)).sub(totalPaidToFunder);
     assert (payment != uint(0));
-    assert (totalPaidToFunders <= assetIncome);    // Don't let amount paid to funders exceed amount received
     database.setUint(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, msg.sender)), totalPaidToFunder.add(payment));
     database.setUint(keccak256(abi.encodePacked("totalPaidToFunders", _assetID)), totalPaidToFunders.add(payment));
     msg.sender.transfer(payment);
@@ -134,8 +108,8 @@ using SafeMath for uint;
   external
   whenNotPaused
   returns (bool){
-    require(_assetIDs.length < 5); 
-    uint payment; 
+    require(_assetIDs.length < 5);
+    uint payment;
     for (uint i = 0; i < _assetIDs.length; i++){
       bytes32 assetID = _assetIDs[i];
       uint ownershipUnits = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", assetID, msg.sender)));
@@ -149,7 +123,7 @@ using SafeMath for uint;
       assert (totalPaidToFunders <= assetIncome);    // Don't let amount paid to funders exceed amount received
       database.setUint(keccak256(abi.encodePacked("totalPaidToFunder", assetID, msg.sender)), totalPaidToFunder.add(thisPayment));
       database.setUint(keccak256(abi.encodePacked("totalPaidToFunders", assetID)), totalPaidToFunders.add(thisPayment));
-      payment = payment.add(thisPayment); 
+      payment = payment.add(thisPayment);
     }
     msg.sender.transfer(payment);
     emit LogIncomeWithdrawl(msg.sender, payment);
@@ -173,37 +147,7 @@ using SafeMath for uint;
     return assetIncome.mul(ownershipUnits).div(amountRaised).sub(totalPaidToFunder);
   }
 
-  //------------------------------------------------------------------------------------------------------------------
-  // Trades ownershipUnits of an asset to other user.Must trade over relative amount of paidToFunder,
-  // So person buying ownershipUnits will also be recognized as being paid out for those ownershipUnits in the past
-  // Invariants: Can only be called by current marketplace contract. User must have enough ownershipUnits to make trade.
-  // @Param address selling ownershipUnits
-  // @Param address buying ownershipUnits
-  // @Param number of ownershipUnits being traded
-  // TODO: Move as internal fn to DAX??
-  //------------------------------------------------------------------------------------------------------------------
-  function tradeOwnershipUnits(bytes32 _assetID, address _from, address _to, uint _amount)
-  external
-  whenNotPaused
-  returns (bool) {
-    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("contract", "AssetExchange"))));
-    require(getAmountOwed(_assetID, _from) == uint(0));
-    uint ownershipUnitsFrom = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, _from)));
-    require(ownershipUnitsFrom >= _amount);
-    uint ownershipUnitsTo = database.uintStorage(keccak256(abi.encodePacked("ownershipUnits", _assetID, _to)));
-    uint paidToFunderFrom = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _from)));
-    uint paidToFunderTo = database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to)));
-    uint paidToAndFrom = paidToFunderFrom.add(paidToFunderTo);
-    uint relativePaidOutAmount = (paidToFunderFrom.mul(_amount)).div(ownershipUnitsFrom);    // TODO: Can round down, letting user withdraw 1 wei
-    assert(relativePaidOutAmount > uint(0));
-    database.setUint(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to)), paidToFunderTo.add(relativePaidOutAmount));
-    database.setUint(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _from)), paidToFunderFrom.sub(relativePaidOutAmount));
-    assert (paidToAndFrom == (database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to))).add(database.uintStorage(keccak256(abi.encodePacked("totalPaidToFunder", _assetID, _to))))));
-    database.setUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, _from)), ownershipUnitsFrom.sub(_amount));
-    database.setUint(keccak256(abi.encodePacked("ownershipUnits", _assetID, _to)), ownershipUnitsTo.add(_amount));
-    emit LogownershipUnitsTraded(_assetID, _from, _to, _amount);
-    return true;
-  }
+
 
   //------------------------------------------------------------------------------------------------------------------
   // Must be authorized by 1 of the 3 owners and then can be called by any of the other 2
@@ -283,5 +227,7 @@ using SafeMath for uint;
   event LogownershipUnitsTraded(bytes32 _assetID, address _from, address _to, uint _amount);
   event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
   event LogIncomeReceived(address _sender, uint indexed _amount, bytes32 indexed _assetID, bytes32 _note);
-  event LogIncomeWithdrawl(address _funder, uint _amount);
+  event LogIncomeWithdrawl(address indexed _funder, uint _amount);
+  event LogManagerIncomeWithdraw(bytes32 indexed _assetID, address indexed _manager, uint owed);
+  event LogManagerIncomeEarned(bytes32 indexed _assetID, address indexed _manager, uint _managerAmount);
 }

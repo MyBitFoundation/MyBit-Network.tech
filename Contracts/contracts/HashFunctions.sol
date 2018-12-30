@@ -2,12 +2,19 @@ pragma solidity 0.4.24;
 
 contract HashFunctions {
 
-  function toBytes(uint x) 
+  function toBytes(uint x)
   external
   pure
   returns (bytes b) {
     b = new bytes(32);
     assembly { mstore(add(b, 32), x) }
+  }
+
+  function bytesAddress(bytes32 _a, address _b)
+  external
+  pure
+  returns (bytes32){
+      return (keccak256(abi.encodePacked(_a, _b)));
   }
 
   function getOrderID(bytes _assetID, address _user, uint _amount, uint _price, bool _buyOrder)
@@ -114,13 +121,13 @@ contract HashFunctions {
   external
   pure
   returns (bytes32) {
-    return keccak256(abi.encodePacked(_paramOne, _paramTwo, _paramThree)); 
+    return keccak256(abi.encodePacked(_paramOne, _paramTwo, _paramThree));
   }
 
   function currentTime()
-  external 
-  view 
-  returns (uint) { 
+  external
+  view
+  returns (uint) {
     return now;
   }
 
