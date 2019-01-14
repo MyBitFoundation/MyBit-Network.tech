@@ -12,16 +12,15 @@ if (fs.existsSync('apiKey.json')) {
 }
 */
 
-const MNEMONIC = process.env.MNEMONIC_PHRASE;
-const INFURA_API_KEY = process.env.INFURA_API_KEY;
+//const MNEMONIC = process.env.MNEMONIC_PHRASE;
+//const INFURA_API_KEY = process.env.INFURA_API_KEY;
 
-/*
 if (fs.existsSync('mnemonic.json')) {
   var json = JSON.parse(fs.readFileSync('mnemonic.json', 'utf8'));
   var MNEMONIC = json.mnemonic;
   var INFURA_API_KEY = json.infura;
 }
-*/
+
 module.exports = {
   networks: {
     development: {
@@ -43,7 +42,7 @@ module.exports = {
         return new HDWalletProvider(MNEMONIC, "https://ropsten.infura.io/v3/"+INFURA_API_KEY)
       },
       network_id: 3,
-      gas: 6500000
+      gas: 8000000
     },
     ethpm: {
       ipfs_host: "127.0.0.1",

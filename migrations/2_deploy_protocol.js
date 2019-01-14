@@ -2,7 +2,7 @@ var fs = require('fs');
 var bn = require('bignumber.js');
 
 module.exports = function(deployer, network, accounts) {
-  if(network != 'coverage' && network != 'development'){
+  if(network != 'coverage'){
     var MyBitToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
     var Database = artifacts.require("./database/Database.sol");
     var Events = artifacts.require("./database/Events.sol");
@@ -61,14 +61,18 @@ module.exports = function(deployer, network, accounts) {
       MyB = instance;
       console.log('MyBitToken: ' + MyB.address);
 
-      if(network != 'mainnet'){
+      if(network == 'development'){
         //Give 100 MyB tokens to all accounts
         for(var i=1; i<accounts.length; i++){
           MyB.transfer(accounts[i], tokenPerAccount);
         }
+        return Database.new([accounts[0]], true);
+      } else if(network == 'ropsten') {
+        MyB.transfer('0xBB64ac045539bC0e9FFfd04399347a8459e8282A', tokenSupply);
+        return Database.new([accounts[0],'0xBB64ac045539bC0e9FFfd04399347a8459e8282A'], true);
+      } else {
+        return Database.new([accounts[0]], true);
       }
-
-      return Database.new([accounts[0]], true);
 
     }).then(function(instance) {
 
@@ -88,21 +92,25 @@ module.exports = function(deployer, network, accounts) {
 
       cm = instance;
       console.log('ContractManager.sol: ' + cm.address);
-      return db.enableContractManagement(cm.address);
+      try{ db.enableContractManagement(cm.address, {gas:190000});}
+      catch(e){console.log(e);}
 
     }).then(function() {
 
-      return API.new(db.address);
+      try{ return API.new(db.address);}
+      catch(e){console.log(e);}
 
     }).then(function(instance) {
 
       api = instance;
       console.log('API.sol: ' + api.address);
-      return cm.addContract('API', api.address, {gas:190000});
+      try{return cm.addContract('API', api.address, {gas:190000});}
+      catch(e){console.log(e);}
 
     }).then(function() {
 
-      return SingleOwned.new(db.address, events.address);
+      try{ return SingleOwned.new(db.address, events.address);}
+      catch(e){console.log(e);}
 
     }).then(function(instance) {
 
@@ -159,6 +167,19 @@ module.exports = function(deployer, network, accounts) {
       console.log('Operators.sol: ' + operators.address);
       return cm.addContract('Operators', operators.address, {gas:190000});
 
+    }).then(function() {
+      if(network == 'ropsten'){
+        operators.registerOperator('0x872d95321a62B959dA79A65A934b6208b76fe28E', 'General Bytes', 'Bitcoin ATM', {gas:190000});
+        operators.registerOperator('0x4DC8346e7c5EFc0db20f7DC8Bb1BacAF182b077d', 'The Collective', 'Co-Working Space', {gas:190000});
+        operators.registerOperator('0x5a4613a2484122eCe8c8444b7509f053887084Dd', 'Bitmain', 'Ethereum Miner', {gas:190000});
+        operators.registerOperator('0xaEf462b7D8F3466835d78791ed2cC42c745c3Ab6', 'Pickens', 'Storage Unit', {gas:190000});
+        operators.registerOperator('0x64ea3C54401baa81736BBef3094Dd27D0D27ca50', 'Arabco', 'Smart Bench', {gas:190000});
+        return;
+      }else if(network == 'development'){
+        return operators.registerOperator(accounts[1], 'Test Operator', 'Test Asset Type', {gas:190000});
+      }else {
+        return;
+      }
     }).then(function() {
 
       return AccessHierarchy.new(db.address, events.address);

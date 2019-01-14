@@ -83,17 +83,17 @@
                 "type": "address"
             }
         ],
-        "name": "assetGoverned",
+        "name": "assetGovernance",
         "outputs": [
             {
                 "name": "",
-                "type": "bool"
+                "type": "address"
             }
         ],
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0xf269271c"
+        "signature": "0x8969e756"
     },
     {
         "constant": true,
@@ -246,6 +246,58 @@
         "stateMutability": "view",
         "type": "function",
         "signature": "0xdb4be4b7"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_assetToken",
+                "type": "address"
+            },
+            {
+                "name": "_executingContract",
+                "type": "address"
+            },
+            {
+                "name": "_methodID",
+                "type": "bytes4"
+            },
+            {
+                "name": "_parameterHash",
+                "type": "bytes32"
+            }
+        ],
+        "name": "getProposalID",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function",
+        "signature": "0xcf0df157"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_proposalID",
+                "type": "bytes32"
+            }
+        ],
+        "name": "proposalInitiator",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x7bc6cd7a"
     },
     {
         "constant": true,
@@ -415,6 +467,26 @@
         "constant": true,
         "inputs": [
             {
+                "name": "proposalID",
+                "type": "bytes32"
+            }
+        ],
+        "name": "hasConsensus",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x1c597c83"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
                 "name": "_proposalID",
                 "type": "bytes32"
             },
@@ -439,27 +511,7 @@
         "constant": true,
         "inputs": [
             {
-                "name": "_newVotingContract",
-                "type": "address"
-            }
-        ],
-        "name": "getVotingProcessParameterHash",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bytes32"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "pure",
-        "type": "function",
-        "signature": "0x77b0b926"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "name": "_assetAddress",
+                "name": "_assetToken",
                 "type": "address"
             },
             {
@@ -473,10 +525,6 @@
             {
                 "name": "_amount",
                 "type": "uint256"
-            },
-            {
-                "name": "_burn",
-                "type": "bool"
             },
             {
                 "name": "_withhold",
@@ -493,39 +541,7 @@
         "payable": false,
         "stateMutability": "pure",
         "type": "function",
-        "signature": "0xf0487e24"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "name": "_token",
-                "type": "address"
-            },
-            {
-                "name": "_contractAddress",
-                "type": "address"
-            },
-            {
-                "name": "_methodID",
-                "type": "bytes4"
-            },
-            {
-                "name": "_parameterHash",
-                "type": "bytes32"
-            }
-        ],
-        "name": "getProposalID",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bytes32"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "pure",
-        "type": "function",
-        "signature": "0xcf0df157"
+        "signature": "0xfe23e1b2"
     },
     {
         "constant": true,
@@ -631,7 +647,7 @@
                 "type": "address"
             }
         ],
-        "name": "getAssetFundingGoal",
+        "name": "getCrowdsaleGoal",
         "outputs": [
             {
                 "name": "",
@@ -641,7 +657,7 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0x2b8c99fb"
+        "signature": "0x8429ae96"
     },
     {
         "constant": true,
@@ -651,7 +667,7 @@
                 "type": "address"
             }
         ],
-        "name": "getAssetFundingDeadline",
+        "name": "getCrowdsaleDeadline",
         "outputs": [
             {
                 "name": "",
@@ -661,7 +677,7 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0x7a50e5e0"
+        "signature": "0x0ebaad46"
     },
     {
         "constant": true,
