@@ -41,8 +41,7 @@ module.exports = {
       provider: function() {
         return new HDWalletProvider(MNEMONIC, "https://ropsten.infura.io/v3/"+INFURA_API_KEY)
       },
-      network_id: 3,
-      gas: 8000000
+      network_id: 3
     },
     ethpm: {
       ipfs_host: "127.0.0.1",

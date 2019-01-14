@@ -11,7 +11,8 @@
         ],
         "payable": false,
         "stateMutability": "view",
-        "type": "function"
+        "type": "function",
+        "signature": "0x713b563f"
     },
     {
         "inputs": [
@@ -22,7 +23,8 @@
         ],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "constructor"
+        "type": "constructor",
+        "signature": "constructor"
     },
     {
         "anonymous": false,
@@ -34,12 +36,18 @@
             },
             {
                 "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
                 "name": "origin",
                 "type": "address"
             }
         ],
         "name": "LogEvent",
-        "type": "event"
+        "type": "event",
+        "signature": "0xa8fda057da710952fe2bd7579ffe2fa1a9d238fa2b39323e63c15e289b543ec7"
     },
     {
         "anonymous": false,
@@ -50,12 +58,17 @@
                 "type": "string"
             },
             {
-                "indexed": false,
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
                 "name": "from",
                 "type": "address"
             },
             {
-                "indexed": false,
+                "indexed": true,
                 "name": "to",
                 "type": "address"
             },
@@ -70,13 +83,14 @@
                 "type": "bytes32"
             },
             {
-                "indexed": true,
+                "indexed": false,
                 "name": "origin",
                 "type": "address"
             }
         ],
         "name": "LogTransaction",
-        "type": "event"
+        "type": "event",
+        "signature": "0xbe993000f400d0a8060e26d30297b9c567fcf5f46579410cd17d4334daba846d"
     },
     {
         "anonymous": false,
@@ -85,6 +99,11 @@
                 "indexed": false,
                 "name": "message",
                 "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
             },
             {
                 "indexed": true,
@@ -98,7 +117,8 @@
             }
         ],
         "name": "LogAddress",
-        "type": "event"
+        "type": "event",
+        "signature": "0xa52a36e76b500c0aeee4e1ea9b294f833a0eba932f01d75395c9ae1aba0a9659"
     },
     {
         "anonymous": false,
@@ -107,6 +127,11 @@
                 "indexed": false,
                 "name": "message",
                 "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
             },
             {
                 "indexed": true,
@@ -125,7 +150,8 @@
             }
         ],
         "name": "LogContractChange",
-        "type": "event"
+        "type": "event",
+        "signature": "0xcd9a484b17c708d85e899f6e3f0c8d521fa38d58604427b1d7a3558d2bd0830b"
     },
     {
         "anonymous": false,
@@ -136,18 +162,18 @@
                 "type": "string"
             },
             {
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
+            },
+            {
                 "indexed": false,
                 "name": "uri",
                 "type": "string"
             },
             {
                 "indexed": false,
-                "name": "assetID",
-                "type": "bytes32"
-            },
-            {
-                "indexed": false,
-                "name": "token",
+                "name": "asset",
                 "type": "address"
             },
             {
@@ -162,7 +188,8 @@
             }
         ],
         "name": "LogAsset",
-        "type": "event"
+        "type": "event",
+        "signature": "0x1de50885656f1a1113f6d3e23103440fd2f8dadc8ea04fe3bae26bb3a5713282"
     },
     {
         "anonymous": false,
@@ -173,9 +200,14 @@
                 "type": "string"
             },
             {
-                "indexed": false,
-                "name": "assetID",
+                "indexed": true,
+                "name": "messageID",
                 "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "name": "asset",
+                "type": "address"
             },
             {
                 "indexed": false,
@@ -199,7 +231,8 @@
             }
         ],
         "name": "LogEscrow",
-        "type": "event"
+        "type": "event",
+        "signature": "0x100520eaf70b22f938253d35fcecbe5ec21f686f938e02f6553318b52efd2ffe"
     },
     {
         "anonymous": false,
@@ -208,6 +241,11 @@
                 "indexed": false,
                 "name": "message",
                 "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
             },
             {
                 "indexed": true,
@@ -231,7 +269,8 @@
             }
         ],
         "name": "LogOrder",
-        "type": "event"
+        "type": "event",
+        "signature": "0xbfd5c7f40f17c3c4d259746f658e50128286dce2f2a2d374e235b7e4b8055731"
     },
     {
         "anonymous": false,
@@ -242,14 +281,19 @@
                 "type": "string"
             },
             {
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
+            },
+            {
                 "indexed": false,
                 "name": "orderID",
                 "type": "bytes32"
             },
             {
                 "indexed": true,
-                "name": "assetID",
-                "type": "bytes32"
+                "name": "asset",
+                "type": "address"
             },
             {
                 "indexed": false,
@@ -263,7 +307,8 @@
             }
         ],
         "name": "LogExchange",
-        "type": "event"
+        "type": "event",
+        "signature": "0x527c6cf635c1aee21fa60d2f756d9553f7129cbf27cd3bec6137fd2033a62d8a"
     },
     {
         "anonymous": false,
@@ -272,6 +317,11 @@
                 "indexed": false,
                 "name": "message",
                 "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
             },
             {
                 "indexed": false,
@@ -295,7 +345,8 @@
             }
         ],
         "name": "LogOperator",
-        "type": "event"
+        "type": "event",
+        "signature": "0xd6426a3ba1f4047d5121b172d5742f9de82fb88d3893b3fb3c5a665ef4bf96f1"
     },
     {
         "anonymous": false,
@@ -304,6 +355,11 @@
                 "indexed": false,
                 "name": "message",
                 "type": "string"
+            },
+            {
+                "indexed": true,
+                "name": "messageID",
+                "type": "bytes32"
             },
             {
                 "indexed": false,
@@ -337,7 +393,8 @@
             }
         ],
         "name": "LogConsensus",
-        "type": "event"
+        "type": "event",
+        "signature": "0x88d1e51c02fdc70db34224fee44c315527d4bc0da934e23b0fd6c06376400a32"
     },
     {
         "constant": false,
@@ -351,7 +408,8 @@
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "function"
+        "type": "function",
+        "signature": "0x05c766d1"
     },
     {
         "constant": false,
@@ -381,7 +439,8 @@
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "function"
+        "type": "function",
+        "signature": "0x68b96270"
     },
     {
         "constant": false,
@@ -399,7 +458,8 @@
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "function"
+        "type": "function",
+        "signature": "0xbb39cc3c"
     },
     {
         "constant": false,
@@ -421,7 +481,8 @@
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "function"
+        "type": "function",
+        "signature": "0xf5ade840"
     },
     {
         "constant": false,
@@ -435,11 +496,7 @@
                 "type": "string"
             },
             {
-                "name": "_assetID",
-                "type": "bytes32"
-            },
-            {
-                "name": "_token",
+                "name": "_assetAddress",
                 "type": "address"
             },
             {
@@ -451,7 +508,8 @@
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "function"
+        "type": "function",
+        "signature": "0x78576a91"
     },
     {
         "constant": false,
@@ -461,8 +519,8 @@
                 "type": "string"
             },
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_assetAddress",
+                "type": "address"
             },
             {
                 "name": "_escrowID",
@@ -481,7 +539,8 @@
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "function"
+        "type": "function",
+        "signature": "0x0b94df4c"
     },
     {
         "constant": false,
@@ -507,7 +566,8 @@
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "function"
+        "type": "function",
+        "signature": "0xa1c0aafe"
     },
     {
         "constant": false,
@@ -521,8 +581,8 @@
                 "type": "bytes32"
             },
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_assetAddress",
+                "type": "address"
             },
             {
                 "name": "_account",
@@ -533,7 +593,8 @@
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "function"
+        "type": "function",
+        "signature": "0xe609295c"
     },
     {
         "constant": false,
@@ -559,7 +620,8 @@
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "function"
+        "type": "function",
+        "signature": "0x1dc071aa"
     },
     {
         "constant": false,
@@ -593,6 +655,7 @@
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "function"
+        "type": "function",
+        "signature": "0x01e375c6"
     }
 ]

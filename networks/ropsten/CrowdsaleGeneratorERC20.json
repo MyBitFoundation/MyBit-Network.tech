@@ -12,7 +12,8 @@
         ],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "constructor"
+        "type": "constructor",
+        "signature": "constructor"
     },
     {
         "constant": false,
@@ -20,6 +21,10 @@
             {
                 "name": "_assetURI",
                 "type": "string"
+            },
+            {
+                "name": "_assetManager",
+                "type": "address"
             },
             {
                 "name": "_operatorID",
@@ -42,6 +47,10 @@
                 "type": "uint256"
             },
             {
+                "name": "_escrow",
+                "type": "uint256"
+            },
+            {
                 "name": "_fundingToken",
                 "type": "address"
             }
@@ -50,7 +59,8 @@
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "function"
+        "type": "function",
+        "signature": "0x24bb2f67"
     },
     {
         "constant": false,
@@ -59,6 +69,7 @@
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "function"
+        "type": "function",
+        "signature": "0x83197ef0"
     }
 ]

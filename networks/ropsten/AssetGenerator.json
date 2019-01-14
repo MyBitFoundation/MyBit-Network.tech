@@ -12,7 +12,8 @@
         ],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "constructor"
+        "type": "constructor",
+        "signature": "constructor"
     },
     {
         "constant": false,
@@ -20,6 +21,10 @@
             {
                 "name": "_tokenURI",
                 "type": "string"
+            },
+            {
+                "name": "_assetManager",
+                "type": "address"
             },
             {
                 "name": "_tokenHolders",
@@ -39,7 +44,8 @@
         ],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "function"
+        "type": "function",
+        "signature": "0xd10ab469"
     },
     {
         "constant": false,
@@ -47,6 +53,10 @@
             {
                 "name": "_tokenURI",
                 "type": "string"
+            },
+            {
+                "name": "_assetManager",
+                "type": "address"
             },
             {
                 "name": "_tokenHolders",
@@ -66,7 +76,8 @@
         ],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "function"
+        "type": "function",
+        "signature": "0x0e1caef4"
     },
     {
         "constant": false,
@@ -75,6 +86,7 @@
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
-        "type": "function"
+        "type": "function",
+        "signature": "0x83197ef0"
     }
 ]
