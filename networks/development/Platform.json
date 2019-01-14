@@ -49,16 +49,46 @@
         "constant": false,
         "inputs": [
             {
-                "name": "_newOwner",
+                "name": "_walletAddress",
                 "type": "address"
             }
         ],
-        "name": "changeOwner",
+        "name": "setPlatformWallet",
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0xa6f9dae1"
+        "signature": "0x8831e9cf"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_tokenAddress",
+                "type": "address"
+            }
+        ],
+        "name": "setPlatformToken",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x0255a03b"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_percent",
+                "type": "uint256"
+            }
+        ],
+        "name": "setBurnrate",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xe3914a39"
     },
     {
         "constant": false,
