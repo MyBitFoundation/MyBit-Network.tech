@@ -17,7 +17,7 @@
   "scripts": {
     "compile": "truffle compile --all",
     "migrate": "truffle migrate",
-    "test": "npm run compile; npm run migrate; truffle test",
+    "test": "truffle test",
     "blockchain": "ganache-cli --networkId 70 --accounts 20",
     "coverage": "solidity-coverage && sleep 5 && npm run coveralls",
     "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
