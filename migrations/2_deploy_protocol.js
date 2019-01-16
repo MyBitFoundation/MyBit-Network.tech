@@ -2,7 +2,7 @@ var fs = require('fs');
 var bn = require('bignumber.js');
 
 module.exports = function(deployer, network, accounts) {
-  if(network != 'coverage' && network != 'development'){
+  if(network != 'coverage'){
     var MyBitToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
     var Database = artifacts.require("./database/Database.sol");
     var Events = artifacts.require("./database/Events.sol");
@@ -61,7 +61,7 @@ module.exports = function(deployer, network, accounts) {
       MyB = instance;
       console.log('MyBitToken: ' + MyB.address);
 
-      if(network == 'development'){
+      if(network == 'development' || network == 'mybit-chain'){
         //Give 100 MyB tokens to all accounts
         for(var i=1; i<accounts.length; i++){
           MyB.transfer(accounts[i], tokenPerAccount);
@@ -175,7 +175,7 @@ module.exports = function(deployer, network, accounts) {
         operators.registerOperator('0xaEf462b7D8F3466835d78791ed2cC42c745c3Ab6', 'Pickens', 'Storage Unit', {from: accounts[0], gas:190000});
         operators.registerOperator('0x64ea3C54401baa81736BBef3094Dd27D0D27ca50', 'Arabco', 'Smart Bench', {from: accounts[0], gas:190000});
         return;
-      }else if(network == 'development'){
+      }else if(network == 'development' || network == 'mybit-chain'){
         return operators.registerOperator(accounts[1], 'Test Operator', 'Test Asset Type', {from: accounts[0], gas:190000});
       }else {
         return;

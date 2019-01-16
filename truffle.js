@@ -12,20 +12,27 @@ if (fs.existsSync('apiKey.json')) {
 }
 */
 
-/*
+
 if (fs.existsSync('mnemonic.json')) {
   var json = JSON.parse(fs.readFileSync('mnemonic.json', 'utf8'));
   var MNEMONIC = json.mnemonic;
   var INFURA_API_KEY = json.infura;
 }
-*/
 
-const MNEMONIC = process.env.MNEMONIC_PHRASE;
-const INFURA_API_KEY = process.env.INFURA_API_KEY;
+
+//const MNEMONIC = process.env.MNEMONIC_PHRASE;
+//const INFURA_API_KEY = process.env.INFURA_API_KEY;
 
 module.exports = {
   networks: {
     development: {
+      host: "localhost",
+      port: 8545,
+      network_id: "*",
+      gas: 6500000,
+      gasPrice: 7000000000
+    },
+    mybit: {
       host: "localhost",
       port: 8545,
       network_id: "*",

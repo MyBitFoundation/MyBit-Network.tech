@@ -91,7 +91,7 @@ contract CrowdsaleGeneratorERC20 {
     require(database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))) == address(0));
     bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetAddress, _assetManager));
     address platformToken = database.addressStorage(keccak256(abi.encodePacked("platform.token")));
-    require(CrowdsaleGeneratorERC20_ERC20(platformToken).transferFrom(_assetManager, address(this), _amount));
+    require(CrowdsaleGeneratorERC20_ERC20(platformToken).transferFrom(_assetManager, database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerEscrow"))), _amount));
     database.setUint(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID)), _amount);
     database.setAddress(keccak256(abi.encodePacked("asset.manager", _assetAddress)), _assetManager);
     events.escrow('Escrow locked', _assetAddress, assetManagerEscrowID, _assetManager, _amount);
