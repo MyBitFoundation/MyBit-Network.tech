@@ -17,19 +17,19 @@ npx ganache-cli -d --mnemonic "myth like bonus scare over problem client lizard 
 #Move back to directory this program is run from
 cd $CURRENT_DIR
 #Deploy contracts
-npx truffle migrate --reset
+npx truffle migrate --reset --network mybit
 #Kill ganache
 pkill -f ganache-cli
 #Move addresses.json to chain directory
-mv networks/development/contracts.json  $CHAIN_DIR
-mv networks/development/accounts.json  $CHAIN_DIR
+cp networks/mybit/contracts.json  $CHAIN_DIR
+cp networks/mybit/accounts.json  $CHAIN_DIR
 #Move back to chain directory
-#cd $CHAIN_DIR
-#If git exists in folder, update git
-#if [ -d .git ]; then
-#  echo "Updating git..."
+cd $CHAIN_DIR
+If git exists in folder, update git
+if [ -d .git ]; then
+  echo "Updating git..."
   #Add to git
-#  git add .
-#  git commit -m "Updated chain"
-#  git push origin
-#fi
+  git add .
+  git commit -m "Updated chain"
+  git push origin
+fi

@@ -32,6 +32,13 @@ module.exports = {
       gas: 6500000,
       gasPrice: 7000000000
     },
+    mybit: {
+      host: "localhost",
+      port: 8545,
+      network_id: "*",
+      gas: 6500000,
+      gasPrice: 7000000000
+    },
     coverage: {
       host: "localhost",
       port: 8555,

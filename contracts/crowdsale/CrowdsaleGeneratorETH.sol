@@ -6,6 +6,10 @@ import "../database/Events.sol";
 // import "../access/ERC20Burner.sol";
 import "../tokens/erc20/DividendToken.sol";
 
+interface CrowdsaleGeneratorETH_ERC20 {
+  function transferFrom(address _from, address _to, uint256 _value) external returns (bool);
+}
+
 // @title A crowdsale generator contract
 // @author Kyle Dewhurst, MyBit Foundation
 // @notice AssetManagers can initiate a crowdsale that accepts Ether as payment here
@@ -34,7 +38,7 @@ contract CrowdsaleGeneratorETH {
   // @param (uint) _fundingLength = The number of seconds this crowdsale is to go on for until it fails
   // @param (uint) _amountToRaise = The amount of WEI required to raise for the crowdsale to be a success
   // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
-  function createAssetOrderETH(string _assetURI, address _assetManager, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc)
+  function createAssetOrderETH(string _assetURI, address _assetManager, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc, uint _escrow)
   external
   // burnRequired
   returns (bool) {
@@ -58,6 +62,8 @@ contract CrowdsaleGeneratorETH {
     database.setAddress(keccak256(abi.encodePacked("asset.manager", assetAddress)), _assetManager);
     database.setAddress(keccak256(abi.encodePacked("asset.operator", assetAddress)), database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))));
     database.setBool(keccak256(abi.encodePacked("asset.uri", _assetURI)), true); //Set to ensure a unique asset URI
+    //If escrow, lock
+    if(_escrow > 0){ require(lockEscrowInternal(_assetManager, assetAddress, _escrow));}
     events.asset('Asset funding started', _assetURI, assetAddress, _assetManager);
     return true;
   }
@@ -68,6 +74,24 @@ contract CrowdsaleGeneratorETH {
   external {
     events.transaction('CrowdsaleGeneratorETH destroyed', address(this), msg.sender, address(this).balance, '');
     selfdestruct(msg.sender);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                            Internal/ Private Functions
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+  function lockEscrowInternal(address _assetManager, address _assetAddress, uint _amount)
+  private
+  returns (bool) {
+    require(database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))) == address(0));
+    bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetAddress, _assetManager));
+    address platformToken = database.addressStorage(keccak256(abi.encodePacked("platform.token")));
+    require(CrowdsaleGeneratorETH_ERC20(platformToken).transferFrom(_assetManager, database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerEscrow"))), _amount));
+    database.setUint(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID)), _amount);
+    database.setAddress(keccak256(abi.encodePacked("asset.manager", _assetAddress)), _assetManager);
+    events.escrow('Escrow locked', _assetAddress, assetManagerEscrowID, _assetManager, _amount);
+    return true;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
