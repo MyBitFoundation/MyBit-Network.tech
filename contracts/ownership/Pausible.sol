@@ -1,19 +1,22 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 
 import '../database/Database.sol';
+import '../database/Events.sol';
 
-// @title A contract which allows for the freezing of functionality within the platform. 
+// @title A contract which allows for the freezing of functionality within the platform.
 // @dev only valid with a single owned ownership model
 // @author Kyle Dewhurst, MyBit Foundation
 contract Pausible {
 
   Database public database;
+  Events public events;
 
   // @notice constructor: initialize database instance
-  constructor(address _database)
+  constructor(address _database, address _events)
   public {
     database = Database(_database);
+    events = Events(_events);
   }
 
   // @notice This will pause all critical activity for the supplied address
@@ -22,7 +25,8 @@ contract Pausible {
   onlyOwner
   public {
     database.setBool(keccak256(abi.encodePacked("paused", _contract)), true);
-    emit LogPaused(_contract, msg.sender);
+    events.transaction('Contract paused', msg.sender, address(this), 0, '');
+    //emit LogPaused(_contract, msg.sender);
   }
 
   // @notice This will unpause all critical activity for the supplied address
@@ -31,7 +35,16 @@ contract Pausible {
   onlyOwner
   public {
     database.deleteBool(keccak256(abi.encodePacked("paused", _contract)));
-    emit LogUnpaused(_contract, msg.sender);
+    events.transaction('Contract unpaused', msg.sender, address(this), 0, '');
+    //emit LogUnpaused(_contract, msg.sender);
+  }
+
+  // @notice platform owners can destroy contract here
+  function destroy()
+  onlyOwner
+  external {
+    events.transaction('Pausible destroyed', address(this), msg.sender, address(this).balance, '');
+    selfdestruct(msg.sender);
   }
 
   // @notice reverts if caller is not the owner
@@ -39,8 +52,8 @@ contract Pausible {
     require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
     _;
   }
-
+  /*
   event LogPaused(address indexed _contract, address _owner);
   event LogUnpaused(address indexed _contract, address _owner);
-
+  */
 }

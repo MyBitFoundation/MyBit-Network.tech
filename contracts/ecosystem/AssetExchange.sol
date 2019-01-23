@@ -1,8 +1,9 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 import '../database/Database.sol';
+import '../database/Events.sol';
 import '../math/SafeMath.sol';
 import '../interfaces/DivToken.sol';
-import "../access/ERC20Burner.sol";
+// import "../access/ERC20Burner.sol";
 
 
 // @title Simple decentralized exchange contract
@@ -13,9 +14,10 @@ contract AssetExchange {
   using SafeMath for uint;
 
   Database public database;
-  ERC20Burner private burner;
+  Events public events;
+  // ERC20Burner private burner;
 
-  mapping (address => mapping (bytes32 => bool)) public orders;  // Hash of (assetID, sellerAddress, amountToBuy, price, boolean(BuyOrder = true))
+  mapping (address => mapping (bytes32 => bool)) public orders;  // Hash of (assetAddress, sellerAddress, amountToBuy, price, boolean(BuyOrder = true))
 
   mapping (address => uint) public weiDeposited;
   mapping (address => uint) public weiOwed;
@@ -24,10 +26,11 @@ contract AssetExchange {
 
   // @notice constructor: initializes database
   // @param: the address for the database contract used by this platform
-  constructor(address _database)
+  constructor(address _database, address _events)
   public {
     database = Database(_database);
-    burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
+    events = Events(_events);
+    // burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
   // Gives Ether sent to initatior of this sellOrder and transfers ownership units of asset to purchaser
@@ -36,21 +39,23 @@ contract AssetExchange {
   // @Param: Address of the user who created SellOrder
   // @Param: Number of ownershipUnits being traded
   // @Param: The WEI cost per unit
-  function buyAsset(bytes32 _assetID, address _seller, uint _amount, uint _price)
+  function buyAsset(address _assetAddress, address _buyer, address _seller, uint _amount, uint _price)
   external
   payable
   whenNotPaused
-  isAllowed(_assetID, _seller, _amount)
-  burnRequired
+  isAllowed(_assetAddress, _seller, _amount)
+  // burnRequired
   returns (bool){
-    bytes32 thisOrder = keccak256(abi.encodePacked(_assetID, _seller, _amount, _price, false));
+    require(msg.sender == _buyer || database.boolStorage(keccak256(abi.encodePacked("approval", _buyer, msg.sender, address(this), msg.sig))), "Buyer has not given approval");
+    bytes32 thisOrder = keccak256(abi.encodePacked(_assetAddress, _seller, _amount, _price, false));
     require(orders[_seller][thisOrder]);
     require(msg.value == _amount.mul(_price).div(decimals));
-    DivToken assetToken = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-    require(assetToken.transferFrom(_seller, msg.sender, _amount));
+    DivToken assetToken = DivToken(_assetAddress);
+    require(assetToken.transferFrom(_seller, _buyer, _amount));
     weiOwed[_seller] = weiOwed[_seller].add(msg.value);
     delete orders[_seller][thisOrder];
-    emit LogSellOrderCompleted(thisOrder, _assetID, msg.sender);
+    events.exchange('Sell order completed', thisOrder, _assetAddress, _buyer);
+    //emit LogSellOrderCompleted(thisOrder, _assetAddress, _buyer);
     return true;
   }
 
@@ -59,20 +64,22 @@ contract AssetExchange {
   // @Param: Address of the user who created BuyOrder
   // @Param: Number of ownershipUnits being sold
   // @Param: The WEI cost per unit
-  function sellAsset(bytes32 _assetID, address _buyer, uint _amount, uint _price)
+  function sellAsset(address _assetAddress, address _seller, address _buyer, uint _amount, uint _price)
   public
   whenNotPaused
-  isAllowed(_assetID, msg.sender, _amount)
+  isAllowed(_assetAddress, msg.sender, _amount)
   returns (bool){
-    bytes32 thisOrder = keccak256(abi.encodePacked(_assetID, _buyer, _amount, _price, true));       // Get order ID
+    require(msg.sender == _seller || database.boolStorage(keccak256(abi.encodePacked("approval", _seller, msg.sender, address(this), msg.sig))), "Seller has not given approval");
+    bytes32 thisOrder = keccak256(abi.encodePacked(_assetAddress, _buyer, _amount, _price, true));       // Get order ID
     require(orders[_buyer][thisOrder]);    // Check order exists
     uint value = _amount.mul(_price).div(decimals);
-    DivToken assetToken = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID))));
-    require(assetToken.transferFrom(msg.sender, _buyer, _amount));
+    DivToken assetToken = DivToken(_assetAddress);
+    require(assetToken.transferFrom(_seller, _buyer, _amount));
     weiDeposited[_buyer] = weiDeposited[_buyer].sub(value);
-    weiOwed[msg.sender] = weiOwed[msg.sender].add(value);
+    weiOwed[_seller] = weiOwed[_seller].add(value);
     delete orders[_buyer][thisOrder];
-    emit LogBuyOrderCompleted(thisOrder, _assetID, msg.sender);
+    events.exchange('Buy order completed', thisOrder, _assetAddress, _seller);
+    //emit LogBuyOrderCompleted(thisOrder, _assetAddress, _seller);
     return true;
   }
 
@@ -80,21 +87,24 @@ contract AssetExchange {
   // @Param: ID of the asset, which the sender wants to purchase ownershipUnits of
   // @Param: Number of ownershipUnits being bought
   // @Param: The WEI cost per unit
-  function createBuyOrder(bytes32 _assetID, uint _amount, uint _price)
+  function createBuyOrder(address _assetAddress, address _buyer, uint _amount, uint _price)
   external
   payable
   requiresEther
   aboveZero(_amount, _price)
-  validAsset(_assetID)
-  burnRequired
+  validAsset(_assetAddress)
+  // burnRequired
   returns (bool) {
+    require(msg.sender == _buyer || database.boolStorage(keccak256(abi.encodePacked("approval", _buyer, msg.sender, address(this), msg.sig))), "Buyer has not given approval");
     require(msg.value == _amount.mul(_price).div(decimals));
-    bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, true));
-    require(!orders[msg.sender][orderID]);
-    orders[msg.sender][orderID] = true;
-    weiDeposited[msg.sender] = weiDeposited[msg.sender].add(msg.value);
-    emit LogBuyOrderCreated(orderID, _assetID, msg.sender);
-    emit LogBuyOrderDetails(orderID, _amount, _price);
+    bytes32 orderID = keccak256(abi.encodePacked(_assetAddress, _buyer, _amount, _price, true));
+    require(!orders[_buyer][orderID]);
+    orders[_buyer][orderID] = true;
+    weiDeposited[_buyer] = weiDeposited[_buyer].add(msg.value);
+    events.exchange('Buy order created', orderID, _assetAddress, _buyer);
+    events.order('Buy order', orderID, _amount, _price);
+    //emit LogBuyOrderCreated(orderID, _assetAddress, _buyer);
+    //emit LogBuyOrderDetails(orderID, _amount, _price);
     return true;
   }
 
@@ -102,17 +112,20 @@ contract AssetExchange {
   // @Param: ID of the asset, which sender is trying to sell
   // @Param: Number of ownershipUnits being sold
   // @Param: The WEI cost per unit
-  function createSellOrder(bytes32 _assetID, uint _amount, uint _price)
+  function createSellOrder(address _assetAddress, address _seller, uint _amount, uint _price)
   external
   aboveZero(_amount, _price)
-  validAsset(_assetID)
-  isAllowed(_assetID, msg.sender, _amount)
+  validAsset(_assetAddress)
+  isAllowed(_assetAddress, _seller, _amount)
   returns (bool) {
-    bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, false));
-    require(!orders[msg.sender][orderID]);
-    orders[msg.sender][orderID] = true;
-    emit LogSellOrderCreated(orderID, _assetID, msg.sender);
-    emit LogSellOrderDetails(orderID, _amount, _price);
+    require(msg.sender == _seller || database.boolStorage(keccak256(abi.encodePacked("approval", _seller, msg.sender, address(this), msg.sig))), "Seller has not given approval");
+    bytes32 orderID = keccak256(abi.encodePacked(_assetAddress, _seller, _amount, _price, false));
+    require(!orders[_seller][orderID]);
+    orders[_seller][orderID] = true;
+    events.exchange('Sell order created', orderID, _assetAddress, _seller);
+    events.order('Sell order', orderID, _amount, _price);
+    //emit LogSellOrderCreated(orderID, _assetAddress, _seller);
+    //emit LogSellOrderDetails(orderID, _amount, _price);
     return true;
   }
 
@@ -123,17 +136,18 @@ contract AssetExchange {
   // @Param: The WEI cost per unit
   // @Param: Is this order a BuyOrder?
   //------------------------------------------------------------------------------------------------------------------
-  function deleteOrder(bytes32 _assetID, uint _amount, uint _price, bool _buyOrder)
+  function deleteOrder(address _assetAddress, address _orderMaker, uint _amount, uint _price, bool _buyOrder)
   external
   returns (bool) {
-    bytes32 orderID = keccak256(abi.encodePacked(_assetID, msg.sender, _amount, _price, _buyOrder));
-    require(orders[msg.sender][orderID]);
+    require(msg.sender == _orderMaker || database.boolStorage(keccak256(abi.encodePacked("approval", _orderMaker, msg.sender, address(this), msg.sig))));
+    bytes32 orderID = keccak256(abi.encodePacked(_assetAddress, _orderMaker, _amount, _price, _buyOrder));
+    require(orders[_orderMaker][orderID]);
     if (_buyOrder) {
       uint returnValue = _amount.mul(_price).div(decimals);
-      weiDeposited[msg.sender] = weiDeposited[msg.sender].sub(returnValue);
-      weiOwed[msg.sender] = weiOwed[msg.sender].add(returnValue);
+      weiDeposited[_orderMaker] = weiDeposited[_orderMaker].sub(returnValue);
+      weiOwed[_orderMaker] = weiOwed[_orderMaker].add(returnValue);
     }
-    delete orders[msg.sender][orderID];
+    delete orders[_orderMaker][orderID];
     return true;
   }
   //------------------------------------------------------------------------------------------------------------------
@@ -158,7 +172,8 @@ contract AssetExchange {
   public {
     require(_functionInitiator != msg.sender);
     require(database.boolStorage(keccak256(abi.encodePacked(address(this), _functionInitiator, "destroy", keccak256(abi.encodePacked(_holdingAddress))))));
-    emit LogDestruction(_holdingAddress, address(this).balance, msg.sender);
+    events.transaction('Destroy contract', address(this), _holdingAddress, address(this).balance, '');
+    //emit LogDestruction(_holdingAddress, address(this).balance, msg.sender);
     selfdestruct(_holdingAddress);
   }
 
@@ -171,17 +186,17 @@ contract AssetExchange {
   //------------------------------------------------------------------------------------------------------------------
   // This verifies that the asset is registered on the MyBit Platform and has successfully completed funding
   //------------------------------------------------------------------------------------------------------------------
-  modifier validAsset(bytes32 _assetID) {
-    require (_assetID != bytes32(0));
-    require (database.boolStorage(keccak256(abi.encodePacked("crowdsaleFinalized", _assetID))));
+  modifier validAsset(address _assetAddress) {
+    require (_assetAddress != address(0), "Address does not exist");
+    require (database.boolStorage(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress))), "Crowdsale not finalized");
     _;
   }
 
   //------------------------------------------------------------------------------------------------------------------
   // Check if user has enough ownershipUnits to create SellOrder
   //------------------------------------------------------------------------------------------------------------------
-  modifier isAllowed(bytes32 _assetID, address _sender, uint _tokens) {
-    require(DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))).allowance(_sender, address(this)) >= _tokens);
+  modifier isAllowed(address _assetAddress, address _sender, uint _tokens) {
+    require(DivToken(_assetAddress).allowance(_sender, address(this)) >= _tokens, "User has not given enough allowance");
     _;
   }
 
@@ -189,22 +204,22 @@ contract AssetExchange {
   // Verifies that _amount or _price aren't null
   //------------------------------------------------------------------------------------------------------------------
   modifier aboveZero(uint _amount, uint _price) {
-    require(_amount.mul(_price) > 0);
+    require(_amount.mul(_price) > 0, "_amount or _price is zero");
     _;
   }
 
-  // @notice reverts if user hasn't approved burner to burn platform token
-  modifier burnRequired {
-    //emit LogSig(msg.sig);
-    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
-    _;
-  }
+  // // @notice reverts if user hasn't approved burner to burn platform token
+  // modifier burnRequired {
+  //   //emit LogSig(msg.sig);
+  //   require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
+  //   _;
+  // }
 
   //------------------------------------------------------------------------------------------------------------------
   // Verify contract isn't paused
   //------------------------------------------------------------------------------------------------------------------
   modifier whenNotPaused {
-    require(!database.boolStorage(keccak256(abi.encodePacked("paused", address(this)))));
+    require(!database.boolStorage(keccak256(abi.encodePacked("paused", address(this)))), "Contract paused");
     _;
   }
 
@@ -212,7 +227,7 @@ contract AssetExchange {
   // Throw if Ether hasn't been sent
   //------------------------------------------------------------------------------------------------------------------
   modifier requiresEther() {
-    require(msg.value > 0);
+    require(msg.value > 0, "Ether has not been sent");
     _;
   }
 
@@ -220,23 +235,8 @@ contract AssetExchange {
   // Verify that the sender is a registered owner
   //------------------------------------------------------------------------------------------------------------------
   modifier anyOwner {
-    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))), "Not owner");
     _;
   }
 
-
-
-  //------------------------------------------------------------------------------------------------------------------
-  //                                      Events
-  //------------------------------------------------------------------------------------------------------------------
-
-  event LogDestruction(address indexed _locationSent, uint indexed _amountSent, address indexed _caller);
-  event LogBuyOrderCreated(bytes32 _orderID, bytes32 indexed _assetID, address indexed _creator);
-  event LogBuyOrderCompleted(bytes32 _orderID, bytes32 indexed _assetAddress, address indexed _purchaser);
-  event LogSellOrderCreated(bytes32 _orderID, bytes32 indexed _assetAddress, address indexed _creator);
-  event LogSellOrderCompleted(bytes32 _orderID, bytes32 indexed _assetAddress, address indexed _purchaser);
-  event LogBuyOrderDetails(bytes32 _orderID, uint indexed _amount, uint indexed _price);
-  event LogSellOrderDetails(bytes32 orderID, uint indexed _amount, uint indexed _price);
-  event LogownershipUnitsTraded(bytes32 _assetID, address _from, address _to, uint _amount);
-  event LogSig(bytes4 _sig);
 }

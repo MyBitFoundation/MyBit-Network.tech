@@ -1,14 +1,15 @@
 const Database = artifacts.require("./database/Database.sol");
+const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
 
+contract('Operators', async(accounts) => {
+  const owner = accounts[0];
+  const operator = accounts[1];
+  const operator2 = accounts[2];
 
-const owner = web3.eth.accounts[0];
-const operator = web3.eth.accounts[1];
-const operator2 = web3.eth.accounts[2];
-
-contract('Operators', async() => {
   let db;
+  let events;
   let cm;
   let operators;
   let operatorID;
@@ -17,13 +18,17 @@ contract('Operators', async() => {
     db = await Database.new([owner], true);
   });
 
+  it('Deploy Events', async() => {
+    events = await Events.new(db.address);
+  });
+
   it('Deploy contract manager contract', async() => {
-    cm = await ContractManager.new(db.address);
+    cm = await ContractManager.new(db.address, events.address);
     await db.enableContractManagement(cm.address);
   });
 
   it('Deploy operators', async() => {
-    operators = await Operators.new(db.address);
+    operators = await Operators.new(db.address, events.address);
     await cm.addContract('Operators', operators.address);
   });
 
@@ -38,8 +43,10 @@ contract('Operators', async() => {
   });
 
   it('Set operator', async() => {
-    let tx = await operators.registerOperator(operator, 'Operator');
-    operatorID = tx.logs[0].args._operatorID;
+    let block = await web3.eth.getBlock('latest');
+    await operators.registerOperator(operator, 'Operator', 'Asset Type');
+    let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: owner}, fromBlock: block.number});
+    operatorID = logs[0].args.operatorID;
   });
 
   it('Fail to change operator', async() => {
@@ -69,8 +76,7 @@ contract('Operators', async() => {
   it('Fail to set operator', async() => {
     let err;
     try{
-      let tx = await operators.registerOperator(operator, 'Operator');
-      operatorID = tx.logs[0].args._operatorID;
+      await operators.registerOperator(operator, 'Operator', 'Asset Type');
     } catch(e){
       err = e;
     }

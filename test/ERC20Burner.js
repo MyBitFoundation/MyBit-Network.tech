@@ -1,27 +1,28 @@
 var bn = require('bignumber.js');
 
-const Token = artifacts.require("./tokens/ERC20/BurnableToken.sol");
+const Token = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 const Database = artifacts.require("./database/Database.sol");
+const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
-const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
+const Platform = artifacts.require("./ecosystem/Platform.sol");
 const TestBurner = artifacts.require("./test/TestBurner.sol");
 
-
-const owner = web3.eth.accounts[0];
-const user1 = web3.eth.accounts[1];
-const user2 = web3.eth.accounts[2];
-const tokenHolders = [user1, user2];
-
-const tokenSupply = 180000000000000000000000000;
-const tokenPerAccount = 1000000000000000000000;
+const tokenSupply = bn(18).times(10**25);
+const tokenPerAccount = bn(10**21);
 
 
-contract('Burner', async() => {
+contract('Burner', async(accounts) => {
+  const owner = accounts[0];
+  const user1 = accounts[1];
+  const user2 = accounts[2];
+  const tokenHolders = [user1, user2];
+
   let burner;
   let token;
   let db;
   let cm;
+  let events;
   let platform;
   let testBurner;
 
@@ -29,10 +30,10 @@ contract('Burner', async() => {
 
   it('Deploy Database', async() => {
     db = await Database.new([owner], true);
-    cm = await ContractManager.new(db.address);
+    events = await Events.new(db.address);
+    cm = await ContractManager.new(db.address, events.address);
     await db.enableContractManagement(cm.address);
   });
-
 
   it('Deploy Token', async() => {
     token = await Token.new("MyBit", tokenSupply);
@@ -44,7 +45,7 @@ contract('Burner', async() => {
     /*
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
-      //console.log(web3.eth.accounts[i]);
+      //console.log(accounts[i]);
       await token.transfer(tokenHolders[i], tokenPerAccount);
       userBalance = await token.balanceOf(tokenHolders[i]);
       assert.equal(userBalance, tokenPerAccount);
@@ -58,14 +59,14 @@ contract('Burner', async() => {
   });
 
   it('Set platform', async() => {
-    platform = await Platform.new(db.address);
-    await cm.addContract('PlatformFunds', platform.address);
+    platform = await Platform.new(db.address, events.address);
+    await cm.addContract('Platform', platform.address);
     await platform.setPlatformToken(token.address);
   });
 
 
   it('Deploy ERC20Burner', async() => {
-    burner = await ERC20Burner.new(db.address);
+    burner = await ERC20Burner.new(db.address, events.address);
     await cm.addContract("ERC20Burner", burner.address);
     console.log(burner.address);
   });

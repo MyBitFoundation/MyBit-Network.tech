@@ -1,27 +1,32 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import '../database/Database.sol';
+import '../database/Events.sol';
 import '../math/SafeMath.sol';
 
 contract Operators {
 
   Database private database;
+  Events private events;
 
-  constructor(address _database) public {
+  constructor(address _database, address _events) public {
     database = Database(_database);
+    events = Events(_events);
   }
 
   // @notice allows the platform owners to onboard a new operator.
   // @notice operators will receive crowdfunding payments and are liable for producing/installing assets.
-  function registerOperator(address _operatorAddress, string _operatorURI)
+  function registerOperator(address _operatorAddress, string _operatorURI, string _assetType)
   external
   onlyOwner {
     require(_operatorAddress != address(0));
-    bytes32 operatorID = keccak256(abi.encodePacked(_operatorURI));
+    bytes32 operatorID = keccak256(abi.encodePacked("operator.uri", _operatorURI));
     require(database.addressStorage(keccak256(abi.encodePacked("operator", operatorID))) == address(0));
     database.setAddress(keccak256(abi.encodePacked("operator", operatorID)), _operatorAddress);
     database.setBytes32(keccak256(abi.encodePacked("operator", _operatorAddress)), operatorID);
-    emit LogOperatorRegistered(operatorID, _operatorURI);
+    events.operator('Operator registered', operatorID, _operatorURI, _operatorAddress);
+    events.operator('Asset type', operatorID, _assetType, _operatorAddress);
+    //emit LogOperatorRegistered(operatorID, _operatorURI);
   }
 
   // @notice owners can remove operators from the platform here
@@ -29,7 +34,8 @@ contract Operators {
   external
   onlyOwner {
     database.deleteAddress(keccak256(abi.encodePacked("operator", _operatorID)));
-    emit LogOperatorRemoved(_operatorID, msg.sender);
+    events.operator('Operator removed', _operatorID, '', msg.sender);
+    //emit LogOperatorRemoved(_operatorID, msg.sender);
   }
 
 
@@ -41,7 +47,8 @@ contract Operators {
     require(msg.sender == oldAddress || database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
     database.deleteAddress(keccak256(abi.encodePacked("operator", _operatorID)));
     database.setAddress(keccak256(abi.encodePacked("operator", _operatorID)), _newAddress);
-    emit LogOperatorAddressChanged(_operatorID, msg.sender, _newAddress);
+    events.transaction('Operator address changed', oldAddress, _newAddress, 0, _operatorID);
+    //emit LogOperatorAddressChanged(_operatorID, msg.sender, _newAddress);
   }
 
   // @notice operator can choose which ERC20 tokens he's willing to accept as payment
@@ -49,7 +56,7 @@ contract Operators {
   external
   onlyOperator(_operatorID)
   returns (bool) {
-    database.setBool(keccak256(abi.encodePacked("acceptsToken", _operatorID, _tokenAddress)), _accept);
+    database.setBool(keccak256(abi.encodePacked("operator.acceptsToken", _operatorID, _tokenAddress)), _accept);
     return true;
   }
 
@@ -58,8 +65,24 @@ contract Operators {
   external
   onlyOperator(_operatorID)
   returns (bool) {
-    database.setBool(keccak256(abi.encodePacked("acceptsEther", _operatorID)), _accept);
+    database.setBool(keccak256(abi.encodePacked("operator.acceptsEther", _operatorID)), _accept);
     return true;
+  }
+
+  function addAssetType(bytes32 _operatorID, string _assetType)
+  external
+  onlyOperator(_operatorID)
+  returns (bool) {
+    events.operator('Asset type', _operatorID, _assetType, msg.sender);
+    return true;
+  }
+
+  // @notice platform owners can destroy contract here
+  function destroy()
+  onlyOwner
+  external {
+    events.transaction('Operators destroyed', address(this), msg.sender, address(this).balance, '');
+    selfdestruct(msg.sender);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,12 +105,11 @@ contract Operators {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                                Events                                                                        //
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
+  /*
   event LogOperatorRegistered(bytes32 indexed _operatorID, string _operatorURI);
   event LogOperatorRemoved(bytes32 indexed _operatorID, address _owner);
   event LogOperatorAddressChanged(bytes32 indexed _operatorID, address _oldAddress, address _newAddress);
   event LogOperatorAcceptsToken(bytes32 indexed _operatorID, address _tokenAddress);
+  */
 
 }

@@ -1,0 +1,318 @@
+[
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "database",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x713b563f"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "events",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xb5f8558c"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "",
+                "type": "address"
+            },
+            {
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "name": "orders",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xbb5f4629"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "weiOwed",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xe6047d47"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "weiDeposited",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xfe6dcca3"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_database",
+                "type": "address"
+            },
+            {
+                "name": "_events",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "constructor",
+        "signature": "constructor"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            },
+            {
+                "name": "_buyer",
+                "type": "address"
+            },
+            {
+                "name": "_seller",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_price",
+                "type": "uint256"
+            }
+        ],
+        "name": "buyAsset",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": true,
+        "stateMutability": "payable",
+        "type": "function",
+        "signature": "0x3d5eb16c"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            },
+            {
+                "name": "_seller",
+                "type": "address"
+            },
+            {
+                "name": "_buyer",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_price",
+                "type": "uint256"
+            }
+        ],
+        "name": "sellAsset",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x5dcfd839"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            },
+            {
+                "name": "_buyer",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_price",
+                "type": "uint256"
+            }
+        ],
+        "name": "createBuyOrder",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": true,
+        "stateMutability": "payable",
+        "type": "function",
+        "signature": "0xc5a5123f"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            },
+            {
+                "name": "_seller",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_price",
+                "type": "uint256"
+            }
+        ],
+        "name": "createSellOrder",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xafa832dd"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            },
+            {
+                "name": "_orderMaker",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_price",
+                "type": "uint256"
+            },
+            {
+                "name": "_buyOrder",
+                "type": "bool"
+            }
+        ],
+        "name": "deleteOrder",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x4ad5665c"
+    },
+    {
+        "constant": false,
+        "inputs": [],
+        "name": "withdraw",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x3ccfd60b"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_functionInitiator",
+                "type": "address"
+            },
+            {
+                "name": "_holdingAddress",
+                "type": "address"
+            }
+        ],
+        "name": "destroy",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x62b40f9f"
+    }
+]

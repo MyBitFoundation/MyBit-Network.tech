@@ -1,5 +1,4 @@
-pragma solidity 0.4.24;
-
+pragma solidity ^0.4.24;
 
 import '../math/SafeMath.sol';
 import './AccessHierarchy.sol';
@@ -11,8 +10,8 @@ contract Expirable is AccessHierarchy {
 
   uint public expirationLength = uint256(31557600);    // 365 days
 
-  constructor(address _database) public AccessHierarchy(_database){}
-    
+  constructor(address _database, address _events) public AccessHierarchy(_database, _events){}
+
   //------------------------------------------------------------------------------------------------------------------
   // @notice Owner can manually grant access to a user here. WIll be used for KYC approval
   // @param Address of new user.

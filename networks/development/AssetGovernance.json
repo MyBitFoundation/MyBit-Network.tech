@@ -1,0 +1,240 @@
+[
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "database",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x713b563f"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "consensus",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x8ef3f761"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "events",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xb5f8558c"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_database",
+                "type": "address"
+            },
+            {
+                "name": "_events",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "constructor",
+        "signature": "constructor"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_executingContract",
+                "type": "address"
+            },
+            {
+                "name": "_assetID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_methodID",
+                "type": "bytes4"
+            },
+            {
+                "name": "_parameterHash",
+                "type": "bytes32"
+            }
+        ],
+        "name": "propose",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xee7eebb6"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_executingContract",
+                "type": "address"
+            },
+            {
+                "name": "_assetID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_methodID",
+                "type": "bytes4"
+            },
+            {
+                "name": "_parameterHash",
+                "type": "bytes32"
+            }
+        ],
+        "name": "getProposalID",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function",
+        "signature": "0x6bd657c1"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_proposalID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_amountToLock",
+                "type": "uint256"
+            }
+        ],
+        "name": "voteForExecution",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x624dba46"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_proposalID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_amountToUnlock",
+                "type": "uint256"
+            }
+        ],
+        "name": "unlockToken",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xa3c3e1bd"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_proposalID",
+                "type": "bytes32"
+            }
+        ],
+        "name": "isConsensusReached",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x19a9b599"
+    },
+    {
+        "constant": false,
+        "inputs": [],
+        "name": "destroy",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x83197ef0"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_proposalID",
+                "type": "bytes32"
+            }
+        ],
+        "name": "result",
+        "outputs": [
+            {
+                "name": "passed",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x39a926c4"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_proposalID",
+                "type": "bytes32"
+            }
+        ],
+        "name": "proposalExtant",
+        "outputs": [
+            {
+                "name": "extant",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x7881a8ac"
+    }
+]

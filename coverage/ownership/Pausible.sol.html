@@ -20,9 +20,9 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">75% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>4/4</span>
+        <span class='fraction'>3/4</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
@@ -30,18 +30,18 @@
         <span class='fraction'>2/2</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">80% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>4/4</span>
+        <span class='fraction'>4/5</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">80% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>7/7</span>
+        <span class='fraction'>8/10</span>
       </div>
     </div>
   </div>
-  <div class='status-line high'></div>
+  <div class='status-line medium'></div>
 <pre><table class="coverage">
 <tr><td class="line-count quiet">1
 2
@@ -89,7 +89,20 @@
 44
 45
 46
-47</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -99,12 +112,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -127,7 +134,26 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
 <span class="cline-any cline-yes">6×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -135,22 +161,25 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity 0.4.24;
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity ^0.4.24;
 &nbsp;
 &nbsp;
 import '../database/Database.sol';
+import '../database/Events.sol';
 &nbsp;
-// @title A contract which allows for the freezing of functionality within the platform. 
+// @title A contract which allows for the freezing of functionality within the platform.
 // @dev only valid with a single owned ownership model
 // @author Kyle Dewhurst, MyBit Foundation
 contract Pausible {
 &nbsp;
   Database public database;
+  Events public events;
 &nbsp;
   // @notice constructor: initialize database instance
-  constructor(address _database)
+  constructor(address _database, address _events)
   public {
     database = Database(_database);
+    events = Events(_events);
   }
 &nbsp;
   // @notice This will pause all critical activity for the supplied address
@@ -159,7 +188,8 @@ contract Pausible {
   onlyOwner
   public {
     database.setBool(keccak256(abi.encodePacked("paused", _contract)), true);
-    emit LogPaused(_contract, msg.sender);
+    events.transaction('Contract paused', msg.sender, address(this), 0, '');
+    //emit LogPaused(_contract, msg.sender);
   }
 &nbsp;
   // @notice This will unpause all critical activity for the supplied address
@@ -168,7 +198,16 @@ contract Pausible {
   onlyOwner
   public {
     database.deleteBool(keccak256(abi.encodePacked("paused", _contract)));
-    emit LogUnpaused(_contract, msg.sender);
+    events.transaction('Contract unpaused', msg.sender, address(this), 0, '');
+    //emit LogUnpaused(_contract, msg.sender);
+  }
+&nbsp;
+  // @notice platform owners can destroy contract here
+<span class="fstat-no" title="function not covered" >  function destroy()</span>
+  onlyOwner
+  external {
+    events.transaction('Pausible destroyed', address(this), msg.sender, address(this).balance, '');
+<span class="cstat-no" title="statement not covered" >    selfdestruct(msg.sender)</span>;
   }
 &nbsp;
   // @notice reverts if caller is not the owner
@@ -176,10 +215,10 @@ contract Pausible {
     require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
     _;
   }
-&nbsp;
+  /*
   event LogPaused(address indexed _contract, address _owner);
   event LogUnpaused(address indexed _contract, address _owner);
-&nbsp;
+  */
 }
 &nbsp;</pre></td></tr>
 </table></pre>
@@ -187,7 +226,7 @@ contract Pausible {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Oct 23 2018 17:09:37 GMT-0700 (PDT)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Dec 19 2018 13:43:16 GMT-0800 (PST)
 </div>
 </div>
 <script src="../prettify.js"></script>

@@ -1,7 +1,13 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
-import '../interfaces/BurnableERC20.sol';
-import "../interfaces/DBInterface.sol";
+interface BurnToken {  function burnFrom(address _from, uint _amount) external returns (bool success); }
+interface LogTransaction {  function transaction(string _message, address _from, address _to, uint _amount, bytes32 _id)  external; }
+interface DB {
+  function addressStorage(bytes32 _key) external view returns (address);
+  function bytes32Storage(bytes32 _key) external view returns (bytes32);
+  function boolStorage(bytes32 _key) external view returns (bool);
+  function setUint(bytes32 _key, uint _value) external;
+}
 
 /// @title A contract for burning ERC20 tokens as usage fee for dapps
 /// @author Kyle Dewhurst & Peter Phillips MyBit Foundation
@@ -9,16 +15,18 @@ import "../interfaces/DBInterface.sol";
 /// @dev This contract does not accept tokens. It only burns tokens from investors wallets to run platform functionality
 contract ERC20Burner {
 
-  BurnableERC20 public token;  // The instance of the ERC20 burner contract
-  DBInterface public database;   // The datbase instance
+  BurnToken public token;  // The instance of the ERC20 burner contract
+  DB public database;   // The datbase instance
+  LogTransaction public events; //LogTransaction contract
 
 
   // @notice constructor: initializes database and the MYB token
   // @param: the address for the database contract used by this platform
-  constructor(address _database)
+  constructor(address _database, address _events)
   public {
-    database = DBInterface(_database);
-    token = BurnableERC20(database.addressStorage(keccak256(abi.encodePacked("platformToken"))));
+    database = DB(_database);
+    events = LogTransaction(_events);
+    token = BurnToken(database.addressStorage(keccak256(abi.encodePacked("platform.token"))));
     require(address(token) != address(0));
   }
 
@@ -31,7 +39,7 @@ contract ERC20Burner {
   acceptedState(_tokenHolder)
   returns (bool) {
     require(token.burnFrom(_tokenHolder, _amount));
-    emit LogMYBBurned(_tokenHolder, msg.sender, _amount);
+    events.transaction('Platform Token Burnt', _tokenHolder, msg.sender, _amount, '');
     return true;
   }
 
@@ -49,6 +57,13 @@ contract ERC20Burner {
     return true;
   }
 
+  // @notice platform owners can destroy contract here
+  function destroy()
+  onlyOwner
+  external {
+    events.transaction('ERC20Burner destroyed', address(this), msg.sender, address(this).balance, '');
+    selfdestruct(msg.sender);
+  }
 
   // @notice fallback function. Rejects all ether
   function ()
@@ -86,5 +101,5 @@ contract ERC20Burner {
 
   event LogMYBBurned(address _tokenHolder, address _burningContract, uint _amount);
   event LogFeeAdded(address indexed _contractAddress, bytes4 _methodID, uint _amount);
-
+  event LogTokenAddress(address tokenAddress);
 }

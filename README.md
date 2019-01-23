@@ -148,6 +148,15 @@ Every time a contract is added or updated the contract state will change, requir
   }
 ```
 
+Functions which directly effect the user in case of contract upgrades will use the `acceptedState()` modifier to prevent users from accidentally interacting with contracts that they haven't agreed to interact with. 
+```javascript
+modifier acceptedState(address _investor) {
+  bytes32 currentState = database.bytes32Storage(keccak256(abi.encodePacked("currentState")));
+  require(database.boolStorage(keccak256(abi.encodePacked(currentState, _investor))) || database.boolStorage(keccak256(abi.encodePacked("ignoreStateChanges", _investor))));
+  _;
+}
+```
+
 ### [TokenBurning](contracts/access/ERC20Burner.sol)
 To create new asset orders, or purchase existing asset orders, users must provably burn MYB using the [burner](contracts/access/ERC20Burner.sol). Functions that require burning have the `burnRequired` modifier:
 ```javascript
@@ -404,6 +413,17 @@ We are working on giving investors governance tools to vote for new AssetManager
 * parameterHash = The sha3 hash of the exact parameters to be called at that function
 * amountToLock - The number of asset-tokens this investor wishes to lock towards this function call
 
+Governance restricted functions will use the `hasConsensus()` modifier, which requires that token holders have agreed to call this function with these parameters.
+```javascript
+modifier hasConsensus(bytes32 _assetID, bytes4 _methodID, bytes32 _parameterHash) {
+  bytes32 numVotesID = keccak256(abi.encodePacked("voteTotal", keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash))));
+  uint256 numTokens = DivToken(database.addressStorage(keccak256(abi.encodePacked("tokenAddress", _assetID)))).totalSupply();
+  emit LogConsensus(numVotesID, database.uintStorage(numVotesID), numTokens, keccak256(abi.encodePacked(address(this), _assetID, _methodID, _parameterHash)), database.uintStorage(numVotesID).mul(100).div(numTokens));
+  require(database.uintStorage(numVotesID).mul(100).div(numTokens) >= consensus, 'Consensus not reached');
+  _;
+}
+```
+
 ✏️ All contracts are written in [Solidity](https://solidity.readthedocs.io/en/v0.4.24/) version 0.4.24.
 
 
@@ -428,4 +448,4 @@ GIT_USER=<GIT_USER> \
 
 ⚠️ This application is unstable and has not undergone any rigorous security audits. Use at your own risk.
 
- MyBit Platform™ CHE-177.186.963  
+ MyBit Platform™ CHE-177.186.963   

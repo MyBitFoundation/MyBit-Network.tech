@@ -1,19 +1,29 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
-import '../database/Database.sol';
+interface Events {  function transaction(string _message, address _from, address _to, uint _amount, bytes32 _id)  external; }
+interface DB {
+  function uintStorage(bytes32 _key) external view returns (uint);
+  function boolStorage(bytes32 _key) external view returns (bool);
+  function setUint(bytes32 _key, uint _value) external;
+  function setBool(bytes32 _key, bool _value) external;
+  function deleteUint(bytes32 _key) external;
+  function deleteBool(bytes32 _key) external;
+}
 
 // @title A contract for granting and revoking access levels to different users
 // @author Kyle Dewhurst, MyBit Foundation
 // @notice Made for platforms that require hierarchical access restrictions
 contract AccessHierarchy {
 
-  Database public database;
+  DB public database;
+  Events public events;
   uint8 public upperAccessLevel;
 
   // @notice Constructor: Inititalize Database
-  constructor(address _database)
+  constructor(address _database, address _events)
   public  {
-    database = Database(_database);
+    database = DB(_database);
+    events = Events(_events);
   }
 
   // @notice Owner can manually grant access to a user here. WIll be used for KYC approval
@@ -49,6 +59,14 @@ contract AccessHierarchy {
   onlyOwner {
     require(_newUpperLimit > uint8(0));
     upperAccessLevel = _newUpperLimit;
+  }
+
+  // @notice platform owners can destroy contract here
+  function destroy()
+  onlyOwner
+  external {
+    events.transaction('AccessHierarchy destroyed', address(this), msg.sender, address(this).balance, '');
+    selfdestruct(msg.sender);
   }
 
   // @notice Deny empty address parameters

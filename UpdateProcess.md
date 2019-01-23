@@ -38,13 +38,14 @@ scripts/prepare_lib.sh
 ```bash
 git add -u
 git add contracts/.
+git add lib/.
 git commit -m "New update description"
 git push origin master
 ```
 
 ## 4) Publish to NPM:
  - If the package is ready to be published, run the following:
- 
+
 ```bash
 npm version patch
 npm publish --access=public

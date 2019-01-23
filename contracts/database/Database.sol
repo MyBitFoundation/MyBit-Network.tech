@@ -20,8 +20,10 @@ contract Database{
 
     // @notice Constructor: Sets the owners of the platform
     // @dev Owners must set the contract manager to add more contracts
-    constructor(address[] _owners, bool _upgradeable) public {
+    constructor(address[] _owners, bool _upgradeable)
+    public {
       for(uint i=0; i<_owners.length; i++){
+        require(_owners[i] != address(0), "Empty address");
         boolStorage[keccak256(abi.encodePacked("owner", _owners[i]))] = true;
         emit LogInitialized(_owners[i], _upgradeable);
       }
@@ -30,17 +32,17 @@ contract Database{
       }
     }
 
-
     // @notice ContractManager will be the only contract that can add/remove contracts on the platform.
     // @param (address) _contractManager is the contract which can upgrade/remove contracts to platform
     function enableContractManagement(address _contractManager)
-    external {
-        require(boolStorage[keccak256("upgradeable")]);
-        require(_contractManager != address(0));
-        require(boolStorage[keccak256(abi.encodePacked("owner", msg.sender))]);
-        require(addressStorage[keccak256(abi.encodePacked("contract", "ContractManager"))] == address(0));
+    external
+    returns (bool){
+        require(_contractManager != address(0), "Empty address");
+        require(boolStorage[keccak256(abi.encodePacked("owner", msg.sender))], "Not owner");
+        require(addressStorage[keccak256(abi.encodePacked("contract", "ContractManager"))] == address(0), "There is already a contract manager");
         addressStorage[keccak256(abi.encodePacked("contract", "ContractManager"))] = _contractManager;
         boolStorage[keccak256(abi.encodePacked("contract", _contractManager))] = true;
+        return true;
     }
 
     // @notice Storage functions

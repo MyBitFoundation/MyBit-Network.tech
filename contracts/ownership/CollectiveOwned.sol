@@ -1,6 +1,7 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import '../database/Database.sol';
+import '../database/Events.sol';
 import '../math/SafeMath.sol';
 import '../interfaces/ERC20.sol';
 
@@ -13,12 +14,14 @@ contract CollectiveOwned {
   using SafeMath for uint256;
 
   Database public database;
+  Events public events;
 
   // @param (address) _database = the address of the platform database
   // @param (uint) _baseQuorum = the percentage of owners needed to approve a function call
-  constructor(address _database, uint256 _baseQuorum)
+  constructor(address _database, address _events, uint256 _baseQuorum)
   public {
     database = Database(_database);
+    events = Events(_events);
     bytes4 methodID = bytes4(keccak256(abi.encodePacked("setQuorumLevel(address, bytes4, uint256)")));
     bytes32 functionID = keccak256(abi.encodePacked(address(this), methodID));
     database.setUint(functionID, _baseQuorum);   // the initial quorum level to set further quorum levels
@@ -66,6 +69,13 @@ contract CollectiveOwned {
     return true;
   }
 
+  // @notice platform owners can destroy contract here
+  function destroy()
+  onlyOwner
+  external {
+    events.transaction('CollectiveOwned destroyed', address(this), msg.sender, address(this).balance, '');
+    selfdestruct(msg.sender);
+  }
 
   //------------------------------------------------------------------------------------------------------------------
   //                                                View Functions
@@ -107,6 +117,8 @@ contract CollectiveOwned {
   //------------------------------------------------------------------------------------------------------------------
   //                                              Events
   //------------------------------------------------------------------------------------------------------------------
+  /*
   event LogOwnerChanged(address indexed _previousOwner, address indexed _newOwner);
   event LogFunctionAuthorized(address indexed _owner, string indexed _functionName, bytes32 indexed _beneficiary, bytes32 _authHash);
+  */
 }

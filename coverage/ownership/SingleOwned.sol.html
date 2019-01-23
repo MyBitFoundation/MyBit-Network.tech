@@ -20,9 +20,9 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">75% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>3/3</span>
+        <span class='fraction'>3/4</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
@@ -30,18 +30,18 @@
         <span class='fraction'>2/2</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">75% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>3/3</span>
+        <span class='fraction'>3/4</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">77.78% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>6/6</span>
+        <span class='fraction'>7/9</span>
       </div>
     </div>
   </div>
-  <div class='status-line high'></div>
+  <div class='status-line medium'></div>
 <pre><table class="coverage">
 <tr><td class="line-count quiet">1
 2
@@ -76,7 +76,19 @@
 31
 32
 33
-34</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -89,7 +101,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -103,15 +118,25 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity 0.4.24;
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity ^0.4.24;
 &nbsp;
 import '../database/Database.sol';
+import '../database/Events.sol';
 &nbsp;
 // @title A contract for managing a single platform owner
 // @dev Single owned platforms store owner as an address
@@ -119,10 +144,12 @@ import '../database/Database.sol';
 contract SingleOwned {
 &nbsp;
   Database public database;
+  Events public events;
 &nbsp;
   // @notice constructor: initiate database instance
-  constructor(address _database) public {
+  constructor(address _database, address _events) public {
     database = Database(_database);
+    events = Events(_events);
   }
 &nbsp;
   // @notice Transfer ownership to to a new owner
@@ -131,7 +158,16 @@ contract SingleOwned {
   onlyOwner {
     database.setBool(keccak256(abi.encodePacked("owner", _newOwner)), true);
     database.setBool(keccak256(abi.encodePacked("owner", msg.sender)), false);
-    emit OwnershipTransferred(msg.sender, _newOwner);
+    events.transaction('Ownership transferred', msg.sender, _newOwner, 0, '');
+    //emit OwnershipTransferred(msg.sender, _newOwner);
+  }
+&nbsp;
+  // @notice platform owners can destroy contract here
+<span class="fstat-no" title="function not covered" >  function destroy()</span>
+  onlyOwner
+  external {
+    events.transaction('SingleOwned destroyed', address(this), msg.sender, address(this).balance, '');
+<span class="cstat-no" title="statement not covered" >    selfdestruct(msg.sender)</span>;
   }
 &nbsp;
   // @notice reverts if caller is not the owner
@@ -140,7 +176,7 @@ contract SingleOwned {
     _;
   }
 &nbsp;
-  event OwnershipTransferred(address indexed owner, address indexed pendingOwner);
+  //event OwnershipTransferred(address indexed owner, address indexed pendingOwner);
 }
 &nbsp;</pre></td></tr>
 </table></pre>
@@ -148,7 +184,7 @@ contract SingleOwned {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Oct 23 2018 17:09:37 GMT-0700 (PDT)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Dec 19 2018 13:43:16 GMT-0800 (PST)
 </div>
 </div>
 <script src="../prettify.js"></script>
