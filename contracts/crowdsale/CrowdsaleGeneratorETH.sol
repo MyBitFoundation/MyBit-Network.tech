@@ -3,11 +3,13 @@ pragma solidity ^0.4.24;
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
 import "../database/Events.sol";
-// import "../access/ERC20Burner.sol";
 import "../tokens/erc20/DividendToken.sol";
 
 interface CrowdsaleGeneratorETH_ERC20 {
   function transferFrom(address _from, address _to, uint256 _value) external returns (bool);
+}
+interface CrowdsaleGeneratorETH_ERC20Burner {
+  function burn(address _tokenHolder, uint _amount, address _burnToken) payable external returns (bool);
 }
 
 // @title A crowdsale generator contract
@@ -18,7 +20,7 @@ contract CrowdsaleGeneratorETH {
 
   DBInterface public database;
   Events public events;
-  // ERC20Burner public burner;
+  CrowdsaleGeneratorETH_ERC20Burner public burner;
 
   uint constant scalingFactor = 1e32;   // Used to avoid rounding errors
 
@@ -28,7 +30,7 @@ contract CrowdsaleGeneratorETH {
   public{
       database = DBInterface(_database);
       events = Events(_events);
-      // burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
+      burner = CrowdsaleGeneratorETH_ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
   // @notice AssetManagers can initiate a crowdfund for a new asset here
@@ -42,7 +44,7 @@ contract CrowdsaleGeneratorETH {
   external
   // burnRequired
   returns (bool) {
-    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))), _burnToken);
+    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this)))), _burnToken));
     require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), "User not approved");
     require(_amountToRaise > 0, "Crowdsale goal is zero");
     require(_assetManagerPerc < 100, "Manager percent need to be less than 100");

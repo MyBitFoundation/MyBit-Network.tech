@@ -18,7 +18,7 @@ contract TestBurner {
 
   function burnTokensManualFee(uint _amount)
   external {
-    require(burner.burn(msg.sender, _amount));
+    require(burner.burn(msg.sender, _amount, database.addressStorage(keccak256(abi.encodePacked("platform.token")))));
   }
 
   // Must set fee in ERC20Burner first
@@ -26,7 +26,7 @@ contract TestBurner {
   external {
     bytes4 methodID = bytes4(keccak256(abi.encodePacked("burnTokens()")));
     uint amountToBurn = database.uintStorage(keccak256(abi.encodePacked(methodID, address(this))));
-    require(burner.burn(msg.sender, amountToBurn));
+    require(burner.burn(msg.sender, amountToBurn, database.addressStorage(keccak256(abi.encodePacked("platform.token")))));
     amountBurnt += amountToBurn;
   }
 

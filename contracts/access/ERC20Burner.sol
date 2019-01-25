@@ -1,7 +1,10 @@
 pragma solidity ^0.4.24;
 
+import "../math/SafeMath.sol";
+
 interface BurnToken {
   function balanceOf(address _who) external view returns (uint256);
+  function burn(uint _amount) external returns (bool success);
   function burnFrom(address _from, uint _amount) external returns (bool success);
 }
 interface ERC20Burner_ERC20 {
@@ -28,6 +31,7 @@ interface ERC20Burner_KyberProxy{
 /// @notice Allows Dapps to call this contract to burn ERC20 tokens as a usage fee
 /// @dev This contract does not accept tokens. It only burns tokens from investors wallets to run platform functionality
 contract ERC20Burner {
+  using SafeMath for uint256;
 
   BurnToken public token;  // The instance of the ERC20 burner contract
   DB public database;   // The datbase instance
@@ -52,9 +56,11 @@ contract ERC20Burner {
   function burn(address _tokenHolder, uint _amount, address _burnToken)
   payable
   external
-  onlyPlatformContracts(msg.sender)
-  acceptedState(_tokenHolder)
   returns (bool) {
+    //onlyPlatformContracts:
+    require(database.boolStorage(keccak256(abi.encodePacked("contract", msg.sender))));
+    //acceptedState:
+    require(database.boolStorage(keccak256(abi.encodePacked(database.bytes32Storage(keccak256(abi.encodePacked("currentState"))), _tokenHolder))) || database.boolStorage(keccak256(abi.encodePacked("ignoreStateChanges", _tokenHolder))));
     if(_burnToken == address(token)){
       require(token.burnFrom(_tokenHolder, _amount));
       events.transaction('Platform Token Burnt', _tokenHolder, msg.sender, _amount, '');
@@ -66,34 +72,43 @@ contract ERC20Burner {
       if(_burnToken == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)){
         //Ether was chosen as the burn token
         require(msg.value >= estimatedCost);
-        uint balanceBefore = address(this).balance;
-        kyber.trade.value(msg.value)(_burnToken, msg.value, address(token), address(this), _amount, minRate, 0);
-        uint change = address(this).balance - balanceBefore;
-        _tokenHolder.transfer(change);
+        convert(_tokenHolder, burnToken, address(token), msg.value, _amount, minRate, true);
       } else {
         //Transfer burn token from the user
-        require(burnToken.transferFrom(_tokenHolder, estimatedCost));
+        require(burnToken.transferFrom(_tokenHolder, address(this), estimatedCost));
         // Mitigate ERC20 Approve front-running attack, by initially setting
         // allowance to 0
         require(burnToken.approve(address(kyber), 0));
         // Approve tokens so network can take them during the swap
         burnToken.approve(address(kyber), estimatedCost);
-        uint balanceBefore = burnToken.balanceOf(this);
-        //Convert tokens
-        kyber.trade(_burnToken, estimatedCost, address(token), address(this), _amount, minRate, 0);
-        // Return any remaining source tokens to user
-        uint change = burnToken.balanceOf(this) - balanceBefore;
-        burnToken.transfer(_tokenHolder, change);
+        convert(_tokenHolder, burnToken, address(token), estimatedCost, _amount, minRate, false);
       }
       //Get amount of the platform token held by this contract (in case it differs from the _amount parameter)
-      uint amount = token.balanceOf(this));
+      uint amount = token.balanceOf(this);
       //Burn the platform token
-      require(token.burnFrom(address(this), amount);
+      require(token.burn(amount));
       events.transaction('Platform Token Burnt', _tokenHolder, msg.sender, amount, '');
 
     }
-
     return true;
+  }
+
+  function convert(address _user, ERC20Burner_ERC20 _from, address _to, uint _amount, uint _max, uint _minRate, bool _eth)
+  private
+  returns (uint){
+    uint balanceBefore;
+    uint change;
+    if(_eth == true){
+      balanceBefore = address(this).balance;
+      kyber.trade.value(_amount)(address(_from), _amount, _to, address(this), _max, _minRate, 0);
+      change = address(this).balance - balanceBefore;
+      _user.transfer(change);
+    } else {
+      balanceBefore = _from.balanceOf(this);
+      kyber.trade(address(_from), _amount, _to, address(this), _max, _minRate, 0);
+      change = _from.balanceOf(this) - balanceBefore;
+      _from.transfer(_user, change);
+    }
   }
 
   // @notice owners can set the cost of functionality on the platform here.
