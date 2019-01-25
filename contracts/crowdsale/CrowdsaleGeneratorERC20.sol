@@ -10,6 +10,10 @@ interface CrowdsaleGeneratorERC20_ERC20 {
   function transferFrom(address _from, address _to, uint256 _value) external returns (bool);
 }
 
+interface CrowdsaleGeneratorERC20_KyberProxy {
+  function getExpectedRate(address src, address dest, uint srcQty) external view returns (uint expectedRate, uint slippageRate);
+}
+
 // @title A crowdsale generator contract
 // @author Kyle Dewhurst & Peter Phillips, MyBit Foundation
 // @notice AssetManagers can initiate a crowdsale that accepts ERC20 tokens as payment here
@@ -40,10 +44,11 @@ contract CrowdsaleGeneratorERC20 {
   // @param (uint) _amountToRaise = The amount of tokens required to raise for the crowdsale to be a success
   // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
   // @param (address) _fundingToken = The ERC20 token to be used to fund the crowdsale (Operator must accept this token as payment)
-  function createAssetOrderERC20(string _assetURI, address _assetManager, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc, uint _escrow, address _fundingToken)
+  function createAssetOrderERC20(string _assetURI, address _assetManager, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc, uint _escrow, address _fundingToken, address _burnToken)
   external
   // burnRequired
   {
+    require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))), _burnToken);
     require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), "User not approved");
     require(_amountToRaise > 0, "Crowdsale goal is zero");
     require(_assetManagerPerc < 100, "Manager percent need to be less than 100");

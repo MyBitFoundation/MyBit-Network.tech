@@ -13,6 +13,10 @@ interface DB {
   function setBool(bytes32 _key, bool _value) external;
   function boolStorage(bytes32 _key) external view returns (bool);
 }
+interface CrowdsaleERC20_KyberProxy{
+  function getExpectedRate(address src, address dest, uint srcQty) external view returns (uint expectedRate, uint slippageRate);
+  function trade(address src, uint srcAmount, address dest, address destAddress, uint maxDestAmount,uint minConversionRate, address walletId) external payable returns(uint);
+}
 
 // @title An asset crowdsale contract which accepts funding from ERC20 tokens.
 // @notice Begins a crowdfunding period for a digital asset, minting asset dividend tokens to investors when particular ERC20 token is received
@@ -21,16 +25,18 @@ interface DB {
 contract CrowdsaleERC20{
   using SafeMath for uint256;
 
-  DB public database;
-  Events public events;
+  DB private database;
+  Events private events;
+  CrowdsaleERC20_KyberProxy private kyber;
   // ERC20Burner public burner;
 
   // @notice Constructor: initializes database instance
   // @param: The address for the platform database
-  constructor(address _database, address _events)
+  constructor(address _database, address _events, address _kyber)
   public{
       database = DB(_database);
       events = Events(_events);
+      kyber = CrowdsaleERC20_KyberProxy(_kyber);
       // burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
@@ -39,7 +45,7 @@ contract CrowdsaleERC20{
   // @dev investor must approve this contract to transfer tokens
   // @param (address) _assetAddress = The address of the asset tokens, investor wishes to purchase
   // @param (uint) _amount = The amount to spend purchasing this asset
-  function buyAssetOrderERC20(address _assetAddress, address _investor, uint _amount)
+  function buyAssetOrderERC20(address _assetAddress, address _investor, uint _amount, address _paymentToken)
   external
   validAsset(_assetAddress)
   betweenDeadlines(_assetAddress)
@@ -51,19 +57,37 @@ contract CrowdsaleERC20{
     ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("crowdsale.fundingToken", _assetAddress))));
     uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));
     uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
-    if (_amount >= tokensRemaining) {
-      require(fundingToken.transferFrom(_investor, address(this), tokensRemaining), "Transfer failed");    // transfer investors tokens into contract
-      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerFee", _assetAddress)))), "Manager minting failed");
-      require(finalizeCrowdsale(_assetAddress), "Crowdsale did not finalize");
-      require(assetToken.mint(_investor, tokensRemaining), "Investor minting failed");   // Send remaining asset tokens to investor
-      require(assetToken.finishMinting(), "Minting not finished");
-      require(payoutERC20(_assetAddress, amountToRaise), "Payout failed");          // 1 token = 1 wei
+    //Check if the payment token is the same as the funding token. If not, convert, else just send some to the MYB burner
+    if(_paymentToken == address(fundingToken)){
+      uint amount = fundBurn(_investor, _amount, msg.sig, fundingToken); //Convert and burn myb tokens, get remainder of funding tokens back
+      if (amount >= tokensRemaining) {
+        require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerFee", _assetAddress)))), "Manager minting failed");
+        require(finalizeCrowdsale(_assetAddress), "Crowdsale did not finalize");
+        require(assetToken.mint(_investor, tokensRemaining), "Investor minting failed");   // Send remaining asset tokens to investor
+        require(assetToken.finishMinting(), "Minting not finished");
+        require(payoutERC20(_assetAddress, amountToRaise), "Payout failed");          // 1 token = 1 wei
+        fundingToken.transfer(_investor, amount.sub(tokensRemaining));    // return extra funds
+      }
+      else {
+        require(fundingToken.transferFrom(_investor, address(this), amount), "Transfer failed");
+        require(assetToken.mint(_investor, amount), "Investor minting failed");
+      }
+    } else {
+      uint amount = convertTokens(_investor, _amount, msg.sig, fundingToken, _paymentToken, tokensRemaining);
+      require(amount > 0);
+      //Mint asset tokens for the amount funding tokens received after conversion
+      require(assetToken.mint(_investor, amount), "Investor minting failed");
+      if (amount == tokensRemaining) {
+        //The conversion process returns any funds greater than tokensRemaining
+        //Finalize crowdsale
+        require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerFee", _assetAddress)))), "Manager minting failed");
+        require(finalizeCrowdsale(_assetAddress), "Crowdsale did not finalize");
+        require(assetToken.finishMinting(), "Minting not finished");
+        require(payoutERC20(_assetAddress, amountToRaise), "Payout failed");          // 1 token = 1 wei
+      }
     }
-    else {
-      require(fundingToken.transferFrom(_investor, address(this), _amount), "Transfer failed");
-      require(assetToken.mint(_investor, _amount), "Investor minting failed");
-    }
-    events.transaction('Asset purchased', _investor, _assetAddress, _amount, '');
+
+    events.transaction('Asset purchased', _investor, _assetAddress, amount, '');
     return true;
   }
 
@@ -108,6 +132,37 @@ contract CrowdsaleERC20{
     events.transaction('Asset payout', _assetAddress, operator, _amount, '');
     //emit LogAssetPayout(_assetAddress, operator, _amount);
     return true;
+  }
+
+  function fundBurn(address _investor, uint _amount, bytes4 _sig, ERC20 _burnToken)
+  private
+  return (uint) {
+    require(_burnToken.transferFrom(_investor, address(this), _amount), "Transfer failed"); // transfer investors tokens into contract
+    uint balanceBefore = _burnToken.balanceOf(this);
+    require(burner.burn(address(this), database.uintStorage(keccak256(abi.encodePacked(_sig, address(this))))), address(_burnToken));
+    uint change = _burnToken.balanceOf(this) - balanceBefore;
+    return change;
+  }
+
+  function convertTokens(address _investor, uint _amount, bytes4 _sig, ERC20 _fundingToken, ERC20 _paymentToken, uint _maxTokens)
+  private
+  return (uint) {
+    //Burn fees and receive remaining funds into this contract
+    uint amount = fundBurn(_investor, _amount, _sig, _paymentToken);
+    // Mitigate ERC20 Approve front-running attack, by initially setting
+    // allowance to 0
+    require(_paymentToken.approve(address(kyber), 0));
+    // Approve tokens so network can take them during the swap
+    _paymentToken.approve(address(kyber), estimatedCost);
+    uint paymentBalanceBefore = _paymentToken.balanceOf(this);
+    uint fundingBalanceBefore = _fundingToken.balanceOf(this);
+    //Convert remaining funds into the funding token
+    kyber.trade(address(_burnToken), amount, address(_fundingToken), address(this), _maxTokens, minRate, 0);
+    // Return any remaining source tokens to user
+    uint change = _paymentToken.balanceOf(this) - paymentBalanceBefore;
+    uint investment = _fundingToken.balanceOf(this) - fundingBalanceBefore;
+    _paymentToken.transfer(_investor, change);
+    return investment;
   }
 
   // @notice platform owners can recover tokens here
