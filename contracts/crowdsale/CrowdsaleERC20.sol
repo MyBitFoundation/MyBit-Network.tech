@@ -153,7 +153,7 @@ contract CrowdsaleERC20{
   private
   returns (uint) {
     //Collect funds
-    uint amount = collectPayment(_investor, _amount, _amount, _paymentToken);
+    collectPayment(_investor, _amount, _amount, _paymentToken);
     ( , uint minRate) = kyber.getExpectedRate(address(_paymentToken), address(_fundingToken), 0);
     // Mitigate ERC20 Approve front-running attack, by initially setting
     // allowance to 0

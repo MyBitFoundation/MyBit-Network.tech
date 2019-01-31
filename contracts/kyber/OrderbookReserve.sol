@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 
 import "./OrderListInterface.sol";
@@ -14,7 +14,7 @@ contract FeeBurnerRateInterface {
 
 
 interface MedianizerInterface {
-    function peek() public view returns (bytes32, bool);
+    function peek() external view returns (bytes32, bool);
 }
 
 
@@ -225,7 +225,7 @@ contract OrderbookReserve is OrderIdManager, Utils2, KyberReserveInterface, Orde
             require(dstToken.transfer(dstAddress, totalDstAmount));
         }
 
-        OrderbookReserveTrade(srcToken, dstToken, srcAmount, totalDstAmount);
+        emit OrderbookReserveTrade(srcToken, dstToken, srcAmount, totalDstAmount);
         return true;
     }
 
@@ -418,7 +418,7 @@ contract OrderbookReserve is OrderIdManager, Utils2, KyberReserveInterface, Orde
         require(contracts.token.transferFrom(msg.sender, this, amount));
 
         makerFunds[maker][contracts.token] += amount;
-        TokenDeposited(maker, amount);
+        emit TokenDeposited(maker, amount);
     }
 
     event EtherDeposited(address indexed maker, uint amount);
@@ -427,7 +427,7 @@ contract OrderbookReserve is OrderIdManager, Utils2, KyberReserveInterface, Orde
         require(maker != address(0));
 
         makerFunds[maker][ETH_TOKEN_ADDRESS] += msg.value;
-        EtherDeposited(maker, msg.value);
+        emit EtherDeposited(maker, msg.value);
     }
 
     event KncFeeDeposited(address indexed maker, uint amount);
@@ -441,7 +441,7 @@ contract OrderbookReserve is OrderIdManager, Utils2, KyberReserveInterface, Orde
 
         makerKnc[maker] += amount;
 
-        KncFeeDeposited(maker, amount);
+        emit KncFeeDeposited(maker, amount);
 
         if (orderAllocationRequired(makerOrdersTokenToEth[maker])) {
             require(allocateOrderIds(
@@ -691,7 +691,7 @@ contract OrderbookReserve is OrderIdManager, Utils2, KyberReserveInterface, Orde
             require(list.add(maker, newId, srcAmount, dstAmount));
         }
 
-        NewLimitOrder(maker, newId, isEthToToken, srcAmount, dstAmount, addedWithHint);
+        emit NewLimitOrder(maker, newId, isEthToToken, srcAmount, dstAmount, addedWithHint);
 
         return true;
     }
@@ -739,7 +739,7 @@ contract OrderbookReserve is OrderIdManager, Utils2, KyberReserveInterface, Orde
             require(list.update(orderId, newSrcAmount, newDstAmount));
         }
 
-        OrderUpdated(maker, isEthToToken, orderId, newSrcAmount, newDstAmount, updatedWithHint);
+        emit OrderUpdated(maker, isEthToToken, orderId, newSrcAmount, newDstAmount, updatedWithHint);
 
         return true;
     }
@@ -762,7 +762,7 @@ contract OrderbookReserve is OrderIdManager, Utils2, KyberReserveInterface, Orde
         //funds go back to makers account
         makerFunds[maker][isEthToToken ? ETH_TOKEN_ADDRESS : contracts.token] += orderData.srcAmount;
 
-        OrderCanceled(maker, isEthToToken, orderId, orderData.srcAmount, orderData.dstAmount);
+        emit OrderCanceled(maker, isEthToToken, orderId, orderData.srcAmount, orderData.dstAmount);
 
         return true;
     }
@@ -879,7 +879,7 @@ contract OrderbookReserve is OrderIdManager, Utils2, KyberReserveInterface, Orde
         //userDst == maker source
         require(removeOrder(list, maker, userDst, orderId));
 
-        FullOrderTaken(maker, orderId, userSrc == ETH_TOKEN_ADDRESS);
+        emit FullOrderTaken(maker, orderId, userSrc == ETH_TOKEN_ADDRESS);
 
         return takeOrder(maker, userSrc, userSrcAmount, userDstAmount, 0);
     }
@@ -925,7 +925,7 @@ contract OrderbookReserve is OrderIdManager, Utils2, KyberReserveInterface, Orde
             require(isSuccess);
         }
 
-        PartialOrderTaken(maker, orderId, userSrc == ETH_TOKEN_ADDRESS, additionalReleasedWei > 0);
+        emit PartialOrderTaken(maker, orderId, userSrc == ETH_TOKEN_ADDRESS, additionalReleasedWei > 0);
 
         //stakes are returned for unused wei value
         return(takeOrder(maker, userSrc, userPartialSrcAmount, userTakeDstAmount, additionalReleasedWei));

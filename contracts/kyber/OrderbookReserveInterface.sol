@@ -5,6 +5,6 @@ import "./OrderListFactoryInterface.sol";
 
 
 interface OrderbookReserveInterface {
-    function init() public returns(bool);
-    function kncRateBlocksTrade() public view returns(bool);
+    function init() external returns(bool);
+    function kncRateBlocksTrade() external view returns(bool);
 }

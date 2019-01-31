@@ -1,9 +1,9 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 
 import "./OrderListInterface.sol";
 
 
 interface OrderListFactoryInterface {
-    function newOrdersContract(address admin) public returns(OrderListInterface);
+    function newOrdersContract(address admin) external returns(OrderListInterface);
 }
