@@ -1,17 +1,13 @@
 pragma solidity ^0.4.24;
 
 import "../math/SafeMath.sol";
+import "../interfaces/ERC20.sol";
 
 interface BurnToken {
+  function decimals() external view returns (uint8);
   function balanceOf(address _who) external view returns (uint256);
   function burn(uint _amount) external returns (bool success);
   function burnFrom(address _from, uint _amount) external returns (bool success);
-}
-interface ERC20Burner_ERC20 {
-  function balanceOf(address _who) external view returns (uint256);
-  function approve(address _spender, uint256 _value) external returns (bool);
-  function transfer(address _to, uint256 _value) external returns (bool);
-  function transferFrom(address _from, address _to, uint256 _value) external returns (bool);
 }
 interface LogTransaction {  function transaction(string _message, address _from, address _to, uint _amount, bytes32 _id)  external; }
 interface DB {
@@ -37,7 +33,7 @@ contract ERC20Burner {
   DB public database;   // The datbase instance
   LogTransaction public events; //LogTransaction contract
   ERC20Burner_KyberProxy kyber;
-
+  uint256 decimals;
 
   // @notice constructor: initializes database and the MYB token
   // @param: the address for the database contract used by this platform
@@ -48,6 +44,8 @@ contract ERC20Burner {
     token = BurnToken(database.addressStorage(keccak256(abi.encodePacked("platform.token"))));
     require(address(token) != address(0));
     kyber = ERC20Burner_KyberProxy(_kyber);
+    uint dec = token.decimals();
+    decimals = 10**dec;
   }
 
   // @notice authorized contracts can burn mybit tokens here if the investor has approved this contract to do so
@@ -65,15 +63,15 @@ contract ERC20Burner {
       require(token.burnFrom(_tokenHolder, _amount));
       events.transaction('Platform Token Burnt', _tokenHolder, msg.sender, _amount, '');
     } else {
-      ERC20Burner_ERC20 burnToken = ERC20Burner_ERC20(_burnToken);
       //Calculate the estimate cost of given ERC20 to get convert to correct amount of platform token
       (uint expectedRate, uint minRate) = kyber.getExpectedRate(_burnToken, address(token), 0);
-      uint estimatedCost = expectedRate.mul(_amount).div(10**18);
+      uint estimatedCost = expectedRate.mul(_amount).div(decimals);
       if(_burnToken == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)){
         //Ether was chosen as the burn token
-        require(msg.value >= estimatedCost);
-        convert(_tokenHolder, burnToken, address(token), msg.value, _amount, minRate, true);
+        require(msg.value >= estimatedCost, 'Not enough funds');
+        convert(_tokenHolder, _burnToken, address(token), msg.value, _amount, minRate, true);
       } else {
+        ERC20 burnToken = ERC20(_burnToken);
         //Transfer burn token from the user
         require(burnToken.transferFrom(_tokenHolder, address(this), estimatedCost));
         // Mitigate ERC20 Approve front-running attack, by initially setting
@@ -81,7 +79,7 @@ contract ERC20Burner {
         require(burnToken.approve(address(kyber), 0));
         // Approve tokens so network can take them during the swap
         burnToken.approve(address(kyber), estimatedCost);
-        convert(_tokenHolder, burnToken, address(token), estimatedCost, _amount, minRate, false);
+        convert(_tokenHolder, _burnToken, address(token), estimatedCost, _amount, minRate, false);
       }
       //Get amount of the platform token held by this contract (in case it differs from the _amount parameter)
       uint amount = token.balanceOf(this);
@@ -93,22 +91,26 @@ contract ERC20Burner {
     return true;
   }
 
-  function convert(address _user, ERC20Burner_ERC20 _from, address _to, uint _amount, uint _max, uint _minRate, bool _eth)
+  function convert(address _user, address _from, address _to, uint _amount, uint _max, uint _minRate, bool _eth)
   private
   returns (uint){
     uint balanceBefore;
     uint change;
+    emit Trade(_from, _amount, _to, address(this), _max, _minRate, address(0));
     if(_eth == true){
+      require(_amount <= address(this).balance, "Not enough funds in contract");
       balanceBefore = address(this).balance;
-      kyber.trade.value(_amount)(address(_from), _amount, _to, address(this), _max, _minRate, 0);
-      change = address(this).balance - balanceBefore;
+      kyber.trade.value(_amount)(_from, _amount, _to, address(this), _max, _minRate, 0);
+      change = _amount.sub(balanceBefore.sub(address(this).balance));
       _user.transfer(change);
     } else {
-      balanceBefore = _from.balanceOf(this);
-      kyber.trade(address(_from), _amount, _to, address(this), _max, _minRate, 0);
-      change = _from.balanceOf(this) - balanceBefore;
-      _from.transfer(_user, change);
+      ERC20 erc20 = ERC20(_from);
+      balanceBefore = erc20.balanceOf(this);
+      kyber.trade(_from, _amount, _to, address(this), _max, _minRate, 0);
+      change = _amount.sub(balanceBefore.sub(erc20.balanceOf(this)));
+      erc20.transfer(_user, change);
     }
+    return change;
   }
 
   // @notice owners can set the cost of functionality on the platform here.
@@ -133,11 +135,11 @@ contract ERC20Burner {
     selfdestruct(msg.sender);
   }
 
-  // @notice fallback function. Rejects all ether
+  // @notice fallback function. We need to receive Ether from Kyber Network
   function ()
   external
   payable {
-    revert();
+    emit EtherReceived(msg.sender, msg.value);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -170,4 +172,6 @@ contract ERC20Burner {
   event LogMYBBurned(address _tokenHolder, address _burningContract, uint _amount);
   event LogFeeAdded(address indexed _contractAddress, bytes4 _methodID, uint _amount);
   event LogTokenAddress(address tokenAddress);
+  event Trade(address src, uint amount, address dest, address receiver, uint max, uint minRate, address walletID);
+  event EtherReceived(address sender, uint amount);
 }

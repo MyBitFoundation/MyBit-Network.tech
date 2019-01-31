@@ -3,7 +3,6 @@ pragma solidity ^0.4.24;
 import "../math/SafeMath.sol";
 import "../interfaces/ERC20.sol";
 import "../interfaces/ERC20DividendInterface.sol";
-// import "../access/ERC20Burner.sol";
 
 interface Events {  function transaction(string _message, address _from, address _to, uint _amount, bytes32 _id)  external; }
 interface DB {
@@ -15,7 +14,7 @@ interface DB {
 }
 interface CrowdsaleERC20_KyberProxy{
   function getExpectedRate(address src, address dest, uint srcQty) external view returns (uint expectedRate, uint slippageRate);
-  function trade(address src, uint srcAmount, address dest, address destAddress, uint maxDestAmount,uint minConversionRate, address walletId) external payable returns(uint);
+  function trade(ERC20 src, uint srcAmount, ERC20 dest, address destAddress, uint maxDestAmount,uint minConversionRate, address walletId) external payable returns(uint);
 }
 
 interface CrowdsaleERC20_ERC20Burner {
@@ -61,12 +60,12 @@ contract CrowdsaleERC20{
     ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("crowdsale.fundingToken", _assetAddress))));
     uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));
     uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
-    uint amount; //This will be the value left over after any burning and conversions
+    uint amount; //This will be the value left over after any conversions
     //Check if the payment token is the same as the funding token. If not, convert, else just send some to the MYB burner
     if(_paymentToken == address(fundingToken)){
-      amount = fundBurn(_investor, _amount, msg.sig, fundingToken); //Convert and burn myb tokens, get remainder of funding tokens back
+      amount = collectPayment(_investor, _amount, tokensRemaining, fundingToken);
     } else {
-      amount = convertTokens(_investor, _amount, msg.sig, fundingToken, ERC20(_paymentToken), tokensRemaining);
+      amount = convertTokens(_investor, _amount, fundingToken, ERC20(_paymentToken), tokensRemaining);
     }
     require(amount > 0);
     if(amount < tokensRemaining){
@@ -126,6 +125,19 @@ contract CrowdsaleERC20{
     return true;
   }
 
+  function collectPayment(address user, uint amount, uint max, ERC20 token)
+  private
+  returns (uint){
+    if(amount > max){
+      token.transferFrom(user, address(this), max);
+      return max;
+    } else {
+      token.transferFrom(user, address(this), amount);
+      return amount;
+    }
+  }
+
+  /*
   function fundBurn(address _investor, uint _amount, bytes4 _sig, ERC20 _burnToken)
   private
   returns (uint) {
@@ -135,25 +147,24 @@ contract CrowdsaleERC20{
     uint change = _burnToken.balanceOf(this) - balanceBefore;
     return change;
   }
+  */
 
-  function convertTokens(address _investor, uint _amount, bytes4 _sig, ERC20 _fundingToken, ERC20 _paymentToken, uint _maxTokens)
+  function convertTokens(address _investor, uint _amount, /*bytes4 _sig,*/ ERC20 _fundingToken, ERC20 _paymentToken, uint _maxTokens)
   private
   returns (uint) {
-    //Burn fees and receive remaining funds into this contract
-    uint amount = fundBurn(_investor, _amount, _sig, _paymentToken);
-    (, uint minRate) = kyber.getExpectedRate(address(_paymentToken), address(_fundingToken), 0);
+    //Collect funds
+    uint amount = collectPayment(_investor, _amount, _amount, _paymentToken);
+    ( , uint minRate) = kyber.getExpectedRate(address(_paymentToken), address(_fundingToken), 0);
     // Mitigate ERC20 Approve front-running attack, by initially setting
     // allowance to 0
     require(_paymentToken.approve(address(kyber), 0));
     // Approve tokens so network can take them during the swap
-    _paymentToken.approve(address(kyber), amount);
+    _paymentToken.approve(address(kyber), _amount);
     uint paymentBalanceBefore = _paymentToken.balanceOf(this);
-    uint fundingBalanceBefore = _fundingToken.balanceOf(this);
     //Convert remaining funds into the funding token
-    kyber.trade(address(_paymentToken), amount, address(_fundingToken), address(this), _maxTokens, minRate, 0);
+    uint investment = kyber.trade(_paymentToken, _amount, _fundingToken, address(this), _maxTokens, minRate, 0);
     // Return any remaining source tokens to user
-    uint change = _paymentToken.balanceOf(this) - paymentBalanceBefore;
-    uint investment = _fundingToken.balanceOf(this) - fundingBalanceBefore;
+    uint change = _amount.sub(paymentBalanceBefore.sub(_paymentToken.balanceOf(this)));
     _paymentToken.transfer(_investor, change);
     return investment;
   }

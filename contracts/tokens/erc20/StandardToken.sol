@@ -19,7 +19,9 @@ contract StandardToken is ERC20 {
   mapping (address => mapping (address => uint256)) internal allowed;
 
   uint256 internal supply;
-
+  string public name;
+  string public symbol;
+  uint8 public decimals;
 
   /**
    * @dev Function to check the amount of tokens that an owner allowed to a spender.
@@ -133,6 +135,10 @@ contract StandardToken is ERC20 {
   */
   function totalSupply() public view returns (uint256) {
     return supply;
+  }
+
+  function decimals() public view returns (uint8) {
+    return decimals;
   }
 
   /**

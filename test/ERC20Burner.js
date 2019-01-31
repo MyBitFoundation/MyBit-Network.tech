@@ -1,4 +1,5 @@
 var bn = require('bignumber.js');
+bn.config({ EXPONENTIAL_AT: 80 });
 
 const Token = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
@@ -11,6 +12,10 @@ const TestBurner = artifacts.require("./test/TestBurner.sol");
 const tokenSupply = bn(18).times(10**25);
 const tokenPerAccount = bn(10**21);
 
+//Just passing an empty address for kyber, since no burning is being done
+const kyber = {
+  address : '0x0000000000000000000000000000000000000000'
+};
 
 contract('Burner', async(accounts) => {
   const owner = accounts[0];
@@ -36,12 +41,12 @@ contract('Burner', async(accounts) => {
   });
 
   it('Deploy Token', async() => {
-    token = await Token.new("MyBit", tokenSupply);
+    token = await Token.new('MyBit', 'MYB', tokenSupply.toString());
   });
 
   it('Spread tokens to users', async () => {
-    await token.transfer(user1, tokenPerAccount);
-    await token.transfer(user2, tokenPerAccount);
+    await token.transfer(user1, tokenPerAccount.toString());
+    await token.transfer(user2, tokenPerAccount.toString());
     /*
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
@@ -66,7 +71,7 @@ contract('Burner', async(accounts) => {
 
 
   it('Deploy ERC20Burner', async() => {
-    burner = await ERC20Burner.new(db.address, events.address);
+    burner = await ERC20Burner.new(db.address, events.address, kyber.address);
     await cm.addContract("ERC20Burner", burner.address);
     console.log(burner.address);
   });
@@ -74,17 +79,6 @@ contract('Burner', async(accounts) => {
   it('Deploy TestBurner', async() => {
     testBurner = await TestBurner.new(db.address, burner.address);
     await cm.addContract("TestBurner", testBurner.address);
-  });
-
-
-  it('Fail to send ether', async() => {
-    let err;
-    try{
-      await web3.eth.sendTransaction({from:user1, to: burner.address, value: 10000})
-    } catch(e){
-      err = e;
-    }
-    assert.notEqual(err, undefined);
   });
 
   // Only contract can burn tokens
@@ -96,7 +90,7 @@ contract('Burner', async(accounts) => {
     console.log(burner.address);
     let err;
     try{
-      await burner.burn(user2, 1000, {from: user1});
+      await burner.burn(user2, 1000, token.address, {from: user1});
     } catch(e){
       err = e;
       //console.log('Address not authorized')
@@ -147,7 +141,7 @@ contract('Burner', async(accounts) => {
     let burnAmount = 1000;
     try{
       await token.approve(burner.address, burnAmount, {from: user2});
-      await burner.burn(user2, burnAmount, {from: user1});
+      await burner.burn(user2, burnAmount, token.address, {from: user1});
     } catch(e){
       err = e;
       //console.log('User has not given permission to current state');
