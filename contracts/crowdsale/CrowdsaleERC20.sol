@@ -161,12 +161,15 @@ contract CrowdsaleERC20{
     // Approve tokens so network can take them during the swap
     _paymentToken.approve(address(kyber), _amount);
     uint paymentBalanceBefore = _paymentToken.balanceOf(this);
+    uint fundingBalanceBefore = _fundingToken.balanceOf(this);
     //Convert remaining funds into the funding token
-    uint investment = kyber.trade(_paymentToken, _amount, _fundingToken, address(this), _maxTokens, minRate, 0);
+    kyber.trade(_paymentToken, _amount, _fundingToken, address(this), _maxTokens, minRate, 0);
     // Return any remaining source tokens to user
     uint change = _amount.sub(paymentBalanceBefore.sub(_paymentToken.balanceOf(this)));
+    uint investment = _fundingToken.balanceOf(this).sub(fundingBalanceBefore);
     _paymentToken.transfer(_investor, change);
-    return investment;
+    emit Convert(address(_paymentToken), change, investment);
+    return 1;
   }
 
   // @notice platform owners can recover tokens here
@@ -254,4 +257,6 @@ contract CrowdsaleERC20{
     require( !database.boolStorage(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress))), "Crowdsale finalized");
     _;
   }
+
+  event Convert(address token, uint change, uint investment);
 }

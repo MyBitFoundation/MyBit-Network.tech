@@ -118,54 +118,6 @@ var getNetwork = function(){
   }
 };
 
-////////////////////////////////////////////////////////////////////////////////
-
-var parseInput = function( jsonInput ) {
-    // tokens
-    var tokenInfo = jsonInput["tokens"];
-    Object.keys(tokenInfo).forEach(function(key) {
-      var val = tokenInfo[key];
-      var symbol = key;
-      var name = val["name"];
-      var decimals = val["decimals"];
-      var initialBalance = val["reserve balance"];
-      if( initialBalance === undefined ) {
-        initialBalance = jsonInput["default reserve balances"]["token"];
-      }
-
-      tokenSymbol.push(key);
-      tokenName.push(name);
-      tokenDecimals.push(decimals);
-      tokenInitialReserveBalance.push(initialBalance);
-    });
-
-    internalUseTokens = jsonInput["internal use tokens"]
-    listedTokens = jsonInput["listed tokens"]
-
-    // exchanges
-    var exchangeInfo = jsonInput["exchanges"];
-    exchangeInfo.forEach(function(exchange) {
-      exchanges.push(exchange);
-    });
-    supportedTokens = jsonInput["supported_tokens"];
-
-    // special addresses
-    var specialAddresses = jsonInput["special addresses"];
-    victor_1 = specialAddresses["victor_1"];
-    victor_2 = specialAddresses["victor_2"];
-    victor_3 = specialAddresses["victor_3"];
-    nam = specialAddresses["nam"];
-    duc = specialAddresses["duc"];
-
-    // output file name
-    outputFileName = jsonInput["output filename"];
-
-    // reserve initial ether
-    reserveInitialEth = jsonInput["default reserve balances"]["ether"];
-};
-
-////////////////////////////////////////////////////////////////////////////////
-
 var deployTokens = function( owner ){
   return new Promise(function (fulfill, reject){
 
@@ -497,16 +449,206 @@ contract('Kyber', function(accounts) {
     done();
   });
 
-  it("read parameters from file", function() {
-    var fs = require("fs");
-    try{
-      var content = JSON.parse(fs.readFileSync("deployment_input.json", 'utf8'));
-      parseInput(content);
+  it("setup parameters", function() {
+    // tokens
+    var tokenInfo = {
+      "OMG": {
+        "name": "OmiseGO",
+        "decimals": 18,
+        "reserve balance": 1062.4452
+      },
+      "KNC": {
+        "name": "KyberNetwork",
+        "decimals": 18,
+        "reserve balance": 3291.3726
+      },
+      "EOS": {
+        "name": "Eos",
+        "decimals": 18,
+        "reserve balance": 1890.2334
+      },
+      "SNT": {
+        "name": "STATUS",
+        "decimals": 18,
+        "reserve balance": 74100.06
+      },
+      "ELF": {
+        "name": "AELF",
+        "decimals": 18,
+        "reserve balance": 9381.696
+      },
+      "POWR": {
+        "name": "Power Ledger",
+        "decimals": 6,
+        "reserve balance": 21139.446
+      },
+      "MANA": {
+        "name": "MANA",
+        "decimals": 18,
+        "reserve balance": 83010.6
+      },
+      "BAT": {
+        "name": "Basic Attention Token",
+        "decimals": 18,
+        "reserve balance": 24832.062
+      },
+      "REQ": {
+        "name": "Request",
+        "decimals": 18,
+        "reserve balance": 57109.62
+      },
+      "GTO": {
+        "name": "Gifto",
+        "decimals": 5,
+        "reserve balance": 36007.17
+      },
+      "RDN": {
+        "name": "Raiden",
+        "decimals": 18,
+        "reserve balance": 3595.0146
+      },
+      "APPC": {
+        "name": "AppCoins",
+        "decimals": 18,
+        "reserve balance": 14453.868
+      },
+      "ENG": {
+        "name": "Enigma",
+        "decimals": 8,
+        "reserve balance": 4226.7708
+      },
+      "SALT": {
+        "name": "Salt",
+        "decimals": 8,
+        "reserve balance": 2918.7378
+      },
+      "BQX": {
+        "name": "Ethos",
+        "decimals": 8
+      },
+      "ADX": {
+        "name": "AdEx",
+        "decimals": 4
+      },
+      "AST": {
+        "name": "AirSwap",
+        "decimals": 4
+      },
+      "RCN": {
+        "name": "RipioCreditNetwork",
+        "decimals": 18
+      },
+      "ZIL": {
+        "name": "Zilliqa",
+        "decimals": 12
+      },
+      "LINK": {
+        "name": "ChainLink",
+        "decimals": 18
+      },
+      "DAI": {
+        "name": "DAI",
+        "decimals": 18
+      },
+      "DGX": {
+        "name": "Digix Gold",
+        "decimals": 9
+      }
+    };
+    Object.keys(tokenInfo).forEach(function(key) {
+      var val = tokenInfo[key];
+      var symbol = key;
+      var name = val["name"];
+      var decimals = val["decimals"];
+      var initialBalance = val["reserve balance"];
+      if( initialBalance === undefined ) {
+        initialBalance = 1000000;
+      }
+
+      tokenSymbol.push(key);
+      tokenName.push(name);
+      tokenDecimals.push(decimals);
+      tokenInitialReserveBalance.push(initialBalance);
+    });
+
+    internalUseTokens = ["omg","knc","eos","snt","elf","powr","mana","bat","req","gto","rdn",
+                        "appc","eng","salt","bqx","ast","zil","link","dgx"]
+    listedTokens = ["omg","knc","eos","snt","elf","powr","mana","bat","req","gto","rdn","appc",
+                   "eng","salt","bqx","adx","ast","rcn","zil","link","dai"]
+
+    exchanges = ["bittrex","liqui","huobi","binance","bitfinex"]
+    supportedTokens = {
+      "bittrex": [
+        "omg",
+        "snt",
+        "powr",
+        "mana",
+        "bat",
+        "eng",
+        "salt"
+      ],
+      "liqui": [
+        "omg",
+        "knc",
+        "eos",
+        "snt",
+        "bat",
+        "eng"
+      ],
+      "huobi": [
+        "omg",
+        "eos",
+        "elf",
+        "powr",
+        "mana",
+        "bat",
+        "req",
+        "rdn",
+        "appc",
+        "eng",
+        "salt"
+      ],
+      "binance": [
+        "omg",
+        "knc",
+        "eos",
+        "snt",
+        "elf",
+        "powr",
+        "mana",
+        "bat",
+        "req",
+        "gto",
+        "rdn",
+        "appc",
+        "eng",
+        "salt",
+        "bqx"
+      ],
+      "bitfinex": [
+        "omg",
+        "eos",
+        "snt",
+        "bat"
+      ]
     }
-    catch(err) {
-      console.log(err);
-      assert.fail(err.toString());
-    }
+
+    victor_1 = "0x760d30979eb313a2d23c53e4fb55986183b0ffd9";
+    victor_2 = "0xEDd15B61505180B3A0C25B193dF27eF10214D851";
+    victor_3 = "0x13922f1857c0677f79e4bbb16ad2c49faa620829";
+    nam = [
+      "0x385baa4d78c91e5ce6ccafab9e96fdc83ea4427d",
+      "0x1d217486cdd98c6f565ef567cba26dc331660fb6",
+      "0x2ebac32cb5b6c1eebabe59e288d120fb3422cef7",
+      "0x7b29938afb14cd0eaa5abf2519c9e7c052f6a278",
+      "0x9ca354a72d66127875db293765179a767315058e",
+      "0xc6bc2f7b73da733366985f5f5b485262b45a77a3"
+    ];
+    duc = "0x25B8b1F2c21A70B294231C007e834Ad2de04f51F";
+
+
+    // reserve initial ether
+    reserveInitialEth = 16;
   });
 
 
@@ -909,16 +1051,6 @@ contract('Kyber', function(accounts) {
     dict["feeburner"] = feeBurner.address;
     dict["KGT address"] = kgtInstance.address;
     dict["third_party_reserves"] = [];
-
-    var json = JSON.stringify(dict, null, 2);
-
-    console.log(json);
-
-    // writefilesync.js
-    var fs = require('fs');
-    fs.writeFileSync(outputFileName, json);
-
-    console.log("json file is saved in " + outputFileName);
   });
 
   it("reduce valid block duration to: " + validBlockDuration, function() {
@@ -986,4 +1118,21 @@ contract('Kyber', function(accounts) {
       console.log('Max: ', BigNumber(logs[0].args.max).toString());
       console.log('Min rate: ', BigNumber(logs[0].args.minRate).toString());
     });
+
+    it('Should make investment in asset', async() => {
+      await tokenInstance[2].transfer(accounts[3], BigNumber(10**24).toString());
+
+      await tokenInstance[2].approve(crowdsale.address, BigNumber(5).times(ETH).toString(), {from:accounts[3]});
+      let block = await web3.eth.getBlock('latest');
+      await crowdsale.buyAssetOrderERC20(assetAddress, accounts[3], BigNumber(5).times(ETH).toString(), tokenInstance[2].address, {from:accounts[3]});
+      let logs = await crowdsale.getPastEvents('Convert', {filter: {}, fromBlock:block.number});
+      console.log(logs[0].args);
+      let userAssetTokens = BigNumber(await assetToken.balanceOf(accounts[3]));
+      console.log('Asset Address: ' + assetToken.address);
+      console.log('User: ' + accounts[3]);
+      console.log('User asset tokens: ' + userAssetTokens.toNumber());
+
+      let assetTokenSupply = await assetToken.totalSupply()
+      console.log('assetToken Supply: ' + assetTokenSupply);
+    })
 });
