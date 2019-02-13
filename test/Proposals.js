@@ -1,4 +1,5 @@
 var bn = require('bignumber.js');
+bn.config({ EXPONENTIAL_AT: 80 });
 
 const Token = artifacts.require('MyBitToken');
 const Proposals = artifacts.require('Proposals');
@@ -87,7 +88,7 @@ contract('Proposals', async (accounts) => {
   });
 
   it("Deploy standard token", async() => {
-    token = await Token.new('MYB', tokenSupply);
+    token = await Token.new('MyBit', 'MYB', tokenSupply.toString());
     assert.equal(tokenSupply.eq(await token.balanceOf(owner)), true);
   });
 

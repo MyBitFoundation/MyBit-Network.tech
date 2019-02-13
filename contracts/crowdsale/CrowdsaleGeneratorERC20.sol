@@ -2,12 +2,15 @@
 
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
-// import "../access/ERC20Burner.sol";
 import "../tokens/erc20/DividendTokenERC20.sol";
 import "../database/Events.sol";
 
 interface CrowdsaleGeneratorERC20_ERC20 {
   function transferFrom(address _from, address _to, uint256 _value) external returns (bool);
+}
+
+interface CrowdsaleGeneratorERC20_ERC20Burner {
+  function burn(address _tokenHolder, uint _amount, address _burnToken) payable external returns (bool);
 }
 
 // @title A crowdsale generator contract
@@ -18,7 +21,7 @@ contract CrowdsaleGeneratorERC20 {
 
   DBInterface private database;
   Events private events;
-  // ERC20Burner private burner;
+  CrowdsaleGeneratorERC20_ERC20Burner private burner;
 
   uint constant scalingFactor = 10**32;
 
@@ -28,7 +31,7 @@ contract CrowdsaleGeneratorERC20 {
   public{
       database = DBInterface(_database);
       events = Events(_events);
-      // burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
+      burner = CrowdsaleGeneratorERC20_ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
   }
 
   // @notice AssetManagers can initiate a crowdfund for a new asset here
@@ -40,10 +43,12 @@ contract CrowdsaleGeneratorERC20 {
   // @param (uint) _amountToRaise = The amount of tokens required to raise for the crowdsale to be a success
   // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
   // @param (address) _fundingToken = The ERC20 token to be used to fund the crowdsale (Operator must accept this token as payment)
-  function createAssetOrderERC20(string _assetURI, address _assetManager, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc, uint _escrow, address _fundingToken)
+  function createAssetOrderERC20(string _assetURI, address _assetManager, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc, uint _escrow, address _fundingToken, address _burnToken)
+  payable
   external
   // burnRequired
   {
+    require(burner.burn.value(msg.value)(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this)))), _burnToken));
     require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), "User not approved");
     require(_amountToRaise > 0, "Crowdsale goal is zero");
     require(_assetManagerPerc < 100, "Manager percent need to be less than 100");

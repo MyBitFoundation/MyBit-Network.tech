@@ -2,7 +2,7 @@ var fs = require('fs');
 var bn = require('bignumber.js');
 
 module.exports = function(deployer, network, accounts) {
-  if(network != 'coverage'){
+  if(network != 'coverage' && network != 'development'){
     var MyBitToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
     var Database = artifacts.require("./database/Database.sol");
     var Events = artifacts.require("./database/Events.sol");

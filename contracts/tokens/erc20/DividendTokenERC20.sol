@@ -28,7 +28,7 @@ contract DividendTokenERC20 is MintableToken {
 
     // @notice constructor: initialized
     constructor(string _tokenURI, address _owner, address _erc20Address)
-    public  MintableToken(_tokenURI, _owner){
+    public  MintableToken(_tokenURI, _tokenURI, uint8(18), _owner){
         erc20 = ERC20(_erc20Address); //Set the address of the ERC20 token that will be issued as dividends
     }
 

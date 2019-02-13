@@ -1,4 +1,5 @@
 const bn = require('bignumber.js');
+bn.config({ EXPONENTIAL_AT: 80 });
 
 /* Contracts  */
 const Token = artifacts.require("./tokens/distribution/MintableDistribution.sol");
@@ -17,6 +18,7 @@ contract('Mintable Distribution', async (accounts) => {
 
   let token;
   let tokenURI = 'MintyMint';
+  let tokenSymbol = 'MM';
 
   it('Deploy Token', async() => {
     token = await Token.new(tokenURI, owner);
@@ -26,7 +28,7 @@ contract('Mintable Distribution', async (accounts) => {
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
       console.log(accounts[i]);
-      await token.mint(tokenHolders[i], tokenPerAccount);
+      await token.mint(tokenHolders[i], tokenPerAccount.toString());
       userBalance = bn(await token.balanceOf(tokenHolders[i]));
       assert.equal(userBalance.eq(tokenPerAccount), true);
     }

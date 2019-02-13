@@ -1,4 +1,5 @@
 var bn = require('bignumber.js');
+bn.config({ EXPONENTIAL_AT: 80 });
 
 const Token = artifacts.require("./tokens/ERC20/DividendToken.sol");
 const ApproveAndCall = artifacts.require("./test/ApproveAndCallTest.sol");
@@ -27,7 +28,7 @@ contract('Dividend Token Ether', async(accounts) => {
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
       console.log(accounts[i]);
-      await token.mint(tokenHolders[i], tokenPerAccount);
+      await token.mint(tokenHolders[i], tokenPerAccount.toString());
       userBalance = bn(await token.balanceOf(tokenHolders[i]));
       assert.equal(userBalance.eq(tokenPerAccount), true);
     }
@@ -69,14 +70,14 @@ contract('Dividend Token Ether', async(accounts) => {
 
   it('Transfer tokens with dividends not withdrawn', async() => {
     user2Balance1 = web3.eth.getBalance(user2);
-    await token.transfer(user3, tokenPerAccount/2, {from: user2});
+    await token.transfer(user3, tokenPerAccount.div(2).toString(), {from: user2});
     user2Balance2 = web3.eth.getBalance(user2);
     console.log(user2Balance2 - user2Balance1);
     await token.withdraw({from: user2})
     user2Balance3 = web3.eth.getBalance(user2);
     console.log(user2Balance3 - user2Balance2);
 
-    await web3.eth.sendTransaction({from:owner, to:token.address, value:10*ETH})
+    await web3.eth.sendTransaction({from:owner, to:token.address, value:bn(10).times(ETH).toString()})
     user3Balance1 = web3.eth.getBalance(user3);
     await token.withdraw({from: user3})
     user3Balance2 = web3.eth.getBalance(user3);
@@ -172,7 +173,7 @@ contract('Dividend Token Ether', async(accounts) => {
   it('Fail to transfer from', async() => {
     let err;
     try{
-      await token.transferFrom(user1, user2, 10000000*ETH);
+      await token.transferFrom(user1, user2, bn(10000000).times(ETH).toString());
     } catch(e){
       err = e;
     }

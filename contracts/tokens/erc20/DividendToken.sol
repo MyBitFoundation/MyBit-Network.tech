@@ -23,7 +23,7 @@ contract DividendToken is MintableToken {
     // @notice constructor: initialized
     constructor(string _tokenURI, address _owner)
     public
-    MintableToken(_tokenURI, _owner){}
+    MintableToken(_tokenURI, _tokenURI, uint8(18), _owner){}
 
     // @notice Transfer _amount tokens to address _to.
     // @dev Sender must have enough tokens. Cannot send to 0x0.
