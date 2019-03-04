@@ -346,6 +346,12 @@ module.exports = function(deployer, network, accounts) {
         console.log('Accounts Saved');
       });
 
+      var contracts_js = 'module.exports = ' + contracts_json;
+      fs.writeFile('networks/' + network + '/Contracts.js', contracts_js, (err) => {
+        if (err) throw err;
+        console.log('Contracts Script Saved');
+      });
+
       instanceList = [MyB, burner, db, events, cm, api, owned, pausible, access,
                       platform, operators, escrow, managerFunds,
                       assetGenerator, crowdsaleETH, crowdsaleGeneratorETH,

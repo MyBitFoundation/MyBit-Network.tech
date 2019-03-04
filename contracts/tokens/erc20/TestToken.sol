@@ -8,7 +8,7 @@ import "../../math/SafeMath.sol";
 contract TestToken is BurnableToken{
   using SafeMath for uint256;
 
-  uint public INITIAL_SUPPLY = 10**(50+18);
+  uint public INITIAL_SUPPLY = 10**(68);
 
   constructor(string _name, string _symbol, uint8 _decimals) public {
       supply = INITIAL_SUPPLY;
