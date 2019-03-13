@@ -203,7 +203,6 @@ contract CrowdsaleERC20{
   returns (bool) {
     require(asset.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerFee", address(asset))))), "Manager minting failed");
     database.setBool(keccak256(abi.encodePacked("crowdsale.finalized", address(asset))), true);
-    database.deleteUint(keccak256(abi.encodePacked("crowdsale.goal", address(asset))));
     database.deleteUint(keccak256(abi.encodePacked("asset.managerFee", address(asset))));
     database.deleteUint(keccak256(abi.encodePacked("crowdsale.start", address(asset))));
     require(asset.finishMinting(), "Minting not finished");

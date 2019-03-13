@@ -136,7 +136,6 @@ contract CrowdsaleETH {
     internal
     returns (bool) {
         database.setBool(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress)), true);
-        database.deleteUint(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));     // This is now represented as totalSupply in the asset-token
         database.deleteUint(keccak256(abi.encodePacked("asset.managerFee", _assetAddress)));   // This is now represented as tokens in AssetManagerFunds.sol
         return true;
     }

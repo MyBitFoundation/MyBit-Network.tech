@@ -316,7 +316,7 @@ contract API {
   public
   view
   returns(bool) {
-    return (now > getCrowdsaleDeadline(_assetAddress) && !crowdsaleFinalized(_assetAddress))
+    return (now > getCrowdsaleDeadline(_assetAddress) && !crowdsaleFinalized(_assetAddress));
   }
 
 

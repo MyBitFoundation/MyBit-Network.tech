@@ -707,6 +707,26 @@
                 "type": "address"
             }
         ],
+        "name": "crowdsaleFailed",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x5f05532f"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            }
+        ],
         "name": "getAssetManager",
         "outputs": [
             {
