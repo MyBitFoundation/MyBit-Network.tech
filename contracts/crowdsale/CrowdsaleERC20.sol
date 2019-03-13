@@ -197,16 +197,16 @@ contract CrowdsaleERC20{
 
   // @notice internal function for freeing up storage after crowdsale finishes
   // @param the ID of this asset.
-  function finalizeCrowdsale(ERC20DividendInterface asset, uint _amountToRaise)
+  function finalizeCrowdsale(ERC20DividendInterface _asset, uint _amountToRaise)
   internal
   whenNotPaused
   returns (bool) {
-    require(asset.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerFee", address(asset))))), "Manager minting failed");
-    database.setBool(keccak256(abi.encodePacked("crowdsale.finalized", address(asset))), true);
-    database.deleteUint(keccak256(abi.encodePacked("asset.managerFee", address(asset))));
-    database.deleteUint(keccak256(abi.encodePacked("crowdsale.start", address(asset))));
-    require(asset.finishMinting(), "Minting not finished");
-    require(payoutERC20(address(asset), _amountToRaise), "Payout failed");          // 1 token = 1 wei
+    require(_asset.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerFee", address(_asset))))), "Manager minting failed");
+    database.setBool(keccak256(abi.encodePacked("crowdsale.finalized", address(_asset))), true);
+    //database.deleteUint(keccak256(abi.encodePacked("asset.managerFee", address(asset))));
+    database.deleteUint(keccak256(abi.encodePacked("crowdsale.start", address(_asset))));
+    require(_asset.finishMinting(), "Minting not finished");
+    require(payoutERC20(address(_asset), _amountToRaise), "Payout failed");          // 1 token = 1 wei
     return true;
   }
 
