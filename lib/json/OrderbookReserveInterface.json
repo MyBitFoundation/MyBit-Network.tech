@@ -1,0 +1,378 @@
+{
+  "contractName": "OrderbookReserveInterface",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "init",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "kncRateBlocksTrade",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "pragma solidity 0.4.24;\n\n\nimport \"./OrderListFactoryInterface.sol\";\n\n\ninterface OrderbookReserveInterface {\n    function init() external returns(bool);\n    function kncRateBlocksTrade() external view returns(bool);\n}\n",
+  "sourcePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/kyber/OrderbookReserveInterface.sol",
+  "ast": {
+    "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/kyber/OrderbookReserveInterface.sol",
+    "exportedSymbols": {
+      "OrderbookReserveInterface": [
+        19763
+      ]
+    },
+    "id": 19764,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 19751,
+        "literals": [
+          "solidity",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:61"
+      },
+      {
+        "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/kyber/OrderListFactoryInterface.sol",
+        "file": "./OrderListFactoryInterface.sol",
+        "id": 19752,
+        "nodeType": "ImportDirective",
+        "scope": 19764,
+        "sourceUnit": 16333,
+        "src": "26:41:61",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 19763,
+        "linearizedBaseContracts": [
+          19763
+        ],
+        "name": "OrderbookReserveInterface",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 19757,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "init",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 19753,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "125:2:61"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 19756,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 19755,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 19757,
+                  "src": "145:4:61",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 19754,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "145:4:61",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "144:6:61"
+            },
+            "scope": 19763,
+            "src": "112:39:61",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 19762,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "kncRateBlocksTrade",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 19758,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "183:2:61"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 19761,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 19760,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 19762,
+                  "src": "208:4:61",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 19759,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "208:4:61",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "207:6:61"
+            },
+            "scope": 19763,
+            "src": "156:58:61",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 19764,
+        "src": "70:146:61"
+      }
+    ],
+    "src": "0:217:61"
+  },
+  "legacyAST": {
+    "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/kyber/OrderbookReserveInterface.sol",
+    "exportedSymbols": {
+      "OrderbookReserveInterface": [
+        19763
+      ]
+    },
+    "id": 19764,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 19751,
+        "literals": [
+          "solidity",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:61"
+      },
+      {
+        "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/kyber/OrderListFactoryInterface.sol",
+        "file": "./OrderListFactoryInterface.sol",
+        "id": 19752,
+        "nodeType": "ImportDirective",
+        "scope": 19764,
+        "sourceUnit": 16333,
+        "src": "26:41:61",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 19763,
+        "linearizedBaseContracts": [
+          19763
+        ],
+        "name": "OrderbookReserveInterface",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 19757,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "init",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 19753,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "125:2:61"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 19756,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 19755,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 19757,
+                  "src": "145:4:61",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 19754,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "145:4:61",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "144:6:61"
+            },
+            "scope": 19763,
+            "src": "112:39:61",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 19762,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "kncRateBlocksTrade",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 19758,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "183:2:61"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 19761,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 19760,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 19762,
+                  "src": "208:4:61",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 19759,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "208:4:61",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "207:6:61"
+            },
+            "scope": 19763,
+            "src": "156:58:61",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 19764,
+        "src": "70:146:61"
+      }
+    ],
+    "src": "0:217:61"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.24+commit.e67f0147.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.0.1",
+  "updatedAt": "2019-03-13T22:36:34.363Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}
