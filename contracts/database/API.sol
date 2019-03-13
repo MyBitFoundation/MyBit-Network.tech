@@ -302,16 +302,21 @@ contract API {
   public
   view
   returns(uint) {
-    uint crowdsaleDeadline = database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress)));
-    return crowdsaleDeadline;
+    return database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress)));
   }
 
   function crowdsaleFinalized(address _assetAddress)
   public
   view
   returns(bool) {
-    bool status = database.boolStorage(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress)));
-    return status;
+    return database.boolStorage(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress)));
+  }
+
+  function crowdsaleFailed(address _assetAddress)
+  public
+  view
+  returns(bool) {
+    return (now > getCrowdsaleDeadline(_assetAddress) && !crowdsaleFinalized(_assetAddress));
   }
 
 

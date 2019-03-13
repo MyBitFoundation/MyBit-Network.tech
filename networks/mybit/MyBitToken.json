@@ -1,5 +1,20 @@
 [
     {
+        "constant": true,
+        "inputs": [],
+        "name": "name",
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x06fdde03"
+    },
+    {
         "constant": false,
         "inputs": [
             {
@@ -69,17 +84,17 @@
     {
         "constant": true,
         "inputs": [],
-        "name": "tokenURI",
+        "name": "decimals",
         "outputs": [
             {
                 "name": "",
-                "type": "string"
+                "type": "uint8"
             }
         ],
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0x3c130d90"
+        "signature": "0x313ce567"
     },
     {
         "constant": false,
@@ -170,6 +185,21 @@
         "signature": "0x79cc6790"
     },
     {
+        "constant": true,
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x95d89b41"
+    },
+    {
         "constant": false,
         "inputs": [
             {
@@ -245,6 +275,10 @@
         "inputs": [
             {
                 "name": "_tokenURI",
+                "type": "string"
+            },
+            {
+                "name": "_symbol",
                 "type": "string"
             },
             {

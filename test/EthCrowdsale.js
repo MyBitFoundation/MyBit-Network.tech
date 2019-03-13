@@ -6,6 +6,7 @@ const PlatformToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
 const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 const Crowdsale = artifacts.require("./crowdsale/CrowdsaleETH.sol");
 const CrowdsaleGenerator = artifacts.require("./crowdsale/CrowdsaleGeneratorETH.sol");
+const AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
 const Database = artifacts.require("./database/Database.sol");
 const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
@@ -40,6 +41,7 @@ contract('Ether Crowdsale', async(accounts) => {
   let platformToken;
   let crowdsale;
   let crowdsaleGen;
+  let escrow;
   let db;
   let events;
   let cm;
@@ -100,6 +102,11 @@ contract('Ether Crowdsale', async(accounts) => {
     await platform.setPlatformToken(platformToken.address);
   });
 
+  it('Deploy assetManager escrow', async() => {
+    escrow = await AssetManagerEscrow.new(db.address, events.address);
+    await cm.addContract('AssetManagerEscrow', escrow.address);
+  });
+
   it('Deploy burner contract', async() => {
     burner = await ERC20Burner.new(db.address, events.address, kyber.address);
     await cm.addContract("ERC20Burner", burner.address);
@@ -155,7 +162,8 @@ contract('Ether Crowdsale', async(accounts) => {
     let now = bn(block.timestamp);
     console.log(now);
     let startTime = now.plus(86400); //Startime is a day from now
-    await crowdsaleGen.createAssetOrderETH(assetURI, assetManager, operatorID, 100, startTime, bn(20).times(ETH), assetManagerFee, 0, platformToken.address, {from:assetManager});
+    await platformToken.approve(crowdsaleGen.address, 10, {from:assetManager});
+    await crowdsaleGen.createAssetOrderETH(assetURI, assetManager, operatorID, 100, startTime, bn(20).times(ETH), assetManagerFee, 10, platformToken.address, {from:assetManager});
     let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: assetManager}, fromBlock: block.number});
     assetAddress = logs[0].args.asset;
     token = await Token.at(assetAddress);

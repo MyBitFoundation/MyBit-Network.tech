@@ -1,4 +1,4 @@
-{
+module.exports = {
     "MyBitToken": "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B",
     "ERC20Burner": "0xDDb64fE46a91D46ee29420539FC25FD07c5FEa3E",
     "Database": "0x21a59654176f2689d12E828B77a783072CD26680",

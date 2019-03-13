@@ -172,12 +172,17 @@
                 "type": "string"
             },
             {
+                "indexed": true,
+                "name": "assetID",
+                "type": "bytes32"
+            },
+            {
                 "indexed": false,
                 "name": "asset",
                 "type": "address"
             },
             {
-                "indexed": true,
+                "indexed": false,
                 "name": "manager",
                 "type": "address"
             },
@@ -189,7 +194,7 @@
         ],
         "name": "LogAsset",
         "type": "event",
-        "signature": "0x1de50885656f1a1113f6d3e23103440fd2f8dadc8ea04fe3bae26bb3a5713282"
+        "signature": "0x81e3988b2d4a535c38a8d0bb25f1bf3fc0fae4304f13292258c80460d319048f"
     },
     {
         "anonymous": false,

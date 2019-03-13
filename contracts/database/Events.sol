@@ -36,7 +36,7 @@ contract Events {
   function asset(string _message, string _uri, address _assetAddress, address _manager)
   external
   onlyApprovedContract {
-      emit LogAsset(_message, keccak256(abi.encodePacked(_message)), _uri, _assetAddress, _manager, tx.origin);
+      emit LogAsset(_message, keccak256(abi.encodePacked(_message)), _uri, keccak256(abi.encodePacked(_uri)), _assetAddress, _manager, tx.origin);
   }
 
   function escrow(string _message, address _assetAddress, bytes32 _escrowID, address _manager, uint _amount)
@@ -74,7 +74,7 @@ contract Events {
   event LogTransaction(string message, bytes32 indexed messageID, address indexed from, address indexed to, uint amount, bytes32 id, address origin); //amount and id will be empty on some events
   event LogAddress(string message, bytes32 indexed messageID, address indexed account, address indexed origin);
   event LogContractChange(string message, bytes32 indexed messageID, address indexed account, string name, address indexed origin);
-  event LogAsset(string message, bytes32 indexed messageID, string uri, address asset, address indexed manager, address indexed origin);
+  event LogAsset(string message, bytes32 indexed messageID, string uri, bytes32 indexed assetID, address asset, address manager, address indexed origin);
   event LogEscrow(string message, bytes32 indexed messageID, address asset, bytes32  escrowID, address indexed manager, uint amount, address indexed origin);
   event LogOrder(string message, bytes32 indexed messageID, bytes32 indexed orderID, uint amount, uint price, address indexed origin);
   event LogExchange(string message, bytes32 indexed messageID, bytes32 orderID, address indexed asset, address account, address indexed origin);

@@ -25,7 +25,7 @@ cp networks/mybit/contracts.json  $CHAIN_DIR
 cp networks/mybit/accounts.json  $CHAIN_DIR
 #Move back to chain directory
 cd $CHAIN_DIR
-If git exists in folder, update git
+#If git exists in folder, update git
 if [ -d .git ]; then
   echo "Updating git..."
   #Add to git

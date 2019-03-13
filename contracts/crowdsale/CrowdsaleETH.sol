@@ -52,11 +52,11 @@ contract CrowdsaleETH {
       uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
       if (msg.value >= tokensRemaining) {
         // Give assetManager his portion of tokens
-        require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerFee", _assetAddress)))), "Manager minting failed");
-        require(finalizeCrowdsale(_assetAddress));    // delete unnecessary variables
+        //require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerFee", _assetAddress)))), "Manager minting failed");
         require(assetToken.mint(_investor, tokensRemaining), "Investor minting failed");   // Send remaining asset tokens
-        require(assetToken.finishMinting(), "Minting not finished");
-        require(payoutETH(_assetAddress, amountToRaise), "Payout failed");          // 1 token = 1 wei
+        require(finalizeCrowdsale(assetToken, amountToRaise));    // delete unnecessary variables
+        //require(assetToken.finishMinting(), "Minting not finished");
+        //require(payoutETH(_assetAddress, amountToRaise), "Payout failed");          // 1 token = 1 wei
         msg.sender.transfer(msg.value.sub(tokensRemaining));     // Return leftover WEI after cost of tokens calculated and subtracted from msg.value to msg.sender *NOT _investor
       }
       else {
@@ -132,13 +132,17 @@ contract CrowdsaleETH {
 
     // @notice internal function for freeing up storage after crowdsale finishes
     // @param the ID of this asset.
-    function finalizeCrowdsale(address _assetAddress)
+    function finalizeCrowdsale(EtherDividendInterface _asset, uint _amountToRaise)
     internal
     returns (bool) {
-        database.setBool(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress)), true);
-        database.deleteUint(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));     // This is now represented as totalSupply in the asset-token
-        database.deleteUint(keccak256(abi.encodePacked("asset.managerFee", _assetAddress)));   // This is now represented as tokens in AssetManagerFunds.sol
-        return true;
+      require(_asset.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerFee", address(_asset))))), "Manager minting failed");
+      database.setBool(keccak256(abi.encodePacked("crowdsale.finalized", address(_asset))), true);
+      //database.deleteUint(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));     // This is now represented as totalSupply in the asset-token
+      //database.deleteUint(keccak256(abi.encodePacked("asset.managerFee", _assetAddress)));   // This is now represented as tokens in AssetManagerFunds.sol
+      database.deleteUint(keccak256(abi.encodePacked("crowdsale.start", address(_asset))));
+      require(_asset.finishMinting(), "Minting not finished");
+      require(payoutETH(address(_asset), _amountToRaise), "Payout failed");          // 1 token = 1 wei
+      return true;
     }
 
 

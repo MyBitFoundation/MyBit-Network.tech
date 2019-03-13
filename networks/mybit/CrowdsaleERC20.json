@@ -1,35 +1,5 @@
 [
     {
-        "constant": true,
-        "inputs": [],
-        "name": "database",
-        "outputs": [
-            {
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x713b563f"
-    },
-    {
-        "constant": true,
-        "inputs": [],
-        "name": "events",
-        "outputs": [
-            {
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xb5f8558c"
-    },
-    {
         "inputs": [
             {
                 "name": "_database",
@@ -38,12 +8,39 @@
             {
                 "name": "_events",
                 "type": "address"
+            },
+            {
+                "name": "_kyber",
+                "type": "address"
             }
         ],
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "constructor",
         "signature": "constructor"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "token",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "change",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "name": "investment",
+                "type": "uint256"
+            }
+        ],
+        "name": "Convert",
+        "type": "event",
+        "signature": "0x9018eade4aec2a696b34b0f5459a1a7dc058389bab8e2380d880817a9e22b213"
     },
     {
         "constant": false,
@@ -59,6 +56,10 @@
             {
                 "name": "_amount",
                 "type": "uint256"
+            },
+            {
+                "name": "_paymentToken",
+                "type": "address"
             }
         ],
         "name": "buyAssetOrderERC20",
@@ -71,7 +72,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0xe8500335"
+        "signature": "0xdbfaee12"
     },
     {
         "constant": false,
