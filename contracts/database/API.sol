@@ -312,6 +312,13 @@ contract API {
     return database.boolStorage(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress)));
   }
 
+  function crowdsalePaid(address _assetAddress)
+  public
+  view
+  returns(bool) {
+    return database.boolStorage(keccak256(abi.encodePacked("crowdsale.paid", _assetAddress)));
+  }
+
   function crowdsaleFailed(address _assetAddress)
   public
   view

@@ -61,14 +61,14 @@
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/kyber/FeeBurnerInterface.sol",
     "exportedSymbols": {
       "FeeBurnerInterface": [
-        12242
+        12338
       ]
     },
-    "id": 12243,
+    "id": 12339,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 12221,
+        "id": 12317,
         "literals": [
           "solidity",
           "^",
@@ -84,9 +84,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 12242,
+        "id": 12338,
         "linearizedBaseContracts": [
-          12242
+          12338
         ],
         "name": "FeeBurnerInterface",
         "nodeType": "ContractDefinition",
@@ -94,7 +94,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 12232,
+            "id": 12328,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -102,15 +102,15 @@
             "name": "handleFees",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12228,
+              "id": 12324,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12223,
+                  "id": 12319,
                   "name": "tradeWeiAmount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12232,
+                  "scope": 12328,
                   "src": "82:19:46",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -119,7 +119,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12222,
+                    "id": 12318,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "82:4:46",
@@ -133,10 +133,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 12225,
+                  "id": 12321,
                   "name": "reserve",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12232,
+                  "scope": 12328,
                   "src": "103:15:46",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -145,7 +145,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 12224,
+                    "id": 12320,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "103:7:46",
@@ -159,10 +159,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 12227,
+                  "id": 12323,
                   "name": "wallet",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12232,
+                  "scope": 12328,
                   "src": "120:14:46",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -171,7 +171,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 12226,
+                    "id": 12322,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "120:7:46",
@@ -188,15 +188,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 12231,
+              "id": 12327,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12230,
+                  "id": 12326,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12232,
+                  "scope": 12328,
                   "src": "153:4:46",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -205,7 +205,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 12229,
+                    "id": 12325,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "153:4:46",
@@ -220,7 +220,7 @@
               ],
               "src": "152:6:46"
             },
-            "scope": 12242,
+            "scope": 12338,
             "src": "61:98:46",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -229,7 +229,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 12241,
+            "id": 12337,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -237,15 +237,15 @@
             "name": "setReserveData",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12239,
+              "id": 12335,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12234,
+                  "id": 12330,
                   "name": "reserve",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12241,
+                  "scope": 12337,
                   "src": "188:15:46",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -254,7 +254,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 12233,
+                    "id": 12329,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "188:7:46",
@@ -268,10 +268,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 12236,
+                  "id": 12332,
                   "name": "feesInBps",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12241,
+                  "scope": 12337,
                   "src": "205:14:46",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -280,7 +280,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12235,
+                    "id": 12331,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "205:4:46",
@@ -294,10 +294,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 12238,
+                  "id": 12334,
                   "name": "kncWallet",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12241,
+                  "scope": 12337,
                   "src": "221:17:46",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -306,7 +306,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 12237,
+                    "id": 12333,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "221:7:46",
@@ -323,19 +323,19 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 12240,
+              "id": 12336,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "248:0:46"
             },
-            "scope": 12242,
+            "scope": 12338,
             "src": "164:85:46",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 12243,
+        "scope": 12339,
         "src": "26:225:46"
       }
     ],
@@ -345,14 +345,14 @@
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/kyber/FeeBurnerInterface.sol",
     "exportedSymbols": {
       "FeeBurnerInterface": [
-        12242
+        12338
       ]
     },
-    "id": 12243,
+    "id": 12339,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 12221,
+        "id": 12317,
         "literals": [
           "solidity",
           "^",
@@ -368,9 +368,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 12242,
+        "id": 12338,
         "linearizedBaseContracts": [
-          12242
+          12338
         ],
         "name": "FeeBurnerInterface",
         "nodeType": "ContractDefinition",
@@ -378,7 +378,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 12232,
+            "id": 12328,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -386,15 +386,15 @@
             "name": "handleFees",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12228,
+              "id": 12324,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12223,
+                  "id": 12319,
                   "name": "tradeWeiAmount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12232,
+                  "scope": 12328,
                   "src": "82:19:46",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -403,7 +403,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12222,
+                    "id": 12318,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "82:4:46",
@@ -417,10 +417,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 12225,
+                  "id": 12321,
                   "name": "reserve",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12232,
+                  "scope": 12328,
                   "src": "103:15:46",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -429,7 +429,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 12224,
+                    "id": 12320,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "103:7:46",
@@ -443,10 +443,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 12227,
+                  "id": 12323,
                   "name": "wallet",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12232,
+                  "scope": 12328,
                   "src": "120:14:46",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -455,7 +455,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 12226,
+                    "id": 12322,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "120:7:46",
@@ -472,15 +472,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 12231,
+              "id": 12327,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12230,
+                  "id": 12326,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12232,
+                  "scope": 12328,
                   "src": "153:4:46",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -489,7 +489,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 12229,
+                    "id": 12325,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "153:4:46",
@@ -504,7 +504,7 @@
               ],
               "src": "152:6:46"
             },
-            "scope": 12242,
+            "scope": 12338,
             "src": "61:98:46",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -513,7 +513,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 12241,
+            "id": 12337,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -521,15 +521,15 @@
             "name": "setReserveData",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12239,
+              "id": 12335,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12234,
+                  "id": 12330,
                   "name": "reserve",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12241,
+                  "scope": 12337,
                   "src": "188:15:46",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -538,7 +538,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 12233,
+                    "id": 12329,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "188:7:46",
@@ -552,10 +552,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 12236,
+                  "id": 12332,
                   "name": "feesInBps",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12241,
+                  "scope": 12337,
                   "src": "205:14:46",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -564,7 +564,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12235,
+                    "id": 12331,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "205:4:46",
@@ -578,10 +578,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 12238,
+                  "id": 12334,
                   "name": "kncWallet",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12241,
+                  "scope": 12337,
                   "src": "221:17:46",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -590,7 +590,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 12237,
+                    "id": 12333,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "221:7:46",
@@ -607,19 +607,19 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 12240,
+              "id": 12336,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "248:0:46"
             },
-            "scope": 12242,
+            "scope": 12338,
             "src": "164:85:46",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 12243,
+        "scope": 12339,
         "src": "26:225:46"
       }
     ],
@@ -630,8 +630,8 @@
     "version": "0.4.24+commit.e67f0147.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.0.1",
-  "updatedAt": "2019-03-13T22:36:34.240Z",
+  "schemaVersion": "3.0.2",
+  "updatedAt": "2019-03-14T21:46:28.600Z",
   "devdoc": {
     "methods": {}
   },
