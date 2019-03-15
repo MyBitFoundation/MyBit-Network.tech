@@ -1,11 +1,9 @@
 pragma solidity ^0.4.24;
 
 import "../bancor/IBancorNetwork.sol";
-import "../bancor/token/EtherToken.sol";
 import "../bancor/token/interfaces/IERC20Token.sol";
 import "../bancor/token/interfaces/ISmartToken.sol";
 import "../bancor/token/interfaces/IEtherToken.sol";
-import "../bancor/token/SmartToken.sol";
 import "../interfaces/DBInterface.sol";
 
 

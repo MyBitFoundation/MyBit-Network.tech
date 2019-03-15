@@ -1,4 +1,5 @@
 var bn = require('bignumber.js');
+bn.config({ EXPONENTIAL_AT: 80 });
 
 const AssetManagerFunds = artifacts.require("./roles/AssetManagerFunds.sol");
 const Database = artifacts.require("./database/Database.sol");
@@ -9,7 +10,7 @@ const DivTokenERC20 = artifacts.require("./tokens/ERC20/DividendTokenERC20.sol")
 const MyBitToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
-const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
+const Platform = artifacts.require("./ecosystem/Platform.sol");
 const API = artifacts.require("./database/API.sol");
 
 const ETH = bn(10**18);
@@ -33,7 +34,6 @@ contract('AssetManagerFunds', async(accounts) => {
   let hash;
   let api;
   let escrow;
-  let assetID;
   let platform;
   let operators;
   let operatorID;
@@ -64,7 +64,7 @@ contract('AssetManagerFunds', async(accounts) => {
   });
 
   it("Deploy standard token", async() => {
-    burnToken = await MyBitToken.new('MyB', bn(10000).times(ETH));
+    burnToken = await MyBitToken.new('MyBit', 'MYB', bn(10000).times(ETH).toString());
     await burnToken.transfer(operator, bn(100).times(ETH));
     assert.equal(bn(await burnToken.balanceOf(operator)).eq(bn(100).times(ETH)), true);
   });
@@ -77,7 +77,7 @@ contract('AssetManagerFunds', async(accounts) => {
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
       console.log(accounts[i]);
-      await divToken.mint(tokenHolders[i], tokenPerAccount);
+      await divToken.mint(tokenHolders[i], tokenPerAccount.toString());
       userBalance = bn(await divToken.balanceOf(tokenHolders[i]));
       assert.equal(userBalance.eq(tokenPerAccount), true);
     }
@@ -91,14 +91,14 @@ contract('AssetManagerFunds', async(accounts) => {
   });
 
   it("Transfer token to assetManager assets", async() => {
-    await divToken.mint(assetManagerFunds.address, tokenPerAccount);
+    await divToken.mint(assetManagerFunds.address, tokenPerAccount.toString());
     assetManagerBalance = bn(await divToken.balanceOf(assetManagerFunds.address));
     assert.equal(assetManagerBalance.eq(tokenPerAccount), true);
   });
 
   it('Deploy platform', async() => {
     platform = await Platform.new(db.address, events.address);
-    await cm.addContract('PlatformFunds', platform.address);
+    await cm.addContract('Platform', platform.address);
     await platform.setPlatformWallet(owner);
     await platform.setPlatformToken(burnToken.address);
   });
@@ -112,16 +112,13 @@ contract('AssetManagerFunds', async(accounts) => {
     operatorID = logs[0].args.operatorID;
   });
 
-  it("Generate assetID", async() => {
-    assetID = await hash.getAssetID(assetURI, 10*ETH, operatorID, {from:assetManager});
-    assetsETH = [assetID];
+  it("Set assets array", async() => {
+    assetsETH = [divToken.address];
   });
 
   it("Set asset variables", async() => {
-    let tokenHash = await hash.stringBytes("tokenAddress", assetID);
-    let assetManagerHash = await hash.stringBytes("assetManager", assetID);
-    let operatorHash = await hash.stringBytes("operator", assetID);
-    await db.setAddress(tokenHash, divToken.address);
+    let assetManagerHash = await hash.stringAddress("asset.manager", divToken.address);
+    let operatorHash = await hash.stringAddress("operator", divToken.address);
     await db.setAddress(assetManagerHash, assetManager);
     await db.setAddress(operatorHash, operator);
   });
@@ -205,26 +202,23 @@ contract('AssetManagerFunds', async(accounts) => {
     assert.equal(assetManagerBalance.eq(tokenPerAccount), true);
   });
 
-  it("Generate assetID", async() => {
-    assetID = await hash.getAssetID(assetURI, 10*ETH, operatorID, {from:assetManager});
-    assetsERC = [assetID];
+  it("Setup asset array", async() => {
+    assetsERC = [divTokenERC20.address];
   });
 
   it("Set asset variables", async() => {
-    let tokenHash = await hash.stringBytes("tokenAddress", assetID);
-    let assetManagerHash = await hash.stringBytes("assetManager", assetID);
-    let operatorHash = await hash.stringBytes("operator", assetID);
-    await db.setAddress(tokenHash, divTokenERC20.address);
+    let assetManagerHash = await hash.stringAddress("asset.manager", divTokenERC20.address);
+    let operatorHash = await hash.stringAddress("operator", divTokenERC20.address);
     await db.setAddress(assetManagerHash, assetManager);
     await db.setAddress(operatorHash, operator);
   });
 
   it('Send payment tokens to asset-token contract', async() => {
     assert.equal(await divTokenERC20.getERC20(), burnToken.address);
-    await burnToken.approve(divTokenERC20.address, 5*ETH, {from: operator});
-    await divTokenERC20.issueDividends(5*ETH, {from: operator});
-    assert.equal(await divTokenERC20.assetIncome(), 5*ETH);
-    assert.equal(await burnToken.balanceOf(divTokenERC20.address), 5*ETH);
+    await burnToken.approve(divTokenERC20.address, bn(5).times(ETH).toString(), {from: operator});
+    await divTokenERC20.issueDividends(bn(5).times(ETH).toString(), {from: operator});
+    assert.equal(bn(await divTokenERC20.assetIncome()).eq(5*ETH), true);
+    assert.equal(bn(await burnToken.balanceOf(divTokenERC20.address)).eq(5*ETH), true);
   });
 /*
   it("Add multiple assets", async() => {
@@ -271,7 +265,6 @@ contract('AssetManagerFunds', async(accounts) => {
     let balanceBefore = bn(await burnToken.balanceOf(assetManager));
     let amountOwed = await divTokenERC20.getAmountOwed(assetManagerFunds.address);
     assert.notEqual(amountOwed, 0);
-    assert.equal(divTokenERC20.address, await api.getAssetAddress(assetID));
     assert.equal(bn(await divTokenERC20.balanceOf(assetManagerFunds.address)).eq(tokenPerAccount), true);
     console.log("amount owed");
     console.log(amountOwed);

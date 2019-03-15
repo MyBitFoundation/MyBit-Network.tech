@@ -1,4 +1,5 @@
 var bn = require('bignumber.js');
+bn.config({ EXPONENTIAL_AT: 80 });
 
 const Token = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 
@@ -15,9 +16,10 @@ contract('Dividend Token Ether', async(accounts) => {
 
   let token;
   let tokenURI = 'https://mybit.io';
+  let tokenSymbol = 'MYB';
 
   it('Deploy Token', async() => {
-    token = await Token.new(tokenURI, tokenSupply);
+    token = await Token.new(tokenURI, tokenSymbol, tokenSupply.toString());
     let supply = bn(await token.totalSupply());
     assert.equal(supply.eq(tokenSupply), true);
   });
@@ -26,7 +28,7 @@ contract('Dividend Token Ether', async(accounts) => {
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
       console.log(accounts[i]);
-      await token.transfer(tokenHolders[i], tokenPerAccount);
+      await token.transfer(tokenHolders[i], tokenPerAccount.toString());
       userBalance = bn(await token.balanceOf(tokenHolders[i]));
       assert.equal(userBalance.eq(tokenPerAccount), true);
     }

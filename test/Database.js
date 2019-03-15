@@ -1,4 +1,5 @@
 var BigNumber = require('bignumber.js');
+var web3utils = require('web3-utils');
 
 const Database = artifacts.require('./database/Database.sol');
 const Events = artifacts.require('./database/Events.sol');
@@ -7,14 +8,13 @@ const ContractManager = artifacts.require('./database/ContractManager.sol');
 contract('Database', async (accounts) => {
   const manager1 = accounts[0];
   const manager2 = accounts[1];
-
-  const addressHash = web3.utils.sha3('Address');
-  const uintHash = web3.utils.sha3('Uint');
-  const stringHash = web3.utils.sha3('String');
-  const bytesHash = web3.utils.sha3('Bytes');
-  const bytes32Hash = web3.utils.sha3('Bytes32');
-  const boolHash = web3.utils.sha3('Bool');
-  const intHash = web3.utils.sha3('Int');
+  const addressHash = web3utils.sha3('Address');
+  const uintHash = web3utils.sha3('Uint');
+  const stringHash = web3utils.sha3('String');
+  const bytesHash = web3utils.sha3('Bytes');
+  const bytes32Hash = web3utils.sha3('Bytes32');
+  const boolHash = web3utils.sha3('Bool');
+  const intHash = web3utils.sha3('Int');
 
   let database;
   let events;

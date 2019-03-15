@@ -1,14 +1,16 @@
 {
   "name": "@mybit/contracts",
-  "version": "0.1.9",
+  "version": "0.1.15",
   "description": "The MyBit Network: SDK's for the machine economy",
   "repository": "https://github.com/MyBitFoundation/MyBit-Network.tech",
-  "main": "lib/index.js",
+  "main": "index.js",
   "files": [
     "lib",
     "contracts",
     "migrations",
     "scripts",
+    "networks",
+    "index.js",
     "truffle.js"
   ],
   "directories": {
@@ -17,7 +19,7 @@
   "scripts": {
     "compile": "truffle compile --all",
     "migrate": "truffle migrate",
-    "test": "npm run compile; npm run migrate; truffle test",
+    "test": "truffle test",
     "blockchain": "ganache-cli --networkId 70 --accounts 20",
     "coverage": "solidity-coverage && sleep 5 && npm run coveralls",
     "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
@@ -29,18 +31,19 @@
   "dependencies": {
     "bignumber.js": "^7.2.1",
     "ethereumjs-util": "^6.0.0",
-    "ganache-cli": "^6.1.0",
+    "ganache-cli": "^6.4.1",
     "request": "^2.87.0",
     "solc": "0.4.24",
-    "truffle": "5.0.0-beta.0",
-    "truffle-hdwallet-provider": "0.0.6",
-    "web3": "^1.0.0-beta.36",
-    "web3-utils": "^1.0.0-beta.36",
-    "web3-eth-abi": "^1.0.0-beta.36"
+    "truffle": "^5.0.7",
+    "truffle-hdwallet-provider": "1.0.2",
+    "web3": "1.0.0-beta.36",
+    "web3-eth-abi": "1.0.0-beta.36",
+    "web3-utils": "1.0.0-beta.36"
   },
   "devDependencies": {
+    "coveralls": "^3.0.2",
+    "mathjs": "^5.4.2",
     "solidity-coverage": "^0.5.11",
-    "solidity-docgen": "^0.1.0",
-    "coveralls": "^3.0.2"
+    "solidity-docgen": "^0.1.0"
   }
 }

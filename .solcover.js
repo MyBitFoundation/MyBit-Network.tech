@@ -1,4 +1,4 @@
 module.exports = {
-    skipFiles: ['bancor', 'examples'],
+    skipFiles: ['bancor/', 'kyber/', 'tokens/erc721/', 'examples/', 'ecosystem/TokenConverter.sol'],
     deepSkip: true
 };

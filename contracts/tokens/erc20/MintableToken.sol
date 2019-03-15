@@ -12,15 +12,16 @@ contract MintableToken is StandardToken {
 
   bool public mintingFinished;
   address internal minter;
-  string internal tokenURI;                 // A reference to a URI containing further token information
 
 
   // @notice constructor: initialized
-  constructor(string _tokenURI, address _minter)
+  constructor(string _tokenURI, string _symbol, uint8 _decimals, address _minter)
   public {
-      tokenURI = _tokenURI;                         // Set the id for reference
-      minter = _minter;
-      supply = 0;
+    name = _tokenURI;                         // Set the id for reference
+    symbol = _symbol;
+    minter = _minter;
+    supply = 0;
+    decimals = _decimals;
   }
 
 
@@ -52,7 +53,7 @@ contract MintableToken is StandardToken {
   external
   view
   returns (string) {
-      return tokenURI;
+      return name;
   }
 
   // @notice modifier: Requires that minting hasn't finished

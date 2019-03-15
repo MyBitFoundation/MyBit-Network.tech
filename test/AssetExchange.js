@@ -1,4 +1,6 @@
 var bn = require('bignumber.js');
+bn.config({ EXPONENTIAL_AT: 80 });
+var web3utils = require('web3-utils');
 
 const AssetExchange = artifacts.require("./ecosystem/AssetExchange.sol");
 const Database = artifacts.require("./database/Database.sol");
@@ -9,7 +11,7 @@ const PlatformToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
 const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
-const Platform = artifacts.require("./ecosystem/PlatformFunds.sol");
+const Platform = artifacts.require("./ecosystem/Platform.sol");
 const Pausible = artifacts.require("./ownership/Pausible.sol");
 
 const ETH = 10**18;
@@ -17,6 +19,11 @@ const tokenSupply = bn(180000000).times(ETH);
 const tokenPerAccount = bn(1000).times(ETH);
 const token1PerAccount = bn(10).times(ETH);
 const token2PerAccount = bn(2).times(ETH);
+
+//Just passing an empty address for kyber, since no burning is being done
+const kyber = {
+  address : '0x0000000000000000000000000000000000000000'
+};
 
 contract('Asset Exchange', async(accounts) => {
   const owner = accounts[0];
@@ -36,9 +43,7 @@ contract('Asset Exchange', async(accounts) => {
   let cm;
   let burner;
   let hash;
-  let asset1ID;
   let asset1Token;
-  let asset2ID;
   let asset2Token;
   let platformToken;
   let platform;
@@ -69,14 +74,14 @@ contract('Asset Exchange', async(accounts) => {
   });
 
   it('Deploy MyB token', async() => {
-    platformToken = await PlatformToken.new('MyBit', tokenSupply);
+    platformToken = await PlatformToken.new('MyBit', 'MYB', tokenSupply.toString());
   });
 
   it("Spread tokens to users", async() => {
     let userBalance;
     for (var i = 1; i < accounts.length; i++) {
       //console.log(accounts[i]);
-      await platformToken.transfer(accounts[i], tokenPerAccount);
+      await platformToken.transfer(accounts[i], tokenPerAccount.toString());
       userBalance = bn(await platformToken.balanceOf(accounts[i]));
       assert.equal(userBalance.eq(tokenPerAccount), true);
     }
@@ -89,13 +94,13 @@ contract('Asset Exchange', async(accounts) => {
 
   it('Deploy platform', async() => {
     platform = await Platform.new(db.address, events.address);
-    await cm.addContract('PlatformFunds', platform.address);
+    await cm.addContract('Platform', platform.address);
     await platform.setPlatformWallet(owner);
     await platform.setPlatformToken(platformToken.address);
   });
 
   it('Deploy burner contract', async() => {
-    burner = await ERC20Burner.new(db.address, events.address);
+    burner = await ERC20Burner.new(db.address, events.address, kyber.address);
     await cm.addContract("ERC20Burner", burner.address);
   });
 
@@ -116,14 +121,14 @@ contract('Asset Exchange', async(accounts) => {
     await cm.addContract('Operators', operators.address);
     let block = await web3.eth.getBlock('latest');
     await operators.registerOperator(operator, 'Operator', 'Asset Type');
-    let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: owner}, fromBlock: block.number});
+    let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3utils.sha3('Operator registered'), origin: owner}, fromBlock: block.number});
     operatorID = logs[0].args.operatorID;
   });
 
   it('Give platform burning permission', async() => {
     for(var i=1; i<accounts.length; i++){
       await cm.setContractStatePreferences(true, true, {from: accounts[i]});
-      await platformToken.approve(burner.address, tokenSupply, {from:accounts[i]});
+      await platformToken.approve(burner.address, tokenSupply.toString(), {from:accounts[i]});
     }
   });
 
@@ -137,28 +142,23 @@ contract('Asset Exchange', async(accounts) => {
       await db.setUint(accessHash, 3);
       expiryHash = await hash.stringAddress('userAccessExpiration', users[i]);
       block = await web3.eth.getBlock('latest');
-      await db.setUint(expiryHash, bn(block.timestamp).plus(100000));
+      await db.setUint(expiryHash, bn(block.timestamp).plus(100000).toString());
     }
-  });
-
-  it("Generate assetIDs", async() => {
-    asset1ID = await hash.getAssetID('Asset1', 20*ETH, operatorID, {from:broker1});
-    asset2ID = await hash.getAssetID('Asset2', 4*ETH, operatorID, {from:broker2});
   });
 
   it("Deploy asset1 token", async() => {
     asset1Token = await DivToken.new('Asset1', owner);
-    let tokenHash = await hash.stringBytes('tokenAddress', asset1ID);
+    let tokenHash = await hash.stringAddress('tokenAddress', asset1Token.address);
     await db.setAddress(tokenHash, asset1Token.address);
-    let finalizedHash = await hash.stringBytes('crowdsaleFinalized', asset1ID);
+    let finalizedHash = await hash.stringAddress('crowdsale.finalized', asset1Token.address);
     db.setBool(finalizedHash, true);
   });
 
   it("Deploy asset2 token", async() => {
     asset2Token = await DivToken.new('Asset2', owner);
-    let tokenHash = await hash.stringBytes('tokenAddress', asset2ID);
+    let tokenHash = await hash.stringAddress('tokenAddress', asset2Token.address);
     await db.setAddress(tokenHash, asset2Token.address);
-    let finalizedHash = await hash.stringBytes('crowdsaleFinalized', asset2ID);
+    let finalizedHash = await hash.stringAddress('crowdsale.finalized', asset2Token.address);
     db.setBool(finalizedHash, true);
   });
 
@@ -166,7 +166,7 @@ contract('Asset Exchange', async(accounts) => {
     let userBalance;
     for (var i = 0; i < asset1Holders.length; i++) {
       //console.log(accounts[i]);
-      await asset1Token.mint(asset1Holders[i], token1PerAccount);
+      await asset1Token.mint(asset1Holders[i], token1PerAccount.toString());
       userBalance = bn(await asset1Token.balanceOf(asset1Holders[i]));
       assert.equal(userBalance.eq(token1PerAccount), true);
     }
@@ -177,7 +177,7 @@ contract('Asset Exchange', async(accounts) => {
     let userBalance;
     for (var i = 0; i < asset2Holders.length; i++) {
       //console.log(accounts[i]);
-      await asset2Token.mint(asset2Holders[i], token2PerAccount);
+      await asset2Token.mint(asset2Holders[i], token2PerAccount.toString());
       userBalance = bn(await asset1Token.balanceOf(asset1Holders[i]));
       assert.equal(userBalance.eq(token1PerAccount), true);
     }
@@ -188,9 +188,9 @@ contract('Asset Exchange', async(accounts) => {
     let err;
     //Fail because user not approved
     try{
-      let tokenAmount = 2*ETH;
-      let tokenPrice = 0.05*ETH;
-      await dax.createSellOrder(asset1ID, user1, tokenAmount, tokenPrice, {from:user1});
+      let tokenAmount = bn(2).times(ETH);
+      let tokenPrice = bn(0.05).times(ETH);
+      await dax.createSellOrder(asset1Token.address, user1, tokenAmount, tokenPrice, {from:user1});
     } catch(e){
       err = e;
     }
@@ -202,9 +202,9 @@ contract('Asset Exchange', async(accounts) => {
     //Fail because no payment
     try{
       let tokenAmount = 0;
-      let tokenPrice = 0.05*ETH;
+      let tokenPrice = bn(0.05).times(ETH);
       await asset1Token.approve(dax.address, tokenAmount, {from:user1});
-      await dax.createSellOrder(asset1ID, user1, tokenAmount, tokenPrice, {from:user1});
+      await dax.createSellOrder(asset1Token.address, user1, tokenAmount, tokenPrice, {from:user1});
     } catch(e){
       err = e;
     }
@@ -214,12 +214,12 @@ contract('Asset Exchange', async(accounts) => {
   //Create sell order
   it('Create sell order', async() => {
     //Sell 2 tokens, at the price of 0.05 eth per token, i.e. for 0.1 eth total
-    let tokenAmount = 2*ETH;
-    let tokenPrice = 0.05*ETH;
-    await asset1Token.approve(dax.address, tokenAmount, {from:user1});
+    let tokenAmount = bn(2).times(ETH);
+    let tokenPrice = bn(0.05).times(ETH);
+    await asset1Token.approve(dax.address, tokenAmount.toString(), {from:user1});
     let block = await web3.eth.getBlock('latest');
-    await dax.createSellOrder(asset1ID, user1, tokenAmount, tokenPrice, {from:user1});
-    let logs = await events.getPastEvents('LogExchange', {filter: {messageID: web3.utils.sha3('Sell order created'), origin: user1}, fromBlock: block.number});
+    await dax.createSellOrder(asset1Token.address, user1, tokenAmount.toString(), tokenPrice.toString(), {from:user1});
+    let logs = await events.getPastEvents('LogExchange', {filter: {messageID: web3utils.sha3('Sell order created'), origin: user1}, fromBlock: block.number});
     order1Creator = logs[0].args.account;
     assert.equal(order1Creator, user1);
     //console.log(order1Creator);
@@ -229,10 +229,10 @@ contract('Asset Exchange', async(accounts) => {
     let err;
     //Fail because same order
     try{
-      let tokenAmount = 2*ETH;
-      let tokenPrice = 0.05*ETH;
+      let tokenAmount = bn(2).times(ETH);
+      let tokenPrice = bn(0.05).times(ETH);
       await asset1Token.approve(dax.address, tokenAmount, {from:user1});
-      await dax.createSellOrder(asset1ID, user1, tokenAmount, tokenPrice, {from:user1});
+      await dax.createSellOrder(asset1Token.address, user1, tokenAmount, tokenPrice, {from:user1});
     } catch(e){
       err = e;
     }
@@ -243,11 +243,11 @@ contract('Asset Exchange', async(accounts) => {
     let err;
     //Fail because wrong seller
     try{
-      let tokenAmount = 2*ETH;
-      let tokenPrice = 0.05*ETH;
+      let tokenAmount = bn(2).times(ETH);
+      let tokenPrice = bn(0.05).times(ETH);
       let amount = Number(bn(tokenAmount).multipliedBy(tokenPrice).dividedBy(ETH));
       await asset1Token.approve(dax.address, tokenAmount, {from:user2});
-      await dax.buyAsset(asset1ID, user3, user2, tokenAmount, tokenPrice, {from:user3, value:amount});
+      await dax.buyAsset(asset1Token.address, user3, user2, tokenAmount, tokenPrice, {from:user3, value:amount});
     } catch(e){
       err = e;
     }
@@ -258,11 +258,11 @@ contract('Asset Exchange', async(accounts) => {
     let err;
     //Fail because user not approved
     try{
-      let tokenAmount = 2*ETH;
-      let tokenPrice = 0.05*ETH;
+      let tokenAmount = bn(2).times(ETH);
+      let tokenPrice = bn(0.05).times(ETH);
       let amount = Number(bn(tokenAmount).multipliedBy(tokenPrice).dividedBy(ETH));
       await asset1Token.approve(dax.address, tokenAmount, {from:user2});
-      await dax.buyAsset(asset1ID, order1Creator, tokenAmount, tokenPrice, {from:accounts[9], value:amount});
+      await dax.buyAsset(asset1Token.address, order1Creator, tokenAmount, tokenPrice, {from:accounts[9], value:amount});
     } catch(e){
       err = e;
     }
@@ -273,13 +273,13 @@ contract('Asset Exchange', async(accounts) => {
     let err;
     //Fail because user approval expired
     try{
-      let tokenAmount = 2*ETH;
-      let tokenPrice = 0.05*ETH;
+      let tokenAmount = bn(2).times(ETH);
+      let tokenPrice = bn(0.05).times(ETH);
       let amount = Number(bn(tokenAmount).multipliedBy(tokenPrice).dividedBy(ETH));
       await asset1Token.approve(dax.address, tokenAmount, {from:user2});
       let accessHash = await hash.stringAddress('userAccess', accounts[9]);
       await db.setUint(accessHash, 3);
-      await dax.buyAsset(asset1ID, order1Creator, tokenAmount, tokenPrice, {from:accounts[9], value:amount});
+      await dax.buyAsset(asset1Token.address, order1Creator, tokenAmount, tokenPrice, {from:accounts[9], value:amount});
     } catch(e){
       err = e;
     }
@@ -290,10 +290,10 @@ contract('Asset Exchange', async(accounts) => {
     let err;
     //Fail because wrong value
     try{
-      let tokenAmount = 2*ETH;
-      let tokenPrice = 0.05*ETH;
+      let tokenAmount = bn(2).times(ETH);
+      let tokenPrice = bn(0.05).times(ETH);
       let amount = ETH;
-      await dax.buyAsset(asset1ID, user3, order1Creator, tokenAmount, tokenPrice, {from:user3, value:amount});
+      await dax.buyAsset(asset1Token.address, user3, order1Creator, tokenAmount, tokenPrice, {from:user3, value:amount});
     } catch(e){
       err = e;
     }
@@ -304,10 +304,10 @@ contract('Asset Exchange', async(accounts) => {
     let err;
     //Fail because wrong value
     try{
-      let tokenAmount = 2*ETH;
-      let tokenPrice = 0.05*ETH;
+      let tokenAmount = bn(2).times(ETH);
+      let tokenPrice = bn(0.05).times(ETH);
       let amount = 0;
-      await dax.buyAsset(asset1ID, user3, order1Creator, tokenAmount, tokenPrice, {from:user3, value:amount});
+      await dax.buyAsset(asset1Token.address, user3, order1Creator, tokenAmount, tokenPrice, {from:user3, value:amount});
     } catch(e){
       err = e;
     }
@@ -322,10 +322,10 @@ contract('Asset Exchange', async(accounts) => {
     let err;
     //Fail because paused
     try{
-      let tokenAmount = 2*ETH;
-      let tokenPrice = 0.05*ETH;
+      let tokenAmount = bn(2).times(ETH);
+      let tokenPrice = bn(0.05).times(ETH);
       let amount = Number(bn(tokenAmount).multipliedBy(tokenPrice).dividedBy(ETH));
-      await dax.buyAsset(asset1ID, user3, order1Creator, tokenAmount, tokenPrice, {from:user3, value:amount});
+      await dax.buyAsset(asset1Token.address, user3, order1Creator, tokenAmount, tokenPrice, {from:user3, value:amount});
     } catch(e){
       err = e;
     }
@@ -337,20 +337,20 @@ contract('Asset Exchange', async(accounts) => {
   });
 
   it('Buy order1', async() => {
-    let tokenAmount = 2*ETH;
-    let tokenPrice = 0.05*ETH;
+    let tokenAmount = bn(2).times(ETH);
+    let tokenPrice = bn(0.05).times(ETH);
     let amount = Number(bn(tokenAmount).multipliedBy(tokenPrice).dividedBy(ETH));
-    await dax.buyAsset(asset1ID, user3, order1Creator, tokenAmount, tokenPrice, {from:user3, value:amount});
+    await dax.buyAsset(asset1Token.address, user3, order1Creator, tokenAmount, tokenPrice, {from:user3, value:amount});
   });
 
   it("Fail to create buy order", async() => {
     let err;
     //Fail because no payment
     try{
-      let tokenAmount = 0.5*ETH;
-      let tokenPrice = 0.1*ETH;
+      let tokenAmount = bn(0.5).times(ETH);
+      let tokenPrice = bn(0.1).times(ETH);
       let amount = 0;
-      await dax.createBuyOrder(asset2ID, user2, tokenAmount, tokenPrice, {from:user2, value:amount});
+      await dax.createBuyOrder(asset2Token.address, user2, tokenAmount, tokenPrice, {from:user2, value:amount});
     } catch(e){
       err = e;
     }
@@ -361,10 +361,10 @@ contract('Asset Exchange', async(accounts) => {
     let err;
     //Fail because wrong payment
     try{
-      let tokenAmount = 0.5*ETH;
-      let tokenPrice = 0.1*ETH;
+      let tokenAmount = bn(0.5).times(ETH);
+      let tokenPrice = bn(0.1).times(ETH);
       let amount = ETH;
-      await dax.createBuyOrder(asset2ID, user2, tokenAmount, tokenPrice, {from:user2, value:amount});
+      await dax.createBuyOrder(asset2Token.address, user2, tokenAmount, tokenPrice, {from:user2, value:amount});
     } catch(e){
       err = e;
     }
@@ -375,8 +375,8 @@ contract('Asset Exchange', async(accounts) => {
     let err;
     //Fail because invalid asset
     try{
-      let tokenAmount = 0.5*ETH;
-      let tokenPrice = 0.1*ETH;
+      let tokenAmount = bn(0.5).times(ETH);
+      let tokenPrice = bn(0.1).times(ETH);
       let amount = Number(bn(tokenAmount).multipliedBy(tokenPrice).dividedBy(ETH));
       let fakeAssetID = await hash.getAssetID('FakeAsset', ETH, operatorID, {from:user2});
       await dax.createBuyOrder('', user2, tokenAmount, tokenPrice, {from:user2, value:amount});
@@ -390,8 +390,8 @@ contract('Asset Exchange', async(accounts) => {
     let err;
     //Fail because invalid asset
     try{
-      let tokenAmount = 0.5*ETH;
-      let tokenPrice = 0.1*ETH;
+      let tokenAmount = bn(0.5).times(ETH);
+      let tokenPrice = bn(0.1).times(ETH);
       let amount = Number(bn(tokenAmount).multipliedBy(tokenPrice).dividedBy(ETH));
       let fakeAssetID = await hash.getAssetID('FakeAsset', ETH, operatorID, {from:user2});
       await dax.createBuyOrder(fakeAssetID, user2, tokenAmount, tokenPrice, {from:user2, value:amount});
@@ -403,12 +403,12 @@ contract('Asset Exchange', async(accounts) => {
 
   it('Create buy order', async() => {
     //Sell 2 tokens, at the price of 0.05 eth per token, i.e. for 0.1 eth total
-    let tokenAmount = 0.5*ETH;
-    let tokenPrice = 0.1*ETH;
+    let tokenAmount = bn(0.5).times(ETH);
+    let tokenPrice = bn(0.1).times(ETH);
     let amount = Number(bn(tokenAmount).multipliedBy(tokenPrice).dividedBy(ETH));
     let block = await web3.eth.getBlock('latest');
-    await dax.createBuyOrder(asset2ID, user2, tokenAmount, tokenPrice, {from:user2, value:amount});
-    let logs = await events.getPastEvents('LogExchange', {filter: {messageID: web3.utils.sha3('Buy order created'), origin: user2}, fromBlock: block.number});
+    await dax.createBuyOrder(asset2Token.address, user2, tokenAmount, tokenPrice, {from:user2, value:amount});
+    let logs = await events.getPastEvents('LogExchange', {filter: {messageID: web3utils.sha3('Buy order created'), origin: user2}, fromBlock: block.number});
     order2Creator = logs[0].args.account;
     assert.equal(order2Creator, user2);
   });
@@ -417,10 +417,10 @@ contract('Asset Exchange', async(accounts) => {
     let err;
     //Fail because same order
     try{
-      let tokenAmount = 0.5*ETH;
-      let tokenPrice = 0.1*ETH;
+      let tokenAmount = bn(0.5).times(ETH);
+      let tokenPrice = bn(0.1).times(ETH);
       let amount = Number(bn(tokenAmount).multipliedBy(tokenPrice).dividedBy(ETH));
-      await dax.createBuyOrder(asset2ID, user2, tokenAmount, tokenPrice, {from:user2, value:amount});
+      await dax.createBuyOrder(asset2Token.address, user2, tokenAmount, tokenPrice, {from:user2, value:amount});
     } catch(e){
       err = e;
     }
@@ -431,10 +431,10 @@ contract('Asset Exchange', async(accounts) => {
     let err;
     //Fail because same order
     try{
-      let tokenAmount = 0.5*ETH;
-      let tokenPrice = 0.1*ETH;
+      let tokenAmount = bn(0.5).times(ETH);
+      let tokenPrice = bn(0.1).times(ETH);
       await asset2Token.approve(dax.address, tokenAmount, {from:user3});
-      await dax.sellAsset(asset2ID, user3, owner, tokenAmount, tokenPrice, {from:user3});
+      await dax.sellAsset(asset2Token.address, user3, owner, tokenAmount, tokenPrice, {from:user3});
     } catch(e){
       err = e;
     }
@@ -442,10 +442,10 @@ contract('Asset Exchange', async(accounts) => {
   });
 
   it('Sell order2', async() => {
-    let tokenAmount = 0.5*ETH;
-    let tokenPrice = 0.1*ETH;
+    let tokenAmount = bn(0.5).times(ETH);
+    let tokenPrice = bn(0.1).times(ETH);
     await asset2Token.approve(dax.address, tokenAmount, {from:user3});
-    await dax.sellAsset(asset2ID, user3, order2Creator, tokenAmount, tokenPrice, {from:user3});
+    await dax.sellAsset(asset2Token.address, user3, order2Creator, tokenAmount, tokenPrice, {from:user3});
   });
 
   it('Withdraw', async() => {
@@ -458,12 +458,12 @@ contract('Asset Exchange', async(accounts) => {
 
   it('Create buy order', async() => {
     //Sell 2 tokens, at the price of 0.05 eth per token, i.e. for 0.1 eth total
-    let tokenAmount = 10*ETH;
-    let tokenPrice = 0.1*ETH;
-    let amount = bn(tokenAmount).multipliedBy(tokenPrice).dividedBy(ETH);
+    let tokenAmount = bn(10).times(ETH);
+    let tokenPrice = bn(0.1).times(ETH);
+    let amount = tokenAmount.multipliedBy(tokenPrice).dividedBy(ETH);
     let block = await web3.eth.getBlock('latest');
-    await dax.createBuyOrder(asset2ID, user2, tokenAmount, tokenPrice, {from:user2, value:amount});
-    let logs = await events.getPastEvents('LogExchange', {filter: {messageID: web3.utils.sha3('Buy order created'), origin: user2}, fromBlock: block.number});
+    await dax.createBuyOrder(asset2Token.address, user2, tokenAmount, tokenPrice, {from:user2, value:amount});
+    let logs = await events.getPastEvents('LogExchange', {filter: {messageID: web3utils.sha3('Buy order created'), origin: user2}, fromBlock: block.number});
     order3Creator = logs[0].args.account;
   });
 
@@ -471,9 +471,9 @@ contract('Asset Exchange', async(accounts) => {
     let err;
     //Fail because wrong user
     try{
-      let tokenAmount = 10*ETH;
-      let tokenPrice = 0.1*ETH;
-      await dax.deleteOrder(asset2ID, user3, tokenAmount, tokenPrice, true, {from:user3});
+      let tokenAmount = bn(10).times(ETH);
+      let tokenPrice = bn(0.1).times(ETH);
+      await dax.deleteOrder(asset2Token.address, user3, tokenAmount, tokenPrice, true, {from:user3});
     } catch(e){
       err = e;
     }
@@ -481,22 +481,22 @@ contract('Asset Exchange', async(accounts) => {
   });
 
   it("Delete order", async() => {
-    let tokenAmount = 10*ETH;
-    let tokenPrice = 0.1*ETH;
-    await dax.deleteOrder(asset2ID, user2, tokenAmount, tokenPrice, true, {from:user2});
+    let tokenAmount = bn(10).times(ETH);
+    let tokenPrice = bn(0.1).times(ETH);
+    await dax.deleteOrder(asset2Token.address, user2, tokenAmount, tokenPrice, true, {from:user2});
   });
 
   it('Create sell order', async() => {
-    let tokenAmount = 0.5*ETH;
-    let tokenPrice = 0.05*ETH;
-    await asset1Token.approve(dax.address, tokenAmount, {from:user1});
-    await dax.createSellOrder(asset1ID, user1, tokenAmount, tokenPrice, {from:user1});
+    let tokenAmount = bn(0.5).times(ETH);
+    let tokenPrice = bn(0.05).times(ETH);
+    await asset1Token.approve(dax.address, tokenAmount.toString(), {from:user1});
+    await dax.createSellOrder(asset1Token.address, user1, tokenAmount.toString(), tokenPrice.toString(), {from:user1});
   });
 
   it("Delete order", async() => {
-    let tokenAmount = 0.5*ETH;
-    let tokenPrice = 0.05*ETH;
-    await dax.deleteOrder(asset1ID, user1, tokenAmount, tokenPrice, false, {from:user1});
+    let tokenAmount = bn(0.5).times(ETH);
+    let tokenPrice = bn(0.05).times(ETH);
+    await dax.deleteOrder(asset1Token.address, user1, tokenAmount, tokenPrice, false, {from:user1});
   });
 
   it('Fail to send ether to contract', async() => {

@@ -6,6 +6,8 @@ pragma solidity ^0.4.24;
  * @dev see https://github.com/ethereum/EIPs/issues/20
  */
 interface ERC20 {
+  function decimals() external view returns (uint8);
+
   function totalSupply() external view returns (uint256);
 
   function balanceOf(address _who) external view returns (uint256);

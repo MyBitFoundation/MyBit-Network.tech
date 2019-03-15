@@ -63,12 +63,12 @@
                 "type": "bytes32"
             },
             {
-                "indexed": false,
+                "indexed": true,
                 "name": "from",
                 "type": "address"
             },
             {
-                "indexed": false,
+                "indexed": true,
                 "name": "to",
                 "type": "address"
             },
@@ -83,7 +83,7 @@
                 "type": "bytes32"
             },
             {
-                "indexed": true,
+                "indexed": false,
                 "name": "origin",
                 "type": "address"
             }
@@ -173,12 +173,7 @@
             },
             {
                 "indexed": false,
-                "name": "assetID",
-                "type": "bytes32"
-            },
-            {
-                "indexed": false,
-                "name": "token",
+                "name": "asset",
                 "type": "address"
             },
             {
@@ -194,7 +189,7 @@
         ],
         "name": "LogAsset",
         "type": "event",
-        "signature": "0x81e3988b2d4a535c38a8d0bb25f1bf3fc0fae4304f13292258c80460d319048f"
+        "signature": "0x1de50885656f1a1113f6d3e23103440fd2f8dadc8ea04fe3bae26bb3a5713282"
     },
     {
         "anonymous": false,
@@ -211,8 +206,8 @@
             },
             {
                 "indexed": false,
-                "name": "assetID",
-                "type": "bytes32"
+                "name": "asset",
+                "type": "address"
             },
             {
                 "indexed": false,
@@ -237,7 +232,7 @@
         ],
         "name": "LogEscrow",
         "type": "event",
-        "signature": "0xc312a62cab4612f7e5c6cb6deccb8303683123f4bef011b40d3c5d42aeb3560e"
+        "signature": "0x100520eaf70b22f938253d35fcecbe5ec21f686f938e02f6553318b52efd2ffe"
     },
     {
         "anonymous": false,
@@ -297,8 +292,8 @@
             },
             {
                 "indexed": true,
-                "name": "assetID",
-                "type": "bytes32"
+                "name": "asset",
+                "type": "address"
             },
             {
                 "indexed": false,
@@ -313,7 +308,7 @@
         ],
         "name": "LogExchange",
         "type": "event",
-        "signature": "0x6463337f6ca771dd572340fc6791e5d1f70bb91de4e93cd088458852e1165109"
+        "signature": "0x527c6cf635c1aee21fa60d2f756d9553f7129cbf27cd3bec6137fd2033a62d8a"
     },
     {
         "anonymous": false,
@@ -501,11 +496,7 @@
                 "type": "string"
             },
             {
-                "name": "_assetID",
-                "type": "bytes32"
-            },
-            {
-                "name": "_token",
+                "name": "_assetAddress",
                 "type": "address"
             },
             {
@@ -518,7 +509,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x77f7b7a7"
+        "signature": "0x78576a91"
     },
     {
         "constant": false,
@@ -528,8 +519,8 @@
                 "type": "string"
             },
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_assetAddress",
+                "type": "address"
             },
             {
                 "name": "_escrowID",
@@ -549,7 +540,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x35cb4800"
+        "signature": "0x0b94df4c"
     },
     {
         "constant": false,
@@ -590,8 +581,8 @@
                 "type": "bytes32"
             },
             {
-                "name": "_assetID",
-                "type": "bytes32"
+                "name": "_assetAddress",
+                "type": "address"
             },
             {
                 "name": "_account",
@@ -603,7 +594,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x1519b2d5"
+        "signature": "0xe609295c"
     },
     {
         "constant": false,
