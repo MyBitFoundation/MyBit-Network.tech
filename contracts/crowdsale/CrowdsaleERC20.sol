@@ -97,7 +97,7 @@ contract CrowdsaleERC20{
     ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("crowdsale.fundingToken", _assetAddress))));
     //Mint tokens for the asset manager
     require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerFee", _assetAddress)))), "Manager minting failed");
-    //require(assetToken.finishMinting()); //Commented out because web3 promises are failing
+    require(assetToken.finishMinting()); //Commented out because web3 promises are failing
     //Get the addresses for the operator and platform
     address operator = database.addressStorage(keccak256(abi.encodePacked("asset.operator", _assetAddress)));
     address platformWallet = database.addressStorage(keccak256(abi.encodePacked("platform.wallet")));
