@@ -72,14 +72,14 @@
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/interfaces/EtherDividendInterface.sol",
     "exportedSymbols": {
       "EtherDividendInterface": [
-        9518
+        9585
       ]
     },
-    "id": 9519,
+    "id": 9586,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 9495,
+        "id": 9562,
         "literals": [
           "solidity",
           "^",
@@ -95,9 +95,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 9518,
+        "id": 9585,
         "linearizedBaseContracts": [
-          9518
+          9585
         ],
         "name": "EtherDividendInterface",
         "nodeType": "ContractDefinition",
@@ -105,7 +105,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 9504,
+            "id": 9571,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -113,15 +113,15 @@
             "name": "mint",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 9500,
+              "id": 9567,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 9497,
+                  "id": 9564,
                   "name": "_to",
                   "nodeType": "VariableDeclaration",
-                  "scope": 9504,
+                  "scope": 9571,
                   "src": "225:11:36",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -130,7 +130,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 9496,
+                    "id": 9563,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "225:7:36",
@@ -144,10 +144,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 9499,
+                  "id": 9566,
                   "name": "_amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 9504,
+                  "scope": 9571,
                   "src": "238:15:36",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -156,7 +156,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 9498,
+                    "id": 9565,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "238:7:36",
@@ -173,15 +173,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 9503,
+              "id": 9570,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 9502,
+                  "id": 9569,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 9504,
+                  "scope": 9571,
                   "src": "273:4:36",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -190,7 +190,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 9501,
+                    "id": 9568,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "273:4:36",
@@ -205,7 +205,7 @@
               ],
               "src": "272:6:36"
             },
-            "scope": 9518,
+            "scope": 9585,
             "src": "211:68:36",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -214,7 +214,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 9509,
+            "id": 9576,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -222,22 +222,22 @@
             "name": "finishMinting",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 9505,
+              "id": 9572,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "352:2:36"
             },
             "payable": false,
             "returnParameters": {
-              "id": 9508,
+              "id": 9575,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 9507,
+                  "id": 9574,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 9509,
+                  "scope": 9576,
                   "src": "373:4:36",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -246,7 +246,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 9506,
+                    "id": 9573,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "373:4:36",
@@ -261,7 +261,7 @@
               ],
               "src": "372:6:36"
             },
-            "scope": 9518,
+            "scope": 9585,
             "src": "330:49:36",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -270,7 +270,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 9512,
+            "id": 9579,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -278,19 +278,19 @@
             "name": "issueDividends",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 9510,
+              "id": 9577,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "406:2:36"
             },
             "payable": true,
             "returnParameters": {
-              "id": 9511,
+              "id": 9578,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "425:0:36"
             },
-            "scope": 9518,
+            "scope": 9585,
             "src": "383:43:36",
             "stateMutability": "payable",
             "superFunction": null,
@@ -299,7 +299,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 9517,
+            "id": 9584,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -307,22 +307,22 @@
             "name": "totalSupply",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 9513,
+              "id": 9580,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "496:2:36"
             },
             "payable": false,
             "returnParameters": {
-              "id": 9516,
+              "id": 9583,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 9515,
+                  "id": 9582,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 9517,
+                  "scope": 9584,
                   "src": "522:7:36",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -331,7 +331,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 9514,
+                    "id": 9581,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "522:7:36",
@@ -346,14 +346,14 @@
               ],
               "src": "521:9:36"
             },
-            "scope": 9518,
+            "scope": 9585,
             "src": "476:55:36",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 9519,
+        "scope": 9586,
         "src": "26:507:36"
       }
     ],
@@ -363,14 +363,14 @@
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/interfaces/EtherDividendInterface.sol",
     "exportedSymbols": {
       "EtherDividendInterface": [
-        9518
+        9585
       ]
     },
-    "id": 9519,
+    "id": 9586,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 9495,
+        "id": 9562,
         "literals": [
           "solidity",
           "^",
@@ -386,9 +386,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 9518,
+        "id": 9585,
         "linearizedBaseContracts": [
-          9518
+          9585
         ],
         "name": "EtherDividendInterface",
         "nodeType": "ContractDefinition",
@@ -396,7 +396,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 9504,
+            "id": 9571,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -404,15 +404,15 @@
             "name": "mint",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 9500,
+              "id": 9567,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 9497,
+                  "id": 9564,
                   "name": "_to",
                   "nodeType": "VariableDeclaration",
-                  "scope": 9504,
+                  "scope": 9571,
                   "src": "225:11:36",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -421,7 +421,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 9496,
+                    "id": 9563,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "225:7:36",
@@ -435,10 +435,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 9499,
+                  "id": 9566,
                   "name": "_amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 9504,
+                  "scope": 9571,
                   "src": "238:15:36",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -447,7 +447,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 9498,
+                    "id": 9565,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "238:7:36",
@@ -464,15 +464,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 9503,
+              "id": 9570,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 9502,
+                  "id": 9569,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 9504,
+                  "scope": 9571,
                   "src": "273:4:36",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -481,7 +481,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 9501,
+                    "id": 9568,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "273:4:36",
@@ -496,7 +496,7 @@
               ],
               "src": "272:6:36"
             },
-            "scope": 9518,
+            "scope": 9585,
             "src": "211:68:36",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -505,7 +505,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 9509,
+            "id": 9576,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -513,22 +513,22 @@
             "name": "finishMinting",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 9505,
+              "id": 9572,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "352:2:36"
             },
             "payable": false,
             "returnParameters": {
-              "id": 9508,
+              "id": 9575,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 9507,
+                  "id": 9574,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 9509,
+                  "scope": 9576,
                   "src": "373:4:36",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -537,7 +537,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 9506,
+                    "id": 9573,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "373:4:36",
@@ -552,7 +552,7 @@
               ],
               "src": "372:6:36"
             },
-            "scope": 9518,
+            "scope": 9585,
             "src": "330:49:36",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -561,7 +561,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 9512,
+            "id": 9579,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -569,19 +569,19 @@
             "name": "issueDividends",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 9510,
+              "id": 9577,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "406:2:36"
             },
             "payable": true,
             "returnParameters": {
-              "id": 9511,
+              "id": 9578,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "425:0:36"
             },
-            "scope": 9518,
+            "scope": 9585,
             "src": "383:43:36",
             "stateMutability": "payable",
             "superFunction": null,
@@ -590,7 +590,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 9517,
+            "id": 9584,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -598,22 +598,22 @@
             "name": "totalSupply",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 9513,
+              "id": 9580,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "496:2:36"
             },
             "payable": false,
             "returnParameters": {
-              "id": 9516,
+              "id": 9583,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 9515,
+                  "id": 9582,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 9517,
+                  "scope": 9584,
                   "src": "522:7:36",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -622,7 +622,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 9514,
+                    "id": 9581,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "522:7:36",
@@ -637,14 +637,14 @@
               ],
               "src": "521:9:36"
             },
-            "scope": 9518,
+            "scope": 9585,
             "src": "476:55:36",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 9519,
+        "scope": 9586,
         "src": "26:507:36"
       }
     ],
@@ -655,8 +655,8 @@
     "version": "0.4.24+commit.e67f0147.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.0.1",
-  "updatedAt": "2019-03-11T22:02:15.743Z",
+  "schemaVersion": "3.0.2",
+  "updatedAt": "2019-03-14T21:46:28.583Z",
   "devdoc": {
     "methods": {}
   },

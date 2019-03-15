@@ -53,14 +53,18 @@
             {
                 "name": "_fundingToken",
                 "type": "address"
+            },
+            {
+                "name": "_burnToken",
+                "type": "address"
             }
         ],
         "name": "createAssetOrderERC20",
         "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
+        "payable": true,
+        "stateMutability": "payable",
         "type": "function",
-        "signature": "0x24bb2f67"
+        "signature": "0x72bf3c57"
     },
     {
         "constant": false,

@@ -2,6 +2,21 @@
     {
         "constant": true,
         "inputs": [],
+        "name": "burner",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x27810b6e"
+    },
+    {
+        "constant": true,
+        "inputs": [],
         "name": "database",
         "outputs": [
             {
@@ -79,6 +94,10 @@
             {
                 "name": "_escrow",
                 "type": "uint256"
+            },
+            {
+                "name": "_burnToken",
+                "type": "address"
             }
         ],
         "name": "createAssetOrderETH",
@@ -88,10 +107,10 @@
                 "type": "bool"
             }
         ],
-        "payable": false,
-        "stateMutability": "nonpayable",
+        "payable": true,
+        "stateMutability": "payable",
         "type": "function",
-        "signature": "0xc6dbc11d"
+        "signature": "0x29eddadf"
     },
     {
         "constant": false,

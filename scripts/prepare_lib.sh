@@ -2,7 +2,7 @@
 rm -rf ./lib
 
 # Compile all contracts
-truffle compile --all
+npx truffle compile --all
 
 # Create distribution directory
 mkdir -p lib/json lib/js

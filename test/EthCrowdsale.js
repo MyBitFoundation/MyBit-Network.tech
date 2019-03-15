@@ -205,17 +205,35 @@ contract('Ether Crowdsale', async(accounts) => {
     }
     assert.notEqual(err, undefined);
   });
-/*
-  it('Fail to buy asset, fail to payout. No platform address', async() => {
+
+  it('User2 funding', async() => {
+    //console.log(web3.eth.getBalance(user2));
+    await crowdsale.buyAssetOrderETH(assetAddress, user2, {from:user2, value:bn(15).times(ETH)});
+    let user2Tokens = bn(await token.balanceOf(user2));
+    assert.equal(user2Tokens.eq(bn(15).times(ETH)), true);
+  });
+
+  it('User3 funding fail', async() => {
+    //Funding finished
     let err;
     try{
-      await crowdsale.buyAssetOrderETH(assetAddress, user2, {from:user2, value:1bn(5).times(ETH)});
+      await crowdsale.buyAssetOrderETH(assetAddress, user3, {from:user3, value:bn(5).times(ETH)});
     } catch(e){
       err = e;
     }
     assert.notEqual(err, undefined);
   });
-*/
+
+  it('Fail to withdraw, platform address not set', async() => {
+    let err;
+    try{
+      await crowdsale.payoutETH(assetAddress);
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
   it('Set platform', async() => {
     await platform.setPlatformWallet(owner);
   });
@@ -230,38 +248,30 @@ contract('Ether Crowdsale', async(accounts) => {
     assert.notEqual(err, undefined);
   });
 
-  it('User2 funding', async() => {
-    //console.log(web3.eth.getBalance(user2));
+  it('Withdraw payout', async() => {
     ownerBalanceBefore = await web3.eth.getBalance(owner);
     operatorBalanceBefore = await web3.eth.getBalance(operator);
-
-    await crowdsale.buyAssetOrderETH(assetAddress, user2, {from:user2, value:bn(15).times(ETH)});
-    let user2Tokens = bn(await token.balanceOf(user2));
-    assert.equal(user2Tokens.eq(bn(15).times(ETH)), true);
-
-
+    await crowdsale.payoutETH(assetAddress, {from: assetManager});
     ownerBalanceAfter = await web3.eth.getBalance(owner);
     assert.equal(bn(ownerBalanceAfter).minus(ownerBalanceBefore).isEqualTo(bn(ETH).multipliedBy(20).dividedBy(100)), true);
-
     operatorBalanceAfter = await web3.eth.getBalance(operator);
     assert.equal(bn(operatorBalanceAfter).minus(operatorBalanceBefore).isEqualTo(bn(ETH).multipliedBy(20).minus( bn(ETH).multipliedBy(20).dividedBy(100) )), true);
-  });
+  })
 
-  it('User3 funding fail', async() => {
-    //Funding finished
+  it('Fail to refund', async() => {
     let err;
     try{
-      await crowdsale.buyAssetOrderETH(assetAddress, user3, {from:user3, value:bn(5).times(ETH)});
+      await crowdsale.refund(assetAddress, {from:assetManager});
     } catch(e){
       err = e;
     }
     assert.notEqual(err, undefined);
   });
 
-  it('Fail to refund', async() => {
+  it('Fail to withdraw, already paid out', async() => {
     let err;
     try{
-      await crowdsale.refund(assetAddress, {from:assetManager});
+      await crowdsale.payoutETH(assetAddress);
     } catch(e){
       err = e;
     }
@@ -409,10 +419,11 @@ contract('Ether Crowdsale', async(accounts) => {
     let tokenSupply = await token.totalSupply()
     console.log('Token Supply: ' + tokenSupply);
     await crowdsale.buyAssetOrderETH(assetAddress, user1, {from:user1, value:bn(2).times(ETH)});
+    await crowdsale.payoutETH(assetAddress, {from: assetManager});
     let user1Tokens = bn(await token.balanceOf(user1));
     console.log(user1Tokens.toNumber());
     assert.equal(user1Tokens.eq(bn(2).times(ETH)), true);
-    assert.equal(await token.mintingFinished(), true);
+    //assert.equal(await token.mintingFinished(), true);
     assert.equal(bn(await token.balanceOf(assetManager)).eq(0), true);
     assert.equal(await api.crowdsaleFinalized(assetAddress), true);
   });
@@ -445,9 +456,10 @@ contract('Ether Crowdsale', async(accounts) => {
 
   it('User2 funding ', async() => {
     await crowdsale.buyAssetOrderETH(assetAddress, user2, {from:user2, value:bn(2).times(ETH)});
+    await crowdsale.payoutETH(assetAddress, {from: assetManager});
     let user2Tokens = bn(await token.balanceOf(user2));
     assert.equal(user2Tokens.eq(bn(2).times(ETH)), true);
-    assert.equal(await token.mintingFinished(), true);
+    //assert.equal(await token.mintingFinished(), true);
     assert.equal(await api.crowdsaleFinalized(assetAddress), true);
   });
 
@@ -479,10 +491,11 @@ contract('Ether Crowdsale', async(accounts) => {
   // This example makes 2 asset tokens, but only receives 1 WEI as it mints a token for the assetmanager
   it('User3 funding 1 wei', async() => {
     await crowdsale.buyAssetOrderETH(assetAddress, user3, {from:user3, value:1});
+    await crowdsale.payoutETH(assetAddress, {from: assetManager});
     let user3Tokens = bn(await token.balanceOf(user3));
     assert.equal(user3Tokens.eq(1), true);
     assert.equal(bn(await token.balanceOf(assetManager)).eq(0), true);//This should round down to zero
-    assert.equal(await token.mintingFinished(), true);
+    //assert.equal(await token.mintingFinished(), true);
     assert.equal(await api.crowdsaleFinalized(assetAddress), true);
   });
 
