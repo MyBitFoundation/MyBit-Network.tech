@@ -11,8 +11,6 @@ module.exports = function(deployer, network, accounts) {
     const API = artifacts.require("./database/API.sol");
     const SingleOwned = artifacts.require("./ownership/SingleOwned.sol");
     const Pausible = artifacts.require("./ownership/Pausible.sol");
-    const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
-    //const AccessHierarchy = artifacts.require("./access/AccessHierarchy.sol");
     const Platform = artifacts.require("./ecosystem/Platform.sol");
     const Operators = artifacts.require("./roles/Operators.sol");
     const AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
@@ -22,7 +20,6 @@ module.exports = function(deployer, network, accounts) {
     const CrowdsaleETH = artifacts.require("./crowdsale/CrowdsaleETH.sol");
     const CrowdsaleGeneratorERC20 = artifacts.require("./crowdsale/CrowdsaleGeneratorERC20.sol");
     const CrowdsaleERC20 = artifacts.require("./crowdsale/CrowdsaleERC20.sol");
-    const AssetExchange = artifacts.require("./ecosystem/AssetExchange.sol");
     const SafeMath = artifacts.require("./math/SafeMath.sol");
 
     const decimals = bn(1000000000000000000);
@@ -57,8 +54,7 @@ module.exports = function(deployer, network, accounts) {
                     CrowdsaleETH,
                     CrowdsaleGeneratorETH,
                     CrowdsaleERC20,
-                    CrowdsaleGeneratorERC20,
-                    AssetExchange);
+                    CrowdsaleGeneratorERC20);
 
       if(network != 'mainnet'){
         return MyBitToken.new('MyBit', 'MYB', tokenSupply.toString());
@@ -155,17 +151,9 @@ module.exports = function(deployer, network, accounts) {
 
     }).then(function(){
 
+      platform.setPlatformFee('3', {from: accounts[0], gas:110000});
+      platform.setPlatformPercentage('1', {from: accounts[0], gas:110000});
       return platform.setPlatformToken(MyB.address, {from: accounts[0], gas:110000});
-
-    }).then(function(){
-
-      return ERC20Burner.new(db.address, events.address, kyber.address);
-
-    }).then(function(instance) {
-
-      burner = instance;
-      console.log('ERC20Burner.sol: ' + burner.address);
-      return cm.addContract('ERC20Burner', burner.address, {from: accounts[0], gas:190000});
 
     }).then(function() {
 
@@ -192,16 +180,6 @@ module.exports = function(deployer, network, accounts) {
       }
     }).then(function() {
 
-      /*return AccessHierarchy.new(db.address, events.address);
-
-    }).then(function(instance) {
-
-      access = instance;
-      console.log('AccessHierarchy.sol: ' + access.address);
-      return cm.addContract('AccessHierarchy', access.address, {from: accounts[0], gas:190000});
-
-    }).then(function() {*/
-
       return AssetManagerEscrow.new(db.address, events.address);
 
     }).then(function(instance) {
@@ -220,7 +198,7 @@ module.exports = function(deployer, network, accounts) {
 
     }).then(function() {
 
-      return CrowdsaleGeneratorETH.new(db.address, events.address);
+      return CrowdsaleGeneratorETH.new(db.address, events.address, kyber.address);
 
     }).then(function(instance) {
 
@@ -240,7 +218,7 @@ module.exports = function(deployer, network, accounts) {
 
     }).then(function() {
 
-      return CrowdsaleGeneratorERC20.new(db.address, events.address);
+      return CrowdsaleGeneratorERC20.new(db.address, events.address, kyber.address);
 
     }).then(function(instance) {
 
@@ -269,16 +247,6 @@ module.exports = function(deployer, network, accounts) {
       return cm.addContract('AssetGenerator', assetGenerator.address, {from: accounts[0], gas:190000});
 
     }).then(function() {
-
-      return AssetExchange.new(db.address, events.address);
-
-    }).then(function(instance) {
-
-      dax = instance;
-      console.log('AssetExchange.sol: ' + dax.address);
-      return cm.addContract('AssetExchange', dax.address, {from: accounts[0], gas:190000});
-
-    }).then(function() {
       //Set owner as contract in contract manager if not mainnet
       console.log(network);
       if(network != 'mainnet'){
@@ -291,48 +259,14 @@ module.exports = function(deployer, network, accounts) {
       return true;
 
     }).then(function() {
-
-      return burner.setFee('0x667de2cd', crowdsaleGeneratorETH.address,  bn(250).times(decimals).toString(), {from: accounts[0], gas:70000}); //CrowdsaleGeneratorETH
-
-    }).then(function() {
-
-      return burner.setFee('0xa71d4c6a', crowdsaleETH.address,  bn(250).times(decimals).toString(), {from: accounts[0], gas:70000}); //CrowdsaleETH
-
-    }).then(function() {
-
-      return burner.setFee('0x40aedf24', crowdsaleGeneratorERC20.address,  bn(250).times(decimals).toString(), {from: accounts[0], gas:70000});
-
-    }).then(function() {
-
-      return burner.setFee('0xc9cd97eb', crowdsaleERC20.address,  bn(250).times(decimals).toString(), {from: accounts[0], gas:70000});
-
-    }).then(function() {
-
-      return burner.setFee('0xf08fa7b0', dax.address,  bn(250).times(decimals).toString(), {from: accounts[0], gas:70000});
-
-    }).then(function() {
-
-      return burner.setFee('0xf5e20d6f', dax.address,  bn(250).times(decimals).toString(), {from: accounts[0], gas:70000});
-
-    }).then(function() {
-
-      return burner.setFee('0xf76c5c55', assetGenerator.address,  bn(250).times(decimals).toString(), {from: accounts[0], gas:70000});
-
-    }).then(function() {
-
-      return burner.setFee('0x4e38c7f4', assetGenerator.address,  bn(250).times(decimals).toString(), {from: accounts[0], gas:70000});
-
-    }).then(function() {
       let addresses = {
         "MyBitToken" : MyB.address,
-        "ERC20Burner" : burner.address,
         "Database" : db.address,
         "Events" : events.address,
         "ContractManager" : cm.address,
         "API" : api.address,
         "SingleOwned" : owned.address,
         "Pausible" : pausible.address,
-        /*"AccessHierarchy" : access.address,*/
         "Platform" : platform.address,
         "Operators" : operators.address,
         "AssetManagerEscrow" : escrow.address,
@@ -341,8 +275,7 @@ module.exports = function(deployer, network, accounts) {
         "CrowdsaleETH" : crowdsaleETH.address,
         "CrowdsaleGeneratorETH" : crowdsaleGeneratorETH.address,
         "CrowdsaleERC20" : crowdsaleERC20.address,
-        "CrowdsaleGeneratorERC20" : crowdsaleGeneratorERC20.address,
-        "AssetExchange" : dax.address
+        "CrowdsaleGeneratorERC20" : crowdsaleGeneratorERC20.address
       }
 
       let contracts_json = JSON.stringify(addresses, null, 4);
@@ -362,10 +295,10 @@ module.exports = function(deployer, network, accounts) {
         console.log('Contracts Script Saved');
       });
 
-      instanceList = [MyB, burner, db, events, cm, api, owned, pausible, /*access,*/
+      instanceList = [MyB, db, events, cm, api, owned, pausible,
                       platform, operators, escrow, managerFunds,
                       assetGenerator, crowdsaleETH, crowdsaleGeneratorETH,
-                      crowdsaleERC20, crowdsaleGeneratorERC20, dax];
+                      crowdsaleERC20, crowdsaleGeneratorERC20];
 
       for(let i=0; i<instanceList.length; i++){
         let instanceName = instanceList[i].constructor._json.contractName;

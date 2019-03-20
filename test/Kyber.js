@@ -1,12 +1,12 @@
 //MyBit
 const AssetToken = artifacts.require("DividendTokenERC20.sol");
-const ERC20Burner = artifacts.require("ERC20Burner.sol");
 const CrowdsaleGenerator = artifacts.require("CrowdsaleGeneratorERC20.sol");
 const Crowdsale = artifacts.require("CrowdsaleERC20.sol");
 const Database = artifacts.require("Database.sol");
 const Events = artifacts.require("Events.sol");
 const ContractManager = artifacts.require("ContractManager.sol");
 const AssetManagerFunds = artifacts.require("AssetManagerFunds.sol");
+const AssetManagerEscrow = artifacts.require("AssetManagerEscrow.sol");
 const Operators = artifacts.require("Operators.sol");
 const Platform = artifacts.require("Platform.sol");
 const API = artifacts.require("./database/API.sol");
@@ -28,8 +28,8 @@ BigNumber.config({ EXPONENTIAL_AT: 80 });
 const ETH = new BigNumber(10**18);
 const tokenPerAccount = new BigNumber(1000).times(ETH);
 
-let assetToken, burner, crowdsaleGen, crowdsale, db, events, cm, assetManagerFunds,
-    operators, platform, api;
+let assetToken, crowdsaleGen, crowdsale, db, events, cm, assetManagerFunds,
+    assetManagerEscrow, operators, platform, api;
 
 let operatorID, assetURI, assetAddress;
 
@@ -1072,23 +1072,17 @@ contract('Kyber', function(accounts) {
       platform = await Platform.new(db.address, events.address);
       await cm.addContract('Platform', platform.address);
       await platform.setPlatformToken(tokenInstance[0].address);
-      burner = await ERC20Burner.new(db.address, events.address, networkProxy.address);
-      await cm.addContract("ERC20Burner", burner.address);
       api = await API.new(db.address);
       assetManagerFunds = await AssetManagerFunds.new(db.address, events.address);
       await cm.addContract('AssetManagerFunds', assetManagerFunds.address);
-      crowdsaleGen = await CrowdsaleGenerator.new(db.address, events.address);
+      assetManagerEscrow = await AssetManagerEscrow.new(db.address, events.address);
+      await cm.addContract('AssetManagerEscrow', assetManagerEscrow.address);
+      crowdsaleGen = await CrowdsaleGenerator.new(db.address, events.address, networkProxy.address);
       await cm.addContract("CrowdsaleGenerator", crowdsaleGen.address);
-      await burner.setFee(await api.getMethodID('createAssetOrderERC20(string,address,bytes32,uint256,uint256,uint256,uint256,uint256,address,address)'), crowdsaleGen.address,  "25000000000000");
       crowdsale = await Crowdsale.new(db.address, events.address, networkProxy.address);
       await cm.addContract('CrowdsaleERC20', crowdsale.address);
       operators = await Operators.new(db.address, events.address);
       await cm.addContract('Operators', operators.address);
-      for(var i=1; i<accounts.length; i++){
-        await cm.setContractStatePreferences(true, true, {from: accounts[i]});
-        await tokenInstance[1].approve(burner.address, BigNumber(10**30).toString(), {from:accounts[i]});
-        await tokenInstance[2].approve(burner.address, BigNumber(10**30).toString(), {from:accounts[i]});
-      }
       let block = await web3.eth.getBlock('latest');
       await operators.registerOperator(accounts[1], 'Operator', 'Asset Type');
       let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: accounts[0]}, fromBlock: block.number});
@@ -1105,19 +1099,14 @@ contract('Kyber', function(accounts) {
       assetManagerFee = 0;
       let block = await web3.eth.getBlock('latest');
       console.log('Balance: ', await web3.eth.getBalance(accounts[2]));
-      await crowdsaleGen.createAssetOrderERC20(assetURI, accounts[2], operatorID, 100, 0, BigNumber(20).times(ETH).toString(), assetManagerFee, 0, tokenInstance[1].address, tokenInstance[1].address, {from:accounts[2], value:BigNumber(10**17).toString()});
+      await crowdsaleGen.createAssetOrderERC20(assetURI, accounts[2], operatorID, 100, 0, BigNumber(20).times(ETH).toString(), assetManagerFee, BigNumber(10**17).toString(), tokenInstance[1].address, ethAddress, {from:accounts[2], value:BigNumber(10**17).toString()});
       let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: accounts[2]}, fromBlock: block.number});
       assetAddress = logs[0].args.asset;
       console.log(logs[0].args);
       assetToken = await AssetToken.at(assetAddress);
-      logs = await events.getPastEvents('LogTransaction', {filter: {messageID: web3.utils.sha3('Platform Token Burnt')}, fromBlock: block.number});
-      console.log(logs[0].args);
-      console.log('Amount: ', logs[0].args.amount.toString());
-      logs = await burner.getPastEvents('Trade', {filter: {}, fromBlock:block.number});
+      logs = await events.getPastEvents('LogEscrow', {filter: {messageID: web3.utils.sha3('Escrow locked')}, fromBlock: block.number});
       console.log(logs[0].args);
       console.log('Amount: ', BigNumber(logs[0].args.amount).toString());
-      console.log('Max: ', BigNumber(logs[0].args.max).toString());
-      console.log('Min rate: ', BigNumber(logs[0].args.minRate).toString());
     });
 
     it('Should make investment in asset', async() => {

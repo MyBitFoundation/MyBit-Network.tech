@@ -3,22 +3,16 @@ pragma solidity ^0.4.24;
 import "../math/SafeMath.sol";
 import "../interfaces/ERC20.sol";
 import "../interfaces/ERC20DividendInterface.sol";
+import "../interfaces/KyberInterface.sol";
 
 interface Events {  function transaction(string _message, address _from, address _to, uint _amount, bytes32 _id)  external; }
 interface DB {
   function addressStorage(bytes32 _key) external view returns (address);
   function uintStorage(bytes32 _key) external view returns (uint);
+  function setUint(bytes32 _key, uint _value) external;
   function deleteUint(bytes32 _key) external;
   function setBool(bytes32 _key, bool _value) external;
   function boolStorage(bytes32 _key) external view returns (bool);
-}
-interface CrowdsaleERC20_KyberProxy{
-  function getExpectedRate(address src, address dest, uint srcQty) external view returns (uint expectedRate, uint slippageRate);
-  function trade(ERC20 src, uint srcAmount, ERC20 dest, address destAddress, uint maxDestAmount,uint minConversionRate, address walletId) external payable returns(uint);
-}
-
-interface CrowdsaleERC20_ERC20Burner {
-  function burn(address _tokenHolder, uint _amount, address _burnToken) payable external returns (bool);
 }
 
 // @title An asset crowdsale contract which accepts funding from ERC20 tokens.
@@ -30,8 +24,7 @@ contract CrowdsaleERC20{
 
   DB private database;
   Events private events;
-  CrowdsaleERC20_KyberProxy private kyber;
-  CrowdsaleERC20_ERC20Burner private burner;
+  KyberInterface private kyber;
 
   // @notice Constructor: initializes database instance
   // @param: The address for the platform database
@@ -39,8 +32,7 @@ contract CrowdsaleERC20{
   public{
       database = DB(_database);
       events = Events(_events);
-      kyber = CrowdsaleERC20_KyberProxy(_kyber);
-      burner = CrowdsaleERC20_ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
+      kyber = KyberInterface(_kyber);
   }
 
 
@@ -50,35 +42,45 @@ contract CrowdsaleERC20{
   // @param (uint) _amount = The amount to spend purchasing this asset
   function buyAssetOrderERC20(address _assetAddress, address _investor, uint _amount, address _paymentToken)
   external
+  payable
   validAsset(_assetAddress)
   betweenDeadlines(_assetAddress)
   notFinalized(_assetAddress)
-  // burnRequired
   returns (bool) {
+    if(_paymentToken == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)){
+      require(msg.value == _amount, 'Msg.value does not match amount');
+    } else {
+      require(msg.value == 0, 'Msg.value should equal zero');
+    }
     require(msg.sender == _investor || database.boolStorage(keccak256(abi.encodePacked("approval", _investor, msg.sender, address(this), msg.sig))), "User not approved");
     ERC20DividendInterface assetToken = ERC20DividendInterface(_assetAddress);
-    ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("crowdsale.fundingToken", _assetAddress))));
-    uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));
-    uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
-    uint amount; //This will be the value left over after any conversions
-    //Check if the payment token is the same as the funding token. If not, convert, else just send some to the MYB burner
+    ERC20 fundingToken = ERC20(assetToken.getERC20());
+    //uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));
+    uint fundingRemaining = database.uintStorage(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)));
+    //uint fundingRemaining = amountToRaise.sub(assetToken.totalSupply()).mul(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee"))))).div(100);
+    uint collected; //This will be the value received by the contract after any conversions
+    uint amount; //The number of tokens that will be minted
+    //Check if the payment token is the same as the funding token. If not, convert, else just collect the funds
     if(_paymentToken == address(fundingToken)){
-      amount = collectPayment(_investor, _amount, tokensRemaining, fundingToken);
+      collected = collectPayment(_investor, _amount, fundingRemaining, fundingToken);
     } else {
-      amount = convertTokens(_investor, _amount, fundingToken, ERC20(_paymentToken), tokensRemaining);
+      collected = convertTokens(_investor, _amount, fundingToken, ERC20(_paymentToken), fundingRemaining);
     }
-    require(amount > 0);
-    if(amount < tokensRemaining){
+    require(collected > 0);
+    if(collected < fundingRemaining){
+      amount = collected.mul(100).div(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee")))));
+      database.setUint(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)), fundingRemaining.sub(collected));
       require(assetToken.mint(_investor, amount), "Investor minting failed");
-      events.transaction('Asset purchased', _investor, _assetAddress, amount, '');
     } else {
+      amount = fundingRemaining.mul(100).div(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee")))));
       database.setBool(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress)), true);
-      require(assetToken.mint(_investor, tokensRemaining), "Investor minting failed");   // Send remaining asset tokens to investor
-      if(amount > tokensRemaining){
-        fundingToken.transfer(_investor, amount.sub(tokensRemaining));    // return extra funds
+      database.deleteUint(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)));
+      require(assetToken.mint(_investor, amount), "Investor minting failed");   // Send remaining asset tokens to investor
+      if(collected > fundingRemaining){
+        fundingToken.transfer(_investor, collected.sub(fundingRemaining));    // return extra funds
       }
-      events.transaction('Asset purchased', _investor, _assetAddress, tokensRemaining, '');
     }
+    events.transaction('Asset purchased', _investor, _assetAddress, amount, '');
     return true;
   }
 
@@ -94,21 +96,21 @@ contract CrowdsaleERC20{
     database.setBool(keccak256(abi.encodePacked("crowdsale.paid", _assetAddress)), true);
     //Setup tokens
     ERC20DividendInterface assetToken = ERC20DividendInterface(_assetAddress);
-    ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("crowdsale.fundingToken", _assetAddress))));
-    //Mint tokens for the asset manager
-    require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerFee", _assetAddress)))), "Manager minting failed");
-    require(assetToken.finishMinting()); //Commented out because web3 promises are failing
+    ERC20 fundingToken = ERC20(assetToken.getERC20());
+    //Mint tokens for the asset manager and platform
+    require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerTokens", _assetAddress)))), "Manager minting failed");
+    require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("platform.wallet"))), database.uintStorage(keccak256(abi.encodePacked("asset.platformTokens", _assetAddress)))), "Platform minting failed");
+    require(assetToken.finishMinting());
     //Get the addresses for the operator and platform
     address operator = database.addressStorage(keccak256(abi.encodePacked("asset.operator", _assetAddress)));
     address platformWallet = database.addressStorage(keccak256(abi.encodePacked("platform.wallet")));
     require(operator != address(0) && platformWallet != address(0));
     //Calculate amounts for platform and operator
     uint amount = database.uintStorage(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));
-    uint operatorPortion = amount.mul(99).div(100);
-    uint platformPortion = amount.sub(operatorPortion);
+    uint platformFee = amount.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("platform.fee"))));
     //Transfer funds to operator and platform
-    fundingToken.transfer(platformWallet, platformPortion);
-    fundingToken.transfer(operator, operatorPortion);
+    fundingToken.transfer(platformWallet, platformFee);
+    fundingToken.transfer(operator, amount);
     //Delete crowdsale start time
     database.deleteUint(keccak256(abi.encodePacked("crowdsale.start", _assetAddress)));
     //Emit event
@@ -128,8 +130,8 @@ contract CrowdsaleERC20{
     require(database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress))) != 0);
     database.deleteUint(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress)));
     ERC20DividendInterface assetToken = ERC20DividendInterface(_assetAddress);
-    ERC20 fundingToken = ERC20(database.addressStorage(keccak256(abi.encodePacked("crowdsale.fundingToken", _assetAddress))));
-    uint refundValue = assetToken.totalSupply(); //token=wei
+    ERC20 fundingToken = ERC20(assetToken.getERC20());
+    uint refundValue = assetToken.totalSupply().mul(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee"))))).div(100); //total supply plus platform fees
     fundingToken.approve(_assetAddress, refundValue);
     assetToken.issueDividends(refundValue);
     return true;
@@ -166,24 +168,39 @@ contract CrowdsaleERC20{
   function convertTokens(address _investor, uint _amount, /*bytes4 _sig,*/ ERC20 _fundingToken, ERC20 _paymentToken, uint _maxTokens)
   private
   returns (uint) {
-    //Collect funds
-    collectPayment(_investor, _amount, _amount, _paymentToken);
     ( , uint minRate) = kyber.getExpectedRate(address(_paymentToken), address(_fundingToken), 0);
-    // Mitigate ERC20 Approve front-running attack, by initially setting
-    // allowance to 0
-    require(_paymentToken.approve(address(kyber), 0));
-    // Approve tokens so network can take them during the swap
-    _paymentToken.approve(address(kyber), _amount);
-    uint paymentBalanceBefore = _paymentToken.balanceOf(this);
-    uint fundingBalanceBefore = _fundingToken.balanceOf(this);
-    //Convert remaining funds into the funding token
-    kyber.trade(_paymentToken, _amount, _fundingToken, address(this), _maxTokens, minRate, 0);
-    // Return any remaining source tokens to user
-    uint change = _amount.sub(paymentBalanceBefore.sub(_paymentToken.balanceOf(this)));
-    uint investment = _fundingToken.balanceOf(this).sub(fundingBalanceBefore);
-    _paymentToken.transfer(_investor, change);
+    uint paymentBalanceBefore;
+    uint fundingBalanceBefore;
+    uint change;
+    uint investment;
+    if(address(_paymentToken) == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)){
+      paymentBalanceBefore = address(this).balance;
+      fundingBalanceBefore = _fundingToken.balanceOf(this);
+      //Convert remaining funds into the funding token
+      kyber.trade.value(_amount)(_paymentToken, _amount, _fundingToken, address(this), _maxTokens, minRate, 0);
+      change = _amount.sub(paymentBalanceBefore.sub(address(this).balance));
+      investment = _fundingToken.balanceOf(this).sub(fundingBalanceBefore);
+      _paymentToken.transfer(_investor, change);
+    } else {
+      //Collect funds
+      collectPayment(_investor, _amount, _amount, _paymentToken);
+      // Mitigate ERC20 Approve front-running attack, by initially setting
+      // allowance to 0
+      require(_paymentToken.approve(address(kyber), 0));
+      // Approve tokens so network can take them during the swap
+      _paymentToken.approve(address(kyber), _amount);
+      paymentBalanceBefore = _paymentToken.balanceOf(this);
+      fundingBalanceBefore = _fundingToken.balanceOf(this);
+      //Convert remaining funds into the funding token
+      kyber.trade(_paymentToken, _amount, _fundingToken, address(this), _maxTokens, minRate, 0);
+      // Return any remaining source tokens to user
+      change = _amount.sub(paymentBalanceBefore.sub(_paymentToken.balanceOf(this)));
+      investment = _fundingToken.balanceOf(this).sub(fundingBalanceBefore);
+      _paymentToken.transfer(_investor, change);
+    }
+
     emit Convert(address(_paymentToken), change, investment);
-    return 1;
+    return investment;
   }
 
   // @notice platform owners can recover tokens here

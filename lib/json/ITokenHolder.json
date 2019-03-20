@@ -71,14 +71,14 @@
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/bancor/utility/interfaces/ITokenHolder.sol",
     "exportedSymbols": {
       "ITokenHolder": [
-        1613
+        1581
       ]
     },
-    "id": 1614,
+    "id": 1582,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1599,
+        "id": 1567,
         "literals": [
           "solidity",
           "^",
@@ -91,10 +91,10 @@
       {
         "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/bancor/utility/interfaces/IOwned.sol",
         "file": "./IOwned.sol",
-        "id": 1600,
+        "id": 1568,
         "nodeType": "ImportDirective",
-        "scope": 1614,
-        "sourceUnit": 1598,
+        "scope": 1582,
+        "sourceUnit": 1566,
         "src": "25:22:11",
         "symbolAliases": [],
         "unitAlias": ""
@@ -102,10 +102,10 @@
       {
         "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/bancor/token/interfaces/IERC20Token.sol",
         "file": "../../token/interfaces/IERC20Token.sol",
-        "id": 1601,
+        "id": 1569,
         "nodeType": "ImportDirective",
-        "scope": 1614,
-        "sourceUnit": 1529,
+        "scope": 1582,
+        "sourceUnit": 1497,
         "src": "48:48:11",
         "symbolAliases": [],
         "unitAlias": ""
@@ -116,31 +116,31 @@
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 1602,
+              "id": 1570,
               "name": "IOwned",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 1597,
+              "referencedDeclaration": 1565,
               "src": "156:6:11",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_IOwned_$1597",
+                "typeIdentifier": "t_contract$_IOwned_$1565",
                 "typeString": "contract IOwned"
               }
             },
-            "id": 1603,
+            "id": 1571,
             "nodeType": "InheritanceSpecifier",
             "src": "156:6:11"
           }
         ],
         "contractDependencies": [
-          1597
+          1565
         ],
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 1613,
+        "id": 1581,
         "linearizedBaseContracts": [
-          1613,
-          1597
+          1581,
+          1565
         ],
         "name": "ITokenHolder",
         "nodeType": "ContractDefinition",
@@ -148,7 +148,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1612,
+            "id": 1580,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -156,31 +156,31 @@
             "name": "withdrawTokens",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1610,
+              "id": 1578,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1605,
+                  "id": 1573,
                   "name": "_token",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1612,
+                  "scope": 1580,
                   "src": "193:18:11",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IERC20Token_$1528",
+                    "typeIdentifier": "t_contract$_IERC20Token_$1496",
                     "typeString": "contract IERC20Token"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 1604,
+                    "id": 1572,
                     "name": "IERC20Token",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 1528,
+                    "referencedDeclaration": 1496,
                     "src": "193:11:11",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20Token_$1528",
+                      "typeIdentifier": "t_contract$_IERC20Token_$1496",
                       "typeString": "contract IERC20Token"
                     }
                   },
@@ -189,10 +189,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 1607,
+                  "id": 1575,
                   "name": "_to",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1612,
+                  "scope": 1580,
                   "src": "213:11:11",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -201,7 +201,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1606,
+                    "id": 1574,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "213:7:11",
@@ -215,10 +215,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 1609,
+                  "id": 1577,
                   "name": "_amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1612,
+                  "scope": 1580,
                   "src": "226:15:11",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -227,7 +227,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1608,
+                    "id": 1576,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "226:7:11",
@@ -244,19 +244,19 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 1611,
+              "id": 1579,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "249:0:11"
             },
-            "scope": 1613,
+            "scope": 1581,
             "src": "169:81:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 1614,
+        "scope": 1582,
         "src": "131:121:11"
       }
     ],
@@ -266,14 +266,14 @@
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/bancor/utility/interfaces/ITokenHolder.sol",
     "exportedSymbols": {
       "ITokenHolder": [
-        1613
+        1581
       ]
     },
-    "id": 1614,
+    "id": 1582,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1599,
+        "id": 1567,
         "literals": [
           "solidity",
           "^",
@@ -286,10 +286,10 @@
       {
         "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/bancor/utility/interfaces/IOwned.sol",
         "file": "./IOwned.sol",
-        "id": 1600,
+        "id": 1568,
         "nodeType": "ImportDirective",
-        "scope": 1614,
-        "sourceUnit": 1598,
+        "scope": 1582,
+        "sourceUnit": 1566,
         "src": "25:22:11",
         "symbolAliases": [],
         "unitAlias": ""
@@ -297,10 +297,10 @@
       {
         "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/bancor/token/interfaces/IERC20Token.sol",
         "file": "../../token/interfaces/IERC20Token.sol",
-        "id": 1601,
+        "id": 1569,
         "nodeType": "ImportDirective",
-        "scope": 1614,
-        "sourceUnit": 1529,
+        "scope": 1582,
+        "sourceUnit": 1497,
         "src": "48:48:11",
         "symbolAliases": [],
         "unitAlias": ""
@@ -311,31 +311,31 @@
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 1602,
+              "id": 1570,
               "name": "IOwned",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 1597,
+              "referencedDeclaration": 1565,
               "src": "156:6:11",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_IOwned_$1597",
+                "typeIdentifier": "t_contract$_IOwned_$1565",
                 "typeString": "contract IOwned"
               }
             },
-            "id": 1603,
+            "id": 1571,
             "nodeType": "InheritanceSpecifier",
             "src": "156:6:11"
           }
         ],
         "contractDependencies": [
-          1597
+          1565
         ],
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 1613,
+        "id": 1581,
         "linearizedBaseContracts": [
-          1613,
-          1597
+          1581,
+          1565
         ],
         "name": "ITokenHolder",
         "nodeType": "ContractDefinition",
@@ -343,7 +343,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1612,
+            "id": 1580,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -351,31 +351,31 @@
             "name": "withdrawTokens",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1610,
+              "id": 1578,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1605,
+                  "id": 1573,
                   "name": "_token",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1612,
+                  "scope": 1580,
                   "src": "193:18:11",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IERC20Token_$1528",
+                    "typeIdentifier": "t_contract$_IERC20Token_$1496",
                     "typeString": "contract IERC20Token"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 1604,
+                    "id": 1572,
                     "name": "IERC20Token",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 1528,
+                    "referencedDeclaration": 1496,
                     "src": "193:11:11",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20Token_$1528",
+                      "typeIdentifier": "t_contract$_IERC20Token_$1496",
                       "typeString": "contract IERC20Token"
                     }
                   },
@@ -384,10 +384,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 1607,
+                  "id": 1575,
                   "name": "_to",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1612,
+                  "scope": 1580,
                   "src": "213:11:11",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -396,7 +396,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1606,
+                    "id": 1574,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "213:7:11",
@@ -410,10 +410,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 1609,
+                  "id": 1577,
                   "name": "_amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1612,
+                  "scope": 1580,
                   "src": "226:15:11",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -422,7 +422,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1608,
+                    "id": 1576,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "226:7:11",
@@ -439,19 +439,19 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 1611,
+              "id": 1579,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "249:0:11"
             },
-            "scope": 1613,
+            "scope": 1581,
             "src": "169:81:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 1614,
+        "scope": 1582,
         "src": "131:121:11"
       }
     ],
@@ -463,7 +463,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.2",
-  "updatedAt": "2019-03-14T21:46:28.493Z",
+  "updatedAt": "2019-03-20T20:50:44.358Z",
   "devdoc": {
     "methods": {}
   },

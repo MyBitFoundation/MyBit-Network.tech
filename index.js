@@ -1,8 +1,6 @@
-var path = require('path');
-var appRoot = path.resolve(__dirname);
-var artifacts = require(`${appRoot}/lib/index.js`);
-var mybitContracts = require(`${appRoot}/networks/mybit/Contracts.js`);
-var ropstenContracts = require(`${appRoot}/networks/ropsten/Contracts.js`)
+var artifacts = require('./lib/index.js');
+var mybitContracts = require('./networks/mybit/Contracts.js');
+var ropstenContracts = require('./networks/ropsten/Contracts.js')
 
 module.exports = {
   artifacts : artifacts,

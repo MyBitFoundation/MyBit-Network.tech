@@ -34,6 +34,18 @@ contract Platform {
     events.registration('Platform token', _tokenAddress);
   }
 
+  function setPlatformFee(uint _percent)
+  external
+  onlyOwner {
+    database.setUint(keccak256(abi.encodePacked("platform.fee")), _percent);
+  }
+
+  function setPlatformPercentage(uint _percent)
+  external
+  onlyOwner {
+    database.setUint(keccak256(abi.encodePacked("platform.percentage")), _percent);
+  }
+
   function setBurnrate(uint _percent)
   external
   onlyOwner {
