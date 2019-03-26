@@ -13,4 +13,6 @@ interface ERC20DividendInterface{
 
   // @dev Total number of tokens in existence
   function totalSupply() external view returns (uint256);
+
+  function getERC20() external view returns (address);
 }

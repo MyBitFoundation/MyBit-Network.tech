@@ -3,7 +3,6 @@ bn.config({ EXPONENTIAL_AT: 80 });
 
 const AssetToken = artifacts.require("./tokens/erc20/DividendTokenERC20.sol");
 const MyBitToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
-const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 const Crowdsale = artifacts.require("./crowdsale/CrowdsaleERC20.sol");
 const AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
 const Database = artifacts.require("./database/Database.sol");
@@ -22,7 +21,7 @@ const scaling = bn(10**36);
 const tokenSupply = bn(180000000).times(ETH);
 const tokenPerAccount = bn(1000).times(ETH);
 
-//Just passing an empty address for kyber, since no burning is being done
+//Just passing an empty address for kyber, since no converting is being done
 const kyber = {
   address : '0x0000000000000000000000000000000000000000'
 };
@@ -100,16 +99,12 @@ contract('ERC20 Crowdsale', async(accounts) => {
     platform = await Platform.new(db.address, events.address);
     await cm.addContract('Platform', platform.address);
     await platform.setPlatformToken(platformToken.address);
+    await platform.setPlatformFee('3');
   });
 
   it('Deploy assetManager escrow', async() => {
     escrow = await AssetManagerEscrow.new(db.address, events.address);
     await cm.addContract('AssetManagerEscrow', escrow.address);
-  });
-
-  it('Deploy burner contract', async() => {
-    burner = await ERC20Burner.new(db.address, events.address, kyber.address);
-    await cm.addContract("ERC20Burner", burner.address);
   });
 
   it('Deploy asset manager funds', async() => {
@@ -143,28 +138,19 @@ contract('ERC20 Crowdsale', async(accounts) => {
   });
 
   it('Deploy CrowdsaleGenerator', async() => {
-    crowdsaleGen = await CrowdsaleGenerator.new(db.address, events.address);
+    crowdsaleGen = await CrowdsaleGenerator.new(db.address, events.address, kyber.address);
     await cm.addContract("CrowdsaleGenerator", crowdsaleGen.address);
-    await burner.setFee('0x40aedf24', crowdsaleGen.address,  250);
   });
 
   it('Deploy crowdsale contract', async() => {
     crowdsale = await Crowdsale.new(db.address, events.address, kyber.address);
     await cm.addContract('CrowdsaleERC20', crowdsale.address);
     await cm.addContract('Owner', owner); //Right now some database functions are operated from owner account
-    await burner.setFee('0xc9cd97eb', crowdsale.address,  250);
   });
 
   it('Deploy operators', async() => {
     operators = await Operators.new(db.address, events.address);
     await cm.addContract('Operators', operators.address);
-  });
-
-  it('Give platform burning permission', async() => {
-    for(var i=1; i<accounts.length; i++){
-      await cm.setContractStatePreferences(true, true, {from: accounts[i]});
-      await platformToken.approve(burner.address, tokenSupply, {from:accounts[i]});
-    }
   });
 
   it('Set operator', async() => {
@@ -190,8 +176,8 @@ contract('ERC20 Crowdsale', async(accounts) => {
   });
 
   it('User1 funding', async() => {
-    await erc20.approve(crowdsale.address, bn(5).times(ETH).toString(), {from:user1});
-    await crowdsale.buyAssetOrderERC20(assetAddress, user1, bn(5).times(ETH).toString(), erc20.address, {from:user1});
+    await erc20.approve(crowdsale.address, bn(5).times(ETH).times(1.03).toString(), {from:user1});
+    await crowdsale.buyAssetOrderERC20(assetAddress, user1, bn(5).times(ETH).times(1.03).toString(), erc20.address, {from:user1});
     let user1AssetTokens = bn(await assetToken.balanceOf(user1));
     console.log('Asset Address: ' + assetToken.address);
     console.log('User: ' + user1);
@@ -216,8 +202,8 @@ contract('ERC20 Crowdsale', async(accounts) => {
 
   it('User2 funding', async() => {
     console.log(user2);
-    await erc20.approve(crowdsale.address, bn(15).times(ETH).toString(), {from:user2});
-    await crowdsale.buyAssetOrderERC20(assetAddress, user2, bn(15).times(ETH).toString(), erc20.address, {from:user2});
+    await erc20.approve(crowdsale.address, bn(15).times(ETH).times(1.03).toString(), {from:user2});
+    await crowdsale.buyAssetOrderERC20(assetAddress, user2, bn(15).times(ETH).times(1.03).toString(), erc20.address, {from:user2});
     let user2AssetTokens = bn(await assetToken.balanceOf(user2));
     console.log(user2AssetTokens.toNumber());
     assert.equal(user2AssetTokens.eq(bn(15).times(ETH)), true);
@@ -227,8 +213,8 @@ contract('ERC20 Crowdsale', async(accounts) => {
     //Funding finished
     let err;
     try{
-      await erc20.approve(crowdsale.address, bn(5).times(ETH), {from:user3});
-      await crowdsale.buyAssetOrderERC20(assetAddress, user3, bn(5).times(ETH).toString(), erc20.address, {from:user3});
+      await erc20.approve(crowdsale.address, bn(5).times(ETH).times(1.03).toString(), {from:user3});
+      await crowdsale.buyAssetOrderERC20(assetAddress, user3, bn(5).times(ETH).times(1.03).toString(), erc20.address, {from:user3});
     } catch(e){
       err = e;
     }
@@ -264,9 +250,9 @@ contract('ERC20 Crowdsale', async(accounts) => {
     operatorBalanceBefore = await erc20.balanceOf(operator);
     await crowdsale.payoutERC20(assetAddress);
     ownerBalanceAfter = await erc20.balanceOf(owner);
-    assert.equal(bn(ownerBalanceAfter).minus(ownerBalanceBefore).isEqualTo(bn(ETH).multipliedBy(20).dividedBy(100)), true);
+    assert.equal(bn(ownerBalanceAfter).minus(ownerBalanceBefore).isEqualTo(bn(ETH).times(20).times(0.03)), true);
     operatorBalanceAfter = await erc20.balanceOf(operator);
-    assert.equal(bn(operatorBalanceAfter).minus(operatorBalanceBefore).isEqualTo(bn(ETH).multipliedBy(20).minus( bn(ETH).multipliedBy(20).dividedBy(100) )), true);
+    assert.equal(bn(operatorBalanceAfter).minus(operatorBalanceBefore).isEqualTo(bn(ETH).times(20)), true);
   })
 
   it('Fail to refund', async() => {
@@ -354,8 +340,8 @@ contract('ERC20 Crowdsale', async(accounts) => {
   });
 
   it('User3 funding', async() => {
-    await erc20.approve(crowdsale.address, bn(5).times(ETH), {from:user3});
-    await crowdsale.buyAssetOrderERC20(assetAddress, user3, bn(5).times(ETH).toString(), erc20.address, {from:user3});
+    await erc20.approve(crowdsale.address, bn(5).times(ETH).times(1.03).toString(), {from:user3});
+    await crowdsale.buyAssetOrderERC20(assetAddress, user3, bn(5).times(ETH).times(1.03).toString(), erc20.address, {from:user3});
     let user3assetTokens = bn(await assetToken.balanceOf(user3));
     assert.equal(user3assetTokens.eq(bn(5).times(ETH)), true);
   });
@@ -372,8 +358,8 @@ contract('ERC20 Crowdsale', async(accounts) => {
 
     let err;
     try{
-      await erc20.approve(crowdsale.address, bn(5).times(ETH), {from:user1});
-      await crowdsale.buyAssetOrderERC20(assetAddress, user1, bn(5).times(ETH).toString(), erc20.address, {from:user1});
+      await erc20.approve(crowdsale.address, bn(5).times(ETH).times(1.03).toString(), {from:user1});
+      await crowdsale.buyAssetOrderERC20(assetAddress, user1, bn(5).times(ETH).times(1.03).toString(), erc20.address, {from:user1});
     } catch(e){
       err = e;
     }
@@ -430,9 +416,9 @@ contract('ERC20 Crowdsale', async(accounts) => {
   });
 
   it('Fully fund no fee asset', async() => {
-    await erc20.approve(crowdsale.address, bn(2).times(ETH), {from:user1});
+    await erc20.approve(crowdsale.address, bn(2).times(ETH).times(1.03).toString(), {from:user1});
     let platformWalletBalance = await erc20.balanceOf(owner);
-    await crowdsale.buyAssetOrderERC20(assetAddress, user1, bn(2).times(ETH).toString(), erc20.address, {from:user1});
+    await crowdsale.buyAssetOrderERC20(assetAddress, user1, bn(2).times(ETH).times(1.03).toString(), erc20.address, {from:user1});
     await crowdsale.payoutERC20(assetAddress);
     let user1AssetTokens = bn(await assetToken.balanceOf(user1));
     let assetTokenSupply = bn(await assetToken.totalSupply());

@@ -38,9 +38,9 @@ contract AssetManagerFunds {
   nonReentrant
   returns (bool) {
     require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
+    require(_assetAddress != address(0));
     require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))));
     DToken token = DToken( _assetAddress);
-    require(address(token) != address(0));
     uint amountOwed;
     uint balanceBefore;
     if (token.getERC20() == address(0)){
@@ -119,6 +119,28 @@ contract AssetManagerFunds {
     }
     _assetManager.transfer(weiOwed);
     return true;
+  }
+
+  function viewBalance(address _assetAddress, address _assetManager)
+  external
+  view
+  returns (uint){
+    require(_assetAddress != address(0), 'Empty address passed');
+    require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))), 'That user does not manage the asset');
+    DToken token = DToken( _assetAddress);
+    uint balance = token.balanceOf(address(this));
+    return balance;
+  }
+
+  function viewAmountOwed(address _assetAddress, address _assetManager)
+  external
+  view
+  returns (uint){
+    require(_assetAddress != address(0), 'Empty address passed');
+    require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))), 'That user does not manage the asset');
+    DToken token = DToken( _assetAddress);
+    uint amountOwed = token.getAmountOwed(address(this));
+    return amountOwed;
   }
 
   // @notice returns the index if the address is in the list, otherwise returns list length + 1

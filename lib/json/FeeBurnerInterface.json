@@ -61,14 +61,14 @@
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/kyber/FeeBurnerInterface.sol",
     "exportedSymbols": {
       "FeeBurnerInterface": [
-        12338
+        13091
       ]
     },
-    "id": 12339,
+    "id": 13092,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 12317,
+        "id": 13070,
         "literals": [
           "solidity",
           "^",
@@ -76,7 +76,7 @@
           ".24"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:24:46"
+        "src": "0:24:47"
       },
       {
         "baseContracts": [],
@@ -84,9 +84,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 12338,
+        "id": 13091,
         "linearizedBaseContracts": [
-          12338
+          13091
         ],
         "name": "FeeBurnerInterface",
         "nodeType": "ContractDefinition",
@@ -94,7 +94,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 12328,
+            "id": 13081,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -102,16 +102,16 @@
             "name": "handleFees",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12324,
+              "id": 13077,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12319,
+                  "id": 13072,
                   "name": "tradeWeiAmount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12328,
-                  "src": "82:19:46",
+                  "scope": 13081,
+                  "src": "82:19:47",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -119,10 +119,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12318,
+                    "id": 13071,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "82:4:46",
+                    "src": "82:4:47",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -133,11 +133,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 12321,
+                  "id": 13074,
                   "name": "reserve",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12328,
-                  "src": "103:15:46",
+                  "scope": 13081,
+                  "src": "103:15:47",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -145,10 +145,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 12320,
+                    "id": 13073,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "103:7:46",
+                    "src": "103:7:47",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
@@ -159,11 +159,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 12323,
+                  "id": 13076,
                   "name": "wallet",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12328,
-                  "src": "120:14:46",
+                  "scope": 13081,
+                  "src": "120:14:47",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -171,10 +171,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 12322,
+                    "id": 13075,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "120:7:46",
+                    "src": "120:7:47",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
@@ -184,20 +184,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "81:54:46"
+              "src": "81:54:47"
             },
             "payable": false,
             "returnParameters": {
-              "id": 12327,
+              "id": 13080,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12326,
+                  "id": 13079,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12328,
-                  "src": "153:4:46",
+                  "scope": 13081,
+                  "src": "153:4:47",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -205,10 +205,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 12325,
+                    "id": 13078,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "153:4:46",
+                    "src": "153:4:47",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -218,10 +218,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "152:6:46"
+              "src": "152:6:47"
             },
-            "scope": 12338,
-            "src": "61:98:46",
+            "scope": 13091,
+            "src": "61:98:47",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -229,7 +229,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 12337,
+            "id": 13090,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -237,16 +237,16 @@
             "name": "setReserveData",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12335,
+              "id": 13088,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12330,
+                  "id": 13083,
                   "name": "reserve",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12337,
-                  "src": "188:15:46",
+                  "scope": 13090,
+                  "src": "188:15:47",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -254,10 +254,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 12329,
+                    "id": 13082,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "188:7:46",
+                    "src": "188:7:47",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
@@ -268,11 +268,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 12332,
+                  "id": 13085,
                   "name": "feesInBps",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12337,
-                  "src": "205:14:46",
+                  "scope": 13090,
+                  "src": "205:14:47",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -280,10 +280,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12331,
+                    "id": 13084,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "205:4:46",
+                    "src": "205:4:47",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -294,11 +294,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 12334,
+                  "id": 13087,
                   "name": "kncWallet",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12337,
-                  "src": "221:17:46",
+                  "scope": 13090,
+                  "src": "221:17:47",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -306,10 +306,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 12333,
+                    "id": 13086,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "221:7:46",
+                    "src": "221:7:47",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
@@ -319,40 +319,40 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "187:52:46"
+              "src": "187:52:47"
             },
             "payable": false,
             "returnParameters": {
-              "id": 12336,
+              "id": 13089,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "248:0:46"
+              "src": "248:0:47"
             },
-            "scope": 12338,
-            "src": "164:85:46",
+            "scope": 13091,
+            "src": "164:85:47",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 12339,
-        "src": "26:225:46"
+        "scope": 13092,
+        "src": "26:225:47"
       }
     ],
-    "src": "0:252:46"
+    "src": "0:252:47"
   },
   "legacyAST": {
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/kyber/FeeBurnerInterface.sol",
     "exportedSymbols": {
       "FeeBurnerInterface": [
-        12338
+        13091
       ]
     },
-    "id": 12339,
+    "id": 13092,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 12317,
+        "id": 13070,
         "literals": [
           "solidity",
           "^",
@@ -360,7 +360,7 @@
           ".24"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:24:46"
+        "src": "0:24:47"
       },
       {
         "baseContracts": [],
@@ -368,9 +368,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 12338,
+        "id": 13091,
         "linearizedBaseContracts": [
-          12338
+          13091
         ],
         "name": "FeeBurnerInterface",
         "nodeType": "ContractDefinition",
@@ -378,7 +378,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 12328,
+            "id": 13081,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -386,16 +386,16 @@
             "name": "handleFees",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12324,
+              "id": 13077,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12319,
+                  "id": 13072,
                   "name": "tradeWeiAmount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12328,
-                  "src": "82:19:46",
+                  "scope": 13081,
+                  "src": "82:19:47",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -403,10 +403,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12318,
+                    "id": 13071,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "82:4:46",
+                    "src": "82:4:47",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -417,11 +417,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 12321,
+                  "id": 13074,
                   "name": "reserve",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12328,
-                  "src": "103:15:46",
+                  "scope": 13081,
+                  "src": "103:15:47",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -429,10 +429,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 12320,
+                    "id": 13073,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "103:7:46",
+                    "src": "103:7:47",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
@@ -443,11 +443,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 12323,
+                  "id": 13076,
                   "name": "wallet",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12328,
-                  "src": "120:14:46",
+                  "scope": 13081,
+                  "src": "120:14:47",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -455,10 +455,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 12322,
+                    "id": 13075,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "120:7:46",
+                    "src": "120:7:47",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
@@ -468,20 +468,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "81:54:46"
+              "src": "81:54:47"
             },
             "payable": false,
             "returnParameters": {
-              "id": 12327,
+              "id": 13080,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12326,
+                  "id": 13079,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12328,
-                  "src": "153:4:46",
+                  "scope": 13081,
+                  "src": "153:4:47",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -489,10 +489,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 12325,
+                    "id": 13078,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "153:4:46",
+                    "src": "153:4:47",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -502,10 +502,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "152:6:46"
+              "src": "152:6:47"
             },
-            "scope": 12338,
-            "src": "61:98:46",
+            "scope": 13091,
+            "src": "61:98:47",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -513,7 +513,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 12337,
+            "id": 13090,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -521,16 +521,16 @@
             "name": "setReserveData",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12335,
+              "id": 13088,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12330,
+                  "id": 13083,
                   "name": "reserve",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12337,
-                  "src": "188:15:46",
+                  "scope": 13090,
+                  "src": "188:15:47",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -538,10 +538,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 12329,
+                    "id": 13082,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "188:7:46",
+                    "src": "188:7:47",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
@@ -552,11 +552,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 12332,
+                  "id": 13085,
                   "name": "feesInBps",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12337,
-                  "src": "205:14:46",
+                  "scope": 13090,
+                  "src": "205:14:47",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -564,10 +564,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12331,
+                    "id": 13084,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "205:4:46",
+                    "src": "205:4:47",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -578,11 +578,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 12334,
+                  "id": 13087,
                   "name": "kncWallet",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12337,
-                  "src": "221:17:46",
+                  "scope": 13090,
+                  "src": "221:17:47",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -590,10 +590,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 12333,
+                    "id": 13086,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "221:7:46",
+                    "src": "221:7:47",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
@@ -603,27 +603,27 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "187:52:46"
+              "src": "187:52:47"
             },
             "payable": false,
             "returnParameters": {
-              "id": 12336,
+              "id": 13089,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "248:0:46"
+              "src": "248:0:47"
             },
-            "scope": 12338,
-            "src": "164:85:46",
+            "scope": 13091,
+            "src": "164:85:47",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 12339,
-        "src": "26:225:46"
+        "scope": 13092,
+        "src": "26:225:47"
       }
     ],
-    "src": "0:252:46"
+    "src": "0:252:47"
   },
   "compiler": {
     "name": "solc",
@@ -631,7 +631,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.2",
-  "updatedAt": "2019-03-14T21:46:28.600Z",
+  "updatedAt": "2019-03-21T21:34:45.065Z",
   "devdoc": {
     "methods": {}
   },

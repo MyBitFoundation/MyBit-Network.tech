@@ -9,6 +9,7 @@ interface Events {  function transaction(string _message, address _from, address
 interface DB {
   function addressStorage(bytes32 _key) external view returns (address);
   function uintStorage(bytes32 _key) external view returns (uint);
+  function setUint(bytes32 _key, uint _value) external;
   function deleteUint(bytes32 _key) external;
   function setBool(bytes32 _key, bool _value) external;
   function boolStorage(bytes32 _key) external view returns (bool);
@@ -47,20 +48,26 @@ contract CrowdsaleETH {
     returns (bool) {
       require(msg.sender == _investor || database.boolStorage(keccak256(abi.encodePacked("approval", _investor, msg.sender, address(this), msg.sig))));
       EtherDividendInterface assetToken = EtherDividendInterface(_assetAddress);
-      uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));
-      uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
-      if (msg.value < tokensRemaining) {
+      //uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));
+      //uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
+      uint fundingRemaining = database.uintStorage(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)));
+      uint amount; //The number of tokens that will be minted
+      if (msg.value < fundingRemaining) {
+        amount = msg.value.mul(100).div(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee")))));
+        database.setUint(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)), fundingRemaining.sub(msg.value));
         //Mint tokens equal to the msg.value
-        require(assetToken.mint(_investor, msg.value), "Investor minting failed");
-        events.transaction('Asset purchased', _investor, _assetAddress, msg.value, '');
+        require(assetToken.mint(_investor, amount), "Investor minting failed");
+        events.transaction('Asset purchased', _investor, _assetAddress, amount, '');
       } else {
+        amount = fundingRemaining.mul(100).div(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee")))));
         //Funding complete, finalize crowdsale
         database.setBool(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress)), true);
+        database.deleteUint(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)));
         //Since investor paid equal to or over the funding remaining, just mint for tokensRemaining
-        require(assetToken.mint(_investor, tokensRemaining), "Investor minting failed");
+        require(assetToken.mint(_investor, amount), "Investor minting failed");
         //Return leftover WEI after cost of tokens calculated and subtracted from msg.value to msg.sender *NOT _investor
-        msg.sender.transfer(msg.value.sub(tokensRemaining));
-        events.transaction('Asset purchased', _investor, _assetAddress, tokensRemaining, '');
+        msg.sender.transfer(msg.value.sub(fundingRemaining));
+        events.transaction('Asset purchased', _investor, _assetAddress, amount, '');
       }
 
       return true;
@@ -78,20 +85,20 @@ contract CrowdsaleETH {
       database.setBool(keccak256(abi.encodePacked("crowdsale.paid", _assetAddress)), true);
       //Setup token
       EtherDividendInterface assetToken = EtherDividendInterface(_assetAddress);
-      //Mint tokens for the asset manager + finish minting
-      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerFee", _assetAddress)))), "Manager minting failed");
-      //require(assetToken.finishMinting(), "Minting not finished"); //Commented out because web3 promises are failing
+      //Mint tokens for the asset manager and platform + finish minting
+      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerTokens", _assetAddress)))), "Manager minting failed");
+      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("platform.wallet"))), database.uintStorage(keccak256(abi.encodePacked("asset.platformTokens", _assetAddress)))), "Platform minting failed");
+      require(assetToken.finishMinting(), "Minting not finished");
       //Get the addresses for the operator and platform
       address operator = database.addressStorage(keccak256(abi.encodePacked("asset.operator", _assetAddress)));
       address platformWallet = database.addressStorage(keccak256(abi.encodePacked("platform.wallet")));
       require(operator != address(0) && platformWallet != address(0), "Operator or platform wallet not set");
       //Calculate amounts for platform and operator
       uint amount = database.uintStorage(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));
-      uint operatorPortion = amount.mul(99).div(100);
-      uint platformPortion = amount.sub(operatorPortion);
+      uint platformFee = amount.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("platform.fee"))));
       //Transfer funds to operator and platform
-      platformWallet.transfer(platformPortion);
-      operator.transfer(operatorPortion);
+      platformWallet.transfer(platformFee);
+      operator.transfer(amount);
       //Delete crowdsale start time
       database.deleteUint(keccak256(abi.encodePacked("crowdsale.start", _assetAddress)));
       //Emit event
@@ -111,7 +118,7 @@ contract CrowdsaleETH {
       require(database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress))) != 0);
       database.deleteUint(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress)));
       EtherDividendInterface assetToken = EtherDividendInterface(_assetAddress);
-      uint refundValue = assetToken.totalSupply(); //token=wei
+      uint refundValue = assetToken.totalSupply().mul(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee"))))).div(100); //total supply plus platform fees
       assetToken.issueDividends.value(refundValue)();
       return true;
     }

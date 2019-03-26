@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 
 import "../math/SafeMath.sol";
+import "../interfaces/ERC20DividendInterface.sol";
 
 interface TokenView {
   function totalSupply() external view returns (uint);
@@ -268,7 +269,7 @@ contract API {
   public
   view
   returns(address) {
-    address fundingTokenAddress = database.addressStorage(keccak256(abi.encodePacked("crowdsale.fundingToken", _assetAddress)));
+    address fundingTokenAddress = ERC20DividendInterface(_assetAddress).getERC20();
     return fundingTokenAddress;
   }
 
@@ -343,8 +344,16 @@ contract API {
   public
   view
   returns(uint) {
-    uint managerFee = database.uintStorage(keccak256(abi.encodePacked("asset.managerFee", _assetAddress)));
+    uint managerFee = database.uintStorage(keccak256(abi.encodePacked("asset.managerTokens", _assetAddress)));
     return managerFee;
+  }
+
+  function getAssetPlatformFee(address _assetAddress)
+  public
+  view
+  returns(uint) {
+    uint platformFee = database.uintStorage(keccak256(abi.encodePacked("asset.platformTokens", _assetAddress)));
+    return platformFee;
   }
 
   function getAssetManagerEscrowID(address _assetAddress, address _manager)

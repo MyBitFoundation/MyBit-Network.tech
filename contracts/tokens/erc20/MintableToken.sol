@@ -45,7 +45,7 @@ contract MintableToken is StandardToken {
   canMint
   returns (bool) {
     mintingFinished = true;
-    emit MintFinished();
+    //emit MintFinished(); //This event causes web3 calls to hang when getting called by other contracts ¯\_(ツ)_/¯
     return true;
   }
 

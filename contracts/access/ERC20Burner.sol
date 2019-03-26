@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import "../math/SafeMath.sol";
 import "../interfaces/ERC20.sol";
+import "../interfaces/KyberInterface.sol";
 
 interface BurnToken {
   function decimals() external view returns (uint8);
@@ -17,11 +18,6 @@ interface DB {
   function setUint(bytes32 _key, uint _value) external;
 }
 
-interface ERC20Burner_KyberProxy{
-  function getExpectedRate(address src, address dest, uint srcQty) external view returns (uint expectedRate, uint slippageRate);
-  function trade(address src, uint srcAmount, address dest, address destAddress, uint maxDestAmount,uint minConversionRate, address walletId) external payable returns(uint);
-}
-
 /// @title A contract for burning ERC20 tokens as usage fee for dapps
 /// @author Kyle Dewhurst & Peter Phillips MyBit Foundation
 /// @notice Allows Dapps to call this contract to burn ERC20 tokens as a usage fee
@@ -32,7 +28,7 @@ contract ERC20Burner {
   BurnToken public token;  // The instance of the ERC20 burner contract
   DB public database;   // The datbase instance
   LogTransaction public events; //LogTransaction contract
-  ERC20Burner_KyberProxy kyber;
+  KyberInterface kyber;
   uint256 decimals;
 
   // @notice constructor: initializes database and the MYB token
@@ -43,7 +39,7 @@ contract ERC20Burner {
     events = LogTransaction(_events);
     token = BurnToken(database.addressStorage(keccak256(abi.encodePacked("platform.token"))));
     require(address(token) != address(0));
-    kyber = ERC20Burner_KyberProxy(_kyber);
+    kyber = KyberInterface(_kyber);
     uint dec = token.decimals();
     decimals = 10**dec;
   }

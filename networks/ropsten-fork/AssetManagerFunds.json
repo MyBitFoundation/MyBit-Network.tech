@@ -123,6 +123,54 @@
         "signature": "0x8b436676"
     },
     {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            },
+            {
+                "name": "_assetManager",
+                "type": "address"
+            }
+        ],
+        "name": "viewBalance",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x0e014cf8"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            },
+            {
+                "name": "_assetManager",
+                "type": "address"
+            }
+        ],
+        "name": "viewAmountOwed",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x0cf3939f"
+    },
+    {
         "constant": false,
         "inputs": [],
         "name": "destroy",
