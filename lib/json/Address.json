@@ -11,14 +11,14 @@
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/ecosystem/Address.sol",
     "exportedSymbols": {
       "Address": [
-        8042
+        8029
       ]
     },
-    "id": 8043,
+    "id": 8030,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 8025,
+        "id": 8012,
         "literals": [
           "solidity",
           "^",
@@ -34,16 +34,16 @@
         "contractKind": "library",
         "documentation": "Utility library of inline functions on addresses",
         "fullyImplemented": true,
-        "id": 8042,
+        "id": 8029,
         "linearizedBaseContracts": [
-          8042
+          8029
         ],
         "name": "Address",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "body": {
-              "id": 8040,
+              "id": 8027,
               "nodeType": "Block",
               "src": "530:558:21",
               "statements": [
@@ -52,10 +52,10 @@
                   "declarations": [
                     {
                       "constant": false,
-                      "id": 8033,
+                      "id": 8020,
                       "name": "size",
                       "nodeType": "VariableDeclaration",
-                      "scope": 8041,
+                      "scope": 8028,
                       "src": "540:12:21",
                       "stateVariable": false,
                       "storageLocation": "default",
@@ -64,7 +64,7 @@
                         "typeString": "uint256"
                       },
                       "typeName": {
-                        "id": 8032,
+                        "id": 8019,
                         "name": "uint256",
                         "nodeType": "ElementaryTypeName",
                         "src": "540:7:21",
@@ -77,7 +77,7 @@
                       "visibility": "internal"
                     }
                   ],
-                  "id": 8034,
+                  "id": 8021,
                   "initialValue": null,
                   "nodeType": "VariableDeclarationStatement",
                   "src": "540:12:21"
@@ -86,7 +86,7 @@
                   "externalReferences": [
                     {
                       "size": {
-                        "declaration": 8033,
+                        "declaration": 8020,
                         "isOffset": false,
                         "isSlot": false,
                         "src": "1027:4:21",
@@ -95,7 +95,7 @@
                     },
                     {
                       "account": {
-                        "declaration": 8027,
+                        "declaration": 8014,
                         "isOffset": false,
                         "isSlot": false,
                         "src": "1047:7:21",
@@ -103,7 +103,7 @@
                       }
                     }
                   ],
-                  "id": 8035,
+                  "id": 8022,
                   "nodeType": "InlineAssembly",
                   "operations": "{\n    size := extcodesize(account)\n}",
                   "src": "1016:56:21"
@@ -115,18 +115,18 @@
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     },
-                    "id": 8038,
+                    "id": 8025,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftExpression": {
                       "argumentTypes": null,
-                      "id": 8036,
+                      "id": 8023,
                       "name": "size",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 8033,
+                      "referencedDeclaration": 8020,
                       "src": "1073:4:21",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -138,7 +138,7 @@
                     "rightExpression": {
                       "argumentTypes": null,
                       "hexValue": "30",
-                      "id": 8037,
+                      "id": 8024,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": true,
@@ -159,15 +159,15 @@
                       "typeString": "bool"
                     }
                   },
-                  "functionReturnParameters": 8031,
-                  "id": 8039,
+                  "functionReturnParameters": 8018,
+                  "id": 8026,
                   "nodeType": "Return",
                   "src": "1066:15:21"
                 }
               ]
             },
             "documentation": "Returns whether the target address is a contract\n@dev This function will return false if invoked during the constructor of a contract,\nas the code is not actually created until after the constructor finishes.\n@param account address of the account to check\n@return whether the target address is a contract",
-            "id": 8041,
+            "id": 8028,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -175,15 +175,15 @@
             "name": "isContract",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 8028,
+              "id": 8015,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 8027,
+                  "id": 8014,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 8041,
+                  "scope": 8028,
                   "src": "484:15:21",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -192,7 +192,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 8026,
+                    "id": 8013,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "484:7:21",
@@ -209,15 +209,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 8031,
+              "id": 8018,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 8030,
+                  "id": 8017,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 8041,
+                  "scope": 8028,
                   "src": "524:4:21",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -226,7 +226,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 8029,
+                    "id": 8016,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "524:4:21",
@@ -241,14 +241,14 @@
               ],
               "src": "523:6:21"
             },
-            "scope": 8042,
+            "scope": 8029,
             "src": "464:624:21",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "internal"
           }
         ],
-        "scope": 8043,
+        "scope": 8030,
         "src": "86:1004:21"
       }
     ],
@@ -258,14 +258,14 @@
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/ecosystem/Address.sol",
     "exportedSymbols": {
       "Address": [
-        8042
+        8029
       ]
     },
-    "id": 8043,
+    "id": 8030,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 8025,
+        "id": 8012,
         "literals": [
           "solidity",
           "^",
@@ -281,16 +281,16 @@
         "contractKind": "library",
         "documentation": "Utility library of inline functions on addresses",
         "fullyImplemented": true,
-        "id": 8042,
+        "id": 8029,
         "linearizedBaseContracts": [
-          8042
+          8029
         ],
         "name": "Address",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "body": {
-              "id": 8040,
+              "id": 8027,
               "nodeType": "Block",
               "src": "530:558:21",
               "statements": [
@@ -299,10 +299,10 @@
                   "declarations": [
                     {
                       "constant": false,
-                      "id": 8033,
+                      "id": 8020,
                       "name": "size",
                       "nodeType": "VariableDeclaration",
-                      "scope": 8041,
+                      "scope": 8028,
                       "src": "540:12:21",
                       "stateVariable": false,
                       "storageLocation": "default",
@@ -311,7 +311,7 @@
                         "typeString": "uint256"
                       },
                       "typeName": {
-                        "id": 8032,
+                        "id": 8019,
                         "name": "uint256",
                         "nodeType": "ElementaryTypeName",
                         "src": "540:7:21",
@@ -324,7 +324,7 @@
                       "visibility": "internal"
                     }
                   ],
-                  "id": 8034,
+                  "id": 8021,
                   "initialValue": null,
                   "nodeType": "VariableDeclarationStatement",
                   "src": "540:12:21"
@@ -333,7 +333,7 @@
                   "externalReferences": [
                     {
                       "size": {
-                        "declaration": 8033,
+                        "declaration": 8020,
                         "isOffset": false,
                         "isSlot": false,
                         "src": "1027:4:21",
@@ -342,7 +342,7 @@
                     },
                     {
                       "account": {
-                        "declaration": 8027,
+                        "declaration": 8014,
                         "isOffset": false,
                         "isSlot": false,
                         "src": "1047:7:21",
@@ -350,7 +350,7 @@
                       }
                     }
                   ],
-                  "id": 8035,
+                  "id": 8022,
                   "nodeType": "InlineAssembly",
                   "operations": "{\n    size := extcodesize(account)\n}",
                   "src": "1016:56:21"
@@ -362,18 +362,18 @@
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     },
-                    "id": 8038,
+                    "id": 8025,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftExpression": {
                       "argumentTypes": null,
-                      "id": 8036,
+                      "id": 8023,
                       "name": "size",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 8033,
+                      "referencedDeclaration": 8020,
                       "src": "1073:4:21",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -385,7 +385,7 @@
                     "rightExpression": {
                       "argumentTypes": null,
                       "hexValue": "30",
-                      "id": 8037,
+                      "id": 8024,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": true,
@@ -406,15 +406,15 @@
                       "typeString": "bool"
                     }
                   },
-                  "functionReturnParameters": 8031,
-                  "id": 8039,
+                  "functionReturnParameters": 8018,
+                  "id": 8026,
                   "nodeType": "Return",
                   "src": "1066:15:21"
                 }
               ]
             },
             "documentation": "Returns whether the target address is a contract\n@dev This function will return false if invoked during the constructor of a contract,\nas the code is not actually created until after the constructor finishes.\n@param account address of the account to check\n@return whether the target address is a contract",
-            "id": 8041,
+            "id": 8028,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -422,15 +422,15 @@
             "name": "isContract",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 8028,
+              "id": 8015,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 8027,
+                  "id": 8014,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 8041,
+                  "scope": 8028,
                   "src": "484:15:21",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -439,7 +439,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 8026,
+                    "id": 8013,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "484:7:21",
@@ -456,15 +456,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 8031,
+              "id": 8018,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 8030,
+                  "id": 8017,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 8041,
+                  "scope": 8028,
                   "src": "524:4:21",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -473,7 +473,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 8029,
+                    "id": 8016,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "524:4:21",
@@ -488,14 +488,14 @@
               ],
               "src": "523:6:21"
             },
-            "scope": 8042,
+            "scope": 8029,
             "src": "464:624:21",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "internal"
           }
         ],
-        "scope": 8043,
+        "scope": 8030,
         "src": "86:1004:21"
       }
     ],
@@ -507,7 +507,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.2",
-  "updatedAt": "2019-03-21T21:34:45.015Z",
+  "updatedAt": "2019-04-03T05:17:34.855Z",
   "devdoc": {
     "methods": {}
   },

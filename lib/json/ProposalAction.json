@@ -45,17 +45,17 @@
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/ownership/RawCall.sol",
     "exportedSymbols": {
       "ProposalAction": [
-        27615
+        27595
       ],
       "RawCall": [
-        27663
+        27643
       ]
     },
-    "id": 27664,
+    "id": 27644,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 27601,
+        "id": 27581,
         "literals": [
           "solidity",
           "^",
@@ -68,10 +68,10 @@
       {
         "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/interfaces/VotingInterface.sol",
         "file": "../interfaces/VotingInterface.sol",
-        "id": 27602,
+        "id": 27582,
         "nodeType": "ImportDirective",
-        "scope": 27664,
-        "sourceUnit": 10428,
+        "scope": 27644,
+        "sourceUnit": 10408,
         "src": "26:43:82",
         "symbolAliases": [],
         "unitAlias": ""
@@ -82,9 +82,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 27615,
+        "id": 27595,
         "linearizedBaseContracts": [
-          27615
+          27595
         ],
         "name": "ProposalAction",
         "nodeType": "ContractDefinition",
@@ -92,7 +92,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 27607,
+            "id": 27587,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -100,22 +100,22 @@
             "name": "withdraw",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 27603,
+              "id": 27583,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "117:2:82"
             },
             "payable": false,
             "returnParameters": {
-              "id": 27606,
+              "id": 27586,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 27605,
+                  "id": 27585,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27607,
+                  "scope": 27587,
                   "src": "138:4:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -124,7 +124,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 27604,
+                    "id": 27584,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "138:4:82",
@@ -139,7 +139,7 @@
               ],
               "src": "137:6:82"
             },
-            "scope": 27615,
+            "scope": 27595,
             "src": "100:44:82",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -148,7 +148,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 27614,
+            "id": 27594,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -156,15 +156,15 @@
             "name": "withdraw",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 27610,
+              "id": 27590,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 27609,
+                  "id": 27589,
                   "name": "_user",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27614,
+                  "scope": 27594,
                   "src": "165:13:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -173,7 +173,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 27608,
+                    "id": 27588,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "165:7:82",
@@ -190,15 +190,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 27613,
+              "id": 27593,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 27612,
+                  "id": 27592,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27614,
+                  "scope": 27594,
                   "src": "198:4:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -207,7 +207,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 27611,
+                    "id": 27591,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "198:4:82",
@@ -222,14 +222,14 @@
               ],
               "src": "197:6:82"
             },
-            "scope": 27615,
+            "scope": 27595,
             "src": "147:57:82",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 27664,
+        "scope": 27644,
         "src": "71:135:82"
       },
       {
@@ -238,19 +238,19 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 27663,
+        "id": 27643,
         "linearizedBaseContracts": [
-          27663
+          27643
         ],
         "name": "RawCall",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 27617,
+            "id": 27597,
             "name": "contractAddress",
             "nodeType": "VariableDeclaration",
-            "scope": 27663,
+            "scope": 27643,
             "src": "228:31:82",
             "stateVariable": true,
             "storageLocation": "default",
@@ -259,7 +259,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 27616,
+              "id": 27596,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "228:7:82",
@@ -273,10 +273,10 @@
           },
           {
             "constant": false,
-            "id": 27619,
+            "id": 27599,
             "name": "functionParams",
             "nodeType": "VariableDeclaration",
-            "scope": 27663,
+            "scope": 27643,
             "src": "263:28:82",
             "stateVariable": true,
             "storageLocation": "default",
@@ -285,7 +285,7 @@
               "typeString": "bytes"
             },
             "typeName": {
-              "id": 27618,
+              "id": 27598,
               "name": "bytes",
               "nodeType": "ElementaryTypeName",
               "src": "263:5:82",
@@ -299,37 +299,37 @@
           },
           {
             "body": {
-              "id": 27661,
+              "id": 27641,
               "nodeType": "Block",
               "src": "449:202:82",
               "statements": [
                 {
                   "assignments": [
-                    27635
+                    27615
                   ],
                   "declarations": [
                     {
                       "constant": false,
-                      "id": 27635,
+                      "id": 27615,
                       "name": "votingProcess",
                       "nodeType": "VariableDeclaration",
-                      "scope": 27662,
+                      "scope": 27642,
                       "src": "455:29:82",
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_VotingInterface_$10427",
+                        "typeIdentifier": "t_contract$_VotingInterface_$10407",
                         "typeString": "contract VotingInterface"
                       },
                       "typeName": {
                         "contractScope": null,
-                        "id": 27634,
+                        "id": 27614,
                         "name": "VotingInterface",
                         "nodeType": "UserDefinedTypeName",
-                        "referencedDeclaration": 10427,
+                        "referencedDeclaration": 10407,
                         "src": "455:15:82",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_VotingInterface_$10427",
+                          "typeIdentifier": "t_contract$_VotingInterface_$10407",
                           "typeString": "contract VotingInterface"
                         }
                       },
@@ -337,17 +337,17 @@
                       "visibility": "internal"
                     }
                   ],
-                  "id": 27639,
+                  "id": 27619,
                   "initialValue": {
                     "argumentTypes": null,
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 27637,
+                        "id": 27617,
                         "name": "_votingInterface",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 27629,
+                        "referencedDeclaration": 27609,
                         "src": "503:16:82",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -362,18 +362,18 @@
                           "typeString": "address"
                         }
                       ],
-                      "id": 27636,
+                      "id": 27616,
                       "name": "VotingInterface",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 10427,
+                      "referencedDeclaration": 10407,
                       "src": "487:15:82",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_type$_t_contract$_VotingInterface_$10427_$",
+                        "typeIdentifier": "t_type$_t_contract$_VotingInterface_$10407_$",
                         "typeString": "type(contract VotingInterface)"
                       }
                     },
-                    "id": 27638,
+                    "id": 27618,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -383,7 +383,7 @@
                     "nodeType": "FunctionCall",
                     "src": "487:33:82",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_VotingInterface_$10427",
+                      "typeIdentifier": "t_contract$_VotingInterface_$10407",
                       "typeString": "contract VotingInterface"
                     }
                   },
@@ -399,11 +399,11 @@
                         "arguments": [
                           {
                             "argumentTypes": null,
-                            "id": 27643,
+                            "id": 27623,
                             "name": "_proposalID",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 27627,
+                            "referencedDeclaration": 27607,
                             "src": "555:11:82",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes32",
@@ -420,32 +420,32 @@
                           ],
                           "expression": {
                             "argumentTypes": null,
-                            "id": 27641,
+                            "id": 27621,
                             "name": "votingProcess",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 27635,
+                            "referencedDeclaration": 27615,
                             "src": "534:13:82",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_VotingInterface_$10427",
+                              "typeIdentifier": "t_contract$_VotingInterface_$10407",
                               "typeString": "contract VotingInterface"
                             }
                           },
-                          "id": 27642,
+                          "id": 27622,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
                           "lValueRequested": false,
                           "memberName": "result",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 10419,
+                          "referencedDeclaration": 10399,
                           "src": "534:20:82",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_view$_t_bytes32_$returns$_t_bool_$",
                             "typeString": "function (bytes32) view external returns (bool)"
                           }
                         },
-                        "id": 27644,
+                        "id": 27624,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -467,21 +467,21 @@
                           "typeString": "bool"
                         }
                       ],
-                      "id": 27640,
+                      "id": 27620,
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        35778,
-                        35779
+                        35769,
+                        35770
                       ],
-                      "referencedDeclaration": 35778,
+                      "referencedDeclaration": 35769,
                       "src": "526:7:82",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
                         "typeString": "function (bool) pure"
                       }
                     },
-                    "id": 27645,
+                    "id": 27625,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -495,7 +495,7 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 27646,
+                  "id": 27626,
                   "nodeType": "ExpressionStatement",
                   "src": "526:42:82"
                 },
@@ -508,11 +508,11 @@
                         "arguments": [
                           {
                             "argumentTypes": null,
-                            "id": 27656,
+                            "id": 27636,
                             "name": "_methodID",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 27623,
+                            "referencedDeclaration": 27603,
                             "src": "626:9:82",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes4",
@@ -521,11 +521,11 @@
                           },
                           {
                             "argumentTypes": null,
-                            "id": 27657,
+                            "id": 27637,
                             "name": "_params",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 27625,
+                            "referencedDeclaration": 27605,
                             "src": "637:7:82",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes_calldata_ptr",
@@ -549,18 +549,18 @@
                               "argumentTypes": null,
                               "expression": {
                                 "argumentTypes": null,
-                                "id": 27653,
+                                "id": 27633,
                                 "name": "msg",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 35775,
+                                "referencedDeclaration": 35766,
                                 "src": "615:3:82",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_magic_message",
                                   "typeString": "msg"
                                 }
                               },
-                              "id": 27654,
+                              "id": 27634,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": false,
@@ -588,7 +588,7 @@
                                 {
                                   "argumentTypes": null,
                                   "hexValue": "323030303030",
-                                  "id": 27650,
+                                  "id": 27630,
                                   "isConstant": false,
                                   "isLValue": false,
                                   "isPure": true,
@@ -615,18 +615,18 @@
                                   "argumentTypes": null,
                                   "expression": {
                                     "argumentTypes": null,
-                                    "id": 27647,
+                                    "id": 27627,
                                     "name": "_contract",
                                     "nodeType": "Identifier",
                                     "overloadedDeclarations": [],
-                                    "referencedDeclaration": 27621,
+                                    "referencedDeclaration": 27601,
                                     "src": "582:9:82",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_address",
                                       "typeString": "address"
                                     }
                                   },
-                                  "id": 27648,
+                                  "id": 27628,
                                   "isConstant": false,
                                   "isLValue": false,
                                   "isPure": false,
@@ -640,7 +640,7 @@
                                     "typeString": "function () payable returns (bool)"
                                   }
                                 },
-                                "id": 27649,
+                                "id": 27629,
                                 "isConstant": false,
                                 "isLValue": false,
                                 "isPure": false,
@@ -654,7 +654,7 @@
                                   "typeString": "function (uint256) returns (function () payable returns (bool))"
                                 }
                               },
-                              "id": 27651,
+                              "id": 27631,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": false,
@@ -668,7 +668,7 @@
                                 "typeString": "function () payable returns (bool)"
                               }
                             },
-                            "id": 27652,
+                            "id": 27632,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -682,7 +682,7 @@
                               "typeString": "function (uint256) returns (function () payable returns (bool))"
                             }
                           },
-                          "id": 27655,
+                          "id": 27635,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -696,7 +696,7 @@
                             "typeString": "function () payable returns (bool)"
                           }
                         },
-                        "id": 27658,
+                        "id": 27638,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -711,7 +711,7 @@
                         }
                       }
                     ],
-                    "id": 27659,
+                    "id": 27639,
                     "isConstant": false,
                     "isInlineArray": false,
                     "isLValue": false,
@@ -724,15 +724,15 @@
                       "typeString": "bool"
                     }
                   },
-                  "functionReturnParameters": 27633,
-                  "id": 27660,
+                  "functionReturnParameters": 27613,
+                  "id": 27640,
                   "nodeType": "Return",
                   "src": "575:71:82"
                 }
               ]
             },
             "documentation": null,
-            "id": 27662,
+            "id": 27642,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -740,15 +740,15 @@
             "name": "execute",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 27630,
+              "id": 27610,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 27621,
+                  "id": 27601,
                   "name": "_contract",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27662,
+                  "scope": 27642,
                   "src": "313:17:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -757,7 +757,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 27620,
+                    "id": 27600,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "313:7:82",
@@ -771,10 +771,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 27623,
+                  "id": 27603,
                   "name": "_methodID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27662,
+                  "scope": 27642,
                   "src": "332:16:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -783,7 +783,7 @@
                     "typeString": "bytes4"
                   },
                   "typeName": {
-                    "id": 27622,
+                    "id": 27602,
                     "name": "bytes4",
                     "nodeType": "ElementaryTypeName",
                     "src": "332:6:82",
@@ -797,10 +797,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 27625,
+                  "id": 27605,
                   "name": "_params",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27662,
+                  "scope": 27642,
                   "src": "350:13:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -809,7 +809,7 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 27624,
+                    "id": 27604,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "350:5:82",
@@ -823,10 +823,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 27627,
+                  "id": 27607,
                   "name": "_proposalID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27662,
+                  "scope": 27642,
                   "src": "365:19:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -835,7 +835,7 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 27626,
+                    "id": 27606,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
                     "src": "365:7:82",
@@ -849,10 +849,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 27629,
+                  "id": 27609,
                   "name": "_votingInterface",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27662,
+                  "scope": 27642,
                   "src": "386:24:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -861,7 +861,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 27628,
+                    "id": 27608,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "386:7:82",
@@ -878,15 +878,15 @@
             },
             "payable": true,
             "returnParameters": {
-              "id": 27633,
+              "id": 27613,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 27632,
+                  "id": 27612,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27662,
+                  "scope": 27642,
                   "src": "444:4:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -895,7 +895,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 27631,
+                    "id": 27611,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "444:4:82",
@@ -910,14 +910,14 @@
               ],
               "src": "443:6:82"
             },
-            "scope": 27663,
+            "scope": 27643,
             "src": "296:355:82",
             "stateMutability": "payable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 27664,
+        "scope": 27644,
         "src": "208:445:82"
       }
     ],
@@ -927,17 +927,17 @@
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/ownership/RawCall.sol",
     "exportedSymbols": {
       "ProposalAction": [
-        27615
+        27595
       ],
       "RawCall": [
-        27663
+        27643
       ]
     },
-    "id": 27664,
+    "id": 27644,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 27601,
+        "id": 27581,
         "literals": [
           "solidity",
           "^",
@@ -950,10 +950,10 @@
       {
         "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/interfaces/VotingInterface.sol",
         "file": "../interfaces/VotingInterface.sol",
-        "id": 27602,
+        "id": 27582,
         "nodeType": "ImportDirective",
-        "scope": 27664,
-        "sourceUnit": 10428,
+        "scope": 27644,
+        "sourceUnit": 10408,
         "src": "26:43:82",
         "symbolAliases": [],
         "unitAlias": ""
@@ -964,9 +964,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 27615,
+        "id": 27595,
         "linearizedBaseContracts": [
-          27615
+          27595
         ],
         "name": "ProposalAction",
         "nodeType": "ContractDefinition",
@@ -974,7 +974,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 27607,
+            "id": 27587,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -982,22 +982,22 @@
             "name": "withdraw",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 27603,
+              "id": 27583,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "117:2:82"
             },
             "payable": false,
             "returnParameters": {
-              "id": 27606,
+              "id": 27586,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 27605,
+                  "id": 27585,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27607,
+                  "scope": 27587,
                   "src": "138:4:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1006,7 +1006,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 27604,
+                    "id": 27584,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "138:4:82",
@@ -1021,7 +1021,7 @@
               ],
               "src": "137:6:82"
             },
-            "scope": 27615,
+            "scope": 27595,
             "src": "100:44:82",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -1030,7 +1030,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 27614,
+            "id": 27594,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1038,15 +1038,15 @@
             "name": "withdraw",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 27610,
+              "id": 27590,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 27609,
+                  "id": 27589,
                   "name": "_user",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27614,
+                  "scope": 27594,
                   "src": "165:13:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1055,7 +1055,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 27608,
+                    "id": 27588,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "165:7:82",
@@ -1072,15 +1072,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 27613,
+              "id": 27593,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 27612,
+                  "id": 27592,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27614,
+                  "scope": 27594,
                   "src": "198:4:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1089,7 +1089,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 27611,
+                    "id": 27591,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "198:4:82",
@@ -1104,14 +1104,14 @@
               ],
               "src": "197:6:82"
             },
-            "scope": 27615,
+            "scope": 27595,
             "src": "147:57:82",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 27664,
+        "scope": 27644,
         "src": "71:135:82"
       },
       {
@@ -1120,19 +1120,19 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 27663,
+        "id": 27643,
         "linearizedBaseContracts": [
-          27663
+          27643
         ],
         "name": "RawCall",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 27617,
+            "id": 27597,
             "name": "contractAddress",
             "nodeType": "VariableDeclaration",
-            "scope": 27663,
+            "scope": 27643,
             "src": "228:31:82",
             "stateVariable": true,
             "storageLocation": "default",
@@ -1141,7 +1141,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 27616,
+              "id": 27596,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "228:7:82",
@@ -1155,10 +1155,10 @@
           },
           {
             "constant": false,
-            "id": 27619,
+            "id": 27599,
             "name": "functionParams",
             "nodeType": "VariableDeclaration",
-            "scope": 27663,
+            "scope": 27643,
             "src": "263:28:82",
             "stateVariable": true,
             "storageLocation": "default",
@@ -1167,7 +1167,7 @@
               "typeString": "bytes"
             },
             "typeName": {
-              "id": 27618,
+              "id": 27598,
               "name": "bytes",
               "nodeType": "ElementaryTypeName",
               "src": "263:5:82",
@@ -1181,37 +1181,37 @@
           },
           {
             "body": {
-              "id": 27661,
+              "id": 27641,
               "nodeType": "Block",
               "src": "449:202:82",
               "statements": [
                 {
                   "assignments": [
-                    27635
+                    27615
                   ],
                   "declarations": [
                     {
                       "constant": false,
-                      "id": 27635,
+                      "id": 27615,
                       "name": "votingProcess",
                       "nodeType": "VariableDeclaration",
-                      "scope": 27662,
+                      "scope": 27642,
                       "src": "455:29:82",
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_VotingInterface_$10427",
+                        "typeIdentifier": "t_contract$_VotingInterface_$10407",
                         "typeString": "contract VotingInterface"
                       },
                       "typeName": {
                         "contractScope": null,
-                        "id": 27634,
+                        "id": 27614,
                         "name": "VotingInterface",
                         "nodeType": "UserDefinedTypeName",
-                        "referencedDeclaration": 10427,
+                        "referencedDeclaration": 10407,
                         "src": "455:15:82",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_VotingInterface_$10427",
+                          "typeIdentifier": "t_contract$_VotingInterface_$10407",
                           "typeString": "contract VotingInterface"
                         }
                       },
@@ -1219,17 +1219,17 @@
                       "visibility": "internal"
                     }
                   ],
-                  "id": 27639,
+                  "id": 27619,
                   "initialValue": {
                     "argumentTypes": null,
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 27637,
+                        "id": 27617,
                         "name": "_votingInterface",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 27629,
+                        "referencedDeclaration": 27609,
                         "src": "503:16:82",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -1244,18 +1244,18 @@
                           "typeString": "address"
                         }
                       ],
-                      "id": 27636,
+                      "id": 27616,
                       "name": "VotingInterface",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 10427,
+                      "referencedDeclaration": 10407,
                       "src": "487:15:82",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_type$_t_contract$_VotingInterface_$10427_$",
+                        "typeIdentifier": "t_type$_t_contract$_VotingInterface_$10407_$",
                         "typeString": "type(contract VotingInterface)"
                       }
                     },
-                    "id": 27638,
+                    "id": 27618,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1265,7 +1265,7 @@
                     "nodeType": "FunctionCall",
                     "src": "487:33:82",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_VotingInterface_$10427",
+                      "typeIdentifier": "t_contract$_VotingInterface_$10407",
                       "typeString": "contract VotingInterface"
                     }
                   },
@@ -1281,11 +1281,11 @@
                         "arguments": [
                           {
                             "argumentTypes": null,
-                            "id": 27643,
+                            "id": 27623,
                             "name": "_proposalID",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 27627,
+                            "referencedDeclaration": 27607,
                             "src": "555:11:82",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes32",
@@ -1302,32 +1302,32 @@
                           ],
                           "expression": {
                             "argumentTypes": null,
-                            "id": 27641,
+                            "id": 27621,
                             "name": "votingProcess",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 27635,
+                            "referencedDeclaration": 27615,
                             "src": "534:13:82",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_VotingInterface_$10427",
+                              "typeIdentifier": "t_contract$_VotingInterface_$10407",
                               "typeString": "contract VotingInterface"
                             }
                           },
-                          "id": 27642,
+                          "id": 27622,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
                           "lValueRequested": false,
                           "memberName": "result",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 10419,
+                          "referencedDeclaration": 10399,
                           "src": "534:20:82",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_view$_t_bytes32_$returns$_t_bool_$",
                             "typeString": "function (bytes32) view external returns (bool)"
                           }
                         },
-                        "id": 27644,
+                        "id": 27624,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1349,21 +1349,21 @@
                           "typeString": "bool"
                         }
                       ],
-                      "id": 27640,
+                      "id": 27620,
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        35778,
-                        35779
+                        35769,
+                        35770
                       ],
-                      "referencedDeclaration": 35778,
+                      "referencedDeclaration": 35769,
                       "src": "526:7:82",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
                         "typeString": "function (bool) pure"
                       }
                     },
-                    "id": 27645,
+                    "id": 27625,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1377,7 +1377,7 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 27646,
+                  "id": 27626,
                   "nodeType": "ExpressionStatement",
                   "src": "526:42:82"
                 },
@@ -1390,11 +1390,11 @@
                         "arguments": [
                           {
                             "argumentTypes": null,
-                            "id": 27656,
+                            "id": 27636,
                             "name": "_methodID",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 27623,
+                            "referencedDeclaration": 27603,
                             "src": "626:9:82",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes4",
@@ -1403,11 +1403,11 @@
                           },
                           {
                             "argumentTypes": null,
-                            "id": 27657,
+                            "id": 27637,
                             "name": "_params",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 27625,
+                            "referencedDeclaration": 27605,
                             "src": "637:7:82",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes_calldata_ptr",
@@ -1431,18 +1431,18 @@
                               "argumentTypes": null,
                               "expression": {
                                 "argumentTypes": null,
-                                "id": 27653,
+                                "id": 27633,
                                 "name": "msg",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 35775,
+                                "referencedDeclaration": 35766,
                                 "src": "615:3:82",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_magic_message",
                                   "typeString": "msg"
                                 }
                               },
-                              "id": 27654,
+                              "id": 27634,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": false,
@@ -1470,7 +1470,7 @@
                                 {
                                   "argumentTypes": null,
                                   "hexValue": "323030303030",
-                                  "id": 27650,
+                                  "id": 27630,
                                   "isConstant": false,
                                   "isLValue": false,
                                   "isPure": true,
@@ -1497,18 +1497,18 @@
                                   "argumentTypes": null,
                                   "expression": {
                                     "argumentTypes": null,
-                                    "id": 27647,
+                                    "id": 27627,
                                     "name": "_contract",
                                     "nodeType": "Identifier",
                                     "overloadedDeclarations": [],
-                                    "referencedDeclaration": 27621,
+                                    "referencedDeclaration": 27601,
                                     "src": "582:9:82",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_address",
                                       "typeString": "address"
                                     }
                                   },
-                                  "id": 27648,
+                                  "id": 27628,
                                   "isConstant": false,
                                   "isLValue": false,
                                   "isPure": false,
@@ -1522,7 +1522,7 @@
                                     "typeString": "function () payable returns (bool)"
                                   }
                                 },
-                                "id": 27649,
+                                "id": 27629,
                                 "isConstant": false,
                                 "isLValue": false,
                                 "isPure": false,
@@ -1536,7 +1536,7 @@
                                   "typeString": "function (uint256) returns (function () payable returns (bool))"
                                 }
                               },
-                              "id": 27651,
+                              "id": 27631,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": false,
@@ -1550,7 +1550,7 @@
                                 "typeString": "function () payable returns (bool)"
                               }
                             },
-                            "id": 27652,
+                            "id": 27632,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -1564,7 +1564,7 @@
                               "typeString": "function (uint256) returns (function () payable returns (bool))"
                             }
                           },
-                          "id": 27655,
+                          "id": 27635,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -1578,7 +1578,7 @@
                             "typeString": "function () payable returns (bool)"
                           }
                         },
-                        "id": 27658,
+                        "id": 27638,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1593,7 +1593,7 @@
                         }
                       }
                     ],
-                    "id": 27659,
+                    "id": 27639,
                     "isConstant": false,
                     "isInlineArray": false,
                     "isLValue": false,
@@ -1606,15 +1606,15 @@
                       "typeString": "bool"
                     }
                   },
-                  "functionReturnParameters": 27633,
-                  "id": 27660,
+                  "functionReturnParameters": 27613,
+                  "id": 27640,
                   "nodeType": "Return",
                   "src": "575:71:82"
                 }
               ]
             },
             "documentation": null,
-            "id": 27662,
+            "id": 27642,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1622,15 +1622,15 @@
             "name": "execute",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 27630,
+              "id": 27610,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 27621,
+                  "id": 27601,
                   "name": "_contract",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27662,
+                  "scope": 27642,
                   "src": "313:17:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1639,7 +1639,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 27620,
+                    "id": 27600,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "313:7:82",
@@ -1653,10 +1653,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 27623,
+                  "id": 27603,
                   "name": "_methodID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27662,
+                  "scope": 27642,
                   "src": "332:16:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1665,7 +1665,7 @@
                     "typeString": "bytes4"
                   },
                   "typeName": {
-                    "id": 27622,
+                    "id": 27602,
                     "name": "bytes4",
                     "nodeType": "ElementaryTypeName",
                     "src": "332:6:82",
@@ -1679,10 +1679,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 27625,
+                  "id": 27605,
                   "name": "_params",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27662,
+                  "scope": 27642,
                   "src": "350:13:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1691,7 +1691,7 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 27624,
+                    "id": 27604,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "350:5:82",
@@ -1705,10 +1705,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 27627,
+                  "id": 27607,
                   "name": "_proposalID",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27662,
+                  "scope": 27642,
                   "src": "365:19:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1717,7 +1717,7 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 27626,
+                    "id": 27606,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
                     "src": "365:7:82",
@@ -1731,10 +1731,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 27629,
+                  "id": 27609,
                   "name": "_votingInterface",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27662,
+                  "scope": 27642,
                   "src": "386:24:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1743,7 +1743,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 27628,
+                    "id": 27608,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "386:7:82",
@@ -1760,15 +1760,15 @@
             },
             "payable": true,
             "returnParameters": {
-              "id": 27633,
+              "id": 27613,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 27632,
+                  "id": 27612,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 27662,
+                  "scope": 27642,
                   "src": "444:4:82",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1777,7 +1777,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 27631,
+                    "id": 27611,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "444:4:82",
@@ -1792,14 +1792,14 @@
               ],
               "src": "443:6:82"
             },
-            "scope": 27663,
+            "scope": 27643,
             "src": "296:355:82",
             "stateMutability": "payable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 27664,
+        "scope": 27644,
         "src": "208:445:82"
       }
     ],
@@ -1811,7 +1811,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.2",
-  "updatedAt": "2019-03-21T21:34:45.422Z",
+  "updatedAt": "2019-04-03T05:17:35.276Z",
   "devdoc": {
     "methods": {}
   },

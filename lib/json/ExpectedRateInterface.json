@@ -47,14 +47,14 @@
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/kyber/ExpectedRateInterface.sol",
     "exportedSymbols": {
       "ExpectedRateInterface": [
-        12380
+        12360
       ]
     },
-    "id": 12381,
+    "id": 12361,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 12363,
+        "id": 12343,
         "literals": [
           "solidity",
           "^",
@@ -67,10 +67,10 @@
       {
         "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/interfaces/ERC20.sol",
         "file": "../interfaces/ERC20.sol",
-        "id": 12364,
+        "id": 12344,
         "nodeType": "ImportDirective",
-        "scope": 12381,
-        "sourceUnit": 10247,
+        "scope": 12361,
+        "sourceUnit": 10227,
         "src": "26:33:45",
         "symbolAliases": [],
         "unitAlias": ""
@@ -81,9 +81,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 12380,
+        "id": 12360,
         "linearizedBaseContracts": [
-          12380
+          12360
         ],
         "name": "ExpectedRateInterface",
         "nodeType": "ContractDefinition",
@@ -91,7 +91,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 12379,
+            "id": 12359,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -99,31 +99,31 @@
             "name": "getExpectedRate",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12373,
+              "id": 12353,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12366,
+                  "id": 12346,
                   "name": "src",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12379,
+                  "scope": 12359,
                   "src": "125:9:45",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_ERC20_$10246",
+                    "typeIdentifier": "t_contract$_ERC20_$10226",
                     "typeString": "contract ERC20"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 12365,
+                    "id": 12345,
                     "name": "ERC20",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 10246,
+                    "referencedDeclaration": 10226,
                     "src": "125:5:45",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ERC20_$10246",
+                      "typeIdentifier": "t_contract$_ERC20_$10226",
                       "typeString": "contract ERC20"
                     }
                   },
@@ -132,26 +132,26 @@
                 },
                 {
                   "constant": false,
-                  "id": 12368,
+                  "id": 12348,
                   "name": "dest",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12379,
+                  "scope": 12359,
                   "src": "136:10:45",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_ERC20_$10246",
+                    "typeIdentifier": "t_contract$_ERC20_$10226",
                     "typeString": "contract ERC20"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 12367,
+                    "id": 12347,
                     "name": "ERC20",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 10246,
+                    "referencedDeclaration": 10226,
                     "src": "136:5:45",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ERC20_$10246",
+                      "typeIdentifier": "t_contract$_ERC20_$10226",
                       "typeString": "contract ERC20"
                     }
                   },
@@ -160,10 +160,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 12370,
+                  "id": 12350,
                   "name": "srcQty",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12379,
+                  "scope": 12359,
                   "src": "148:11:45",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -172,7 +172,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12369,
+                    "id": 12349,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "148:4:45",
@@ -186,10 +186,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 12372,
+                  "id": 12352,
                   "name": "usePermissionless",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12379,
+                  "scope": 12359,
                   "src": "161:22:45",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -198,7 +198,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 12371,
+                    "id": 12351,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "161:4:45",
@@ -215,15 +215,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 12378,
+              "id": 12358,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12375,
+                  "id": 12355,
                   "name": "expectedRate",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12379,
+                  "scope": 12359,
                   "src": "216:17:45",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -232,7 +232,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12374,
+                    "id": 12354,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "216:4:45",
@@ -246,10 +246,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 12377,
+                  "id": 12357,
                   "name": "slippageRate",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12379,
+                  "scope": 12359,
                   "src": "235:17:45",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -258,7 +258,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12376,
+                    "id": 12356,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "235:4:45",
@@ -273,14 +273,14 @@
               ],
               "src": "215:38:45"
             },
-            "scope": 12380,
+            "scope": 12360,
             "src": "100:154:45",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 12381,
+        "scope": 12361,
         "src": "62:194:45"
       }
     ],
@@ -290,14 +290,14 @@
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/kyber/ExpectedRateInterface.sol",
     "exportedSymbols": {
       "ExpectedRateInterface": [
-        12380
+        12360
       ]
     },
-    "id": 12381,
+    "id": 12361,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 12363,
+        "id": 12343,
         "literals": [
           "solidity",
           "^",
@@ -310,10 +310,10 @@
       {
         "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/interfaces/ERC20.sol",
         "file": "../interfaces/ERC20.sol",
-        "id": 12364,
+        "id": 12344,
         "nodeType": "ImportDirective",
-        "scope": 12381,
-        "sourceUnit": 10247,
+        "scope": 12361,
+        "sourceUnit": 10227,
         "src": "26:33:45",
         "symbolAliases": [],
         "unitAlias": ""
@@ -324,9 +324,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 12380,
+        "id": 12360,
         "linearizedBaseContracts": [
-          12380
+          12360
         ],
         "name": "ExpectedRateInterface",
         "nodeType": "ContractDefinition",
@@ -334,7 +334,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 12379,
+            "id": 12359,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -342,31 +342,31 @@
             "name": "getExpectedRate",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12373,
+              "id": 12353,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12366,
+                  "id": 12346,
                   "name": "src",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12379,
+                  "scope": 12359,
                   "src": "125:9:45",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_ERC20_$10246",
+                    "typeIdentifier": "t_contract$_ERC20_$10226",
                     "typeString": "contract ERC20"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 12365,
+                    "id": 12345,
                     "name": "ERC20",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 10246,
+                    "referencedDeclaration": 10226,
                     "src": "125:5:45",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ERC20_$10246",
+                      "typeIdentifier": "t_contract$_ERC20_$10226",
                       "typeString": "contract ERC20"
                     }
                   },
@@ -375,26 +375,26 @@
                 },
                 {
                   "constant": false,
-                  "id": 12368,
+                  "id": 12348,
                   "name": "dest",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12379,
+                  "scope": 12359,
                   "src": "136:10:45",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_ERC20_$10246",
+                    "typeIdentifier": "t_contract$_ERC20_$10226",
                     "typeString": "contract ERC20"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 12367,
+                    "id": 12347,
                     "name": "ERC20",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 10246,
+                    "referencedDeclaration": 10226,
                     "src": "136:5:45",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ERC20_$10246",
+                      "typeIdentifier": "t_contract$_ERC20_$10226",
                       "typeString": "contract ERC20"
                     }
                   },
@@ -403,10 +403,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 12370,
+                  "id": 12350,
                   "name": "srcQty",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12379,
+                  "scope": 12359,
                   "src": "148:11:45",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -415,7 +415,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12369,
+                    "id": 12349,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "148:4:45",
@@ -429,10 +429,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 12372,
+                  "id": 12352,
                   "name": "usePermissionless",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12379,
+                  "scope": 12359,
                   "src": "161:22:45",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -441,7 +441,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 12371,
+                    "id": 12351,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "161:4:45",
@@ -458,15 +458,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 12378,
+              "id": 12358,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12375,
+                  "id": 12355,
                   "name": "expectedRate",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12379,
+                  "scope": 12359,
                   "src": "216:17:45",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -475,7 +475,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12374,
+                    "id": 12354,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "216:4:45",
@@ -489,10 +489,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 12377,
+                  "id": 12357,
                   "name": "slippageRate",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12379,
+                  "scope": 12359,
                   "src": "235:17:45",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -501,7 +501,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12376,
+                    "id": 12356,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "235:4:45",
@@ -516,14 +516,14 @@
               ],
               "src": "215:38:45"
             },
-            "scope": 12380,
+            "scope": 12360,
             "src": "100:154:45",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 12381,
+        "scope": 12361,
         "src": "62:194:45"
       }
     ],
@@ -535,7 +535,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.2",
-  "updatedAt": "2019-03-21T21:34:45.065Z",
+  "updatedAt": "2019-04-03T05:17:34.910Z",
   "devdoc": {
     "methods": {}
   },
