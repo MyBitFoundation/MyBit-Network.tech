@@ -45,8 +45,9 @@ contract Operators {
     address oldAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID)));
     require(oldAddress != address(0));
     require(msg.sender == oldAddress || database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
-    database.deleteAddress(keccak256(abi.encodePacked("operator", _operatorID)));
     database.setAddress(keccak256(abi.encodePacked("operator", _operatorID)), _newAddress);
+    database.deleteBytes32(keccak256(abi.encodePacked("operator", oldAddress)));
+    database.setBytes32(keccak256(abi.encodePacked("operator", _newAddress)), _operatorID);
     events.transaction('Operator address changed', oldAddress, _newAddress, 0, _operatorID);
     //emit LogOperatorAddressChanged(_operatorID, msg.sender, _newAddress);
   }

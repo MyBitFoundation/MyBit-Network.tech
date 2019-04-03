@@ -172,11 +172,11 @@ module.exports = function(deployer, network, accounts) {
 
     }).then(function() {
       if(network == 'ropsten'){
-        operators.registerOperator('0x872d95321a62B959dA79A65A934b6208b76fe28E', 'General Bytes', 'Bitcoin ATM', {from: accounts[0], gas:190000});
-        operators.registerOperator('0x4DC8346e7c5EFc0db20f7DC8Bb1BacAF182b077d', 'The Collective', 'Co-Working Space', {from: accounts[0], gas:190000});
-        operators.registerOperator('0x5a4613a2484122eCe8c8444b7509f053887084Dd', 'Bitmain', 'Ethereum Miner', {from: accounts[0], gas:190000});
-        operators.registerOperator('0xaEf462b7D8F3466835d78791ed2cC42c745c3Ab6', 'Pickens', 'Storage Unit', {from: accounts[0], gas:190000});
-        operators.registerOperator('0x64ea3C54401baa81736BBef3094Dd27D0D27ca50', 'Arabco', 'Smart Bench', {from: accounts[0], gas:190000});
+        operators.registerOperator('0x396576A24FDdD9e2AEa0CCfC1aa1F795E8acC98C', 'General Bytes', 'Bitcoin ATM', {from: accounts[0], gas:190000});
+        operators.registerOperator('0x794C156557a3742B532427F735A27A874e67c9b9', 'The Collective', 'Co-Working Space', {from: accounts[0], gas:190000});
+        operators.registerOperator('0x52C213f43E2227Ee109A2971a31FCdf77A5237ef', 'Bitmain', 'Ethereum Miner', {from: accounts[0], gas:190000});
+        operators.registerOperator('0xE52c1E5082e835FaCcE21f5B9bf2E190Fab7617a', 'Pickens', 'Storage Unit', {from: accounts[0], gas:190000});
+        operators.registerOperator('0x15c9C83075b7214308fd4526731db4172299E2a4', 'Arabco', 'Smart Bench', {from: accounts[0], gas:190000});
         return;
       }else if(network == 'development' || network == 'mybit-chain'){
         return operators.registerOperator(accounts[1], 'Test Operator', 'Test Asset Type', {from: accounts[0], gas:190000});
