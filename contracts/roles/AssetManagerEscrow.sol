@@ -60,18 +60,26 @@ pragma solidity ^0.4.24;
       require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), 'User not approved');
       bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetAddress, _assetManager));
       require(database.uintStorage(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID))) != 0, 'Asset escrow is zero');
-      require(database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress))) < now, 'Before crowdsale deadline');
+      //require(database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress))) < now, 'Before crowdsale deadline');
       AssetManagerEscrow_ERC20 burnToken = AssetManagerEscrow_ERC20(database.addressStorage(keccak256(abi.encodePacked("platform.token"))));
       uint escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("asset.escrowRedeemed", assetManagerEscrowID)));
       uint unlockAmount = database.uintStorage(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID))).sub(escrowRedeemed);
       if(!database.boolStorage(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress)))){
-        emit NotFinalized();
-        //If we're past deadline but crowdsale did NOT finalize, release all escrow
-        require(removeAssetManager(_assetAddress));
-        require(removeEscrowData(assetManagerEscrowID));
-      }
-      else {
-        //Past the deadline with a successful funding. Only pay back based on ROI
+        if(database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress))) < now){
+          //Crowdsale failed, return escrow
+          emit NotFinalized();
+          //If we're past deadline but crowdsale did NOT finalize, release all escrow
+          require(removeAssetManager(_assetAddress));
+          require(removeEscrowData(assetManagerEscrowID));
+          require(burnToken.transfer(_assetManager, unlockAmount));
+          return true;
+
+        } else {
+          //Crowdsale ongoing
+          return false;
+        }
+      } else {
+        //Crowdsale finalized. Only pay back based on ROI
         AssetManagerEscrow_DivToken token = AssetManagerEscrow_DivToken(_assetAddress);
         uint roi = token.assetIncome().mul(100).div(token.totalSupply());   // Scaled up by 10^2  (approaches 100 as asset income increases)
         uint roiCheckpoints = roi.div(25);       // How many quarterly increments have been reached?
@@ -82,9 +90,9 @@ pragma solidity ^0.4.24;
         unlockAmount = roiCheckpoints.mul(quarterEscrow).sub(escrowRedeemed);
         require(unlockAmount > 0);
         database.setUint(keccak256(abi.encodePacked("asset.escrowRedeemed", assetManagerEscrowID)), escrowRedeemed.add(unlockAmount));
+        require(burnToken.transfer(_assetManager, unlockAmount));
+        return true;
       }
-      require(burnToken.transfer(_assetManager, unlockAmount));
-      return true;
     }
 
 

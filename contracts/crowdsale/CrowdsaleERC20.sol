@@ -168,7 +168,7 @@ contract CrowdsaleERC20{
   function convertTokens(address _investor, uint _amount, /*bytes4 _sig,*/ ERC20 _fundingToken, ERC20 _paymentToken, uint _maxTokens)
   private
   returns (uint) {
-    ( , uint minRate) = kyber.getExpectedRate(address(_paymentToken), address(_fundingToken), 0);
+    //( , uint minRate) = kyber.getExpectedRate(address(_paymentToken), address(_fundingToken), 0);
     uint paymentBalanceBefore;
     uint fundingBalanceBefore;
     uint change;
@@ -177,7 +177,7 @@ contract CrowdsaleERC20{
       paymentBalanceBefore = address(this).balance;
       fundingBalanceBefore = _fundingToken.balanceOf(this);
       //Convert remaining funds into the funding token
-      kyber.trade.value(_amount)(_paymentToken, _amount, _fundingToken, address(this), _maxTokens, minRate, 0);
+      kyber.trade.value(_amount)(_paymentToken, _amount, _fundingToken, address(this), _maxTokens, 0, 0);
       change = _amount.sub(paymentBalanceBefore.sub(address(this).balance));
       investment = _fundingToken.balanceOf(this).sub(fundingBalanceBefore);
       _paymentToken.transfer(_investor, change);
@@ -192,7 +192,7 @@ contract CrowdsaleERC20{
       paymentBalanceBefore = _paymentToken.balanceOf(this);
       fundingBalanceBefore = _fundingToken.balanceOf(this);
       //Convert remaining funds into the funding token
-      kyber.trade(_paymentToken, _amount, _fundingToken, address(this), _maxTokens, minRate, 0);
+      kyber.trade(_paymentToken, _amount, _fundingToken, address(this), _maxTokens, 0, 0);
       // Return any remaining source tokens to user
       change = _amount.sub(paymentBalanceBefore.sub(_paymentToken.balanceOf(this)));
       investment = _fundingToken.balanceOf(this).sub(fundingBalanceBefore);
