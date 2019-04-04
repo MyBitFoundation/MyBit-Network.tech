@@ -65,14 +65,14 @@
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/test/ApproveAndCallTest.sol",
     "exportedSymbols": {
       "ApproveAndCallTest": [
-        30995
+        31008
       ]
     },
-    "id": 30996,
+    "id": 31009,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 30965,
+        "id": 30978,
         "literals": [
           "solidity",
           "^",
@@ -88,16 +88,16 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 30995,
+        "id": 31008,
         "linearizedBaseContracts": [
-          30995
+          31008
         ],
         "name": "ApproveAndCallTest",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "body": {
-              "id": 30983,
+              "id": 30996,
               "nodeType": "Block",
               "src": "145:54:88",
               "statements": [
@@ -107,11 +107,11 @@
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 30977,
+                        "id": 30990,
                         "name": "from",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 30967,
+                        "referencedDeclaration": 30980,
                         "src": "168:4:88",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -120,11 +120,11 @@
                       },
                       {
                         "argumentTypes": null,
-                        "id": 30978,
+                        "id": 30991,
                         "name": "tokens",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 30969,
+                        "referencedDeclaration": 30982,
                         "src": "174:6:88",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -133,11 +133,11 @@
                       },
                       {
                         "argumentTypes": null,
-                        "id": 30979,
+                        "id": 30992,
                         "name": "token",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 30971,
+                        "referencedDeclaration": 30984,
                         "src": "182:5:88",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -146,11 +146,11 @@
                       },
                       {
                         "argumentTypes": null,
-                        "id": 30980,
+                        "id": 30993,
                         "name": "data",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 30973,
+                        "referencedDeclaration": 30986,
                         "src": "189:4:88",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes_memory_ptr",
@@ -177,18 +177,18 @@
                           "typeString": "bytes memory"
                         }
                       ],
-                      "id": 30976,
+                      "id": 30989,
                       "name": "LogApproval",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 30994,
+                      "referencedDeclaration": 31007,
                       "src": "156:11:88",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_address_$_t_uint256_$_t_address_$_t_bytes_memory_ptr_$returns$__$",
                         "typeString": "function (address,uint256,address,bytes memory)"
                       }
                     },
-                    "id": 30981,
+                    "id": 30994,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -202,14 +202,14 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 30982,
+                  "id": 30995,
                   "nodeType": "EmitStatement",
                   "src": "151:43:88"
                 }
               ]
             },
             "documentation": null,
-            "id": 30984,
+            "id": 30997,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -217,15 +217,15 @@
             "name": "receiveApproval",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 30974,
+              "id": 30987,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30967,
+                  "id": 30980,
                   "name": "from",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30984,
+                  "scope": 30997,
                   "src": "82:12:88",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -234,7 +234,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30966,
+                    "id": 30979,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "82:7:88",
@@ -248,10 +248,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 30969,
+                  "id": 30982,
                   "name": "tokens",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30984,
+                  "scope": 30997,
                   "src": "96:11:88",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -260,7 +260,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 30968,
+                    "id": 30981,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "96:4:88",
@@ -274,10 +274,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 30971,
+                  "id": 30984,
                   "name": "token",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30984,
+                  "scope": 30997,
                   "src": "109:13:88",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -286,7 +286,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30970,
+                    "id": 30983,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "109:7:88",
@@ -300,10 +300,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 30973,
+                  "id": 30986,
                   "name": "data",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30984,
+                  "scope": 30997,
                   "src": "124:10:88",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -312,7 +312,7 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 30972,
+                    "id": 30985,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "124:5:88",
@@ -329,12 +329,12 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 30975,
+              "id": 30988,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "145:0:88"
             },
-            "scope": 30995,
+            "scope": 31008,
             "src": "57:142:88",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -343,20 +343,20 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 30994,
+            "id": 31007,
             "name": "LogApproval",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 30993,
+              "id": 31006,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30986,
+                  "id": 30999,
                   "indexed": false,
                   "name": "_from",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30994,
+                  "scope": 31007,
                   "src": "221:13:88",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -365,7 +365,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30985,
+                    "id": 30998,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "221:7:88",
@@ -379,11 +379,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 30988,
+                  "id": 31001,
                   "indexed": false,
                   "name": "_tokens",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30994,
+                  "scope": 31007,
                   "src": "236:12:88",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -392,7 +392,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 30987,
+                    "id": 31000,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "236:4:88",
@@ -406,11 +406,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 30990,
+                  "id": 31003,
                   "indexed": false,
                   "name": "_token",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30994,
+                  "scope": 31007,
                   "src": "250:14:88",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -419,7 +419,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30989,
+                    "id": 31002,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "250:7:88",
@@ -433,11 +433,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 30992,
+                  "id": 31005,
                   "indexed": false,
                   "name": "_data",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30994,
+                  "scope": 31007,
                   "src": "266:11:88",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -446,7 +446,7 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 30991,
+                    "id": 31004,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "266:5:88",
@@ -464,7 +464,7 @@
             "src": "203:76:88"
           }
         ],
-        "scope": 30996,
+        "scope": 31009,
         "src": "26:255:88"
       }
     ],
@@ -474,14 +474,14 @@
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/test/ApproveAndCallTest.sol",
     "exportedSymbols": {
       "ApproveAndCallTest": [
-        30995
+        31008
       ]
     },
-    "id": 30996,
+    "id": 31009,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 30965,
+        "id": 30978,
         "literals": [
           "solidity",
           "^",
@@ -497,16 +497,16 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 30995,
+        "id": 31008,
         "linearizedBaseContracts": [
-          30995
+          31008
         ],
         "name": "ApproveAndCallTest",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "body": {
-              "id": 30983,
+              "id": 30996,
               "nodeType": "Block",
               "src": "145:54:88",
               "statements": [
@@ -516,11 +516,11 @@
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 30977,
+                        "id": 30990,
                         "name": "from",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 30967,
+                        "referencedDeclaration": 30980,
                         "src": "168:4:88",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -529,11 +529,11 @@
                       },
                       {
                         "argumentTypes": null,
-                        "id": 30978,
+                        "id": 30991,
                         "name": "tokens",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 30969,
+                        "referencedDeclaration": 30982,
                         "src": "174:6:88",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -542,11 +542,11 @@
                       },
                       {
                         "argumentTypes": null,
-                        "id": 30979,
+                        "id": 30992,
                         "name": "token",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 30971,
+                        "referencedDeclaration": 30984,
                         "src": "182:5:88",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -555,11 +555,11 @@
                       },
                       {
                         "argumentTypes": null,
-                        "id": 30980,
+                        "id": 30993,
                         "name": "data",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 30973,
+                        "referencedDeclaration": 30986,
                         "src": "189:4:88",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes_memory_ptr",
@@ -586,18 +586,18 @@
                           "typeString": "bytes memory"
                         }
                       ],
-                      "id": 30976,
+                      "id": 30989,
                       "name": "LogApproval",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 30994,
+                      "referencedDeclaration": 31007,
                       "src": "156:11:88",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_address_$_t_uint256_$_t_address_$_t_bytes_memory_ptr_$returns$__$",
                         "typeString": "function (address,uint256,address,bytes memory)"
                       }
                     },
-                    "id": 30981,
+                    "id": 30994,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -611,14 +611,14 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 30982,
+                  "id": 30995,
                   "nodeType": "EmitStatement",
                   "src": "151:43:88"
                 }
               ]
             },
             "documentation": null,
-            "id": 30984,
+            "id": 30997,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -626,15 +626,15 @@
             "name": "receiveApproval",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 30974,
+              "id": 30987,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30967,
+                  "id": 30980,
                   "name": "from",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30984,
+                  "scope": 30997,
                   "src": "82:12:88",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -643,7 +643,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30966,
+                    "id": 30979,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "82:7:88",
@@ -657,10 +657,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 30969,
+                  "id": 30982,
                   "name": "tokens",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30984,
+                  "scope": 30997,
                   "src": "96:11:88",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -669,7 +669,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 30968,
+                    "id": 30981,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "96:4:88",
@@ -683,10 +683,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 30971,
+                  "id": 30984,
                   "name": "token",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30984,
+                  "scope": 30997,
                   "src": "109:13:88",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -695,7 +695,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30970,
+                    "id": 30983,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "109:7:88",
@@ -709,10 +709,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 30973,
+                  "id": 30986,
                   "name": "data",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30984,
+                  "scope": 30997,
                   "src": "124:10:88",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -721,7 +721,7 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 30972,
+                    "id": 30985,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "124:5:88",
@@ -738,12 +738,12 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 30975,
+              "id": 30988,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "145:0:88"
             },
-            "scope": 30995,
+            "scope": 31008,
             "src": "57:142:88",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -752,20 +752,20 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 30994,
+            "id": 31007,
             "name": "LogApproval",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 30993,
+              "id": 31006,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30986,
+                  "id": 30999,
                   "indexed": false,
                   "name": "_from",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30994,
+                  "scope": 31007,
                   "src": "221:13:88",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -774,7 +774,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30985,
+                    "id": 30998,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "221:7:88",
@@ -788,11 +788,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 30988,
+                  "id": 31001,
                   "indexed": false,
                   "name": "_tokens",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30994,
+                  "scope": 31007,
                   "src": "236:12:88",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -801,7 +801,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 30987,
+                    "id": 31000,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "236:4:88",
@@ -815,11 +815,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 30990,
+                  "id": 31003,
                   "indexed": false,
                   "name": "_token",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30994,
+                  "scope": 31007,
                   "src": "250:14:88",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -828,7 +828,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30989,
+                    "id": 31002,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "250:7:88",
@@ -842,11 +842,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 30992,
+                  "id": 31005,
                   "indexed": false,
                   "name": "_data",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30994,
+                  "scope": 31007,
                   "src": "266:11:88",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -855,7 +855,7 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 30991,
+                    "id": 31004,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "266:5:88",
@@ -873,7 +873,7 @@
             "src": "203:76:88"
           }
         ],
-        "scope": 30996,
+        "scope": 31009,
         "src": "26:255:88"
       }
     ],
@@ -885,7 +885,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.2",
-  "updatedAt": "2019-04-03T05:20:12.922Z",
+  "updatedAt": "2019-04-03T20:11:28.725Z",
   "devdoc": {
     "methods": {}
   },

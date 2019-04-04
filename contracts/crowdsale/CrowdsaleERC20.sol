@@ -177,10 +177,12 @@ contract CrowdsaleERC20{
       paymentBalanceBefore = address(this).balance;
       fundingBalanceBefore = _fundingToken.balanceOf(this);
       //Convert remaining funds into the funding token
-      kyber.trade.value(_amount)(_paymentToken, _amount, _fundingToken, address(this), _maxTokens, 0, 0);
+      kyber.trade.value(_amount)(address(_paymentToken), _amount, address(_fundingToken), address(this), _maxTokens, 0, 0);
       change = _amount.sub(paymentBalanceBefore.sub(address(this).balance));
       investment = _fundingToken.balanceOf(this).sub(fundingBalanceBefore);
-      _paymentToken.transfer(_investor, change);
+      if(change > 0){
+        _investor.transfer(change);
+      }
     } else {
       //Collect funds
       collectPayment(_investor, _amount, _amount, _paymentToken);
@@ -192,11 +194,13 @@ contract CrowdsaleERC20{
       paymentBalanceBefore = _paymentToken.balanceOf(this);
       fundingBalanceBefore = _fundingToken.balanceOf(this);
       //Convert remaining funds into the funding token
-      kyber.trade(_paymentToken, _amount, _fundingToken, address(this), _maxTokens, 0, 0);
+      kyber.trade(address(_paymentToken), _amount, address(_fundingToken), address(this), _maxTokens, 0, 0);
       // Return any remaining source tokens to user
       change = _amount.sub(paymentBalanceBefore.sub(_paymentToken.balanceOf(this)));
       investment = _fundingToken.balanceOf(this).sub(fundingBalanceBefore);
-      _paymentToken.transfer(_investor, change);
+      if(change > 0){
+        _paymentToken.transfer(_investor, change);
+      }
     }
 
     emit Convert(address(_paymentToken), change, investment);
@@ -219,6 +223,13 @@ contract CrowdsaleERC20{
     events.transaction('CrowdsaleERC20 destroyed', address(this), msg.sender, address(this).balance, '');
     //emit LogDestruction(address(this).balance, msg.sender);
     selfdestruct(msg.sender);
+  }
+
+  // @notice fallback function. We need to receive Ether from Kyber Network
+  function ()
+  external
+  payable {
+    emit EtherReceived(msg.sender, msg.value);
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -275,4 +286,5 @@ contract CrowdsaleERC20{
   }
 
   event Convert(address token, uint change, uint investment);
+  event EtherReceived(address sender, uint amount);
 }
