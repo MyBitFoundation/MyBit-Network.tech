@@ -147,7 +147,7 @@ contract('Asset Exchange', async(accounts) => {
   });
 
   it("Deploy asset1 token", async() => {
-    asset1Token = await DivToken.new('Asset1', owner);
+    asset1Token = await DivToken.new('Asset1', owner, '0x0000000000000000000000000000000000000000');
     let tokenHash = await hash.stringAddress('tokenAddress', asset1Token.address);
     await db.setAddress(tokenHash, asset1Token.address);
     let finalizedHash = await hash.stringAddress('crowdsale.finalized', asset1Token.address);
@@ -155,7 +155,7 @@ contract('Asset Exchange', async(accounts) => {
   });
 
   it("Deploy asset2 token", async() => {
-    asset2Token = await DivToken.new('Asset2', owner);
+    asset2Token = await DivToken.new('Asset2', owner, '0x0000000000000000000000000000000000000000');
     let tokenHash = await hash.stringAddress('tokenAddress', asset2Token.address);
     await db.setAddress(tokenHash, asset2Token.address);
     let finalizedHash = await hash.stringAddress('crowdsale.finalized', asset2Token.address);

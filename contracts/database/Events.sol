@@ -15,10 +15,10 @@ contract Events {
       emit LogEvent(_message, keccak256(abi.encodePacked(_message)), tx.origin);
   }
 
-  function transaction(string _message, address _from, address _to, uint _amount, bytes32 _id)
+  function transaction(string _message, address _from, address _to, uint _amount, address _token)
   external
   onlyApprovedContract {
-      emit LogTransaction(_message, keccak256(abi.encodePacked(_message)), _from, _to, _amount, _id, tx.origin);
+      emit LogTransaction(_message, keccak256(abi.encodePacked(_message)), _from, _to, _amount, _token, tx.origin);
   }
 
   function registration(string _message, address _account)
@@ -71,7 +71,7 @@ contract Events {
 
   //Generalized events
   event LogEvent(string message, bytes32 indexed messageID, address indexed origin);
-  event LogTransaction(string message, bytes32 indexed messageID, address indexed from, address indexed to, uint amount, bytes32 id, address origin); //amount and id will be empty on some events
+  event LogTransaction(string message, bytes32 indexed messageID, address indexed from, address indexed to, uint amount, address token, address origin); //amount and token will be empty on some events
   event LogAddress(string message, bytes32 indexed messageID, address indexed account, address indexed origin);
   event LogContractChange(string message, bytes32 indexed messageID, address indexed account, string name, address indexed origin);
   event LogAsset(string message, bytes32 indexed messageID, string uri, bytes32 indexed assetID, address asset, address manager, address indexed origin);

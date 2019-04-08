@@ -13,6 +13,7 @@ module.exports = function(deployer, network, accounts) {
     const Pausible = artifacts.require("./ownership/Pausible.sol");
     const Platform = artifacts.require("./ecosystem/Platform.sol");
     const Operators = artifacts.require("./roles/Operators.sol");
+    const EscrowReserve = artifacts.require("./database/EscrowReserve.sol");
     const AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
     const AssetManagerFunds = artifacts.require("./roles/AssetManagerFunds.sol");
     const AssetGenerator = artifacts.require("./ecosystem/AssetGenerator.sol");
@@ -20,6 +21,8 @@ module.exports = function(deployer, network, accounts) {
     const CrowdsaleETH = artifacts.require("./crowdsale/CrowdsaleETH.sol");
     const CrowdsaleGeneratorERC20 = artifacts.require("./crowdsale/CrowdsaleGeneratorERC20.sol");
     const CrowdsaleERC20 = artifacts.require("./crowdsale/CrowdsaleERC20.sol");
+    const CrowdsaleReserve = artifacts.require("./database/CrowdsaleReserve.sol");
+    const Minter = artifacts.require("./database/Minter.sol");
     const SafeMath = artifacts.require("./math/SafeMath.sol");
 
     const decimals = bn(1000000000000000000);
@@ -28,7 +31,8 @@ module.exports = function(deployer, network, accounts) {
 
     let safemath, MyB, db, events, cm, api, owned, pausible, burner, /*access,*/
         platform, operators, escrow, managerFunds, assetGenerator, crowdsaleETH,
-        crowdsaleGeneratorETH, crowdsaleERC20, crowdsaleGeneratorERC20, dax;
+        crowdsaleGeneratorETH, crowdsaleERC20, crowdsaleGeneratorERC20, dax,
+        crowdsaleReserve, escrowReserve, minter;
 
     let kyber = {
       address: '0x0000000000000000000000000000000000000000'
@@ -109,6 +113,36 @@ module.exports = function(deployer, network, accounts) {
       api = instance;
       console.log('API.sol: ' + api.address);
       return cm.addContract('API', api.address, {from: accounts[0], gas:190000});
+
+    }).then(function() {
+
+      return EscrowReserve.new(db.address, events.address);
+
+    }).then(function(instance) {
+
+      escrowReserve = instance;
+      console.log('EscrowReserve.sol: ' + escrowReserve.address);
+      return cm.addContract('EscrowReserve', escrowReserve.address, {from: accounts[0], gas:190000});
+
+    }).then(function() {
+
+      return CrowdsaleReserve.new(db.address, events.address);
+
+    }).then(function(instance) {
+
+      crowdsaleReserve = instance;
+      console.log('CrowdsaleReserve.sol: ' + crowdsaleReserve.address);
+      return cm.addContract('CrowdsaleReserve', crowdsaleReserve.address, {from: accounts[0], gas:190000});
+
+    }).then(function() {
+
+      return Minter.new(db.address);
+
+    }).then(function(instance) {
+
+      minter = instance;
+      console.log('Minter.sol: ' + minter.address);
+      return cm.addContract('Minter', minter.address, {from: accounts[0], gas:190000});
 
     }).then(function() {
 
@@ -280,7 +314,10 @@ module.exports = function(deployer, network, accounts) {
         "CrowdsaleETH" : crowdsaleETH.address,
         "CrowdsaleGeneratorETH" : crowdsaleGeneratorETH.address,
         "CrowdsaleERC20" : crowdsaleERC20.address,
-        "CrowdsaleGeneratorERC20" : crowdsaleGeneratorERC20.address
+        "CrowdsaleGeneratorERC20" : crowdsaleGeneratorERC20.address,
+        "CrowdsaleReserve" : crowdsaleReserve.address,
+        "EscrowReserve" : escrowReserve.address,
+        "Minter" : minter.address
       }
 
       let contracts_json = JSON.stringify(addresses, null, 4);
@@ -303,7 +340,8 @@ module.exports = function(deployer, network, accounts) {
       instanceList = [MyB, db, events, cm, api, owned, pausible,
                       platform, operators, escrow, managerFunds,
                       assetGenerator, crowdsaleETH, crowdsaleGeneratorETH,
-                      crowdsaleERC20, crowdsaleGeneratorERC20];
+                      crowdsaleERC20, crowdsaleGeneratorERC20, crowdsaleReserve,
+                      escrowReserve, minter];
 
       for(let i=0; i<instanceList.length; i++){
         let instanceName = instanceList[i].constructor._json.contractName;

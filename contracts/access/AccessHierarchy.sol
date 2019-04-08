@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-interface Events {  function transaction(string _message, address _from, address _to, uint _amount, bytes32 _id)  external; }
+interface Events {  function transaction(string _message, address _from, address _to, uint _amount, address _token)  external; }
 interface DB {
   function uintStorage(bytes32 _key) external view returns (uint);
   function boolStorage(bytes32 _key) external view returns (bool);
@@ -65,7 +65,7 @@ contract AccessHierarchy {
   function destroy()
   onlyOwner
   external {
-    events.transaction('AccessHierarchy destroyed', address(this), msg.sender, address(this).balance, '');
+    events.transaction('AccessHierarchy destroyed', address(this), msg.sender, address(this).balance, address(0));
     selfdestruct(msg.sender);
   }
 

@@ -1,12 +1,15 @@
 //MyBit
 const AssetToken = artifacts.require("DividendTokenERC20.sol");
+const Minter = artifacts.require("./database/Minter.sol");
 const CrowdsaleGenerator = artifacts.require("CrowdsaleGeneratorERC20.sol");
 const Crowdsale = artifacts.require("CrowdsaleERC20.sol");
+const CrowdsaleReserve = artifacts.require("./database/CrowdsaleReserve.sol");
 const Database = artifacts.require("Database.sol");
 const Events = artifacts.require("Events.sol");
 const ContractManager = artifacts.require("ContractManager.sol");
 const AssetManagerFunds = artifacts.require("AssetManagerFunds.sol");
 const AssetManagerEscrow = artifacts.require("AssetManagerEscrow.sol");
+const EscrowReserve = artifacts.require("./database/EscrowReserve.sol");
 const Operators = artifacts.require("Operators.sol");
 const Platform = artifacts.require("Platform.sol");
 const API = artifacts.require("./database/API.sol");
@@ -28,8 +31,8 @@ BigNumber.config({ EXPONENTIAL_AT: 80 });
 const ETH = new BigNumber(10**18);
 const tokenPerAccount = new BigNumber(1000).times(ETH);
 
-let assetToken, crowdsaleGen, crowdsale, db, events, cm, assetManagerFunds,
-    assetManagerEscrow, operators, platform, api;
+let assetToken, minter, crowdsaleReserve, crowdsaleGen, crowdsale, db, events, cm,
+    assetManagerFunds, escrowReserve, assetManagerEscrow, operators, platform, api;
 
 let operatorID, assetURI, assetAddress;
 
@@ -1075,8 +1078,14 @@ contract('Kyber', function(accounts) {
       api = await API.new(db.address);
       assetManagerFunds = await AssetManagerFunds.new(db.address, events.address);
       await cm.addContract('AssetManagerFunds', assetManagerFunds.address);
+      escrowReserve = await EscrowReserve.new(db.address, events.address);
+      await cm.addContract("EscrowReserve", escrowReserve.address);
       assetManagerEscrow = await AssetManagerEscrow.new(db.address, events.address);
       await cm.addContract('AssetManagerEscrow', assetManagerEscrow.address);
+      minter = await Minter.new(db.address);
+      await cm.addContract("Minter", minter.address);
+      crowdsaleReserve = await CrowdsaleReserve.new(db.address, events.address);
+      await cm.addContract("CrowdsaleReserve", crowdsaleReserve.address);
       crowdsaleGen = await CrowdsaleGenerator.new(db.address, events.address, networkProxy.address);
       await cm.addContract("CrowdsaleGenerator", crowdsaleGen.address);
       crowdsale = await Crowdsale.new(db.address, events.address, networkProxy.address);

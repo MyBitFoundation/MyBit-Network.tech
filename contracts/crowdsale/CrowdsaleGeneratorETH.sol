@@ -62,7 +62,7 @@ contract CrowdsaleGeneratorETH {
     } else {
       startTime = _startTime;
     }
-    address assetAddress = address(new DividendToken(_assetURI, database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleETH")))));   // Gives this contract all new asset tokens
+    address assetAddress = address(new DividendToken(_assetURI, database.addressStorage(keccak256(abi.encodePacked("contract", "Minter"))), address(0)));   // Gives this contract all new asset tokens
     require(setCrowdsaleValues(assetAddress, startTime, _fundingLength, _amountToRaise));
     require(setAssetValues(assetAddress, _assetURI, _operatorID, _assetManager, _assetManagerPerc, _amountToRaise));
     //If escrow, lock
@@ -75,7 +75,7 @@ contract CrowdsaleGeneratorETH {
   function destroy()
   onlyOwner
   external {
-    events.transaction('CrowdsaleGeneratorETH destroyed', address(this), msg.sender, address(this).balance, '');
+    events.transaction('CrowdsaleGeneratorETH destroyed', address(this), msg.sender, address(this).balance, address(0));
     selfdestruct(msg.sender);
   }
 
@@ -126,10 +126,10 @@ contract CrowdsaleGeneratorETH {
         kyber.trade(_paymentTokenAddress, _amount, platformTokenAddress, address(this), 2**255, 0, 0); //Currently no minimum rate is set, so watch out for slippage!
       }
       amount = platformToken.balanceOf(this).sub(balanceBefore);
-      require(platformToken.transfer(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerEscrow"))), amount));
+      require(platformToken.transfer(database.addressStorage(keccak256(abi.encodePacked("contract", "EscrowReserve"))), amount));
     } else {
       amount = _amount;
-      require(CrowdsaleGeneratorETH_ERC20(platformTokenAddress).transferFrom(_assetManager, database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerEscrow"))), amount));
+      require(CrowdsaleGeneratorETH_ERC20(platformTokenAddress).transferFrom(_assetManager, database.addressStorage(keccak256(abi.encodePacked("contract", "EscrowReserve"))), amount));
     }
     database.setUint(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID)), amount);
     events.escrow('Escrow locked', _assetAddress, assetManagerEscrowID, _assetManager, amount);

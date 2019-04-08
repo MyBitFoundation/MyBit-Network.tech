@@ -57,7 +57,7 @@ contract Platform {
   function destroy()
   onlyOwner
   external {
-    events.transaction('PlatformFunds destroyed', address(this), msg.sender, address(this).balance, '');
+    events.transaction('PlatformFunds destroyed', address(this), msg.sender, address(this).balance, address(0));
     selfdestruct(msg.sender);
   }
 

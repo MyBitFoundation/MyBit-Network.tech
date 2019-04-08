@@ -70,7 +70,7 @@ contract('AssetManagerFunds', async(accounts) => {
   });
 
   it('Deploy dividend Token', async() => {
-    divToken = await DivToken.new(assetURI, owner);
+    divToken = await DivToken.new(assetURI, owner, '0x0000000000000000000000000000000000000000');
   });
 
   it("Spread tokens to users", async() => {
@@ -153,7 +153,7 @@ contract('AssetManagerFunds', async(accounts) => {
 
   it('Send money to token contract', async() => {
     //await web3.eth.sendTransaction({from:operator, to:divToken.address, value:10*ETH});
-    await divToken.issueDividends({from:operator, value:2*ETH});
+    await divToken.issueDividends(bn(2).times(ETH).toString(), {from:operator, value:bn(2).times(ETH).toString()});
     console.log(await web3.eth.getBalance(divToken.address));
     assert.equal(2*ETH, await divToken.assetIncome());
   });

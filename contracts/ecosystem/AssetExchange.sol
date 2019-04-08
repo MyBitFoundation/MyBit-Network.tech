@@ -172,7 +172,7 @@ contract AssetExchange {
   public {
     require(_functionInitiator != msg.sender);
     require(database.boolStorage(keccak256(abi.encodePacked(address(this), _functionInitiator, "destroy", keccak256(abi.encodePacked(_holdingAddress))))));
-    events.transaction('Destroy contract', address(this), _holdingAddress, address(this).balance, '');
+    events.transaction('Destroy contract', address(this), _holdingAddress, address(this).balance, address(0));
     //emit LogDestruction(_holdingAddress, address(this).balance, msg.sender);
     selfdestruct(_holdingAddress);
   }

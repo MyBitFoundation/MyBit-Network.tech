@@ -2,7 +2,7 @@
 
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
-import "../tokens/erc20/DividendTokenERC20.sol";
+import "../tokens/erc20/DividendToken.sol";
 import "../database/Events.sol";
 import "../interfaces/KyberInterface.sol";
 
@@ -65,7 +65,7 @@ contract CrowdsaleGeneratorERC20 {
     } else {
       startTime = _startTime;
     }
-    address assetAddress = address(new DividendTokenERC20(_assetURI, database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleERC20"))), _fundingToken));
+    address assetAddress = address(new DividendToken(_assetURI, database.addressStorage(keccak256(abi.encodePacked("contract", "Minter"))), _fundingToken));
     require(setCrowdsaleValues(assetAddress, startTime, _fundingLength, _amountToRaise));
     require(setAssetValues(assetAddress, _assetURI, _operatorID, _assetManager, _assetManagerPerc, _amountToRaise));
     //If escrow, lock
@@ -77,7 +77,7 @@ contract CrowdsaleGeneratorERC20 {
   function destroy()
   onlyOwner
   external {
-    events.transaction('CrowdsaleGeneratorERC20 destroyed', address(this), msg.sender, address(this).balance, '');
+    events.transaction('CrowdsaleGeneratorERC20 destroyed', address(this), msg.sender, address(this).balance, address(0));
     selfdestruct(msg.sender);
   }
 
@@ -128,10 +128,10 @@ contract CrowdsaleGeneratorERC20 {
         kyber.trade(_paymentTokenAddress, _amount, platformTokenAddress, address(this), 2**255, 0, 0); //Currently no minimum rate is set, so watch out for slippage!
       }
       amount = platformToken.balanceOf(this).sub(balanceBefore);
-      require(platformToken.transfer(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerEscrow"))), amount));
+      require(platformToken.transfer(database.addressStorage(keccak256(abi.encodePacked("contract", "EscrowReserve"))), amount));
     } else {
       amount = _amount;
-      require(CrowdsaleGeneratorERC20_ERC20(platformTokenAddress).transferFrom(_assetManager, database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerEscrow"))), amount));
+      require(CrowdsaleGeneratorERC20_ERC20(platformTokenAddress).transferFrom(_assetManager, database.addressStorage(keccak256(abi.encodePacked("contract", "EscrowReserve"))), amount));
     }
     database.setUint(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID)), amount);
     events.escrow('Escrow locked', _assetAddress, assetManagerEscrowID, _assetManager, amount);

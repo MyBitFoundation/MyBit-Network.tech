@@ -78,7 +78,7 @@ contract GovernanceControls {
   function destroy()
   onlyOwner
   external {
-    events.transaction('Governance levels destroyed', address(this), msg.sender, address(this).balance, '');
+    events.transaction('Governance levels destroyed', address(this), msg.sender, address(this).balance, address(0));
     selfdestruct(msg.sender);
   }
 

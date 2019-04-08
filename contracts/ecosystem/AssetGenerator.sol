@@ -48,7 +48,7 @@ contract AssetGenerator {
   returns (bool) {
     require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
     require (_tokenHolders.length == _amount.length && _tokenHolders.length <= uint8(100));
-    DividendToken assetInstance = new DividendToken(_tokenURI, address(this));   // Gives this contract all new asset tokens
+    DividendToken assetInstance = new DividendToken(_tokenURI, address(this), address(0));   // Gives this contract all new asset tokens
     for (uint8 i = 0; i < _tokenHolders.length; i++) {
       assetInstance.mint(_tokenHolders[i], _amount[i]);
     }
@@ -62,7 +62,7 @@ contract AssetGenerator {
   function destroy()
   onlyOwner
   external {
-    events.transaction('AssetGenerator destroyed', address(this), msg.sender, address(this).balance, '');
+    events.transaction('AssetGenerator destroyed', address(this), msg.sender, address(this).balance, address(0));
     selfdestruct(msg.sender);
   }
 

@@ -15,7 +15,7 @@ contract KYC is AccessHierarchy {
   onlyOwner
   external {
     database.setBool(keccak256(abi.encodePacked("kycApproved", _user)), true);
-    events.transaction('KYC Approved', msg.sender, _user, 0, '');
+    events.transaction('KYC Approved', msg.sender, _user, 0, address(0));
     //emit LogKYCApproved(msg.sender, _user);
   }
 

@@ -10,7 +10,7 @@ interface BurnToken {
   function burn(uint _amount) external returns (bool success);
   function burnFrom(address _from, uint _amount) external returns (bool success);
 }
-interface LogTransaction {  function transaction(string _message, address _from, address _to, uint _amount, bytes32 _id)  external; }
+interface LogTransaction {  function transaction(string _message, address _from, address _to, uint _amount, address _token)  external; }
 interface DB {
   function addressStorage(bytes32 _key) external view returns (address);
   function bytes32Storage(bytes32 _key) external view returns (bytes32);
@@ -57,7 +57,7 @@ contract ERC20Burner {
     require(database.boolStorage(keccak256(abi.encodePacked(database.bytes32Storage(keccak256(abi.encodePacked("currentState"))), _tokenHolder))) || database.boolStorage(keccak256(abi.encodePacked("ignoreStateChanges", _tokenHolder))));
     if(_burnToken == address(token)){
       require(token.burnFrom(_tokenHolder, _amount));
-      events.transaction('Platform Token Burnt', _tokenHolder, msg.sender, _amount, '');
+      events.transaction('Platform Token Burnt', _tokenHolder, msg.sender, _amount, address(token));
     } else {
       //Calculate the estimate cost of given ERC20 to get convert to correct amount of platform token
       (uint expectedRate, uint minRate) = kyber.getExpectedRate(_burnToken, address(token), 0);
@@ -81,7 +81,7 @@ contract ERC20Burner {
       uint amount = token.balanceOf(this);
       //Burn the platform token
       require(token.burn(amount));
-      events.transaction('Platform Token Burnt', _tokenHolder, msg.sender, amount, '');
+      events.transaction('Platform Token Burnt', _tokenHolder, msg.sender, amount, address(token));
 
     }
     return true;
@@ -127,7 +127,7 @@ contract ERC20Burner {
   function destroy()
   onlyOwner
   external {
-    events.transaction('ERC20Burner destroyed', address(this), msg.sender, address(this).balance, '');
+    events.transaction('ERC20Burner destroyed', address(this), msg.sender, address(this).balance, address(0));
     selfdestruct(msg.sender);
   }
 

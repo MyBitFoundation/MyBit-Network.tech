@@ -2,12 +2,11 @@ pragma solidity ^0.4.24;
 
 import './MintableToken.sol';
 import '../../math/SafeMath.sol';
-import '../../interfaces/ERC20.sol';
 import '../../interfaces/ApproveAndCallFallback.sol';
 
 // @title ERC20 token contract with shared revenue distribution functionality.
-// @notice This token contract can receive ERC20 tokens as payments and token owners receive their share when transferring tokens.
-// @author Kyle Dewhurst & Peter Phillips, MyBit Foundation
+// @notice This token contract can receive payments in the fallback function and token owners receive their share when transferring tokens.
+// @author Kyle Dewhurst & Peter Phillips MyBit Foundation
 // Credit goes to Nick Johnson for the dividend token https://medium.com/@weka/dividend-bearing-tokens-on-ethereum-42d01c710657
 contract DividendTokenERC20 is MintableToken {
     using SafeMath for uint;
@@ -16,23 +15,28 @@ contract DividendTokenERC20 is MintableToken {
 
     // @notice Token Income Information
     uint constant scalingFactor = 1e32;
-
+    uint public valuePerToken;
     uint public assetIncome;
     uint public assetIncomeIssued;
-    uint public valuePerToken;
 
 
-    mapping (address => uint) public incomeClaimed;
+    mapping (address => uint) public incomeOwed;
     mapping (address => uint) public previousValuePerToken;
 
 
     // @notice constructor: initialized
     constructor(string _tokenURI, address _owner, address _erc20Address)
-    public  MintableToken(_tokenURI, _tokenURI, uint8(18), _owner){
+    public
+    MintableToken(_tokenURI, _tokenURI, uint8(18), _owner){
+      if(_erc20Address != address(0)){
         erc20 = ERC20(_erc20Address); //Set the address of the ERC20 token that will be issued as dividends
+      }
     }
 
-
+    // @notice Transfer _amount tokens to address _to.
+    // @dev Sender must have enough tokens. Cannot send to 0x0.
+    // @param (address) _to = The address which will receive the tokens
+    // @param (uint) _amount = The amount of tokens to send
     function transfer(address _to, uint _amount)
     public
     updateIncomeClaimed(msg.sender)
@@ -43,7 +47,11 @@ contract DividendTokenERC20 is MintableToken {
         return true;
     }
 
-
+    // @notice A 3rd party can transfer tokens if investor approves them to do so
+    // @dev Transfer _amount of tokens if _from has allowed msg.sender to do so.
+    // @param (address) _from = The address who approved msg.sender to spend tokens
+    // @param (address) _to = The address who will receive the tokens
+    // @param (uint) _amount = The number of tokens to send
     function transferFrom(address _from, address _to, uint _amount)
     public
     updateIncomeClaimed(_from)
@@ -69,27 +77,38 @@ contract DividendTokenERC20 is MintableToken {
         return true;
     }
 
-    function issueDividends(uint _amount)
-    public
-    returns (bool){
-        require(_amount > 0, "Cannot send zero");
-        require(erc20.transferFrom(msg.sender, address(this), _amount), "Transfer failed");
-        valuePerToken = valuePerToken.add(_amount.mul(scalingFactor).div(supply));
-        assetIncome = assetIncome.add(_amount);
-        emit LogIncomeReceived(msg.sender, _amount);
+    // @notice token holders can withdraw income here
+    function withdraw()
+    external
+    updateIncomeClaimed(msg.sender)
+    returns (bool) {
+        uint amount = incomeOwed[msg.sender].div(scalingFactor);
+        delete incomeOwed[msg.sender];
+        assetIncomeIssued = assetIncomeIssued.add(amount);
+        if(address(erc20) == address(0)){
+          msg.sender.transfer(amount);
+        } else {
+          require(erc20.transfer(msg.sender, amount));
+        }
+        emit LogIncomeCollected(msg.sender, amount);
         return true;
     }
 
-    // @notice Updates incomeClaimed, sends all wei to the token holder
-    function withdraw()
-    public
-    updateIncomeClaimed(msg.sender)
+    // @notice assets can send their income here to be collected by investors
+    function issueDividends(uint256 _amount)
+    payable
+    external
     returns (bool) {
-        uint amount = incomeClaimed[msg.sender].div(scalingFactor);
-        delete incomeClaimed[msg.sender];
-        assetIncomeIssued = assetIncomeIssued.add(amount);
-        require(erc20.transfer(msg.sender, amount));
-        emit LogIncomeCollected(msg.sender, amount);
+        require(_amount > 0, "Cannot send zero");
+        if(address(erc20) == address(0)){
+          require(msg.value == _amount);
+        } else {
+          require(msg.value == 0);
+          require(erc20.transferFrom(msg.sender, address(this), _amount), "Transfer failed");
+        }
+        assetIncome = assetIncome.add(_amount);
+        valuePerToken = valuePerToken.add(_amount.mul(scalingFactor).div(supply));
+        emit LogIncomeReceived(msg.sender, _amount);
         return true;
     }
 
@@ -99,7 +118,12 @@ contract DividendTokenERC20 is MintableToken {
     function checkForTransfers()
     external {
       uint bookBalance = assetIncome.sub(assetIncomeIssued);
-      uint actualBalance = erc20.balanceOf(address(this));
+      uint actualBalance;
+      if(address(erc20) == address(0)){
+        actualBalance = address(this).balance;
+      } else {
+        actualBalance = erc20.balanceOf(this);
+      }
       uint diffBalance = actualBalance.sub(bookBalance);
       if(diffBalance > 0){
         //Update value per token
@@ -107,47 +131,6 @@ contract DividendTokenERC20 is MintableToken {
         assetIncome = assetIncome.add(diffBalance);
       }
       emit LogCheckBalance(diffBalance);
-    }
-
-
-    // ------------------------------------------------------------------------
-    //                           View functions
-    // ------------------------------------------------------------------------
-
-    // @notice Calculates how much value _investor holds
-    function collectLatestPayments(address _investor)
-    public
-    view
-    returns (uint) {
-        uint valuePerTokenDifference = valuePerToken.sub(previousValuePerToken[_investor]);
-        return valuePerTokenDifference.mul(balances[_investor]);
-    }
-
-    // @notice Calculates how much wei investor is owed. (points + incomeClaimed) / 10**32
-    function getAmountOwed(address _investor)
-    public
-    view
-    returns (uint) {
-        return (collectLatestPayments(_investor).add(incomeClaimed[_investor]).div(scalingFactor));
-    }
-
-    function getERC20()
-    external
-    view
-    returns(address){
-      return address(erc20);
-    }
-
-    // ------------------------------------------------------------------------
-    //                            Modifiers
-    // ------------------------------------------------------------------------
-
-    // Updates the amount owed to investor while holding tokenSupply
-    // @dev must be called before transfering tokens
-    modifier updateIncomeClaimed(address _investor) {
-        incomeClaimed[_investor] = incomeClaimed[_investor].add(collectLatestPayments(_investor));
-        previousValuePerToken[_investor] = valuePerToken;
-        _;
     }
 
     // Fallback function:
@@ -162,8 +145,60 @@ contract DividendTokenERC20 is MintableToken {
     }
     */
 
+    // Fallback function: receives Ether and updates income ledger
+    function ()
+    payable
+    external {
+      require(address(erc20) == address(0));
+      assetIncome = assetIncome.add(msg.value);
+      valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
+      emit LogIncomeReceived(msg.sender, msg.value);
+    }
+
+
+    // ------------------------------------------------------------------------
+    //                           View functions
+    // ------------------------------------------------------------------------
+
+    // @notice Calculates how much more income is owed to investor since last calculation
+    function collectLatestPayments(address _investor)
+    private
+    view
+    returns (uint) {
+        uint valuePerTokenDifference = valuePerToken.sub(previousValuePerToken[_investor]);
+        return valuePerTokenDifference.mul(balances[_investor]);
+    }
+
+    // @notice Calculates how much wei investor is owed. (points + incomeOwed) / 10**32
+    function getAmountOwed(address _investor)
+    public
+    view
+    returns (uint) {
+        return (collectLatestPayments(_investor).add(incomeOwed[_investor]).div(scalingFactor));
+    }
+
+    // @notice returns ERC20 token. Returns null if the token uses Ether.
+    function getERC20()
+    external
+    view
+    returns(address){
+      return address(erc20);
+    }
+
+    // ------------------------------------------------------------------------
+    //                            Modifiers
+    // ------------------------------------------------------------------------
+
+    // Updates the amount owed to investor while holding tokenSupply
+    // @dev must be called before transfering tokens
+    modifier updateIncomeClaimed(address _investor) {
+        incomeOwed[_investor] = incomeOwed[_investor].add(collectLatestPayments(_investor));
+        previousValuePerToken[_investor] = valuePerToken;
+        _;
+    }
+
     event LogIncomeReceived(address indexed _sender, uint _paymentAmount);
-    event LogCheckBalance(uint _difference);
     event LogIncomeCollected(address _address, uint _amount);
+    event LogCheckBalance(uint _difference);
 
 }

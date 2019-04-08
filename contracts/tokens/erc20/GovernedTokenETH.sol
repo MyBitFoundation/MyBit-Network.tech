@@ -14,7 +14,7 @@ contract GovernedTokenETH is GovernedToken, DividendToken, BurnableToken {
   constructor(address _database, string _tokenURI, address _owner)
   public
   GovernedToken(_database)
-  DividendToken(_tokenURI, _owner){}
+  DividendToken(_tokenURI, _owner, address(0)){}
 
   // @notice Standard DividendToke transfer function, which checks for locked tokens before sending
   function transfer(address _to, uint _amount)

@@ -2,6 +2,7 @@ var bn = require('bignumber.js');
 bn.config({ EXPONENTIAL_AT: 80 });
 
 const AssetManagerEscrow = artifacts.require("./roles/AssetManagerEscrow.sol");
+const EscrowReserve = artifacts.require("./database/EscrowReserve.sol");
 const Database = artifacts.require("./database/Database.sol");
 const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
@@ -32,6 +33,7 @@ contract('AssetManager Escrow', async(accounts) => {
   let api;
   let hash;
   let escrow;
+  let reserve;
   let platform;
   let operators;
 
@@ -80,6 +82,11 @@ contract('AssetManager Escrow', async(accounts) => {
     await platform.setPlatformToken(burnToken.address);
   });
 
+  it('Deploy escrow reserve', async() => {
+    reserve = await EscrowReserve.new(db.address, events.address);
+    await cm.addContract('EscrowReserve', reserve.address);
+  });
+
   it('Deploy assetManager escrow', async() => {
     escrow = await AssetManagerEscrow.new(db.address, events.address);
     await cm.addContract('AssetManagerEscrow', escrow.address);
@@ -95,7 +102,7 @@ contract('AssetManager Escrow', async(accounts) => {
   });
 
   it("Deploy asset token", async() => {
-    divToken = await DivToken.new(assetURI, owner);
+    divToken = await DivToken.new(assetURI, owner, '0x0000000000000000000000000000000000000000');
     assetAddress = divToken.address;
   });
 
@@ -178,7 +185,7 @@ contract('AssetManager Escrow', async(accounts) => {
   });
 
   it("Pay half ROI", async() => {
-    await divToken.issueDividends({from:operator, value:bn(6).times(ETH).toString()});
+    await divToken.issueDividends(bn(6).times(ETH).toString(), {from:operator, value:bn(6).times(ETH).toString()});
   });
 
   it("Fail to unlock escrow", async() => {
@@ -195,10 +202,11 @@ contract('AssetManager Escrow', async(accounts) => {
   it("Fail to unlock escrow", async() => {
     let err;
     //Fail because funding not complete
+    let finalizedHash = await hash.stringAddress('crowdsale.finalized', assetAddress);
     let fundingHash = await hash.stringAddress('crowdsale.deadline', assetAddress);
     let block = await web3.eth.getBlock('latest');
     let currentTime = bn(block.timestamp);
-    console.log(currentTime);
+    await db.setBool(finalizedHash, false);
     await db.setUint(fundingHash, currentTime.plus(10));
     try{
       await escrow.unlockEscrow(assetAddress, assetManager, {from:assetManager});
@@ -206,9 +214,9 @@ contract('AssetManager Escrow', async(accounts) => {
       err = e;
     }
     assert.notEqual(err, undefined);
+    await db.setBool(finalizedHash, true);
     await db.setUint(fundingHash, currentTime.minus(10));
   });
-
 
   it("Unlock half escrow", async() => {
     let assetManagerID = await api.getAssetManagerEscrowID(assetAddress, assetManager);
@@ -233,7 +241,7 @@ contract('AssetManager Escrow', async(accounts) => {
   });
 
   it("Pay under a quarter of ROI", async() => {
-    await divToken.issueDividends({from:operator, value: 1*ETH});
+    await divToken.issueDividends(bn(ETH).toString(), {from:operator, value: 1*ETH});
     let roi = await api.getAssetROI(assetAddress);
     assert.equal(bn(roi).lt(75), true);
   });
@@ -250,9 +258,9 @@ contract('AssetManager Escrow', async(accounts) => {
   });
 
 
-  it("Pay rest of ROI", async() => {
-    await divToken.issueDividends({from:operator, value:bn(5).times(ETH)});
-    assert.equal(bn(await divToken.assetIncome()).eq(12*ETH), true);
+  it("Overpay rest of ROI", async() => {
+    await divToken.issueDividends(bn(17).times(ETH), {from:operator, value:bn(17).times(ETH)});
+    assert.equal(bn(await divToken.assetIncome()).eq(24*ETH), true);
   });
 
   it("Unlock rest of escrow", async() => {
@@ -263,22 +271,7 @@ contract('AssetManager Escrow', async(accounts) => {
     assert.equal(diff.isEqualTo(bn(ETH).multipliedBy(2).dividedBy(2)), true);
   });
 
-  it("Fail to unlock escrow after 100% ROI", async() => {
-    let err;
-    try{
-      await escrow.unlockEscrow(assetAddress, assetManager, {from:assetManager});
-    } catch(e){
-      err = e;
-    }
-    assert.notEqual(err, undefined);
-  });
-
-  it("More ROI !! ", async() => {
-    await divToken.issueDividends({from:operator, value:bn(4).times(ETH).toString()});
-    assert.equal(bn(await divToken.assetIncome()).eq(16*ETH), true);
-  });
-
-  it("Fail to unlock escrow after 150% ROI", async() => {
+  it("Fail to unlock escrow after 200% ROI", async() => {
     let err;
     try{
       await escrow.unlockEscrow(assetAddress, assetManager, {from:assetManager});
