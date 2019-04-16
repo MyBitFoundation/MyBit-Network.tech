@@ -86,18 +86,20 @@ contract CrowdsaleETH {
       database.setBool(keccak256(abi.encodePacked("crowdsale.paid", _assetAddress)), true);
       //Setup token
       //Mint tokens for the asset manager and platform + finish minting
+      address platformAssetsWallet = database.addressStorage(keccak256(abi.encodePacked("platform.wallet.assets")));
+      require(platformAssetsWallet != address(0), "Platform assets wallet not set");
       require(minter.mintAssetTokens(_assetAddress, database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerTokens", _assetAddress)))), "Manager minting failed");
-      require(minter.mintAssetTokens(_assetAddress, database.addressStorage(keccak256(abi.encodePacked("platform.wallet"))), database.uintStorage(keccak256(abi.encodePacked("asset.platformTokens", _assetAddress)))), "Platform minting failed");
+      require(minter.mintAssetTokens(_assetAddress, platformAssetsWallet, database.uintStorage(keccak256(abi.encodePacked("asset.platformTokens", _assetAddress)))), "Platform minting failed");
       require(minter.stopMint(_assetAddress), "Stop minting failed");
       //Get the addresses for the operator and platform
       address operator = database.addressStorage(keccak256(abi.encodePacked("asset.operator", _assetAddress)));
-      address platformWallet = database.addressStorage(keccak256(abi.encodePacked("platform.wallet")));
-      require(operator != address(0) && platformWallet != address(0), "Operator or platform wallet not set");
+      address platformFundsWallet = database.addressStorage(keccak256(abi.encodePacked("platform.wallet.funds")));
+      require(operator != address(0) && platformFundsWallet != address(0), "Operator or platform wallet not set");
       //Calculate amounts for platform and operator
       uint amount = database.uintStorage(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));
       uint platformFee = amount.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("platform.fee"))));
       //Transfer funds to operator and platform
-      require(reserve.issueETH(platformWallet, platformFee), 'Platform funds not paid');
+      require(reserve.issueETH(platformFundsWallet, platformFee), 'Platform funds not paid');
       require(reserve.issueETH(operator, amount), 'Operator funds not paid');
       //Delete crowdsale start time
       database.deleteUint(keccak256(abi.encodePacked("crowdsale.start", _assetAddress)));

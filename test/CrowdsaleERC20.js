@@ -253,13 +253,14 @@ contract('ERC20 Crowdsale', async(accounts) => {
   });
 
   it('Set platform', async() => {
-    await platform.setPlatformWallet(owner);
+    await platform.setPlatformFundsWallet(owner);
+    await platform.setPlatformAssetsWallet(owner);
   });
 
   it('Fail to set platform wallet', async() => {
     let err;
     try{
-      await platform.setPlatformWallet(assetManager, {from:assetManager});
+      await platform.setPlatformFundsWallet(assetManager, {from:assetManager});
     } catch(e){
       err = e;
     }

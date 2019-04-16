@@ -17,12 +17,22 @@ contract Platform {
 
   // @notice owners must set the wallet to receive payments here before initiating crowdsale
   // @dev will overwrite old wallet address
-  function setPlatformWallet(address _walletAddress)
+  function setPlatformFundsWallet(address _walletAddress)
   external
   onlyOwner {
-    database.setAddress(keccak256(abi.encodePacked("platform.wallet")), _walletAddress);
+    database.setAddress(keccak256(abi.encodePacked("platform.wallet.funds")), _walletAddress);
     //emit LogPlatformWallet(_walletAddress);
-    events.registration('Platform wallet', _walletAddress);
+    events.registration('Platform funds wallet', _walletAddress);
+  }
+
+  // @notice owners must set the wallet to receive asset tokens here before initiating crowdsale
+  // @dev will overwrite old wallet address
+  function setPlatformAssetsWallet(address _walletAddress)
+  external
+  onlyOwner {
+    database.setAddress(keccak256(abi.encodePacked("platform.wallet.assets")), _walletAddress);
+    //emit LogPlatformWallet(_walletAddress);
+    events.registration('Platform assets wallet', _walletAddress);
   }
 
   // @notice

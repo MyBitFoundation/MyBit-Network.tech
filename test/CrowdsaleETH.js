@@ -133,7 +133,7 @@ contract('Ether Crowdsale', async(accounts) => {
     reserve = await CrowdsaleReserve.new(db.address, events.address);
     await cm.addContract("CrowdsaleReserve", reserve.address);
   });
-  
+
   it('Deploy EscrowReserve', async() => {
     escrowReserve = await EscrowReserve.new(db.address, events.address);
     await cm.addContract("EscrowReserve", escrowReserve.address);
@@ -243,13 +243,14 @@ contract('Ether Crowdsale', async(accounts) => {
   });
 
   it('Set platform', async() => {
-    await platform.setPlatformWallet(owner);
+    await platform.setPlatformFundsWallet(owner);
+    await platform.setPlatformAssetsWallet(owner);
   });
 
   it('Fail to set platform wallet', async() => {
     let err;
     try{
-      await platform.setPlatformWallet(assetManager, {from:assetManager});
+      await platform.setPlatformFundsWallet(assetManager, {from:assetManager});
     } catch(e){
       err = e;
     }

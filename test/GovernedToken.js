@@ -98,7 +98,8 @@ contract('Governed Token', async (accounts) => {
   it('Deploy platform', async() => {
     platform = await Platform.new(db.address, events.address);
     await cm.addContract('Platform', platform.address);
-    await platform.setPlatformWallet(owner);
+    await platform.setPlatformFundsWallet(owner);
+    await platform.setPlatformAssetsWallet(owner);
     await platform.setPlatformToken(token.address);
   });
 
