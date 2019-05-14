@@ -20,6 +20,11 @@
         "signature": "constructor"
     },
     {
+        "payable": true,
+        "stateMutability": "payable",
+        "type": "fallback"
+    },
+    {
         "anonymous": false,
         "inputs": [
             {
@@ -41,6 +46,24 @@
         "name": "Convert",
         "type": "event",
         "signature": "0x9018eade4aec2a696b34b0f5459a1a7dc058389bab8e2380d880817a9e22b213"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "sender",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "EtherReceived",
+        "type": "event",
+        "signature": "0x1e57e3bb474320be3d2c77138f75b7c3941292d647f5f9634e33a8e94e0e069b"
     },
     {
         "constant": false,

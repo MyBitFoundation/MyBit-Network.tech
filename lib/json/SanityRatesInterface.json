@@ -35,14 +35,14 @@
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/kyber/SanityRatesInterface.sol",
     "exportedSymbols": {
       "SanityRatesInterface": [
-        21013
+        22292
       ]
     },
-    "id": 21014,
+    "id": 22293,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 21002,
+        "id": 22281,
         "literals": [
           "solidity",
           "^",
@@ -50,16 +50,16 @@
           ".24"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:24:64"
+        "src": "0:24:71"
       },
       {
         "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/interfaces/ERC20.sol",
         "file": "../interfaces/ERC20.sol",
-        "id": 21003,
+        "id": 22282,
         "nodeType": "ImportDirective",
-        "scope": 21014,
-        "sourceUnit": 10247,
-        "src": "26:33:64",
+        "scope": 22293,
+        "sourceUnit": 11482,
+        "src": "26:33:71",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -69,9 +69,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 21013,
+        "id": 22292,
         "linearizedBaseContracts": [
-          21013
+          22292
         ],
         "name": "SanityRatesInterface",
         "nodeType": "ContractDefinition",
@@ -79,7 +79,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 21012,
+            "id": 22291,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -87,31 +87,31 @@
             "name": "getSanityRate",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 21008,
+              "id": 22287,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 21005,
+                  "id": 22284,
                   "name": "src",
                   "nodeType": "VariableDeclaration",
-                  "scope": 21012,
-                  "src": "121:9:64",
+                  "scope": 22291,
+                  "src": "121:9:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_ERC20_$10246",
+                    "typeIdentifier": "t_contract$_ERC20_$11481",
                     "typeString": "contract ERC20"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 21004,
+                    "id": 22283,
                     "name": "ERC20",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 10246,
-                    "src": "121:5:64",
+                    "referencedDeclaration": 11481,
+                    "src": "121:5:71",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ERC20_$10246",
+                      "typeIdentifier": "t_contract$_ERC20_$11481",
                       "typeString": "contract ERC20"
                     }
                   },
@@ -120,26 +120,26 @@
                 },
                 {
                   "constant": false,
-                  "id": 21007,
+                  "id": 22286,
                   "name": "dest",
                   "nodeType": "VariableDeclaration",
-                  "scope": 21012,
-                  "src": "132:10:64",
+                  "scope": 22291,
+                  "src": "132:10:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_ERC20_$10246",
+                    "typeIdentifier": "t_contract$_ERC20_$11481",
                     "typeString": "contract ERC20"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 21006,
+                    "id": 22285,
                     "name": "ERC20",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 10246,
-                    "src": "132:5:64",
+                    "referencedDeclaration": 11481,
+                    "src": "132:5:71",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ERC20_$10246",
+                      "typeIdentifier": "t_contract$_ERC20_$11481",
                       "typeString": "contract ERC20"
                     }
                   },
@@ -147,20 +147,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "120:23:64"
+              "src": "120:23:71"
             },
             "payable": false,
             "returnParameters": {
-              "id": 21011,
+              "id": 22290,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 21010,
+                  "id": 22289,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 21012,
-                  "src": "166:4:64",
+                  "scope": 22291,
+                  "src": "166:4:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -168,10 +168,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 21009,
+                    "id": 22288,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "166:4:64",
+                    "src": "166:4:71",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -181,33 +181,33 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "165:6:64"
+              "src": "165:6:71"
             },
-            "scope": 21013,
-            "src": "98:74:64",
+            "scope": 22292,
+            "src": "98:74:71",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 21014,
-        "src": "61:113:64"
+        "scope": 22293,
+        "src": "61:113:71"
       }
     ],
-    "src": "0:175:64"
+    "src": "0:175:71"
   },
   "legacyAST": {
     "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/kyber/SanityRatesInterface.sol",
     "exportedSymbols": {
       "SanityRatesInterface": [
-        21013
+        22292
       ]
     },
-    "id": 21014,
+    "id": 22293,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 21002,
+        "id": 22281,
         "literals": [
           "solidity",
           "^",
@@ -215,16 +215,16 @@
           ".24"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:24:64"
+        "src": "0:24:71"
       },
       {
         "absolutePath": "/home/peter/Documents/Work/MyBit/MyBit-Network.tech/contracts/interfaces/ERC20.sol",
         "file": "../interfaces/ERC20.sol",
-        "id": 21003,
+        "id": 22282,
         "nodeType": "ImportDirective",
-        "scope": 21014,
-        "sourceUnit": 10247,
-        "src": "26:33:64",
+        "scope": 22293,
+        "sourceUnit": 11482,
+        "src": "26:33:71",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -234,9 +234,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 21013,
+        "id": 22292,
         "linearizedBaseContracts": [
-          21013
+          22292
         ],
         "name": "SanityRatesInterface",
         "nodeType": "ContractDefinition",
@@ -244,7 +244,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 21012,
+            "id": 22291,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -252,31 +252,31 @@
             "name": "getSanityRate",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 21008,
+              "id": 22287,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 21005,
+                  "id": 22284,
                   "name": "src",
                   "nodeType": "VariableDeclaration",
-                  "scope": 21012,
-                  "src": "121:9:64",
+                  "scope": 22291,
+                  "src": "121:9:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_ERC20_$10246",
+                    "typeIdentifier": "t_contract$_ERC20_$11481",
                     "typeString": "contract ERC20"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 21004,
+                    "id": 22283,
                     "name": "ERC20",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 10246,
-                    "src": "121:5:64",
+                    "referencedDeclaration": 11481,
+                    "src": "121:5:71",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ERC20_$10246",
+                      "typeIdentifier": "t_contract$_ERC20_$11481",
                       "typeString": "contract ERC20"
                     }
                   },
@@ -285,26 +285,26 @@
                 },
                 {
                   "constant": false,
-                  "id": 21007,
+                  "id": 22286,
                   "name": "dest",
                   "nodeType": "VariableDeclaration",
-                  "scope": 21012,
-                  "src": "132:10:64",
+                  "scope": 22291,
+                  "src": "132:10:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_ERC20_$10246",
+                    "typeIdentifier": "t_contract$_ERC20_$11481",
                     "typeString": "contract ERC20"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 21006,
+                    "id": 22285,
                     "name": "ERC20",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 10246,
-                    "src": "132:5:64",
+                    "referencedDeclaration": 11481,
+                    "src": "132:5:71",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ERC20_$10246",
+                      "typeIdentifier": "t_contract$_ERC20_$11481",
                       "typeString": "contract ERC20"
                     }
                   },
@@ -312,20 +312,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "120:23:64"
+              "src": "120:23:71"
             },
             "payable": false,
             "returnParameters": {
-              "id": 21011,
+              "id": 22290,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 21010,
+                  "id": 22289,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 21012,
-                  "src": "166:4:64",
+                  "scope": 22291,
+                  "src": "166:4:71",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -333,10 +333,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 21009,
+                    "id": 22288,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "166:4:64",
+                    "src": "166:4:71",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -346,20 +346,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "165:6:64"
+              "src": "165:6:71"
             },
-            "scope": 21013,
-            "src": "98:74:64",
+            "scope": 22292,
+            "src": "98:74:71",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 21014,
-        "src": "61:113:64"
+        "scope": 22293,
+        "src": "61:113:71"
       }
     ],
-    "src": "0:175:64"
+    "src": "0:175:71"
   },
   "compiler": {
     "name": "solc",
@@ -367,7 +367,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.2",
-  "updatedAt": "2019-03-21T21:34:45.175Z",
+  "updatedAt": "2019-04-08T20:56:10.650Z",
   "devdoc": {
     "methods": {}
   },

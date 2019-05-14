@@ -1,0 +1,126 @@
+[
+    {
+        "inputs": [
+            {
+                "name": "_database",
+                "type": "address"
+            },
+            {
+                "name": "_events",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "constructor",
+        "signature": "constructor"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_receiver",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_tokenAddress",
+                "type": "address"
+            }
+        ],
+        "name": "issueERC20",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x080a771c"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_payer",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_tokenAddress",
+                "type": "address"
+            }
+        ],
+        "name": "requestERC20",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x0b83af38"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_receiver",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_tokenAddress",
+                "type": "address"
+            }
+        ],
+        "name": "approveERC20",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xc4e0d200"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_tokenAddress",
+                "type": "address"
+            }
+        ],
+        "name": "burnERC20",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xbd4de9cd"
+    }
+]

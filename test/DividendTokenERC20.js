@@ -1,7 +1,7 @@
 var bn = require('bignumber.js');
 bn.config({ EXPONENTIAL_AT: 80 });
 
-const Token = artifacts.require("./tokens/ERC20/DividendTokenERC20.sol");
+const Token = artifacts.require("./tokens/ERC20/DividendToken.sol");
 const MyBitToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const ApproveAndCall = artifacts.require("./test/ApproveAndCallTest.sol");
 

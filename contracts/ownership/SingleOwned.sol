@@ -23,7 +23,7 @@ contract SingleOwned {
   onlyOwner {
     database.setBool(keccak256(abi.encodePacked("owner", _newOwner)), true);
     database.setBool(keccak256(abi.encodePacked("owner", msg.sender)), false);
-    events.transaction('Ownership transferred', msg.sender, _newOwner, 0, '');
+    events.transaction('Ownership transferred', msg.sender, _newOwner, 0, address(0));
     //emit OwnershipTransferred(msg.sender, _newOwner);
   }
 
@@ -31,7 +31,7 @@ contract SingleOwned {
   function destroy()
   onlyOwner
   external {
-    events.transaction('SingleOwned destroyed', address(this), msg.sender, address(this).balance, '');
+    events.transaction('SingleOwned destroyed', address(this), msg.sender, address(this).balance, address(0));
     selfdestruct(msg.sender);
   }
 

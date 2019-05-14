@@ -42,18 +42,24 @@ module.exports = function(deployer, network, accounts) {
     //Instantiate new contract
     upgradedContract = instance;
     //Update contract manager
-    cm.updateContract(contractName, upgradedContract.address);
+    cm.updateContract(contractName, upgradedContract.address, {from: accounts[0], gas:190000});
     //Update contracts object
     contracts[contractName] = upgradedContract.address;
 
     //Rewrite json files
-    var contracts_json = JSON.stringify(contracts, null, 4);
+    let contracts_json = JSON.stringify(contracts, null, 4);
     fs.writeFile('networks/' + network + '/contracts.json', contracts_json, (err) => {
       if (err) throw err;
       console.log('Contracts Saved');
     });
 
-    var instance_json = JSON.stringify(upgradedContract.abi, null, 4);
+    let contracts_js = 'module.exports = ' + contracts_json;
+    fs.writeFile('networks/' + network + '/Contracts.js', contracts_js, (err) => {
+      if (err) throw err;
+      console.log('Contracts Script Saved');
+    });
+
+    let instance_json = JSON.stringify(upgradedContract.abi, null, 4);
     fs.writeFile('networks/' + network + '/' + contractName + '.json', instance_json, (err) => {
       if (err) throw err;
     });

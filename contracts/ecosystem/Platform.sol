@@ -17,12 +17,22 @@ contract Platform {
 
   // @notice owners must set the wallet to receive payments here before initiating crowdsale
   // @dev will overwrite old wallet address
-  function setPlatformWallet(address _walletAddress)
+  function setPlatformFundsWallet(address _walletAddress)
   external
   onlyOwner {
-    database.setAddress(keccak256(abi.encodePacked("platform.wallet")), _walletAddress);
+    database.setAddress(keccak256(abi.encodePacked("platform.wallet.funds")), _walletAddress);
     //emit LogPlatformWallet(_walletAddress);
-    events.registration('Platform wallet', _walletAddress);
+    events.registration('Platform funds wallet', _walletAddress);
+  }
+
+  // @notice owners must set the wallet to receive asset tokens here before initiating crowdsale
+  // @dev will overwrite old wallet address
+  function setPlatformAssetsWallet(address _walletAddress)
+  external
+  onlyOwner {
+    database.setAddress(keccak256(abi.encodePacked("platform.wallet.assets")), _walletAddress);
+    //emit LogPlatformWallet(_walletAddress);
+    events.registration('Platform assets wallet', _walletAddress);
   }
 
   // @notice
@@ -46,18 +56,20 @@ contract Platform {
     database.setUint(keccak256(abi.encodePacked("platform.percentage")), _percent);
   }
 
+  /*
   function setBurnrate(uint _percent)
   external
   onlyOwner {
     require(_percent < 100 && _percent >= 0);
     database.setUint(keccak256(abi.encodePacked("platform.burnRate")), _percent);
   }
+  */
 
   // @notice platform owners can destroy contract here
   function destroy()
   onlyOwner
   external {
-    events.transaction('PlatformFunds destroyed', address(this), msg.sender, address(this).balance, '');
+    events.transaction('PlatformFunds destroyed', address(this), msg.sender, address(this).balance, address(0));
     selfdestruct(msg.sender);
   }
 
