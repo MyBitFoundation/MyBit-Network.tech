@@ -69,6 +69,16 @@ contract('Dividend Token Ether', async(accounts) => {
     assert.notEqual(err, undefined);
   });
 
+  it('Fail to burn from', async() => {
+    let err;
+    try{
+      await token.burnFrom(user1, token.address, 1000);
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
   it('Fail to transfer from', async() => {
     let err;
     try{
@@ -135,5 +145,18 @@ contract('Dividend Token Ether', async(accounts) => {
     let ownerBalanceAfter = bn(await token.balanceOf(owner));
     let diff = ownerBalanceBefore.minus(ownerBalanceAfter);
     assert.equal(diff.eq(ETH), true);
+  });
+
+  it('Approve user', async() => {
+    await token.approve(user1, 5000, {from: user2});
+    assert.equal(await token.allowance(user2, user1), 5000);
+  });
+
+  it('Burn From', async() => {
+    let user2BalanceBefore = bn(await token.balanceOf(user2));
+    await token.burnFrom(user2, 5000, {from: user1});
+    let user2BalanceAfter = bn(await token.balanceOf(user2));
+    assert.equal(bn(await token.allowance(user2, user1)).eq(0), true);
+    assert.equal(user2BalanceBefore.minus(user2BalanceAfter).eq(5000), true);
   });
 });

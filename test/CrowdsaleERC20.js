@@ -1,7 +1,7 @@
 var bn = require('bignumber.js');
 bn.config({ EXPONENTIAL_AT: 80 });
 
-const AssetToken = artifacts.require("./tokens/erc20/DividendTokenERC20.sol");
+const AssetToken = artifacts.require("./tokens/erc20/DividendToken.sol");
 const MyBitToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
 const Minter = artifacts.require("./database/Minter.sol");
 const Crowdsale = artifacts.require("./crowdsale/CrowdsaleERC20.sol");
@@ -23,6 +23,7 @@ const ETH = bn(10**18);
 const scaling = bn(10**36);
 const tokenSupply = bn(180000000).times(ETH);
 const tokenPerAccount = bn(1000).times(ETH);
+const platformPercentage = bn(0.01);
 
 //Just passing an empty address for kyber, since no converting is being done
 const kyber = {
@@ -106,6 +107,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     await cm.addContract('Platform', platform.address);
     await platform.setPlatformToken(platformToken.address);
     await platform.setPlatformFee('3');
+    await platform.setPlatformPercentage(platformPercentage.times(100));
   });
 
   it('Deploy assetManager escrow', async() => {
@@ -199,7 +201,9 @@ contract('ERC20 Crowdsale', async(accounts) => {
   it('User1 funding', async() => {
     await erc20.approve(crowdsale.address, bn(5).times(ETH).times(1.03).toString(), {from:user1});
     await crowdsale.buyAssetOrderERC20(assetAddress, user1, bn(5).times(ETH).times(1.03).toString(), erc20.address, {from:user1});
-    let user1AssetTokens = bn(await assetToken.balanceOf(user1));
+    let user1Balance = await assetToken.balanceOf(user1);
+    console.log('User 1 Balance: ', user1Balance);
+    let user1AssetTokens = bn(user1Balance);
     console.log('Asset Address: ' + assetToken.address);
     console.log('User: ' + user1);
     console.log('User asset tokens: ' + user1AssetTokens.toNumber());
@@ -436,7 +440,8 @@ contract('ERC20 Crowdsale', async(accounts) => {
     await crowdsale.payoutERC20(assetAddress);
     let user1AssetTokens = bn(await assetToken.balanceOf(user1));
     let assetTokenSupply = bn(await assetToken.totalSupply());
-    assert.equal(assetTokenSupply.eq(user1AssetTokens), true);
+    let fee = bn(await api.getAssetPlatformFee(assetAddress));
+    assert.equal(assetTokenSupply.eq(user1AssetTokens.div(bn(1).minus(platformPercentage)).integerValue()), true);
     assert.equal(user1AssetTokens.eq(bn(2).times(ETH)), true);
     //assert.equal(await assetToken.mintingFinished(), true);
     assert.equal(bn(await assetToken.balanceOf(assetManager)).eq(0), true);
@@ -459,8 +464,17 @@ contract('ERC20 Crowdsale', async(accounts) => {
     assert.notEqual(err, undefined);
   });
 
-  /*
-  it('Fail to destroy', async() => {
+  it('Fail to destroy generator', async() => {
+    let err;
+    try{
+      await crowdsaleGen.destroy({from:user3});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it('Fail to destroy crowdsale', async() => {
     let err;
     try{
       await crowdsale.destroy({from:user3});
@@ -470,9 +484,40 @@ contract('ERC20 Crowdsale', async(accounts) => {
     assert.notEqual(err, undefined);
   });
 
-  it('Destroy', async() => {
+  it('Fail to destroy pausible', async() => {
+    let err;
+    try{
+      await pausible.destroy({from:user3});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it('Fail to destroy platform', async() => {
+    let err;
+    try{
+      await platform.destroy({from:user3});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it('Destroy generator', async() => {
+    await crowdsaleGen.destroy();
+  });
+
+  it('Destroy crowdsale', async() => {
     await crowdsale.destroy();
   });
-  */
+
+  it('Destroy pausible', async() => {
+    await pausible.destroy();
+  });
+
+  it('Destroy platform', async() => {
+    await platform.destroy();
+  });
 
 });

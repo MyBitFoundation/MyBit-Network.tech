@@ -6,7 +6,7 @@ const Database = artifacts.require("./database/Database.sol");
 const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
 const DivToken = artifacts.require("./tokens/ERC20/DividendToken.sol");
-const DivTokenERC20 = artifacts.require("./tokens/ERC20/DividendTokenERC20.sol");
+//const DivTokenERC20 = artifacts.require("./tokens/ERC20/DividendTokenERC20.sol");
 const MyBitToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
@@ -26,7 +26,6 @@ contract('AssetManagerFunds', async(accounts) => {
   const tokenHolders = [user1, user2, user3];
 
   let divToken;
-  let divTokenERC20;
   let burnToken
   let db;
   let events;
@@ -183,43 +182,45 @@ contract('AssetManagerFunds', async(accounts) => {
 
   it('Deploy dividendERC20 Token', async() => {
     assetURI = 'https://someurl.ch';
-    divTokenERC20 = await DivTokenERC20.new(assetURI, owner, burnToken.address);
+    divToken = await DivToken.new(assetURI, owner, burnToken.address);
   });
 
   it("Spread tokens to users", async() => {
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
-      await divTokenERC20.mint(tokenHolders[i], tokenPerAccount);
-      userBalance = bn(await divTokenERC20.balanceOf(tokenHolders[i]));
+      await divToken.mint(tokenHolders[i], tokenPerAccount.toString());
+      userBalance = bn(await divToken.balanceOf(tokenHolders[i]));
       assert.equal(userBalance.eq(tokenPerAccount), true);
     }
     // Check token ledger is correct
-    assert.equal(bn(await divTokenERC20.balanceOf(owner)).eq(0), true);
+    assert.equal(bn(await divToken.balanceOf(owner)).eq(0), true);
   });
 
   it("Transfer token to assetManager assets", async() => {
-    await divTokenERC20.mint(assetManagerFunds.address, tokenPerAccount);
-    assetManagerBalance = bn(await divTokenERC20.balanceOf(assetManagerFunds.address));
+    await divToken.mint(assetManagerFunds.address, tokenPerAccount);
+    assetManagerBalance = bn(await divToken.balanceOf(assetManagerFunds.address));
     assert.equal(assetManagerBalance.eq(tokenPerAccount), true);
   });
 
   it("Setup asset array", async() => {
-    assetsERC = [divTokenERC20.address];
+    assetsERC = [divToken.address];
   });
 
   it("Set asset variables", async() => {
-    let assetManagerHash = await hash.stringAddress("asset.manager", divTokenERC20.address);
-    let operatorHash = await hash.stringAddress("operator", divTokenERC20.address);
+    let assetManagerHash = await hash.stringAddress("asset.manager", divToken.address);
+    let operatorHash = await hash.stringAddress("operator", divToken.address);
     await db.setAddress(assetManagerHash, assetManager);
     await db.setAddress(operatorHash, operator);
   });
 
   it('Send payment tokens to asset-token contract', async() => {
-    assert.equal(await divTokenERC20.getERC20(), burnToken.address);
-    await burnToken.approve(divTokenERC20.address, bn(5).times(ETH).toString(), {from: operator});
-    await divTokenERC20.issueDividends(bn(5).times(ETH).toString(), {from: operator});
-    assert.equal(bn(await divTokenERC20.assetIncome()).eq(5*ETH), true);
-    assert.equal(bn(await burnToken.balanceOf(divTokenERC20.address)).eq(5*ETH), true);
+    let divERC20 = await divToken.getERC20();
+    console.log('ERC20: ', divERC20);
+    assert.equal(await divToken.getERC20(), burnToken.address);
+    await burnToken.approve(divToken.address, bn(5).times(ETH).toString(), {from: operator});
+    await divToken.issueDividends(bn(5).times(ETH).toString(), {from: operator});
+    assert.equal(bn(await divToken.assetIncome()).eq(5*ETH), true);
+    assert.equal(bn(await burnToken.balanceOf(divToken.address)).eq(5*ETH), true);
   });
 /*
   it("Add multiple assets", async() => {
@@ -228,7 +229,7 @@ contract('AssetManagerFunds', async(accounts) => {
       let uri = ''+i;
       //Add token
       let erc20Token = await MyBitToken.new(uri, 10000*ETH, {from: operator});
-      let testToken = await DivTokenERC20.new(uri, owner, erc20Token.address);
+      let testToken = await DivToken.new(uri, owner, erc20Token.address);
       //Mint
       await testToken.mint(assetManagerFunds.address, tokenPerAccount);
 
@@ -253,10 +254,10 @@ contract('AssetManagerFunds', async(accounts) => {
 */
   it("Withdraw dividends ERC20", async() => {
     let balanceBefore = bn(await burnToken.balanceOf(user1));
-    let amountOwed = await divTokenERC20.getAmountOwed(user1);
+    let amountOwed = await divToken.getAmountOwed(user1);
     assert.notEqual(amountOwed, 0);
     console.log(amountOwed);
-    let tx = await divTokenERC20.withdraw({from:user1});
+    let tx = await divToken.withdraw({from:user1});
     let balanceAfter = bn(await burnToken.balanceOf(user1));
     //console.log(tx);
     assert.equal(balanceBefore.plus(amountOwed).eq(balanceAfter), true);
@@ -264,9 +265,9 @@ contract('AssetManagerFunds', async(accounts) => {
 
   it('Withdraw from assetManager assets ERC20', async() => {
     let balanceBefore = bn(await burnToken.balanceOf(assetManager));
-    let amountOwed = await divTokenERC20.getAmountOwed(assetManagerFunds.address);
+    let amountOwed = await divToken.getAmountOwed(assetManagerFunds.address);
     assert.notEqual(amountOwed, 0);
-    assert.equal(bn(await divTokenERC20.balanceOf(assetManagerFunds.address)).eq(tokenPerAccount), true);
+    assert.equal(bn(await divToken.balanceOf(assetManagerFunds.address)).eq(tokenPerAccount), true);
     console.log("amount owed");
     console.log(amountOwed);
     let tx = await assetManagerFunds.retrieveAssetManagerTokens(assetsERC, assetManager, {from:assetManager, gas:6721975});

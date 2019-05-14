@@ -1,0 +1,245 @@
+[
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "database",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x713b563f"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "events",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xb5f8558c"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_database",
+                "type": "address"
+            },
+            {
+                "name": "_events",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "constructor",
+        "signature": "constructor"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "_contractAddress",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "_name",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "_blockNumber",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogContractAdded",
+        "type": "event",
+        "signature": "0x9018a9c2b051c72b883f4cfbd07b0d04a959e678a57dda3cefaea11d747da28e"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "contractToDelete",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "_name",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "_blockNumber",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogContractRemoved",
+        "type": "event",
+        "signature": "0x72aac8395bac616262b6b467498809c06a565453df34e67f6ad56914d20a42bf"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "oldAddress",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "_name",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "_blockNumber",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogContractUpdated",
+        "type": "event",
+        "signature": "0xa7dd6fc361b16d778eaba6853d25f31d1c67046cec8121af750c881ecae12883"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "_contractAddress",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "_name",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "_blockNumber",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogNewContractLocation",
+        "type": "event",
+        "signature": "0xeb1eac76129303431e69d209def6a74da46fc9208827235c925b2d209dc3f87e"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "name": "_user",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "_currentStateAcceptance",
+                "type": "bool"
+            },
+            {
+                "indexed": false,
+                "name": "_ignoreStateChanges",
+                "type": "bool"
+            }
+        ],
+        "name": "LogContractStatePreferenceChanged",
+        "type": "event",
+        "signature": "0x2a8e3a90deecaea9a0a281268fe581c97137089b2da8b29ef69788da110174d7"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_name",
+                "type": "string"
+            },
+            {
+                "name": "_contractAddress",
+                "type": "address"
+            }
+        ],
+        "name": "addContract",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xbf5b6016"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_name",
+                "type": "string"
+            }
+        ],
+        "name": "removeContract",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x97623b58"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_name",
+                "type": "string"
+            },
+            {
+                "name": "_newContractAddress",
+                "type": "address"
+            }
+        ],
+        "name": "updateContract",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x697a60b3"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_acceptCurrentState",
+                "type": "bool"
+            },
+            {
+                "name": "_ignoreStateChanges",
+                "type": "bool"
+            }
+        ],
+        "name": "setContractStatePreferences",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xa559dea4"
+    }
+]

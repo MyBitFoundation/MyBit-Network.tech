@@ -10,8 +10,6 @@ contract HashFunctions {
     assembly { mstore(add(b, 32), x) }
   }
 
-
-
   function getMethodID(string _functionString)
   public
   pure
@@ -102,6 +100,13 @@ contract HashFunctions {
   pure
   returns (bytes32) {
     return keccak256(abi.encodePacked(_param, _paramTwo));
+  }
+
+  function stringAddressAddress(string _param, address _paramTwo, address _paramThree)
+  external
+  pure
+  returns (bytes32) {
+    return keccak256(abi.encodePacked(_param, _paramTwo, _paramThree));
   }
 
   function stringBytesAddress(string _param, bytes32 _paramTwo, address _paramThree)

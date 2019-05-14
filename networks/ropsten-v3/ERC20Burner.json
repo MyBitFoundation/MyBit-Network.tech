@@ -1,0 +1,258 @@
+[
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "database",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x713b563f"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "events",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xb5f8558c"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "token",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xfc0c546a"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_database",
+                "type": "address"
+            },
+            {
+                "name": "_events",
+                "type": "address"
+            },
+            {
+                "name": "_kyber",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "constructor",
+        "signature": "constructor"
+    },
+    {
+        "payable": true,
+        "stateMutability": "payable",
+        "type": "fallback"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "_tokenHolder",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "_burningContract",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "_amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogMYBBurned",
+        "type": "event",
+        "signature": "0xc87395c9a7116ce3ca8faa3215953102d6de8710810272a66800b11bbb588aa6"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "name": "_contractAddress",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "_methodID",
+                "type": "bytes4"
+            },
+            {
+                "indexed": false,
+                "name": "_amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogFeeAdded",
+        "type": "event",
+        "signature": "0xa88a2594d27323cfa2e4148a3b67650d8860492e9b2407e66e1440694633f726"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "tokenAddress",
+                "type": "address"
+            }
+        ],
+        "name": "LogTokenAddress",
+        "type": "event",
+        "signature": "0xb0415b9aa325d80699a5dcb558346eeefbff8936a3ad0435d364eafa8068574e"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "src",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "amount",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "name": "dest",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "receiver",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "max",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "name": "minRate",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "name": "walletID",
+                "type": "address"
+            }
+        ],
+        "name": "Trade",
+        "type": "event",
+        "signature": "0xf486a72be8bbfedf75258d4c5a28313fc39d0a0c5c954cf5c44981e5ac79110d"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "sender",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "EtherReceived",
+        "type": "event",
+        "signature": "0x1e57e3bb474320be3d2c77138f75b7c3941292d647f5f9634e33a8e94e0e069b"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_tokenHolder",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_burnToken",
+                "type": "address"
+            }
+        ],
+        "name": "burn",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": true,
+        "stateMutability": "payable",
+        "type": "function",
+        "signature": "0xb8ce670d"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_methodID",
+                "type": "bytes4"
+            },
+            {
+                "name": "_contractAddress",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "setFee",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xffa4b26f"
+    },
+    {
+        "constant": false,
+        "inputs": [],
+        "name": "destroy",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x83197ef0"
+    }
+]

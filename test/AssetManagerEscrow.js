@@ -107,6 +107,13 @@ contract('AssetManager Escrow', async(accounts) => {
     assetAddress = divToken.address;
   });
 
+  it("Set asset manager", async() => {
+    let managerHash = await hash.stringAddress("asset.manager", assetAddress);
+    await db.setAddress(managerHash, assetManager, {from: owner});
+    let currentManager = await api.getAssetManager(assetAddress);
+    assert.equal(currentManager, assetManager);
+  });
+
   it("Lock escrow", async() => {
     let escrowAmount = bn(2).times(ETH);
     let balanceBefore = await burnToken.balanceOf(assetManager);
@@ -128,6 +135,14 @@ contract('AssetManager Escrow', async(accounts) => {
     let diff = bn(balanceAfter).minus(balanceBefore);
     assert.equal(diff.isEqualTo(bn(ETH).multipliedBy(2)), true);
   });
+
+  it("Reset asset manager", async() => {
+    let managerHash = await hash.stringAddress("asset.manager", assetAddress);
+    await db.setAddress(managerHash, assetManager, {from: owner});
+    let currentManager = await api.getAssetManager(assetAddress);
+    assert.equal(currentManager, assetManager);
+  });
+
 
   it("Lock escrow", async() => {
     let escrowAmount = bn(2).times(ETH);
@@ -286,11 +301,82 @@ contract('AssetManager Escrow', async(accounts) => {
     let err;
     //Fail because not owner
     try{
-      await escrow.burnEscrow(assetAddress, {from:user1});
+      await escrow.voteToBurn(assetAddress, {from:user1});
     } catch(e){
       err = e;
     }
     assert.notEqual(err, undefined);
+  });
+
+  it("Transfer token to users", async() => {
+    await burnToken.transfer(user1, bn(ETH).toString());
+    await burnToken.transfer(user2, bn(ETH).toString());
+    await burnToken.transfer(operator, bn(ETH).toString());
+    user1Balance = await burnToken.balanceOf(user1);
+    user2Balance = await burnToken.balanceOf(user2);
+    operatorBalance = await burnToken.balanceOf(operator);
+    assert.equal(user1Balance, bn(ETH).toString());
+  });
+
+  it("Set DAO admin address", async() => {
+    let adminHash = await hash.stringAddress("asset.dao.admin", assetAddress);
+    await db.setAddress(adminHash, owner, {from: owner});
+  });
+
+  it("Fail to change manager", async() => {
+    let err;
+    //Fail because not dao admin address
+    try{
+      await burnToken.approve(escrow.address, bn(ETH).toString(), {from:user1});
+      await escrow.changeAssetManager(assetAddress, user1, bn(ETH).toString(), false, {from:user1});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  if("Fail to burn", async() => {
+    let err;
+    //Fail because not dao admin address
+    try{
+      await escrow.voteToBurn(assetAddress, {from:user1});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it("Fail to change manager", async() => {
+    let err;
+    //Fail because same asset manager
+    try{
+      await burnToken.approve(escrow.address, bn(ETH).toString(), {from:assetManager});
+      await escrow.changeAssetManager(assetAddress, assetManager, bn(ETH).toString(), false, {from:owner});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it("Change asset manager", async() => {
+    await burnToken.approve(escrow.address, bn(ETH).toString(), {from:user1});
+    await escrow.changeAssetManager(assetAddress, user1, bn(ETH).toString(), true, {from:owner});
+    let currentManager = await api.getAssetManager(assetAddress);
+    console.log(currentManager);
+    assert.equal(currentManager, user1)
+  });
+
+  it("Return escrow to old manager", async() => {
+    await escrow.returnEscrow(assetAddress, assetManager, user1, {from: user1});
+  });
+
+  it("Burn", async() => {
+    let escrowID = await api.getAssetManagerEscrowID(assetAddress, user1);
+    let escrowBefore = await api.getAssetManagerEscrowRemaining(escrowID);
+    assert.equal(bn(escrowBefore).gt(0), true);
+    escrow.voteToBurn(assetAddress, {from: owner});
+    let escrowAfter = await api.getAssetManagerEscrowRemaining(escrowID);
+    assert.equal(escrowAfter, 0);
   });
 
   it('Return ether to operator (So we do not have to restart ganache!)', async() => {
@@ -299,5 +385,4 @@ contract('AssetManager Escrow', async(accounts) => {
       await web3.eth.sendTransaction({from:tokenHolders[i], to:operator, value:amount})
     }
   });
-
 });

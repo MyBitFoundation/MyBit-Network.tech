@@ -3,7 +3,7 @@ bn.config({ EXPONENTIAL_AT: 80 });
 
 const Token = artifacts.require("./tokens/erc20/DividendToken.sol");
 const PlatformToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
-const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
+//const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 const AssetGenerator = artifacts.require("./ecosystem/AssetGenerator.sol");
 const Database = artifacts.require("./database/Database.sol");
 const Events = artifacts.require("./database/Events.sol");
@@ -40,6 +40,7 @@ contract('Asset Generator', async(accounts) => {
   let cm;
   let hash;
   let platform;
+  //let burner;
   let assetID;
   let assetURI;
   let tokenAddress;
@@ -86,23 +87,23 @@ contract('Asset Generator', async(accounts) => {
     await cm.addContract('Platform', platform.address);
     await platform.setPlatformToken(platformToken.address);
   });
-
+/*
   it('Deploy burner contract', async() => {
     burner = await ERC20Burner.new(db.address, events.address, kyber.address);
     await cm.addContract("ERC20Burner", burner.address);
   });
-
+*/
   it('Deploy AssetGenerator', async() => {
     assetGen = await AssetGenerator.new(db.address, events.address);
     await cm.addContract("AssetGenerator", assetGen.address);
-    await burner.setFee('0xf76c5c55', assetGen.address,  250);
-    await burner.setFee('0x4e38c7f4', assetGen.address,  250);
+    //await burner.setFee('0xf76c5c55', assetGen.address,  250);
+    //await burner.setFee('0x4e38c7f4', assetGen.address,  250);
   });
 
   it('Give permission to contract state', async() => {
     for(var i=1; i<accounts.length; i++){
       await cm.setContractStatePreferences(true, true, {from: accounts[i]});
-      await platformToken.approve(burner.address, tokenSupply.toString(), {from:accounts[i]});
+      //await platformToken.approve(burner.address, tokenSupply.toString(), {from:accounts[i]});
     }
   });
 
@@ -160,5 +161,19 @@ contract('Asset Generator', async(accounts) => {
       err = e;
     }
     assert.notEqual(err, undefined);
+  });
+
+  it('Fail to destroy generator', async() => {
+    let err;
+    try{
+      await assetGen.destroy({from:user3});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it('Destroy generator', async() => {
+    await assetGen.destroy();
   });
 });

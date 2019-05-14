@@ -1,0 +1,168 @@
+[
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "database",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x713b563f"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "events",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xb5f8558c"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "upperAccessLevel",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xdf392874"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_database",
+                "type": "address"
+            },
+            {
+                "name": "_events",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "constructor",
+        "signature": "constructor"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "_user",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "_approvalLevel",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogUserApproved",
+        "type": "event",
+        "signature": "0xe8b0d2948bfc19ce9cb6dd3be73adffa387a1c6f662adc9c5b8ebeede21deb68"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "name": "_user",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "name": "_accessLevel",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogUserRemoved",
+        "type": "event",
+        "signature": "0xe8bca18329debfd209083cfd37b3dbfaa9318ae7bf4dcb40f63ca7be92c26acc"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_newUser",
+                "type": "address"
+            },
+            {
+                "name": "_accessLevel",
+                "type": "uint256"
+            }
+        ],
+        "name": "approveUser",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x4248083b"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_user",
+                "type": "address"
+            }
+        ],
+        "name": "removeUser",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x98575188"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_newUpperLimit",
+                "type": "uint8"
+            }
+        ],
+        "name": "setUpperAccessLevel",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x44190a87"
+    },
+    {
+        "constant": false,
+        "inputs": [],
+        "name": "destroy",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x83197ef0"
+    }
+]

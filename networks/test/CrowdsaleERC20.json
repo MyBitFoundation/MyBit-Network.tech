@@ -1,0 +1,165 @@
+[
+    {
+        "inputs": [
+            {
+                "name": "_database",
+                "type": "address"
+            },
+            {
+                "name": "_events",
+                "type": "address"
+            },
+            {
+                "name": "_kyber",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "constructor",
+        "signature": "constructor"
+    },
+    {
+        "payable": true,
+        "stateMutability": "payable",
+        "type": "fallback"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "token",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "change",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "name": "investment",
+                "type": "uint256"
+            }
+        ],
+        "name": "Convert",
+        "type": "event",
+        "signature": "0x9018eade4aec2a696b34b0f5459a1a7dc058389bab8e2380d880817a9e22b213"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "sender",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "EtherReceived",
+        "type": "event",
+        "signature": "0x1e57e3bb474320be3d2c77138f75b7c3941292d647f5f9634e33a8e94e0e069b"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            },
+            {
+                "name": "_investor",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_paymentToken",
+                "type": "address"
+            }
+        ],
+        "name": "buyAssetOrderERC20",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": true,
+        "stateMutability": "payable",
+        "type": "function",
+        "signature": "0xdbfaee12"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            }
+        ],
+        "name": "payoutERC20",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x0329cf4a"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            }
+        ],
+        "name": "refund",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xfa89401a"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_erc20Token",
+                "type": "address"
+            }
+        ],
+        "name": "recoverTokens",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x16114acd"
+    },
+    {
+        "constant": false,
+        "inputs": [],
+        "name": "destroy",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x83197ef0"
+    }
+]

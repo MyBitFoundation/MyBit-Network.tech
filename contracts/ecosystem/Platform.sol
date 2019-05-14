@@ -56,12 +56,14 @@ contract Platform {
     database.setUint(keccak256(abi.encodePacked("platform.percentage")), _percent);
   }
 
+  /*
   function setBurnrate(uint _percent)
   external
   onlyOwner {
     require(_percent < 100 && _percent >= 0);
     database.setUint(keccak256(abi.encodePacked("platform.burnRate")), _percent);
   }
+  */
 
   // @notice platform owners can destroy contract here
   function destroy()

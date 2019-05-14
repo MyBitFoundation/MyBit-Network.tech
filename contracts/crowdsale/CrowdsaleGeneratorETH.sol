@@ -52,7 +52,7 @@ contract CrowdsaleGeneratorETH {
     }
     require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), "User not approved");
     require(_amountToRaise >= 100, "Crowdsale goal is too small");
-    require(_assetManagerPerc < 100, "Manager percent need to be less than 100");
+    require((_assetManagerPerc + database.uintStorage(keccak256(abi.encodePacked("platform.percentage")))) < 100, "Manager percent need to be less than 100");
     require(database.boolStorage(keccak256(abi.encodePacked("operator.acceptsEther", _operatorID))), "Operator does not accept Ether");
     require(database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))) != address(0), "Operator does not exist");
     require(!database.boolStorage(keccak256(abi.encodePacked("asset.uri", _assetURI))), "Asset URI is not unique"); //Check that asset URI is unique

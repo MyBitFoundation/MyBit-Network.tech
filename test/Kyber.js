@@ -1,18 +1,21 @@
 //MyBit
-const AssetToken = artifacts.require("DividendTokenERC20.sol");
+const AssetToken = artifacts.require("DividendToken.sol");
 const Minter = artifacts.require("./database/Minter.sol");
-const CrowdsaleGenerator = artifacts.require("CrowdsaleGeneratorERC20.sol");
-const Crowdsale = artifacts.require("CrowdsaleERC20.sol");
-const CrowdsaleReserve = artifacts.require("./database/CrowdsaleReserve.sol");
+const CrowdsaleGeneratorERC20 = artifacts.require("CrowdsaleGeneratorERC20.sol");
+const CrowdsaleERC20 = artifacts.require("CrowdsaleERC20.sol");
+const CrowdsaleGeneratorETH = artifacts.require("CrowdsaleGeneratorETH.sol");
+const CrowdsaleETH = artifacts.require("CrowdsaleETH.sol");
+const CrowdsaleReserve = artifacts.require("CrowdsaleReserve.sol");
 const Database = artifacts.require("Database.sol");
 const Events = artifacts.require("Events.sol");
 const ContractManager = artifacts.require("ContractManager.sol");
 const AssetManagerFunds = artifacts.require("AssetManagerFunds.sol");
 const AssetManagerEscrow = artifacts.require("AssetManagerEscrow.sol");
-const EscrowReserve = artifacts.require("./database/EscrowReserve.sol");
+const EscrowReserve = artifacts.require("EscrowReserve.sol");
 const Operators = artifacts.require("Operators.sol");
 const Platform = artifacts.require("Platform.sol");
-const API = artifacts.require("./database/API.sol");
+const API = artifacts.require("API.sol");
+const PlatformFundsDistributor = artifacts.require("PlatformFundsDistributor.sol");
 
 const TestToken = artifacts.require("./TestToken.sol");
 const Reserve = artifacts.require("./KyberReserve.sol");
@@ -31,8 +34,9 @@ BigNumber.config({ EXPONENTIAL_AT: 80 });
 const ETH = new BigNumber(10**18);
 const tokenPerAccount = new BigNumber(1000).times(ETH);
 
-let assetToken, minter, crowdsaleReserve, crowdsaleGen, crowdsale, db, events, cm,
-    assetManagerFunds, escrowReserve, assetManagerEscrow, operators, platform, api;
+let assetToken, minter, crowdsaleReserve, crowdsaleGenERC20, crowdsaleERC20, crowdsaleGenETH,
+    crowdsaleETH, db, events, cm, assetManagerFunds, escrowReserve, assetManagerEscrow,
+    operators, platform, api, platformFundsDistributor;
 
 let operatorID, assetURI, assetAddress;
 
@@ -63,7 +67,7 @@ var counterConversionRate = (((new BigNumber(10)).pow(18)).div(2));
 
 const expBlock = 10**10;
 const validBlockDuration = 256;
-const maxGas = 4612388;
+var maxGas;
 const precisionUnits = new BigNumber(10 ** 18);
 var tokenOwner;
 
@@ -104,8 +108,9 @@ var outputFileName;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-var getNetwork = function(){
-  var id = web3.version.network;
+var getNetwork = async function(){
+  var id = await web3.eth.net.getId();
+  console.log('Nerwork ID: ', id);
   if(id >= 1500000000000){
     return "testrpc";
   } else if(id == 5777) {
@@ -452,7 +457,13 @@ contract('Kyber', function(accounts) {
     done();
   });
 
-  it("setup parameters", function() {
+  it("setup parameters", async function() {
+    let networkID = await getNetwork();
+    if(networkID == "testrpc"){
+      maxGas = '0xfffffffffff';
+    } else {
+      maxGas = 4612388;
+    }
     // tokens
     var tokenInfo = {
       "OMG": {
@@ -1075,6 +1086,11 @@ contract('Kyber', function(accounts) {
       platform = await Platform.new(db.address, events.address);
       await cm.addContract('Platform', platform.address);
       await platform.setPlatformToken(tokenInstance[0].address);
+      await platform.setPlatformFee('3');
+      await platform.setPlatformPercentage('1');
+      platformFundsDistributor = await PlatformFundsDistributor.new(db.address, networkProxy.address);
+      await platform.setPlatformFundsWallet(platformFundsDistributor.address);
+      await platform.setPlatformAssetsWallet(accounts[0]);
       api = await API.new(db.address);
       assetManagerFunds = await AssetManagerFunds.new(db.address, events.address);
       await cm.addContract('AssetManagerFunds', assetManagerFunds.address);
@@ -1086,10 +1102,14 @@ contract('Kyber', function(accounts) {
       await cm.addContract("Minter", minter.address);
       crowdsaleReserve = await CrowdsaleReserve.new(db.address, events.address);
       await cm.addContract("CrowdsaleReserve", crowdsaleReserve.address);
-      crowdsaleGen = await CrowdsaleGenerator.new(db.address, events.address, networkProxy.address);
-      await cm.addContract("CrowdsaleGenerator", crowdsaleGen.address);
-      crowdsale = await Crowdsale.new(db.address, events.address, networkProxy.address);
-      await cm.addContract('CrowdsaleERC20', crowdsale.address);
+      crowdsaleGenERC20 = await CrowdsaleGeneratorERC20.new(db.address, events.address, networkProxy.address);
+      await cm.addContract("CrowdsaleGeneratorERC20", crowdsaleGenERC20.address);
+      crowdsaleGenETH = await CrowdsaleGeneratorETH.new(db.address, events.address, networkProxy.address);
+      await cm.addContract("CrowdsaleGeneratorETH", crowdsaleGenETH.address);
+      crowdsaleERC20 = await CrowdsaleERC20.new(db.address, events.address, networkProxy.address);
+      await cm.addContract('CrowdsaleERC20', crowdsaleERC20.address);
+      crowdsaleETH = await CrowdsaleETH.new(db.address, events.address);
+      await cm.addContract('CrowdsaleETH', crowdsaleETH.address);
       operators = await Operators.new(db.address, events.address);
       await cm.addContract('Operators', operators.address);
       let block = await web3.eth.getBlock('latest');
@@ -1101,37 +1121,59 @@ contract('Kyber', function(accounts) {
     });
 
     //Start successful funding
-    it('Start funding', async() => {
+    it('Start funding erc20', async() => {
       await tokenInstance[1].transfer(accounts[2], BigNumber(10**24).toString());
-      //await kncInstance.transfer(crowdsaleGen.address, await kncInstance.balanceOf(accounts[0]));
+      //await kncInstance.transfer(crowdsaleGenERC20.address, await kncInstance.balanceOf(accounts[0]));
       assetURI = 'ASSETASSET';
       assetManagerFee = 0;
       let block = await web3.eth.getBlock('latest');
       console.log('Balance: ', await web3.eth.getBalance(accounts[2]));
-      await crowdsaleGen.createAssetOrderERC20(assetURI, accounts[2], operatorID, 100, 0, BigNumber(20).times(ETH).toString(), assetManagerFee, BigNumber(10**17).toString(), tokenInstance[1].address, ethAddress, {from:accounts[2], value:BigNumber(10**17).toString()});
+      await crowdsaleGenERC20.createAssetOrderERC20(assetURI, accounts[2], operatorID, 100, 0, BigNumber(20).times(ETH).toString(), assetManagerFee, BigNumber(10**17).toString(), tokenInstance[1].address, ethAddress, {from:accounts[2], value:BigNumber(10**17).toString(), gas:maxGas});
       let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: accounts[2]}, fromBlock: block.number});
       assetAddress = logs[0].args.asset;
-      console.log(logs[0].args);
       assetToken = await AssetToken.at(assetAddress);
       logs = await events.getPastEvents('LogEscrow', {filter: {messageID: web3.utils.sha3('Escrow locked')}, fromBlock: block.number});
-      console.log(logs[0].args);
       console.log('Amount: ', BigNumber(logs[0].args.amount).toString());
     });
 
-    it('Should make investment in asset', async() => {
+    it('Should make investment in asset with erc20', async() => {
       await tokenInstance[2].transfer(accounts[3], BigNumber(10**24).toString());
 
-      await tokenInstance[2].approve(crowdsale.address, BigNumber(5).times(ETH).toString(), {from:accounts[3]});
+      await tokenInstance[2].approve(crowdsaleERC20.address, BigNumber(1).times(ETH).toString(), {from:accounts[3]});
       let block = await web3.eth.getBlock('latest');
-      await crowdsale.buyAssetOrderERC20(assetAddress, accounts[3], BigNumber(5).times(ETH).toString(), tokenInstance[2].address, {from:accounts[3]});
-      let logs = await crowdsale.getPastEvents('Convert', {filter: {}, fromBlock:block.number});
+      await crowdsaleERC20.buyAssetOrderERC20(assetAddress, accounts[3], BigNumber(1).times(ETH).toString(), tokenInstance[2].address, {from:accounts[3], gas:maxGas});
+      let logs = await crowdsaleERC20.getPastEvents('Convert', {filter: {}, fromBlock:block.number});
       console.log(logs[0].args);
       let userAssetTokens = BigNumber(await assetToken.balanceOf(accounts[3]));
-      console.log('Asset Address: ' + assetToken.address);
-      console.log('User: ' + accounts[3]);
       console.log('User asset tokens: ' + userAssetTokens.toNumber());
-
       let assetTokenSupply = await assetToken.totalSupply()
       console.log('assetToken Supply: ' + assetTokenSupply);
-    })
+    });
+
+    it('Check funds in platform wallet', async() => {
+      await crowdsaleERC20.payoutERC20(assetAddress, {gas:maxGas});
+      let balanceBefore = BigNumber(await tokenInstance[1].balanceOf(platformFundsDistributor.address));
+      console.log('Balance before: ', balanceBefore.toString());
+      assert.equal(balanceBefore.gt(0), true);
+      await platformFundsDistributor.distributeERC20(tokenInstance[1].address);
+      let balanceAfter = BigNumber(await tokenInstance[1].balanceOf(platformFundsDistributor.address));
+      console.log('Balance after: ', balanceAfter.toString());
+      assert.equal(balanceAfter.eq(0), true);
+      let foundationBalance = BigNumber(await tokenInstance[1].balanceOf('0xd9d2B28E09921A38aD7aB1B4138357408bda8EBD'));
+      assert.equal(balanceBefore.times(0.33).eq(foundationBalance), true);
+    });
+
+    it('Check eth in platform wallet', async() => {
+      await web3.eth.sendTransaction({from:accounts[0], to:platformFundsDistributor.address, value:BigNumber(1).times(ETH).toString()});
+      let balanceBefore = BigNumber(await web3.eth.getBalance(platformFundsDistributor.address));
+      console.log('Balance before: ', balanceBefore.toString());
+      assert.equal(balanceBefore.gt(0), true);
+      await platformFundsDistributor.distributeETH();
+      let balanceAfter = BigNumber(await web3.eth.getBalance(platformFundsDistributor.address));
+      console.log('Balance after: ', balanceAfter.toString());
+      assert.equal(balanceAfter.eq(0), true);
+      let foundationBalance = BigNumber(await web3.eth.getBalance('0xd9d2B28E09921A38aD7aB1B4138357408bda8EBD'));
+      assert.equal(balanceBefore.times(0.33).eq(foundationBalance), true);
+    });
+
 });

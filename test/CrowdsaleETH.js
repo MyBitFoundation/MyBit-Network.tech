@@ -3,7 +3,6 @@ bn.config({ EXPONENTIAL_AT: 80 });
 
 const Token = artifacts.require("./tokens/erc20/DividendToken.sol");
 const PlatformToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
-const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 const Minter = artifacts.require("./database/Minter.sol");
 const Crowdsale = artifacts.require("./crowdsale/CrowdsaleETH.sol");
 const CrowdsaleGenerator = artifacts.require("./crowdsale/CrowdsaleGeneratorETH.sol");
@@ -107,6 +106,7 @@ contract('Ether Crowdsale', async(accounts) => {
     await cm.addContract('Platform', platform.address);
     await platform.setPlatformToken(platformToken.address);
     await platform.setPlatformFee('3');
+    await platform.setPlatformPercentage('1');
   });
 
   it('Deploy assetManager escrow', async() => {
@@ -453,8 +453,8 @@ contract('Ether Crowdsale', async(accounts) => {
 
   //Start successful funding with 99% manager fee
   it('Start funding', async() => {
-    assetURI = '99%managementfee.com';
-    assetManagerFee = 99;
+    assetURI = '98%managementfee.com';
+    assetManagerFee = 98;
     let block = await web3.eth.getBlock('latest');
     await crowdsaleGen.createAssetOrderETH(assetURI, assetManager, operatorID, 10, 0, bn(2).times(ETH), assetManagerFee, 0, platformToken.address, {from:assetManager});
     let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: assetManager}, fromBlock: block.number});
@@ -501,36 +501,68 @@ contract('Ether Crowdsale', async(accounts) => {
     let user3Balance = bn(await token.balanceOf(user3));
     assert.equal(user3Balance.eq(100), true);
     let assetManagerBalance = bn(await token.balanceOf(assetManagerFunds.address));
-    assert.equal(assetManagerBalance.eq(100), true);
+    console.log('Asset manager balance: ', assetManagerBalance);
+    assert.equal(assetManagerBalance.eq(bn(100).div(0.49).times(0.5).integerValue()), true);
     assert.equal(await token.mintingFinished(), true);
     assert.equal(await api.crowdsaleFinalized(assetAddress), true);
   });
 
     // TODO: try to force integer rounding
 
-  it('Fail to send money to contract', async() => {
-    let err;
-    try{
-      await web3.eth.sendTransaction({from:user3, to: crowdsale.address, value: ETH});
-    } catch(e){
-      err = e;
-    }
-    assert.notEqual(err, undefined);
-  });
+    it('Fail to destroy generator', async() => {
+      let err;
+      try{
+        await crowdsaleGen.destroy({from:user3});
+      } catch(e){
+        err = e;
+      }
+      assert.notEqual(err, undefined);
+    });
 
-  it('Fail to destroy', async() => {
-    let err;
-    try{
-      await crowdsale.destroy({from:user3});
-    } catch(e){
-      err = e;
-    }
-    assert.notEqual(err, undefined);
-  });
+    it('Fail to destroy crowdsale', async() => {
+      let err;
+      try{
+        await crowdsale.destroy({from:user3});
+      } catch(e){
+        err = e;
+      }
+      assert.notEqual(err, undefined);
+    });
 
-  it('Destroy', async() => {
-    await crowdsale.destroy();
-  });
+    it('Fail to destroy pausible', async() => {
+      let err;
+      try{
+        await pausible.destroy({from:user3});
+      } catch(e){
+        err = e;
+      }
+      assert.notEqual(err, undefined);
+    });
 
+    it('Fail to destroy platform', async() => {
+      let err;
+      try{
+        await platform.destroy({from:user3});
+      } catch(e){
+        err = e;
+      }
+      assert.notEqual(err, undefined);
+    });
+
+    it('Destroy generator', async() => {
+      await crowdsaleGen.destroy();
+    });
+
+    it('Destroy crowdsale', async() => {
+      await crowdsale.destroy();
+    });
+
+    it('Destroy pausible', async() => {
+      await pausible.destroy();
+    });
+
+    it('Destroy platform', async() => {
+      await platform.destroy();
+    });
 
 });
