@@ -361,7 +361,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     assetURI = 'Goooooooaaallllllll';
     assetManagerFee = 20;
     let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderERC20(assetURI, assetManager, operatorID, 1, 0, bn(20).times(ETH), assetManagerFee, 0, erc20.address, platformToken.address, {from:assetManager});
+    await crowdsaleGen.createAssetOrderERC20(assetURI, assetManager, operatorID, 5, 0, bn(20).times(ETH), assetManagerFee, 0, erc20.address, platformToken.address, {from:assetManager});
     let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: assetManager}, fromBlock: block.number});
     assetAddress = logs[0].args.asset;
     assetToken = await AssetToken.at(assetAddress);
@@ -379,7 +379,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     web3.currentProvider.send({
         jsonrpc: "2.0",
         method: "evm_increaseTime",
-        params: [3], id: 0
+        params: [20], id: 0
     }, function(){
       console.log('Move forward in time');
     });

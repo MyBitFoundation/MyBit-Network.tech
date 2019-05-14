@@ -1,13 +1,13 @@
 pragma solidity ^0.4.24;
 
-import "../math/SafeMath.sol";
-import '../interfaces/DBInterface.sol';
-import "../interfaces/KyberInterface.sol";
-import "../interfaces/ERC20.sol";
-import "../interfaces/BurnableERC20.sol";
+import "../../math/SafeMath.sol";
+import '../../interfaces/DBInterface.sol';
+import "../../interfaces/KyberInterface.sol";
+import "../../interfaces/ERC20.sol";
+import "../../interfaces/BurnableERC20.sol";
 
 
-contract PlatformFundsDistributor {
+contract PlatformDistribution {
   using SafeMath for uint256;
 
   address public constant foundationWallet = address(0xd9d2B28E09921A38aD7aB1B4138357408bda8EBD);
