@@ -12,10 +12,6 @@ jobs:
             command: yarn blockchain
             background: true
         - run: yarn test
-        - run:
-            name: testrpc-sc
-            command: yarn testrpc-sc
-            background: true
         - run: yarn coverage
 
 notify:
