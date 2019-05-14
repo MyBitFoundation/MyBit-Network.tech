@@ -21,7 +21,7 @@ contract('Dividend Token Ether', async(accounts) => {
   let tokenURI = 'https://mybit.io';
 
   it('Deploy Token', async() => {
-    token = await Token.new(tokenURI, owner);
+    token = await Token.new(tokenURI, owner, '0x0000000000000000000000000000000000000000');
   });
 
   it("Spread tokens to users", async() => {

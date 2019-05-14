@@ -1,0 +1,205 @@
+[
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "database",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x713b563f"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "events",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xb5f8558c"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_database",
+                "type": "address"
+            },
+            {
+                "name": "_events",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "constructor",
+        "signature": "constructor"
+    },
+    {
+        "anonymous": false,
+        "inputs": [],
+        "name": "NotFinalized",
+        "type": "event",
+        "signature": "0x1bee0d5a3487871ad4e01635c06a95326ecde99999b0a6864aecb98461a9249f"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "checkpoint",
+                "type": "uint256"
+            }
+        ],
+        "name": "ROICheckpoint",
+        "type": "event",
+        "signature": "0xf0ee7a9cde4e5b0e9a9d319bc8cee8ea787f22fc6ebead5e549ba5e0ab7169f9"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            },
+            {
+                "name": "_assetManager",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "lockEscrow",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x303d0c6b"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            },
+            {
+                "name": "_assetManager",
+                "type": "address"
+            }
+        ],
+        "name": "unlockEscrow",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xb747efb6"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            },
+            {
+                "name": "_newAssetManager",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_withhold",
+                "type": "bool"
+            }
+        ],
+        "name": "changeAssetManager",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x350ca067"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            },
+            {
+                "name": "_oldAssetManager",
+                "type": "address"
+            },
+            {
+                "name": "_currentAssetManager",
+                "type": "address"
+            }
+        ],
+        "name": "returnEscrow",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xabc0bbf3"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            }
+        ],
+        "name": "voteToBurn",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x4a364354"
+    },
+    {
+        "constant": false,
+        "inputs": [],
+        "name": "destroy",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x83197ef0"
+    }
+]

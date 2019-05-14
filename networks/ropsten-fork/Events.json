@@ -79,8 +79,8 @@
             },
             {
                 "indexed": false,
-                "name": "id",
-                "type": "bytes32"
+                "name": "token",
+                "type": "address"
             },
             {
                 "indexed": false,
@@ -90,7 +90,7 @@
         ],
         "name": "LogTransaction",
         "type": "event",
-        "signature": "0xbe993000f400d0a8060e26d30297b9c567fcf5f46579410cd17d4334daba846d"
+        "signature": "0xfd80b0499d466e5ceb1521c31d86643e06e1390bd7486aef7fe8a958080b0855"
     },
     {
         "anonymous": false,
@@ -436,8 +436,8 @@
                 "type": "uint256"
             },
             {
-                "name": "_id",
-                "type": "bytes32"
+                "name": "_token",
+                "type": "address"
             }
         ],
         "name": "transaction",
@@ -445,7 +445,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x68b96270"
+        "signature": "0x42b425aa"
     },
     {
         "constant": false,

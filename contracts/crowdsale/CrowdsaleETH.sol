@@ -2,13 +2,14 @@ pragma solidity ^0.4.24;
 
 import "../math/SafeMath.sol";
 import "../interfaces/ERC20.sol";
-import "../interfaces/EtherDividendInterface.sol";
-// import "../access/ERC20Burner.sol";
+import "../interfaces/MinterInterface.sol";
+import "../interfaces/CrowdsaleReserveInterface.sol";
 
-interface Events {  function transaction(string _message, address _from, address _to, uint _amount, bytes32 _id)  external; }
+interface Events {  function transaction(string _message, address _from, address _to, uint _amount, address _token)  external; }
 interface DB {
   function addressStorage(bytes32 _key) external view returns (address);
   function uintStorage(bytes32 _key) external view returns (uint);
+  function setUint(bytes32 _key, uint _value) external;
   function deleteUint(bytes32 _key) external;
   function setBool(bytes32 _key, bool _value) external;
   function boolStorage(bytes32 _key) external view returns (bool);
@@ -21,17 +22,19 @@ interface DB {
 contract CrowdsaleETH {
     using SafeMath for uint256;
 
-    DB public database;
-    Events public events;
-    // ERC20Burner public burner;
+    DB private database;
+    Events private events;
+    MinterInterface private minter;
+    CrowdsaleReserveInterface private reserve;
 
     // @notice Constructor: Initiates the database
     // @param: The address for the database contract
     constructor(address _database, address _events)
     public {
-        database = DB(_database);
-        events = Events(_events);
-        // burner = ERC20Burner(database.addressStorage(keccak256(abi.encodePacked("contract", "ERC20Burner"))));
+      database = DB(_database);
+      events = Events(_events);
+      minter = MinterInterface(database.addressStorage(keccak256(abi.encodePacked("contract", "Minter"))));
+      reserve = CrowdsaleReserveInterface(database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleReserve"))));
     }
 
 
@@ -46,22 +49,26 @@ contract CrowdsaleETH {
     notFinalized(_assetAddress)
     returns (bool) {
       require(msg.sender == _investor || database.boolStorage(keccak256(abi.encodePacked("approval", _investor, msg.sender, address(this), msg.sig))));
-      EtherDividendInterface assetToken = EtherDividendInterface(_assetAddress);
-      uint amountToRaise = database.uintStorage(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));
-      uint tokensRemaining = amountToRaise.sub(assetToken.totalSupply());
-      if (msg.value < tokensRemaining) {
+      uint fundingRemaining = database.uintStorage(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)));
+      uint amount; //The number of tokens that will be minted
+      if (msg.value < fundingRemaining) {
+        amount = msg.value.mul(100).div(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee")))));
+        database.setUint(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)), fundingRemaining.sub(msg.value));
         //Mint tokens equal to the msg.value
-        require(assetToken.mint(_investor, msg.value), "Investor minting failed");
-        events.transaction('Asset purchased', _investor, _assetAddress, msg.value, '');
+        require(minter.mintAssetTokens(_assetAddress, _investor, amount), "Investor minting failed");
+        reserve.receiveETH.value(msg.value)(_investor);
       } else {
+        amount = fundingRemaining.mul(100).div(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee")))));
         //Funding complete, finalize crowdsale
         database.setBool(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress)), true);
+        database.deleteUint(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)));
         //Since investor paid equal to or over the funding remaining, just mint for tokensRemaining
-        require(assetToken.mint(_investor, tokensRemaining), "Investor minting failed");
+        require(minter.mintAssetTokens(_assetAddress, _investor, amount), "Investor minting failed");
+        reserve.receiveETH.value(fundingRemaining)(_investor);
         //Return leftover WEI after cost of tokens calculated and subtracted from msg.value to msg.sender *NOT _investor
-        msg.sender.transfer(msg.value.sub(tokensRemaining));
-        events.transaction('Asset purchased', _investor, _assetAddress, tokensRemaining, '');
+        msg.sender.transfer(msg.value.sub(fundingRemaining));
       }
+      events.transaction('Asset purchased', address(this), _investor, amount, _assetAddress);
 
       return true;
     }
@@ -71,31 +78,33 @@ contract CrowdsaleETH {
     // @param (bytes32) _assetAddress = The address of the asset which completed the crowdsale
     function payoutETH(address _assetAddress)
     external
+    whenNotPaused
     finalized(_assetAddress)
     notPaid(_assetAddress)
     returns (bool) {
       //Set paid to true
       database.setBool(keccak256(abi.encodePacked("crowdsale.paid", _assetAddress)), true);
       //Setup token
-      EtherDividendInterface assetToken = EtherDividendInterface(_assetAddress);
-      //Mint tokens for the asset manager + finish minting
-      require(assetToken.mint(database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerFee", _assetAddress)))), "Manager minting failed");
-      //require(assetToken.finishMinting(), "Minting not finished"); //Commented out because web3 promises are failing
+      //Mint tokens for the asset manager and platform + finish minting
+      address platformAssetsWallet = database.addressStorage(keccak256(abi.encodePacked("platform.wallet.assets")));
+      require(platformAssetsWallet != address(0), "Platform assets wallet not set");
+      require(minter.mintAssetTokens(_assetAddress, database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerTokens", _assetAddress)))), "Manager minting failed");
+      require(minter.mintAssetTokens(_assetAddress, platformAssetsWallet, database.uintStorage(keccak256(abi.encodePacked("asset.platformTokens", _assetAddress)))), "Platform minting failed");
+      require(minter.stopMint(_assetAddress), "Stop minting failed");
       //Get the addresses for the operator and platform
       address operator = database.addressStorage(keccak256(abi.encodePacked("asset.operator", _assetAddress)));
-      address platformWallet = database.addressStorage(keccak256(abi.encodePacked("platform.wallet")));
-      require(operator != address(0) && platformWallet != address(0), "Operator or platform wallet not set");
+      address platformFundsWallet = database.addressStorage(keccak256(abi.encodePacked("platform.wallet.funds")));
+      require(operator != address(0) && platformFundsWallet != address(0), "Operator or platform wallet not set");
       //Calculate amounts for platform and operator
       uint amount = database.uintStorage(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));
-      uint operatorPortion = amount.mul(99).div(100);
-      uint platformPortion = amount.sub(operatorPortion);
+      uint platformFee = amount.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("platform.fee"))));
       //Transfer funds to operator and platform
-      platformWallet.transfer(platformPortion);
-      operator.transfer(operatorPortion);
+      require(reserve.issueETH(platformFundsWallet, platformFee), 'Platform funds not paid');
+      require(reserve.issueETH(operator, amount), 'Operator funds not paid');
       //Delete crowdsale start time
       database.deleteUint(keccak256(abi.encodePacked("crowdsale.start", _assetAddress)));
       //Emit event
-      events.transaction('Asset payout', _assetAddress, operator, amount, '');
+      events.transaction('Asset payout', _assetAddress, operator, amount, address(0));
       return true;
     }
 
@@ -110,9 +119,9 @@ contract CrowdsaleETH {
     returns (bool) {
       require(database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress))) != 0);
       database.deleteUint(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress)));
-      EtherDividendInterface assetToken = EtherDividendInterface(_assetAddress);
-      uint refundValue = assetToken.totalSupply(); //token=wei
-      assetToken.issueDividends.value(refundValue)();
+      ERC20 assetToken = ERC20(_assetAddress);
+      uint refundValue = assetToken.totalSupply().mul(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee"))))).div(100); //total supply plus platform fees
+      reserve.refundETHAsset(_assetAddress, refundValue);
       return true;
     }
 
@@ -129,7 +138,7 @@ contract CrowdsaleETH {
     function destroy()
     onlyOwner
     external {
-      events.transaction('CrowdsaleETH destroyed', address(this), msg.sender, address(this).balance, '');
+      events.transaction('CrowdsaleETH destroyed', address(this), msg.sender, address(this).balance, address(0));
       selfdestruct(msg.sender);
     }
 
