@@ -8,6 +8,10 @@
             {
                 "name": "_events",
                 "type": "address"
+            },
+            {
+                "name": "_kyber",
+                "type": "address"
             }
         ],
         "payable": false,
@@ -53,14 +57,18 @@
             {
                 "name": "_fundingToken",
                 "type": "address"
+            },
+            {
+                "name": "_paymentToken",
+                "type": "address"
             }
         ],
         "name": "createAssetOrderERC20",
         "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
+        "payable": true,
+        "stateMutability": "payable",
         "type": "function",
-        "signature": "0x24bb2f67"
+        "signature": "0x72bf3c57"
     },
     {
         "constant": false,

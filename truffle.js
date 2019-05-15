@@ -24,6 +24,9 @@ if (fs.existsSync('mnemonic.json')) {
 //const INFURA_API_KEY = process.env.INFURA_API_KEY;
 
 module.exports = {
+
+  plugins: ["truffle-security"],
+
   networks: {
     development: {
       host: "localhost",
@@ -39,6 +42,13 @@ module.exports = {
       gas: 6500000,
       gasPrice: 7000000000
     },
+    test: {
+      host: "localhost",
+      port: 8545,
+      network_id: "*",
+      gas: 6500000,
+      gasPrice: 7000000000
+    },
     coverage: {
       host: "localhost",
       port: 8555,
@@ -46,9 +56,17 @@ module.exports = {
       gas: 0xfffffffffff,
       gasPrice: 0x01
     },
+    mainnet: {
+      provider: function() {
+        return new HDWalletProvider(MNEMONIC, "mainnet.infura.io/v3/"+INFURA_API_KEY)
+      },
+      network_id: 1,
+      gas: 8000000,
+      gasPrice: 20000000000
+    },
     ropsten: {
       provider: function() {
-        return new HDWalletProvider(MNEMONIC, "https://ropsten.infura.io/v3/"+INFURA_API_KEY)
+        return new HDWalletProvider(MNEMONIC, "ropsten.infura.io/v3/"+INFURA_API_KEY)
       },
       network_id: 3
     },
@@ -72,7 +90,7 @@ module.exports = {
   },
   compilers: {
     solc: {
-        version: "0.4.25"
+        version: "0.4.24"
     }
   }
   /*

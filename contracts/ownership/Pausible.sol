@@ -25,7 +25,7 @@ contract Pausible {
   onlyOwner
   public {
     database.setBool(keccak256(abi.encodePacked("paused", _contract)), true);
-    events.transaction('Contract paused', msg.sender, address(this), 0, '');
+    events.transaction('Contract paused', msg.sender, address(this), 0, address(0));
     //emit LogPaused(_contract, msg.sender);
   }
 
@@ -35,7 +35,7 @@ contract Pausible {
   onlyOwner
   public {
     database.deleteBool(keccak256(abi.encodePacked("paused", _contract)));
-    events.transaction('Contract unpaused', msg.sender, address(this), 0, '');
+    events.transaction('Contract unpaused', msg.sender, address(this), 0, address(0));
     //emit LogUnpaused(_contract, msg.sender);
   }
 
@@ -43,7 +43,7 @@ contract Pausible {
   function destroy()
   onlyOwner
   external {
-    events.transaction('Pausible destroyed', address(this), msg.sender, address(this).balance, '');
+    events.transaction('Pausible destroyed', address(this), msg.sender, address(this).balance, address(0));
     selfdestruct(msg.sender);
   }
 

@@ -707,6 +707,46 @@
                 "type": "address"
             }
         ],
+        "name": "crowdsalePaid",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x4ca9d624"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            }
+        ],
+        "name": "crowdsaleFailed",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x5f05532f"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            }
+        ],
         "name": "getAssetManager",
         "outputs": [
             {
@@ -738,6 +778,26 @@
         "stateMutability": "view",
         "type": "function",
         "signature": "0x756224c6"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            }
+        ],
+        "name": "getAssetPlatformFee",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xff002b9f"
     },
     {
         "constant": true,

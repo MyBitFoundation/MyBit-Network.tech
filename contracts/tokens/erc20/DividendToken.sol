@@ -11,19 +11,27 @@ import '../../interfaces/ApproveAndCallFallback.sol';
 contract DividendToken is MintableToken {
     using SafeMath for uint;
 
+    ERC20 public erc20;
+
     // @notice Token Income Information
     uint constant scalingFactor = 1e32;
     uint public valuePerToken;
     uint public assetIncome;
+    uint public assetIncomeIssued;
+
 
     mapping (address => uint) public incomeOwed;
     mapping (address => uint) public previousValuePerToken;
 
 
     // @notice constructor: initialized
-    constructor(string _tokenURI, address _owner)
+    constructor(string _tokenURI, address _owner, address _erc20Address)
     public
-    MintableToken(_tokenURI, _owner){}
+    MintableToken(_tokenURI, _tokenURI, uint8(18), _owner){
+      if(_erc20Address != address(0)){
+        erc20 = ERC20(_erc20Address); //Set the address of the ERC20 token that will be issued as dividends
+      }
+    }
 
     // @notice Transfer _amount tokens to address _to.
     // @dev Sender must have enough tokens. Cannot send to 0x0.
@@ -71,42 +79,80 @@ contract DividendToken is MintableToken {
 
     // @notice token holders can withdraw income here
     function withdraw()
-    public
+    external
     updateIncomeClaimed(msg.sender)
     returns (bool) {
         uint amount = incomeOwed[msg.sender].div(scalingFactor);
         delete incomeOwed[msg.sender];
+        assetIncomeIssued = assetIncomeIssued.add(amount);
+        if(address(erc20) == address(0)){
+          msg.sender.transfer(amount);
+        } else {
+          require(erc20.transfer(msg.sender, amount));
+        }
         emit LogIncomeCollected(msg.sender, amount);
-        msg.sender.transfer(amount);
         return true;
     }
 
     // @notice assets can send their income here to be collected by investors
-    function issueDividends()
+    function issueDividends(uint256 _amount)
     payable
-    public
+    external
     returns (bool) {
-        assetIncome = assetIncome.add(msg.value);
-        valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
-        emit LogIncomeReceived(msg.sender, msg.value);
+        require(_amount > 0, "Cannot send zero");
+        if(address(erc20) == address(0)){
+          require(msg.value == _amount);
+        } else {
+          require(msg.value == 0);
+          require(erc20.transferFrom(msg.sender, address(this), _amount), "Transfer failed");
+        }
+        assetIncome = assetIncome.add(_amount);
+        valuePerToken = valuePerToken.add(_amount.mul(scalingFactor).div(supply));
+        emit LogIncomeReceived(msg.sender, _amount);
         return true;
     }
 
-    // @notice returns null address to specify this token accepts only Ether payments
-    function getERC20()
-    external
-    pure
-    returns(address){
-      return address(0);
+    //In case a investor transferred a token directly to this contract
+    //anyone can run this function to clean up the balances
+    //and distribute the difference to token holders
+    function checkForTransfers()
+    external {
+      uint bookBalance = assetIncome.sub(assetIncomeIssued);
+      uint actualBalance;
+      if(address(erc20) == address(0)){
+        actualBalance = address(this).balance;
+      } else {
+        actualBalance = erc20.balanceOf(this);
+      }
+      uint diffBalance = actualBalance.sub(bookBalance);
+      if(diffBalance > 0){
+        //Update value per token
+        valuePerToken = valuePerToken.add(diffBalance.mul(scalingFactor).div(supply));
+        assetIncome = assetIncome.add(diffBalance);
+      }
+      emit LogCheckBalance(diffBalance);
     }
+
+    // Fallback function:
+    // Only works with ERC223
+    // Can't currently detect which token
+    /*
+    function tokenFallback(address _from, uint _value, bytes _data)
+      public {
+        valuePerToken = valuePerToken.add(_value.mul(scalingFactor).div(supply));
+        assetIncome = assetIncome.add(_value);
+        emit LogIncomeReceived(_from, _value);
+    }
+    */
 
     // Fallback function: receives Ether and updates income ledger
     function ()
     payable
-    public {
-        assetIncome = assetIncome.add(msg.value);
-        valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
-        emit LogIncomeReceived(msg.sender, msg.value);
+    external {
+      require(address(erc20) == address(0));
+      assetIncome = assetIncome.add(msg.value);
+      valuePerToken = valuePerToken.add(msg.value.mul(scalingFactor).div(supply));
+      emit LogIncomeReceived(msg.sender, msg.value);
     }
 
 
@@ -131,6 +177,14 @@ contract DividendToken is MintableToken {
         return (collectLatestPayments(_investor).add(incomeOwed[_investor]).div(scalingFactor));
     }
 
+    // @notice returns ERC20 token. Returns null if the token uses Ether.
+    function getERC20()
+    external
+    view
+    returns(address){
+      return address(erc20);
+    }
+
     // ------------------------------------------------------------------------
     //                            Modifiers
     // ------------------------------------------------------------------------
@@ -145,5 +199,6 @@ contract DividendToken is MintableToken {
 
     event LogIncomeReceived(address indexed _sender, uint _paymentAmount);
     event LogIncomeCollected(address _address, uint _amount);
+    event LogCheckBalance(uint _difference);
 
 }

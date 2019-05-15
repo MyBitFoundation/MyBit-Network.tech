@@ -1,4 +1,5 @@
 var bn = require('bignumber.js');
+bn.config({ EXPONENTIAL_AT: 80 });
 
 const Token = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 
@@ -15,9 +16,10 @@ contract('Dividend Token Ether', async(accounts) => {
 
   let token;
   let tokenURI = 'https://mybit.io';
+  let tokenSymbol = 'MYB';
 
   it('Deploy Token', async() => {
-    token = await Token.new(tokenURI, tokenSupply);
+    token = await Token.new(tokenURI, tokenSymbol, tokenSupply.toString());
     let supply = bn(await token.totalSupply());
     assert.equal(supply.eq(tokenSupply), true);
   });
@@ -26,7 +28,7 @@ contract('Dividend Token Ether', async(accounts) => {
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
       console.log(accounts[i]);
-      await token.transfer(tokenHolders[i], tokenPerAccount);
+      await token.transfer(tokenHolders[i], tokenPerAccount.toString());
       userBalance = bn(await token.balanceOf(tokenHolders[i]));
       assert.equal(userBalance.eq(tokenPerAccount), true);
     }
@@ -61,6 +63,16 @@ contract('Dividend Token Ether', async(accounts) => {
     let err;
     try{
       await token.transferFrom(user1, token.address, 1000);
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it('Fail to burn from', async() => {
+    let err;
+    try{
+      await token.burnFrom(user1, token.address, 1000);
     } catch(e){
       err = e;
     }
@@ -133,5 +145,18 @@ contract('Dividend Token Ether', async(accounts) => {
     let ownerBalanceAfter = bn(await token.balanceOf(owner));
     let diff = ownerBalanceBefore.minus(ownerBalanceAfter);
     assert.equal(diff.eq(ETH), true);
+  });
+
+  it('Approve user', async() => {
+    await token.approve(user1, 5000, {from: user2});
+    assert.equal(await token.allowance(user2, user1), 5000);
+  });
+
+  it('Burn From', async() => {
+    let user2BalanceBefore = bn(await token.balanceOf(user2));
+    await token.burnFrom(user2, 5000, {from: user1});
+    let user2BalanceAfter = bn(await token.balanceOf(user2));
+    assert.equal(bn(await token.allowance(user2, user1)).eq(0), true);
+    assert.equal(user2BalanceBefore.minus(user2BalanceAfter).eq(5000), true);
   });
 });

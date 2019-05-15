@@ -55,4 +55,18 @@ contract('SingleOwned', async(accounts) => {
     assert.equal(ownerBool, true);
   });
 
+  it('Fail to destroy', async() => {
+    let err;
+    try{
+      await so.destroy({from:owner});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it('Destroy', async() => {
+    await so.destroy({from: newOwner});
+  });
+
 });

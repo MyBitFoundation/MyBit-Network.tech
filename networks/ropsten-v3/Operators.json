@@ -1,0 +1,161 @@
+[
+    {
+        "inputs": [
+            {
+                "name": "_database",
+                "type": "address"
+            },
+            {
+                "name": "_events",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "constructor",
+        "signature": "constructor"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_operatorAddress",
+                "type": "address"
+            },
+            {
+                "name": "_operatorURI",
+                "type": "string"
+            },
+            {
+                "name": "_assetType",
+                "type": "string"
+            }
+        ],
+        "name": "registerOperator",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x1e729af5"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_operatorID",
+                "type": "bytes32"
+            }
+        ],
+        "name": "removeOperator",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x66259e7f"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_operatorID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_newAddress",
+                "type": "address"
+            }
+        ],
+        "name": "changeOperatorAddress",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x31c36002"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_operatorID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_tokenAddress",
+                "type": "address"
+            },
+            {
+                "name": "_accept",
+                "type": "bool"
+            }
+        ],
+        "name": "acceptERC20Token",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xd908c95b"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_operatorID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_accept",
+                "type": "bool"
+            }
+        ],
+        "name": "acceptEther",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xb00289fe"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_operatorID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_assetType",
+                "type": "string"
+            }
+        ],
+        "name": "addAssetType",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x9dbf3b5f"
+    },
+    {
+        "constant": false,
+        "inputs": [],
+        "name": "destroy",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x83197ef0"
+    }
+]

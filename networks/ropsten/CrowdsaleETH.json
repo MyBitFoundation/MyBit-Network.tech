@@ -1,35 +1,5 @@
 [
     {
-        "constant": true,
-        "inputs": [],
-        "name": "database",
-        "outputs": [
-            {
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x713b563f"
-    },
-    {
-        "constant": true,
-        "inputs": [],
-        "name": "events",
-        "outputs": [
-            {
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xb5f8558c"
-    },
-    {
         "inputs": [
             {
                 "name": "_database",
@@ -73,6 +43,26 @@
         "stateMutability": "payable",
         "type": "function",
         "signature": "0x69fa8a38"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            }
+        ],
+        "name": "payoutETH",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xdd00da7c"
     },
     {
         "constant": false,

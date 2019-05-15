@@ -1,6 +1,7 @@
 var bn = require('bignumber.js');
+bn.config({ EXPONENTIAL_AT: 80 });
 
-const Token = artifacts.require("./tokens/ERC20/DividendTokenERC20.sol");
+const Token = artifacts.require("./tokens/ERC20/DividendToken.sol");
 const MyBitToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const ApproveAndCall = artifacts.require("./test/ApproveAndCallTest.sol");
 
@@ -22,7 +23,7 @@ contract('Dividend Token ERC20', async(accounts) => {
   let tokenURI = 'https://mybit.io';
 
   it("Deploy standard token", async() => {
-    erc20 = await MyBitToken.new('Dai', bn(10000).times(ETH));
+    erc20 = await MyBitToken.new('Dai', 'DAI', bn(10000).times(ETH));
   });
 
   it('Deploy Dividend Token', async() => {
@@ -33,7 +34,7 @@ contract('Dividend Token ERC20', async(accounts) => {
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
       //console.log(accounts[i]);
-      await token.mint(tokenHolders[i], tokenPerAccount);
+      await token.mint(tokenHolders[i], tokenPerAccount.toString());
       userBalance = bn(await token.balanceOf(tokenHolders[i]));
       assert.equal(userBalance.eq(tokenPerAccount), true);
     }
@@ -52,14 +53,14 @@ contract('Dividend Token ERC20', async(accounts) => {
   });
 
   it('Send erc20 to token contract', async() => {
-    await erc20.approve(token.address, 10*ETH);
-    await token.issueDividends(10*ETH, {from:owner});
+    await erc20.approve(token.address, bn(10).times(ETH).toString());
+    await token.issueDividends(bn(10).times(ETH).toString(), {from:owner});
   });
 
   it('Fail to send money', async() => {
     let err;
     try{
-      await erc20.approve(token.address, 10*ETH);
+      await erc20.approve(token.address, bn(10).times(ETH).toString());
       await token.issueDividends(0, {from:owner});
     } catch(e){
       err = e;
@@ -75,14 +76,14 @@ contract('Dividend Token ERC20', async(accounts) => {
 
   it('Transfer tokens with dividends not withdrawn', async() => {
     user2Balance1 = await erc20.balanceOf(user2);
-    await token.transfer(user3, tokenPerAccount/2, {from: user2});
+    await token.transfer(user3, tokenPerAccount.div(2).toString(), {from: user2});
     user2Balance2 = await erc20.balanceOf(user2);
     console.log(user2Balance2 - user2Balance1);
     await token.withdraw({from: user2})
     user2Balance3 = await erc20.balanceOf(user2);
     console.log(user2Balance3 - user2Balance2);
 
-    await token.issueDividends(10*ETH, {from:owner})
+    await token.issueDividends(bn(10).times(ETH).toString(), {from:owner})
     user3Balance1 = await erc20.balanceOf(user3);
     await token.withdraw({from: user3})
     user3Balance2 = await erc20.balanceOf(user3);
@@ -165,13 +166,13 @@ contract('Dividend Token ERC20', async(accounts) => {
   });
 
   it('Send erc20 directly to dividend contract', async() => {
-    await erc20.transfer(token.address, 10*ETH);
+    await erc20.transfer(token.address, bn(10).times(ETH).toString());
   });
 
   it('Check for direct transfers', async() => {
     let tx = await token.checkForTransfers();
     diff = tx.logs[0].args._difference;
-    assert.equal(diff, 10*ETH);
+    assert.equal(bn(diff).eq(10*ETH), true);
   });
 
   it('Approve and call', async() => {

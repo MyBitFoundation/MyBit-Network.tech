@@ -178,13 +178,9 @@
             {
                 "name": "_assetAddress",
                 "type": "address"
-            },
-            {
-                "name": "_amountToBurn",
-                "type": "uint256"
             }
         ],
-        "name": "burnEscrow",
+        "name": "voteToBurn",
         "outputs": [
             {
                 "name": "",
@@ -194,7 +190,31 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x0c2c4f55"
+        "signature": "0x4a364354"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            },
+            {
+                "name": "_amountToBurn",
+                "type": "uint256"
+            }
+        ],
+        "name": "mutualBurn",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xd753930d"
     },
     {
         "constant": false,
@@ -205,33 +225,5 @@
         "stateMutability": "nonpayable",
         "type": "function",
         "signature": "0x83197ef0"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "name": "_assetAddress",
-                "type": "address"
-            },
-            {
-                "name": "methodID",
-                "type": "bytes4"
-            },
-            {
-                "name": "parameterHash",
-                "type": "bytes32"
-            }
-        ],
-        "name": "passed",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xad38258b"
     }
 ]
