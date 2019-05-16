@@ -3,6 +3,8 @@ bn.config({ EXPONENTIAL_AT: 80 });
 
 const Token = artifacts.require("./tokens/erc20/DividendToken.sol");
 const PlatformToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
+const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory.sol");
+const Minter = artifacts.require("./database/Minter.sol");
 //const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 const AssetGenerator = artifacts.require("./ecosystem/AssetGenerator.sol");
 const Database = artifacts.require("./database/Database.sol");
@@ -34,6 +36,8 @@ contract('Asset Generator', async(accounts) => {
 
   let token;
   let platformToken;
+  let tokenFactory;
+  let minter;
   let AssetGen;
   let db;
   let events;
@@ -82,10 +86,15 @@ contract('Asset Generator', async(accounts) => {
     assert.equal(ledgerTrue, true);
   });
 
+  it('Deploy token factory', async() => {
+    tokenFactory = await MiniMeTokenFactory.new();
+  });
+
   it('Deploy platform funds', async() => {
     platform = await Platform.new(db.address, events.address);
     await cm.addContract('Platform', platform.address);
     await platform.setPlatformToken(platformToken.address);
+    await platform.setTokenFactory(tokenFactory.address);
   });
 /*
   it('Deploy burner contract', async() => {
@@ -93,6 +102,11 @@ contract('Asset Generator', async(accounts) => {
     await cm.addContract("ERC20Burner", burner.address);
   });
 */
+  it('Deploy Minter', async() => {
+    minter = await Minter.new(db.address);
+    await cm.addContract("Minter", minter.address);
+  });
+
   it('Deploy AssetGenerator', async() => {
     assetGen = await AssetGenerator.new(db.address, events.address);
     await cm.addContract("AssetGenerator", assetGen.address);

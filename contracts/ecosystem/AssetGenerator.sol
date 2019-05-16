@@ -4,8 +4,8 @@ import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
 import '../database/Events.sol';
 // import "../access/ERC20Burner.sol";
-import "../tokens/erc20/DividendToken.sol";
 import "../tokens/distribution/FixedDistribution.sol";
+import "../interfaces/MinterInterface.sol";
 
 // @title An asset generator contract for onboarding existing real-world assets
 // @notice This contract creates ERC20 dividend tokens and give sthem to the _tokenHolders provided
@@ -15,6 +15,7 @@ contract AssetGenerator {
 
   DBInterface private database;
   Events private events;
+  MinterInterface private minter;
 
 
   // @notice This contract
@@ -23,6 +24,7 @@ contract AssetGenerator {
   public{
       database = DBInterface(_database);
       events = Events(_events);
+      minter = MinterInterface(database.addressStorage(keccak256(abi.encodePacked("contract", "Minter"))));
   }
 
 
@@ -48,13 +50,12 @@ contract AssetGenerator {
   returns (bool) {
     require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
     require (_tokenHolders.length == _amount.length && _tokenHolders.length <= uint8(100));
-    DividendToken assetInstance = new DividendToken(_tokenURI, address(this), address(0));   // Gives this contract all new asset tokens
+    address assetAddress = minter.cloneToken(_tokenURI, address(0));
     for (uint8 i = 0; i < _tokenHolders.length; i++) {
-      assetInstance.mint(_tokenHolders[i], _amount[i]);
+      minter.mintAssetTokens(assetAddress, _tokenHolders[i], _amount[i]);
     }
-    assetInstance.finishMinting();
-    database.setAddress(keccak256(abi.encodePacked("asset.manager", address(assetInstance))), _assetManager);
-    events.asset('Asset created', _tokenURI, address(assetInstance), _assetManager);
+    database.setAddress(keccak256(abi.encodePacked("asset.manager", assetAddress)), _assetManager);
+    events.asset('Asset created', _tokenURI, assetAddress, _assetManager);
     return true;
   }
 

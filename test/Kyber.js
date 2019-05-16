@@ -1,5 +1,6 @@
 //MyBit
 const AssetToken = artifacts.require("DividendToken.sol");
+const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory.sol");
 const Minter = artifacts.require("./database/Minter.sol");
 const CrowdsaleGeneratorERC20 = artifacts.require("CrowdsaleGeneratorERC20.sol");
 const CrowdsaleERC20 = artifacts.require("CrowdsaleERC20.sol");
@@ -36,7 +37,7 @@ const tokenPerAccount = new BigNumber(1000).times(ETH);
 
 let assetToken, minter, crowdsaleReserve, crowdsaleGenERC20, crowdsaleERC20, crowdsaleGenETH,
     crowdsaleETH, db, events, cm, assetManagerFunds, escrowReserve, assetManagerEscrow,
-    operators, platform, api, platformDistribution;
+    operators, platform, api, platformDistribution, tokenFactory;
 
 let operatorID, assetURI, assetAddress;
 
@@ -1082,11 +1083,13 @@ contract('Kyber', function(accounts) {
         await tokenInstance[1].transfer(accounts[i], tokenPerAccount.toString());
         await tokenInstance[2].transfer(accounts[i], tokenPerAccount.toString());
       }
+      tokenFactory = await MiniMeTokenFactory.new();
       platform = await Platform.new(db.address, events.address);
       await cm.addContract('Platform', platform.address);
       await platform.setPlatformToken(tokenInstance[0].address);
       await platform.setPlatformFee('3');
       await platform.setPlatformPercentage('1');
+      await platform.setTokenFactory(tokenFactory.address);
       platformDistribution = await PlatformDistribution.new(db.address, networkProxy.address);
       await platform.setPlatformFundsWallet(platformDistribution.address);
       await platform.setPlatformAssetsWallet(accounts[0]);

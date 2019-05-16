@@ -3,9 +3,10 @@ const fs = require('fs');
 module.exports = function(deployer, network, accounts) {
   if(network != 'coverage' && network != 'development'){
     const Platform = artifacts.require("./ecosystem/Platform.sol");
+    const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory.sol");
     const ContractManager = artifacts.require("./database/ContractManager.sol");
 
-    let platform, cm;
+    let platform, tokenFactory, cm;
     let contracts = JSON.parse(fs.readFileSync(`networks/${network}/contracts.json`, 'utf8'));
 
     deployer.then(function(){
@@ -23,6 +24,16 @@ module.exports = function(deployer, network, accounts) {
       cm = instance;
       console.log('Adding Platform to contract manager...');
       return cm.addContract('Platform', platform.address, {from: accounts[0], gas:200000});
+
+    }).then(function(){
+
+      return MiniMeTokenFactory.new();
+
+    }).then(function(instance){
+
+      tokenFactory = instance;
+      console.log('MiniMeTokenFactory.sol: ' + tokenFactory.address);
+      return platform.setTokenFactory(tokenFactory.address);
 
     }).then(function(){
 
@@ -53,6 +64,7 @@ module.exports = function(deployer, network, accounts) {
 
     }).then(function() {
       contracts['Platform'] = platform.address;
+      contracts['MiniMeTokenFactory'] = tokenFactory.address;
       let contracts_json = JSON.stringify(contracts, null, 4);
 
       fs.writeFile(`networks/${network}/contracts.json`, contracts_json, (err) => {
@@ -60,7 +72,7 @@ module.exports = function(deployer, network, accounts) {
         console.log('Contracts Saved');
       });
 
-      instanceList = [platform];
+      instanceList = [platform, tokenFactory];
 
       for(let i=0; i<instanceList.length; i++){
         let instanceName = instanceList[i].constructor._json.contractName;
