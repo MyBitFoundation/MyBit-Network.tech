@@ -56,6 +56,12 @@ contract Platform {
     database.setUint(keccak256(abi.encodePacked("platform.percentage")), _percent);
   }
 
+  function setTokenFactory(address _factory)
+  external
+  onlyOwner {
+    database.setAddress(keccak256(abi.encodePacked("platform.tokenFactory")), _factory);
+  }
+
   /*
   function setBurnrate(uint _percent)
   external

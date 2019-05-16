@@ -2,9 +2,9 @@
 
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
-import "../tokens/erc20/DividendToken.sol";
 import "../database/Events.sol";
 import "../interfaces/KyberInterface.sol";
+import "../interfaces/MinterInterface.sol";
 
 interface CrowdsaleGeneratorERC20_ERC20 {
   function balanceOf(address _who) external view returns (uint256);
@@ -22,6 +22,7 @@ contract CrowdsaleGeneratorERC20 {
   DBInterface private database;
   Events private events;
   KyberInterface private kyber;
+  MinterInterface private minter;
   //CrowdsaleGeneratorERC20_ERC20Burner private burner;
 
   //uint constant scalingFactor = 10**32;
@@ -33,6 +34,7 @@ contract CrowdsaleGeneratorERC20 {
       database = DBInterface(_database);
       events = Events(_events);
       kyber = KyberInterface(_kyber);
+      minter = MinterInterface(database.addressStorage(keccak256(abi.encodePacked("contract", "Minter"))));
   }
 
   // @notice AssetManagers can initiate a crowdfund for a new asset here
@@ -65,7 +67,7 @@ contract CrowdsaleGeneratorERC20 {
     } else {
       startTime = _startTime;
     }
-    address assetAddress = address(new DividendToken(_assetURI, database.addressStorage(keccak256(abi.encodePacked("contract", "Minter"))), _fundingToken));
+    address assetAddress = minter.cloneToken(_assetURI, _fundingToken);
     require(setCrowdsaleValues(assetAddress, startTime, _fundingLength, _amountToRaise));
     require(setAssetValues(assetAddress, _assetURI, _operatorID, _assetManager, _assetManagerPerc, _amountToRaise));
     //If escrow, lock

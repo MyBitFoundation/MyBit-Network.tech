@@ -107,7 +107,6 @@ contract CrowdsaleERC20{
     require(platformAssetsWallet != address(0), "Platform assets wallet not set");
     require(minter.mintAssetTokens(_assetAddress, database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerTokens", _assetAddress)))), "Manager minting failed");
     require(minter.mintAssetTokens(_assetAddress, platformAssetsWallet, database.uintStorage(keccak256(abi.encodePacked("asset.platformTokens", _assetAddress)))), "Platform minting failed");
-    require(minter.stopMint(_assetAddress), "Stop minting failed");
     //Get the addresses for the operator and platform
     address operator = database.addressStorage(keccak256(abi.encodePacked("asset.operator", _assetAddress)));
     address platformFundsWallet = database.addressStorage(keccak256(abi.encodePacked("platform.wallet.funds")));

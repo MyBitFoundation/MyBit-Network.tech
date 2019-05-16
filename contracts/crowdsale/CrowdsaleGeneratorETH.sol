@@ -3,8 +3,8 @@ pragma solidity ^0.4.24;
 import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
 import "../database/Events.sol";
-import "../tokens/erc20/DividendToken.sol";
 import "../interfaces/KyberInterface.sol";
+import "../interfaces/MinterInterface.sol";
 
 interface CrowdsaleGeneratorETH_ERC20 {
   function balanceOf(address _who) external view returns (uint256);
@@ -22,6 +22,7 @@ contract CrowdsaleGeneratorETH {
   DBInterface public database;
   Events public events;
   KyberInterface private kyber;
+  MinterInterface private minter;
 
   //uint constant scalingFactor = 1e32;   // Used to avoid rounding errors
 
@@ -32,6 +33,7 @@ contract CrowdsaleGeneratorETH {
       database = DBInterface(_database);
       events = Events(_events);
       kyber = KyberInterface(_kyber);
+      minter = MinterInterface(database.addressStorage(keccak256(abi.encodePacked("contract", "Minter"))));
   }
 
   // @notice AssetManagers can initiate a crowdfund for a new asset here
@@ -62,7 +64,7 @@ contract CrowdsaleGeneratorETH {
     } else {
       startTime = _startTime;
     }
-    address assetAddress = address(new DividendToken(_assetURI, database.addressStorage(keccak256(abi.encodePacked("contract", "Minter"))), address(0)));   // Gives this contract all new asset tokens
+    address assetAddress = minter.cloneToken(_assetURI, address(0));
     require(setCrowdsaleValues(assetAddress, startTime, _fundingLength, _amountToRaise));
     require(setAssetValues(assetAddress, _assetURI, _operatorID, _assetManager, _assetManagerPerc, _amountToRaise));
     //If escrow, lock

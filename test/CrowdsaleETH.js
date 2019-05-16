@@ -3,6 +3,7 @@ bn.config({ EXPONENTIAL_AT: 80 });
 
 const Token = artifacts.require("./tokens/erc20/DividendToken.sol");
 const PlatformToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
+const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory.sol");
 const Minter = artifacts.require("./database/Minter.sol");
 const Crowdsale = artifacts.require("./crowdsale/CrowdsaleETH.sol");
 const CrowdsaleGenerator = artifacts.require("./crowdsale/CrowdsaleGeneratorETH.sol");
@@ -41,6 +42,7 @@ contract('Ether Crowdsale', async(accounts) => {
 
   let token;
   let platformToken;
+  let tokenFactory;
   let minter;
   let crowdsale;
   let crowdsaleGen;
@@ -101,12 +103,17 @@ contract('Ether Crowdsale', async(accounts) => {
     assert.equal(ledgerTrue, true);
   });
 
+  it('Deploy token factory', async() => {
+    tokenFactory = await MiniMeTokenFactory.new();
+  });
+
   it('Deploy platform funds', async() => {
     platform = await Platform.new(db.address, events.address);
     await cm.addContract('Platform', platform.address);
     await platform.setPlatformToken(platformToken.address);
     await platform.setPlatformFee('3');
     await platform.setPlatformPercentage('1');
+    await platform.setTokenFactory(tokenFactory.address);
   });
 
   it('Deploy assetManager escrow', async() => {
@@ -432,7 +439,6 @@ contract('Ether Crowdsale', async(accounts) => {
     let user1Tokens = bn(await token.balanceOf(user1));
     console.log(user1Tokens.toNumber());
     assert.equal(user1Tokens.eq(bn(2).times(ETH)), true);
-    //assert.equal(await token.mintingFinished(), true);
     assert.equal(bn(await token.balanceOf(assetManager)).eq(0), true);
     assert.equal(await api.crowdsaleFinalized(assetAddress), true);
   });
@@ -468,7 +474,6 @@ contract('Ether Crowdsale', async(accounts) => {
     await crowdsale.payoutETH(assetAddress, {from: assetManager});
     let user2Tokens = bn(await token.balanceOf(user2));
     assert.equal(user2Tokens.eq(bn(2).times(ETH)), true);
-    //assert.equal(await token.mintingFinished(), true);
     assert.equal(await api.crowdsaleFinalized(assetAddress), true);
   });
 
@@ -495,7 +500,7 @@ contract('Ether Crowdsale', async(accounts) => {
     token = await Token.at(assetAddress);
   });
 
-  it('User3 funding 1 wei', async() => {
+  it('User3 funding 100 wei', async() => {
     await crowdsale.buyAssetOrderETH(assetAddress, user3, {from:user3, value:103});
     await crowdsale.payoutETH(assetAddress, {from: assetManager});
     let user3Balance = bn(await token.balanceOf(user3));
@@ -503,7 +508,6 @@ contract('Ether Crowdsale', async(accounts) => {
     let assetManagerBalance = bn(await token.balanceOf(assetManagerFunds.address));
     console.log('Asset manager balance: ', assetManagerBalance);
     assert.equal(assetManagerBalance.eq(bn(100).div(0.49).times(0.5).integerValue()), true);
-    assert.equal(await token.mintingFinished(), true);
     assert.equal(await api.crowdsaleFinalized(assetAddress), true);
   });
 

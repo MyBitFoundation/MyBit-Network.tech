@@ -3,6 +3,7 @@ bn.config({ EXPONENTIAL_AT: 80 });
 
 const AssetToken = artifacts.require("./tokens/erc20/DividendToken.sol");
 const MyBitToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
+const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory.sol");
 const Minter = artifacts.require("./database/Minter.sol");
 const Crowdsale = artifacts.require("./crowdsale/CrowdsaleERC20.sol");
 const CrowdsaleGenerator = artifacts.require("./crowdsale/CrowdsaleGeneratorERC20.sol");
@@ -42,6 +43,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
   let assetToken;
   let erc20;
   let platformToken;
+  let tokenFactory;
   let minter;
   let crowdsale;
   let crowdsaleGen;   // crowdsale generator
@@ -102,12 +104,17 @@ contract('ERC20 Crowdsale', async(accounts) => {
     assert.equal(ledgerTrue, true);
   });
 
+  it('Deploy token factory', async() => {
+    tokenFactory = await MiniMeTokenFactory.new();
+  });
+
   it('Deploy platform funds', async() => {
     platform = await Platform.new(db.address, events.address);
     await cm.addContract('Platform', platform.address);
     await platform.setPlatformToken(platformToken.address);
     await platform.setPlatformFee('3');
     await platform.setPlatformPercentage(platformPercentage.times(100));
+    await platform.setTokenFactory(tokenFactory.address);
   });
 
   it('Deploy assetManager escrow', async() => {
@@ -162,7 +169,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
 
   it('Deploy CrowdsaleGenerator', async() => {
     crowdsaleGen = await CrowdsaleGenerator.new(db.address, events.address, kyber.address);
-    await cm.addContract("CrowdsaleGenerator", crowdsaleGen.address);
+    await cm.addContract("CrowdsaleGeneratorERC20", crowdsaleGen.address);
   });
 
   it('Deploy crowdsale contract', async() => {
@@ -443,7 +450,6 @@ contract('ERC20 Crowdsale', async(accounts) => {
     let fee = bn(await api.getAssetPlatformFee(assetAddress));
     assert.equal(assetTokenSupply.eq(user1AssetTokens.div(bn(1).minus(platformPercentage)).integerValue()), true);
     assert.equal(user1AssetTokens.eq(bn(2).times(ETH)), true);
-    //assert.equal(await assetToken.mintingFinished(), true);
     assert.equal(bn(await assetToken.balanceOf(assetManager)).eq(0), true);
     assert.equal(await api.crowdsaleFinalized(assetAddress), true);
     // Check payout to platform and operator
