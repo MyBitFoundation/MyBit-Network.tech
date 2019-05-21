@@ -128,7 +128,7 @@ pragma solidity ^0.4.24;
       uint escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("asset.escrowRedeemed", assetManagerEscrowID)));
       uint unlockAmount = database.uintStorage(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID))).sub(escrowRedeemed);
       require(reserve.burnERC20(unlockAmount, database.addressStorage(keccak256(abi.encodePacked("platform.token"))))); // burn manager tokens
-      database.setUint(keccak256(abi.encodePacked("asset.escrowRedeemed", assetManagerEscrowID)), escrowRedeemed.add(unlockAmount));  // mark burned _assetAddresss as redeemed
+      database.setUint(keccak256(abi.encodePacked("asset.escrowRedeemed", assetManagerEscrowID)), database.uintStorage(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID))));  // mark burned _assetAddresss as redeemed
       return true;
     }
 

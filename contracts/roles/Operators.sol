@@ -16,7 +16,7 @@ contract Operators {
 
   // @notice allows the platform owners to onboard a new operator.
   // @notice operators will receive crowdfunding payments and are liable for producing/installing assets.
-  function registerOperator(address _operatorAddress, string _operatorURI, string _assetType)
+  function registerOperator(address _operatorAddress, string _operatorURI, string _assetType, address _referrerAddress)
   external
   onlyOwner {
     require(_operatorAddress != address(0));
@@ -24,6 +24,12 @@ contract Operators {
     require(database.addressStorage(keccak256(abi.encodePacked("operator", operatorID))) == address(0));
     database.setAddress(keccak256(abi.encodePacked("operator", operatorID)), _operatorAddress);
     database.setBytes32(keccak256(abi.encodePacked("operator", _operatorAddress)), operatorID);
+    if(_referrerAddress == address(0)){
+      database.setAddress(keccak256(abi.encodePacked("referer", operatorID)), database.addressStorage(keccak256(abi.encodePacked("platform.wallet.assets"))));
+    } else {
+      database.setAddress(keccak256(abi.encodePacked("referer", operatorID)), _referrerAddress);
+    }
+
     events.operator('Operator registered', operatorID, _operatorURI, _operatorAddress);
     events.operator('Asset type', operatorID, _assetType, _operatorAddress);
     //emit LogOperatorRegistered(operatorID, _operatorURI);

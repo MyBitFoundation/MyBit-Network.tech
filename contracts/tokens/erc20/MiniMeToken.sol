@@ -719,6 +719,9 @@ contract MiniMeTokenFactory {
         );
 
         newToken.changeController(msg.sender);
+        emit NewToken(address(newToken), address(_parentToken), _snapshotBlock, _tokenName, _decimalUnits, _tokenSymbol, _transfersEnabled, _erc20Address);
         return newToken;
     }
+
+    event NewToken(address token, address parent, uint block, string name, uint decimals, string symbol, bool transfersEnabled, address erc20);
 }

@@ -1,7 +1,6 @@
 var bn = require('bignumber.js');
 bn.config({ EXPONENTIAL_AT: 80 });
 
-const Token = artifacts.require("./tokens/erc20/DividendToken.sol");
 const PlatformToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
 const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory.sol");
 const Minter = artifacts.require("./database/Minter.sol");
