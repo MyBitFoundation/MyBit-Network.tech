@@ -6,7 +6,8 @@ const EscrowReserve = artifacts.require("./database/EscrowReserve.sol");
 const Database = artifacts.require("./database/Database.sol");
 const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
-const DivToken = artifacts.require("./tokens/ERC20/DividendToken.sol");
+const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory.sol");
+const MiniMeToken = artifacts.require("MiniMeToken.sol");
 const MyBitToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
@@ -25,6 +26,7 @@ contract('AssetManager Escrow', async(accounts) => {
   const operator = accounts[5];
   const tokenHolders = [user1, user2, user3];
 
+  let tokenFactory;
   let divToken;
   let burnToken
   let db;
@@ -97,13 +99,15 @@ contract('AssetManager Escrow', async(accounts) => {
     operators = await Operators.new(db.address, events.address);
     await cm.addContract('Operators', operators.address);
     let block = await web3.eth.getBlock('latest');
-    await operators.registerOperator(operator, 'Operator', 'Asset Type');
+    await operators.registerOperator(operator, 'Operator', 'Asset Type', '0x0000000000000000000000000000000000000000');
     let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: owner}, fromBlock: block.number});
     operatorID = logs[0].args.operatorID;
   });
 
   it("Deploy asset token", async() => {
-    divToken = await DivToken.new(assetURI, owner, '0x0000000000000000000000000000000000000000');
+    tokenFactory = await MiniMeTokenFactory.new();
+    tx = await tokenFactory.createCloneToken('0x0000000000000000000000000000000000000000', 0, assetURI, 18, assetURI, true, '0x0000000000000000000000000000000000000000', {from:owner});
+    divToken = await MiniMeToken.at(tx.logs[0].args.token);
     assetAddress = divToken.address;
   });
 
@@ -180,7 +184,7 @@ contract('AssetManager Escrow', async(accounts) => {
     tokenPerAccount = totalSupply.div(tokenHolders.length).integerValue();   // TODO: getting error with bignumber.js here
     for (var i = 0; i < tokenHolders.length; i++) {
       //console.log(accounts[i]);
-      await divToken.mint(tokenHolders[i], tokenPerAccount.toString());
+      await divToken.generateTokens(tokenHolders[i], tokenPerAccount.toString());
       userBalance = await divToken.balanceOf(tokenHolders[i]);
       assert.equal(bn(userBalance).eq(tokenPerAccount), true);
     }
@@ -375,8 +379,12 @@ contract('AssetManager Escrow', async(accounts) => {
     let escrowBefore = await api.getAssetManagerEscrowRemaining(escrowID);
     assert.equal(bn(escrowBefore).gt(0), true);
     escrow.voteToBurn(assetAddress, {from: owner});
-    let escrowAfter = await api.getAssetManagerEscrowRemaining(escrowID);
-    assert.equal(escrowAfter, 0);
+    let escrowAfter = bn(await api.getAssetManagerEscrowRemaining(escrowID));
+    console.log(bn(await api.getAssetManagerEscrow(escrowID)).toString());
+    console.log(bn(await api.getAssetManagerEscrowRedeemed(escrowID)).toString());
+    console.log(escrowAfter.toString());
+
+    assert.equal(escrowAfter.eq(0), true);
   });
 
   it('Return ether to operator (So we do not have to restart ganache!)', async() => {

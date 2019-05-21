@@ -5,8 +5,8 @@ const AssetManagerFunds = artifacts.require("./roles/AssetManagerFunds.sol");
 const Database = artifacts.require("./database/Database.sol");
 const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
-const DivToken = artifacts.require("./tokens/ERC20/DividendToken.sol");
-//const DivTokenERC20 = artifacts.require("./tokens/ERC20/DividendTokenERC20.sol");
+const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory.sol");
+const MiniMeToken = artifacts.require("MiniMeToken.sol");
 const MyBitToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 const Operators = artifacts.require("./roles/Operators.sol");
@@ -25,8 +25,11 @@ contract('AssetManagerFunds', async(accounts) => {
   const operator = accounts[5];
   const tokenHolders = [user1, user2, user3];
 
+  let maxGas;
+  let id;
   let divToken;
-  let burnToken
+  let burnToken;
+  let tokenFactory;
   let db;
   let events;
   let cm;
@@ -39,6 +42,15 @@ contract('AssetManagerFunds', async(accounts) => {
   let assetURI = 'NewAsset';
   let assetsETH;
   let assetsERC;
+
+  it('Get network ID and set max gas', async() => {
+    id = await web3.eth.net.getId();
+    if(id >= 1500000000000){
+      maxGas = '0xfffffffffff';
+    } else {
+      maxGas = 6721975;
+    }
+  });
 
   it('Deploy hash contract', async() => {
     hash = await HashFunctions.new();
@@ -69,14 +81,15 @@ contract('AssetManagerFunds', async(accounts) => {
   });
 
   it('Deploy dividend Token', async() => {
-    divToken = await DivToken.new(assetURI, owner, '0x0000000000000000000000000000000000000000');
+    tokenFactory = await MiniMeTokenFactory.new();
+    tx = await tokenFactory.createCloneToken('0x0000000000000000000000000000000000000000', 0, assetURI, 18, assetURI, true, '0x0000000000000000000000000000000000000000', {from:owner});
+    divToken = await MiniMeToken.at(tx.logs[0].args.token);
   });
 
   it("Spread tokens to users", async() => {
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
-      console.log(accounts[i]);
-      await divToken.mint(tokenHolders[i], tokenPerAccount.toString());
+      await divToken.generateTokens(tokenHolders[i], tokenPerAccount.toString());
       userBalance = bn(await divToken.balanceOf(tokenHolders[i]));
       assert.equal(userBalance.eq(tokenPerAccount), true);
     }
@@ -90,7 +103,7 @@ contract('AssetManagerFunds', async(accounts) => {
   });
 
   it("Transfer token to assetManager assets", async() => {
-    await divToken.mint(assetManagerFunds.address, tokenPerAccount.toString());
+    await divToken.generateTokens(assetManagerFunds.address, tokenPerAccount.toString());
     assetManagerBalance = bn(await divToken.balanceOf(assetManagerFunds.address));
     assert.equal(assetManagerBalance.eq(tokenPerAccount), true);
   });
@@ -107,7 +120,7 @@ contract('AssetManagerFunds', async(accounts) => {
     operators = await Operators.new(db.address, events.address);
     await cm.addContract('Operators', operators.address);
     let block = await web3.eth.getBlock('latest');
-    await operators.registerOperator(operator, 'Operator', 'Asset Type');
+    await operators.registerOperator(operator, 'Operator', 'Asset Type', '0x0000000000000000000000000000000000000000');
     let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: owner}, fromBlock: block.number});
     operatorID = logs[0].args.operatorID;
   });
@@ -170,25 +183,32 @@ contract('AssetManagerFunds', async(accounts) => {
   });
 
   it('Withdraw from assetManager assets (ETH)', async() => {
-    let balanceBefore = await web3.eth.getBalance(assetManager);
-    let amountOwed = await divToken.getAmountOwed(assetManagerFunds.address);
-    assert.notEqual(amountOwed, 0);
-    await assetManagerFunds.retrieveAssetManagerETH(assetsETH, assetManager, {from:assetManager, gas:6721975});
-    let balanceAfter = await web3.eth.getBalance(assetManager);
-    assert.equal(bn(balanceAfter).isGreaterThan(balanceBefore), true);
+    //Withdraw fails in solidity-coverage
+    if(id < 1500000000000){
+      let balanceBefore = await web3.eth.getBalance(assetManager);
+      console.log('Balance Before: ', balanceBefore.toString());
+      let amountOwed = bn(await divToken.getAmountOwed(assetManagerFunds.address));
+      console.log('Amount Owed: ', amountOwed.toString());
+      assert.notEqual(amountOwed.eq(0), true);
+      await assetManagerFunds.retrieveAssetManagerETH(assetsETH, assetManager, {from:assetManager, gas:maxGas});
+      let balanceAfter = await web3.eth.getBalance(assetManager);
+      console.log('Balance After: ', balanceAfter.toString());
+      assert.equal(bn(balanceAfter).isGreaterThan(balanceBefore), true);
+    }
   });
 
   // TEST ERC20 assets
 
   it('Deploy dividendERC20 Token', async() => {
     assetURI = 'https://someurl.ch';
-    divToken = await DivToken.new(assetURI, owner, burnToken.address);
+    tx = await tokenFactory.createCloneToken('0x0000000000000000000000000000000000000000', 0, assetURI, 18, assetURI, true, burnToken.address, {from: owner});
+    divToken = await MiniMeToken.at(tx.logs[0].args.token);
   });
 
   it("Spread tokens to users", async() => {
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
-      await divToken.mint(tokenHolders[i], tokenPerAccount.toString());
+      await divToken.generateTokens(tokenHolders[i], tokenPerAccount.toString());
       userBalance = bn(await divToken.balanceOf(tokenHolders[i]));
       assert.equal(userBalance.eq(tokenPerAccount), true);
     }
@@ -197,7 +217,7 @@ contract('AssetManagerFunds', async(accounts) => {
   });
 
   it("Transfer token to assetManager assets", async() => {
-    await divToken.mint(assetManagerFunds.address, tokenPerAccount);
+    await divToken.generateTokens(assetManagerFunds.address, tokenPerAccount);
     assetManagerBalance = bn(await divToken.balanceOf(assetManagerFunds.address));
     assert.equal(assetManagerBalance.eq(tokenPerAccount), true);
   });

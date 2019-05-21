@@ -107,10 +107,23 @@ contract CrowdsaleETH {
       return true;
     }
 
+    function cancel(address _assetAddress, address _assetManager)
+    external
+    whenNotPaused
+    validAsset(_assetAddress)
+    beforeDeadline(_assetAddress)
+    notFinalized(_assetAddress)
+    returns (bool){
+      require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))));
+      require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), "User not approved");
+      database.setUint(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress)), 1);
+      refund(_assetAddress);
+    }
+
     // @notice Contributors can retrieve their funds here if crowdsale has paased deadline and not reached its goal
     // @param (bytes32) _assetAddress = The address of the asset which completed the crowdsale
     function refund(address _assetAddress)
-    external
+    public
     whenNotPaused
     validAsset(_assetAddress)
     afterDeadline(_assetAddress)
@@ -139,13 +152,6 @@ contract CrowdsaleETH {
     external {
       events.transaction('CrowdsaleETH destroyed', address(this), msg.sender, address(this).balance, address(0));
       selfdestruct(msg.sender);
-    }
-
-    // @notice fallback function: reject ether
-    function ()
-    public
-    payable {
-      revert();
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -177,7 +183,13 @@ contract CrowdsaleETH {
       _;
     }
 
-    // @notice reverts if the funding deadline has already past
+    // @notice reverts if the funding deadline has not passed
+    modifier beforeDeadline(address _assetAddress) {
+      require(now < database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress))), "Before deadline");
+      _;
+    }
+
+    // @notice reverts if the funding deadline has already past or crowsale has not started
     modifier betweenDeadlines(address _assetAddress) {
       require(now <= database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress))), "Past deadline");
       require(now >= database.uintStorage(keccak256(abi.encodePacked("crowdsale.start", _assetAddress))), "Before start time");

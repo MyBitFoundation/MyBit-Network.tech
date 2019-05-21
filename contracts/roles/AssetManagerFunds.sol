@@ -78,18 +78,19 @@ contract AssetManagerFunds {
       DToken token = DToken(_assetAddress[i]);
       require(address(token) != address(0));
       uint tokensOwed = token.getAmountOwed(address(this));
-      require(tokensOwed > 0);
-      DToken fundingToken = DToken(token.getERC20());
-      uint balanceBefore = fundingToken.balanceOf(address(this));
-      uint8 tokenIndex = containsAddress(tokenAddresses, address(token));
-      if (tokenIndex < _assetAddress.length) {  payoutAmounts[tokenIndex] = payoutAmounts[tokenIndex].add(tokensOwed); }
-      else {
-        tokenAddresses[numEntries] = address(fundingToken);
-        payoutAmounts[numEntries] = tokensOwed;
-        numEntries++;
+      if(tokensOwed > 0){
+        DToken fundingToken = DToken(token.getERC20());
+        uint balanceBefore = fundingToken.balanceOf(address(this));
+        uint8 tokenIndex = containsAddress(tokenAddresses, address(token));
+        if (tokenIndex < _assetAddress.length) {  payoutAmounts[tokenIndex] = payoutAmounts[tokenIndex].add(tokensOwed); }
+        else {
+          tokenAddresses[numEntries] = address(fundingToken);
+          payoutAmounts[numEntries] = tokensOwed;
+          numEntries++;
+        }
+        require(token.withdraw());
+        require(fundingToken.balanceOf(address(this)).sub(tokensOwed) == balanceBefore);
       }
-      require(token.withdraw());
-      require(fundingToken.balanceOf(address(this)).sub(tokensOwed) == balanceBefore);
     }
 
     for(i = 0; i < numEntries; i++){
@@ -111,11 +112,12 @@ contract AssetManagerFunds {
       DToken token = DToken(_assetAddress[i]);
       uint balanceBefore = address(this).balance;
       uint amountOwed = token.getAmountOwed(address(this));
-      require(amountOwed > 0);
-      uint balanceAfter = balanceBefore.add(amountOwed);
-      require(token.withdraw());
-      require(address(this).balance == balanceAfter);
-      weiOwed = weiOwed.add(amountOwed);
+      if(amountOwed > 0){
+        uint balanceAfter = balanceBefore.add(amountOwed);
+        require(token.withdraw());
+        require(address(this).balance == balanceAfter);
+        weiOwed = weiOwed.add(amountOwed);
+      }
     }
     _assetManager.transfer(weiOwed);
     return true;
@@ -178,6 +180,10 @@ contract AssetManagerFunds {
 
   function ()
   payable
-  public {}
+  public {
+    emit EtherReceived(msg.sender, msg.value);
+  }
+
+  event EtherReceived(address sender, uint amount);
 
 }

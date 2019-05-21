@@ -1,7 +1,8 @@
 var bn = require('bignumber.js');
 bn.config({ EXPONENTIAL_AT: 80 });
 
-const Token = artifacts.require("./tokens/ERC20/DividendToken.sol");
+const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory.sol");
+const MiniMeToken = artifacts.require("MiniMeToken.sol");
 const MyBitToken = artifacts.require("./tokens/ERC20/MyBitToken.sol");
 const ApproveAndCall = artifacts.require("./test/ApproveAndCallTest.sol");
 
@@ -27,14 +28,16 @@ contract('Dividend Token ERC20', async(accounts) => {
   });
 
   it('Deploy Dividend Token', async() => {
-    token = await Token.new(tokenURI, owner, erc20.address);
+    tokenFactory = await MiniMeTokenFactory.new();
+    tx = await tokenFactory.createCloneToken('0x0000000000000000000000000000000000000000', 0, tokenURI, 18, tokenURI, true, erc20.address, {from:owner});
+    token = await MiniMeToken.at(tx.logs[0].args.token);
   });
 
   it("Spread tokens to users", async() => {
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
       //console.log(accounts[i]);
-      await token.mint(tokenHolders[i], tokenPerAccount.toString());
+      await token.generateTokens(tokenHolders[i], tokenPerAccount.toString());
       userBalance = bn(await token.balanceOf(tokenHolders[i]));
       assert.equal(userBalance.eq(tokenPerAccount), true);
     }
@@ -47,7 +50,7 @@ contract('Dividend Token ERC20', async(accounts) => {
 
   //Test dividends functions
   it('View token uri', async() => {
-    let _tokenURI = await token.getTokenURI();
+    let _tokenURI = await token.name();
     assert.equal(tokenURI, _tokenURI);
     console.log(tokenURI);
   });
@@ -179,7 +182,7 @@ contract('Dividend Token ERC20', async(accounts) => {
     let approveandcall = await ApproveAndCall.new();
     tx = await token.approveAndCall(approveandcall.address, 1000, '0x00000000');
     console.log(tx.logs[0].args);
-    assert.equal(tx.logs[0].args.value, 1000);
+    assert.equal(tx.logs[0].args._amount, 1000);
   });
 
 });
