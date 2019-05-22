@@ -125,6 +125,11 @@ contract('Ether Crowdsale', async(accounts) => {
     await platform.setPlatformFee('3');
     await platform.setPlatformPercentage('1');
     await platform.setTokenFactory(tokenFactory.address);
+
+    assert.equal(await api.getPlatformToken(), platformToken.address);
+    assert.equal(bn(await api.getPlatformFee()).eq(3), true);
+    assert.equal(bn(await api.getPlatformPercentage()).eq(1), true);
+    assert.equal(await api.getPlatformTokenFactory(), tokenFactory.address);
   });
 
   it('Deploy assetManager escrow', async() => {
@@ -263,6 +268,9 @@ contract('Ether Crowdsale', async(accounts) => {
   it('Set platform', async() => {
     await platform.setPlatformFundsWallet(owner);
     await platform.setPlatformAssetsWallet(owner);
+
+    assert.equal(await api.getPlatformFundsWallet(), owner);
+    assert.equal(await api.getPlatformAssetsWallet(), owner);
   });
 
   it('Fail to set platform wallet', async() => {

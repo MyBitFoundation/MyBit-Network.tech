@@ -126,6 +126,11 @@ contract('ERC20 Crowdsale', async(accounts) => {
     await platform.setPlatformFee('3');
     await platform.setPlatformPercentage(platformPercentage.times(100));
     await platform.setTokenFactory(tokenFactory.address);
+
+    assert.equal(await api.getPlatformToken(), platformToken.address);
+    assert.equal(bn(await api.getPlatformFee()).eq(3), true);
+    assert.equal(bn(await api.getPlatformPercentage()).eq(platformPercentage.times(100)), true);
+    assert.equal(await api.getPlatformTokenFactory(), tokenFactory.address);
   });
 
   it('Deploy assetManager escrow', async() => {
@@ -214,6 +219,10 @@ contract('ERC20 Crowdsale', async(accounts) => {
     assetAddress = logs[0].args.asset;
     console.log('Asset Address: ' + assetAddress);
     assetToken = await AssetToken.at(assetAddress);
+
+    assert.equal(bn(await api.getAssetManagerFee(assetAddress)).gt(0), true);
+    assert.equal(bn(await api.getCrowdsaleDeadline(assetAddress)).gt(0), true);
+    assert.equal(bn(await api.getCrowdsaleGoal(assetAddress)).eq(bn(20).times(ETH)), true);
   });
 
   it('User1 funding', async() => {
@@ -277,6 +286,9 @@ contract('ERC20 Crowdsale', async(accounts) => {
   it('Set platform', async() => {
     await platform.setPlatformFundsWallet(owner);
     await platform.setPlatformAssetsWallet(owner);
+
+    assert.equal(await api.getPlatformFundsWallet(), owner);
+    assert.equal(await api.getPlatformAssetsWallet(), owner);
   });
 
   it('Fail to set platform wallet', async() => {
@@ -299,6 +311,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     assert.equal(bn(ownerBalanceAfter).minus(ownerBalanceBefore).isEqualTo(bn(ETH).times(20).times(0.03)), true);
     operatorBalanceAfter = await erc20.balanceOf(operator);
     assert.equal(bn(operatorBalanceAfter).minus(operatorBalanceBefore).isEqualTo(bn(ETH).times(20)), true);
+    assert.equal(await api.crowdsalePaid(assetAddress), true);
   })
 
   it('Fail to refund', async() => {
@@ -402,6 +415,8 @@ contract('ERC20 Crowdsale', async(accounts) => {
       console.log('Move forward in time');
     });
 
+    assert.equal(await api.crowdsaleFailed(assetAddress), true);
+
     let err;
     try{
       await erc20.approve(crowdsale.address, bn(5).times(ETH).times(1.03).toString(), {from:user1});
@@ -409,7 +424,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     } catch(e){
       err = e;
     }
-    // assert.notEqual(err, undefined);
+    assert.notEqual(err, undefined);
   });
 
   it('Pause contract', async() => {

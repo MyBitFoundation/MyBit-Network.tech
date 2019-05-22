@@ -445,11 +445,43 @@ contract API {
     return tokenAddress;
   }
 
-  function getPlatformWallet()
+  function getPlatformTokenFactory()
   public
   view
   returns(address) {
-    address walletAddress = database.addressStorage(keccak256(abi.encodePacked("platform.wallet")));
+    address factoryAddress = database.addressStorage(keccak256(abi.encodePacked("platform.tokenFactory")));
+    return factoryAddress;
+  }
+
+  function getPlatformFee()
+  public
+  view
+  returns(uint) {
+    uint fee = database.uintStorage(keccak256(abi.encodePacked("platform.fee")));
+    return fee;
+  }
+
+  function getPlatformPercentage()
+  public
+  view
+  returns(uint) {
+    uint percentage = database.uintStorage(keccak256(abi.encodePacked("platform.percentage")));
+    return percentage;
+  }
+
+  function getPlatformAssetsWallet()
+  public
+  view
+  returns(address) {
+    address walletAddress = database.addressStorage(keccak256(abi.encodePacked("platform.wallet.assets")));
+    return walletAddress;
+  }
+
+  function getPlatformFundsWallet()
+  public
+  view
+  returns(address) {
+    address walletAddress = database.addressStorage(keccak256(abi.encodePacked("platform.wallet.funds")));
     return walletAddress;
   }
 
@@ -461,6 +493,7 @@ contract API {
     return contractAddress;
   }
 
+  /*
   function getCurrentState()
   public
   view
@@ -484,6 +517,7 @@ contract API {
     uint cost = database.uintStorage(keccak256(abi.encodePacked(_sig, _contract)));
     return cost;
   }
+  */
 
   function contractPaused(address _contract)
   public

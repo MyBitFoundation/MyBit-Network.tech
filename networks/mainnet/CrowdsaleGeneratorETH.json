@@ -38,6 +38,10 @@
             {
                 "name": "_events",
                 "type": "address"
+            },
+            {
+                "name": "_kyber",
+                "type": "address"
             }
         ],
         "payable": false,
@@ -49,76 +53,53 @@
         "constant": false,
         "inputs": [
             {
-                "name": "_walletAddress",
-                "type": "address"
-            }
-        ],
-        "name": "setPlatformFundsWallet",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x8219a958"
-    },
-    {
-        "constant": false,
-        "inputs": [
+                "name": "_assetURI",
+                "type": "string"
+            },
             {
-                "name": "_walletAddress",
+                "name": "_assetManager",
                 "type": "address"
-            }
-        ],
-        "name": "setPlatformAssetsWallet",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x257e8dde"
-    },
-    {
-        "constant": false,
-        "inputs": [
+            },
             {
-                "name": "_tokenAddress",
-                "type": "address"
-            }
-        ],
-        "name": "setPlatformToken",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x0255a03b"
-    },
-    {
-        "constant": false,
-        "inputs": [
+                "name": "_operatorID",
+                "type": "bytes32"
+            },
             {
-                "name": "_percent",
+                "name": "_fundingLength",
                 "type": "uint256"
-            }
-        ],
-        "name": "setPlatformFee",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x12e8e2c3"
-    },
-    {
-        "constant": false,
-        "inputs": [
+            },
             {
-                "name": "_percent",
+                "name": "_startTime",
                 "type": "uint256"
+            },
+            {
+                "name": "_amountToRaise",
+                "type": "uint256"
+            },
+            {
+                "name": "_assetManagerPerc",
+                "type": "uint256"
+            },
+            {
+                "name": "_escrow",
+                "type": "uint256"
+            },
+            {
+                "name": "_paymentToken",
+                "type": "address"
             }
         ],
-        "name": "setPlatformPercentage",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
+        "name": "createAssetOrderETH",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": true,
+        "stateMutability": "payable",
         "type": "function",
-        "signature": "0x14d39bad"
+        "signature": "0x29eddadf"
     },
     {
         "constant": false,

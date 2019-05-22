@@ -58,7 +58,7 @@ module.exports = {
     },
     mainnet: {
       provider: function() {
-        return new HDWalletProvider(MNEMONIC, "mainnet.infura.io/v3/"+INFURA_API_KEY)
+        return new HDWalletProvider(MNEMONIC, "https://mainnet.infura.io/v3/"+INFURA_API_KEY)
       },
       network_id: 1,
       gas: 8000000,
@@ -66,7 +66,7 @@ module.exports = {
     },
     ropsten: {
       provider: function() {
-        return new HDWalletProvider(MNEMONIC, "ropsten.infura.io/v3/"+INFURA_API_KEY)
+        return new HDWalletProvider(MNEMONIC, "https://ropsten.infura.io/v3/"+INFURA_API_KEY)
       },
       network_id: 3
     },

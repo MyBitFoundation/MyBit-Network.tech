@@ -82,6 +82,7 @@ contract('Database', async (accounts) => {
 
   it('Deploy API', async() => {
     api = await API.new(database.address);
+    assert.equal(await api.contractOwner(manager1), true);
   });
 
   it('Deploy contract manage contract', async() => {

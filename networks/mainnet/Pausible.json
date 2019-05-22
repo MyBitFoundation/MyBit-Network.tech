@@ -49,76 +49,31 @@
         "constant": false,
         "inputs": [
             {
-                "name": "_walletAddress",
+                "name": "_contract",
                 "type": "address"
             }
         ],
-        "name": "setPlatformFundsWallet",
+        "name": "pause",
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x8219a958"
+        "signature": "0x76a67a51"
     },
     {
         "constant": false,
         "inputs": [
             {
-                "name": "_walletAddress",
+                "name": "_contract",
                 "type": "address"
             }
         ],
-        "name": "setPlatformAssetsWallet",
+        "name": "unpause",
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x257e8dde"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "name": "_tokenAddress",
-                "type": "address"
-            }
-        ],
-        "name": "setPlatformToken",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x0255a03b"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "name": "_percent",
-                "type": "uint256"
-            }
-        ],
-        "name": "setPlatformFee",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x12e8e2c3"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "name": "_percent",
-                "type": "uint256"
-            }
-        ],
-        "name": "setPlatformPercentage",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x14d39bad"
+        "signature": "0x57b001f9"
     },
     {
         "constant": false,

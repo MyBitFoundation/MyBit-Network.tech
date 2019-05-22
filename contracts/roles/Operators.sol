@@ -25,9 +25,9 @@ contract Operators {
     database.setAddress(keccak256(abi.encodePacked("operator", operatorID)), _operatorAddress);
     database.setBytes32(keccak256(abi.encodePacked("operator", _operatorAddress)), operatorID);
     if(_referrerAddress == address(0)){
-      database.setAddress(keccak256(abi.encodePacked("referer", operatorID)), database.addressStorage(keccak256(abi.encodePacked("platform.wallet.assets"))));
+      database.setAddress(keccak256(abi.encodePacked("referrer", operatorID)), database.addressStorage(keccak256(abi.encodePacked("platform.wallet.assets"))));
     } else {
-      database.setAddress(keccak256(abi.encodePacked("referer", operatorID)), _referrerAddress);
+      database.setAddress(keccak256(abi.encodePacked("referrer", operatorID)), _referrerAddress);
     }
 
     events.operator('Operator registered', operatorID, _operatorURI, _operatorAddress);
@@ -57,6 +57,15 @@ contract Operators {
     events.operator('Operator address changed', _operatorID, '', _newAddress);
     //events.transaction('Operator address changed', oldAddress, _newAddress, 0, _operatorID);
     //emit LogOperatorAddressChanged(_operatorID, msg.sender, _newAddress);
+  }
+
+  function changeReferrerAddress(bytes32 _operatorID, address _newAddress)
+  external {
+    address oldAddress = database.addressStorage(keccak256(abi.encodePacked("referrer", _operatorID)));
+    require(oldAddress != address(0));
+    require(msg.sender == oldAddress || database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
+    database.setAddress(keccak256(abi.encodePacked("referrer", _operatorID)), _newAddress);
+    events.operator('Referrer address changed', _operatorID, '', _newAddress);
   }
 
   // @notice operator can choose which ERC20 tokens he's willing to accept as payment

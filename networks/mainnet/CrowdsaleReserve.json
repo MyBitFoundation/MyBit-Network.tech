@@ -1,35 +1,5 @@
 [
     {
-        "constant": true,
-        "inputs": [],
-        "name": "database",
-        "outputs": [
-            {
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x713b563f"
-    },
-    {
-        "constant": true,
-        "inputs": [],
-        "name": "events",
-        "outputs": [
-            {
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xb5f8558c"
-    },
-    {
         "inputs": [
             {
                 "name": "_database",
@@ -46,34 +16,10 @@
         "signature": "constructor"
     },
     {
-        "anonymous": false,
-        "inputs": [],
-        "name": "NotFinalized",
-        "type": "event",
-        "signature": "0x1bee0d5a3487871ad4e01635c06a95326ecde99999b0a6864aecb98461a9249f"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "name": "checkpoint",
-                "type": "uint256"
-            }
-        ],
-        "name": "ROICheckpoint",
-        "type": "event",
-        "signature": "0xf0ee7a9cde4e5b0e9a9d319bc8cee8ea787f22fc6ebead5e549ba5e0ab7169f9"
-    },
-    {
         "constant": false,
         "inputs": [
             {
-                "name": "_assetAddress",
-                "type": "address"
-            },
-            {
-                "name": "_assetManager",
+                "name": "_receiver",
                 "type": "address"
             },
             {
@@ -81,7 +27,7 @@
                 "type": "uint256"
             }
         ],
-        "name": "lockEscrow",
+        "name": "issueETH",
         "outputs": [
             {
                 "name": "",
@@ -91,21 +37,41 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x303d0c6b"
+        "signature": "0x25127520"
     },
     {
         "constant": false,
         "inputs": [
             {
-                "name": "_assetAddress",
-                "type": "address"
-            },
-            {
-                "name": "_assetManager",
+                "name": "_payer",
                 "type": "address"
             }
         ],
-        "name": "unlockEscrow",
+        "name": "receiveETH",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": true,
+        "stateMutability": "payable",
+        "type": "function",
+        "signature": "0x8c53f61d"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_asset",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "refundETHAsset",
         "outputs": [
             {
                 "name": "",
@@ -115,17 +81,13 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0xb747efb6"
+        "signature": "0x785bc786"
     },
     {
         "constant": false,
         "inputs": [
             {
-                "name": "_assetAddress",
-                "type": "address"
-            },
-            {
-                "name": "_newAssetManager",
+                "name": "_receiver",
                 "type": "address"
             },
             {
@@ -133,11 +95,11 @@
                 "type": "uint256"
             },
             {
-                "name": "_withhold",
-                "type": "bool"
+                "name": "_tokenAddress",
+                "type": "address"
             }
         ],
-        "name": "changeAssetManager",
+        "name": "issueERC20",
         "outputs": [
             {
                 "name": "",
@@ -147,40 +109,25 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x350ca067"
+        "signature": "0x080a771c"
     },
     {
         "constant": false,
         "inputs": [
             {
-                "name": "_assetAddress",
+                "name": "_payer",
                 "type": "address"
             },
             {
-                "name": "_oldAssetManager",
-                "type": "address"
+                "name": "_amount",
+                "type": "uint256"
             },
             {
-                "name": "_currentAssetManager",
+                "name": "_tokenAddress",
                 "type": "address"
             }
         ],
-        "name": "returnEscrow",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0xabc0bbf3"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "name": "_assetAddress",
-                "type": "address"
-            }
-        ],
-        "name": "voteToBurn",
+        "name": "requestERC20",
         "outputs": [
             {
                 "name": "",
@@ -190,16 +137,62 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x4a364354"
+        "signature": "0x0b83af38"
     },
     {
         "constant": false,
-        "inputs": [],
-        "name": "destroy",
-        "outputs": [],
+        "inputs": [
+            {
+                "name": "_receiver",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_tokenAddress",
+                "type": "address"
+            }
+        ],
+        "name": "approveERC20",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x83197ef0"
+        "signature": "0xc4e0d200"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_asset",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_tokenAddress",
+                "type": "address"
+            }
+        ],
+        "name": "refundERC20Asset",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xdeca3ea9"
     }
 ]
