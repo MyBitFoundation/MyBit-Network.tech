@@ -95,9 +95,9 @@ contract CrowdsaleERC20{
   function payoutERC20(address _assetAddress)
   external
   whenNotPaused
-  finalized(_assetAddress)
-  notPaid(_assetAddress)
   returns (bool) {
+    require(database.boolStorage(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress))), "Crowdsale not finalized");
+    require(!database.boolStorage(keccak256(abi.encodePacked("crowdsale.paid", _assetAddress))), "Crowdsale has paid out");
     //Set paid to true
     database.setBool(keccak256(abi.encodePacked("crowdsale.paid", _assetAddress)), true);
     //Setup token
@@ -107,20 +107,23 @@ contract CrowdsaleERC20{
     require(platformAssetsWallet != address(0), "Platform assets wallet not set");
     require(minter.mintAssetTokens(_assetAddress, database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerTokens", _assetAddress)))), "Manager minting failed");
     require(minter.mintAssetTokens(_assetAddress, platformAssetsWallet, database.uintStorage(keccak256(abi.encodePacked("asset.platformTokens", _assetAddress)))), "Platform minting failed");
-    //Get the addresses for the operator and platform
-    address operator = database.addressStorage(keccak256(abi.encodePacked("asset.operator", _assetAddress)));
+    //Get the addresses for the receiver and platform
+    address receiver = database.addressStorage(keccak256(abi.encodePacked("asset.receiver", _assetAddress)));
     address platformFundsWallet = database.addressStorage(keccak256(abi.encodePacked("platform.wallet.funds")));
-    require(operator != address(0) && platformFundsWallet != address(0), "Platform funds walllet or operator address not set");
-    //Calculate amounts for platform and operator
+    require(receiver != address(0) && platformFundsWallet != address(0), "Platform funds walllet or receiver address not set");
+    //Calculate amounts for platform and receiver
     uint amount = database.uintStorage(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));
     uint platformFee = amount.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("platform.fee"))));
-    //Transfer funds to operator and platform
+    //Transfer funds to receiver and platform
     require(reserve.issueERC20(platformFundsWallet, platformFee, fundingToken), 'Platform funds not paid');
-    require(reserve.issueERC20(operator, amount, fundingToken), 'Operator funds not paid');
+    require(reserve.issueERC20(receiver, amount, fundingToken), 'Receiver funds not paid');
     //Delete crowdsale start time
     database.deleteUint(keccak256(abi.encodePacked("crowdsale.start", _assetAddress)));
+    //Increase asset count for manager
+    address manager = database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress)));
+    database.setUint(keccak256(abi.encodePacked("manager.assets", manager)), database.uintStorage(keccak256(abi.encodePacked("manager.assets", manager))).add(1));
     //Emit event
-    events.transaction('Asset payout', _assetAddress, operator, amount, fundingToken);
+    events.transaction('Asset payout', _assetAddress, receiver, amount, fundingToken);
     return true;
   }
 
@@ -132,7 +135,7 @@ contract CrowdsaleERC20{
   notFinalized(_assetAddress)
   returns (bool){
     require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))));
-    require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), "User not approved");
+    require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))) || database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))), "User not approved");
     database.setUint(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress)), 1);
     refund(_assetAddress);
   }

@@ -86,6 +86,24 @@ contract Operators {
     return true;
   }
 
+  // @notice operator can choose which ERC20 tokens it pays out with
+  function payoutERC20Token(bytes32 _operatorID, address _tokenAddress, bool _payout)
+  external
+  onlyOperator(_operatorID)
+  returns (bool) {
+    database.setBool(keccak256(abi.encodePacked("operator.payoutToken", _operatorID, _tokenAddress)), _payout);
+    return true;
+  }
+
+  // @notice operator can choose whether or not to payout in Eth
+  function payoutEther(bytes32 _operatorID, bool _payout)
+  external
+  onlyOperator(_operatorID)
+  returns (bool) {
+    database.setBool(keccak256(abi.encodePacked("operator.payoutEther", _operatorID)), _payout);
+    return true;
+  }
+
   function addAssetType(bytes32 _operatorID, string _assetType)
   external
   onlyOperator(_operatorID)

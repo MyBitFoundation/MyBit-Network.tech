@@ -102,6 +102,9 @@ contract CrowdsaleETH {
       require(reserve.issueETH(operator, amount), 'Operator funds not paid');
       //Delete crowdsale start time
       database.deleteUint(keccak256(abi.encodePacked("crowdsale.start", _assetAddress)));
+      //Increase asset count for manager
+      address manager = database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress)));
+      database.setUint(keccak256(abi.encodePacked("manager.assets", manager)), database.uintStorage(keccak256(abi.encodePacked("manager.assets", manager))).add(1));
       //Emit event
       events.transaction('Asset payout', _assetAddress, operator, amount, address(0));
       return true;

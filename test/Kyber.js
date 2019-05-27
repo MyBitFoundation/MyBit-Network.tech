@@ -1130,7 +1130,7 @@ contract('Kyber', function(accounts) {
       assetManagerFee = 0;
       let block = await web3.eth.getBlock('latest');
       console.log('Balance: ', await web3.eth.getBalance(accounts[2]));
-      await crowdsaleGenERC20.createAssetOrderERC20(assetURI, accounts[2], operatorID, 100, 0, BigNumber(20).times(ETH).toString(), assetManagerFee, BigNumber(10**17).toString(), tokenInstance[1].address, ethAddress, {from:accounts[2], value:BigNumber(10**17).toString(), gas:maxGas});
+      await crowdsaleGenERC20.createAssetOrderERC20(assetURI, operatorID, 100, 0, BigNumber(20).times(ETH).toString(), assetManagerFee, BigNumber(10**17).toString(), tokenInstance[1].address, ethAddress, {from:accounts[2], value:BigNumber(10**17).toString(), gas:maxGas});
       let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: accounts[2]}, fromBlock: block.number});
       assetAddress = logs[0].args.asset;
       assetToken = await AssetToken.at(assetAddress);

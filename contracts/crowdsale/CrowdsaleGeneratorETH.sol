@@ -43,7 +43,7 @@ contract CrowdsaleGeneratorETH {
   // @param (uint) _fundingLength = The number of seconds this crowdsale is to go on for until it fails
   // @param (uint) _amountToRaise = The amount of WEI required to raise for the crowdsale to be a success
   // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
-  function createAssetOrderETH(string _assetURI, address _assetManager, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc, uint _escrow, address _paymentToken)
+  function createAssetOrderETH(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc, uint _escrow, address _paymentToken)
   external
   payable
   returns (bool) {
@@ -52,10 +52,8 @@ contract CrowdsaleGeneratorETH {
     } else {
       require(msg.value == 0);
     }
-    require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), "User not approved");
     require(_amountToRaise >= 100, "Crowdsale goal is too small");
     require((_assetManagerPerc + database.uintStorage(keccak256(abi.encodePacked("platform.percentage")))) < 100, "Manager percent need to be less than 100");
-    require(database.boolStorage(keccak256(abi.encodePacked("operator.acceptsEther", _operatorID))), "Operator does not accept Ether");
     require(database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))) != address(0), "Operator does not exist");
     require(!database.boolStorage(keccak256(abi.encodePacked("asset.uri", _assetURI))), "Asset URI is not unique"); //Check that asset URI is unique
     uint startTime;
@@ -66,10 +64,11 @@ contract CrowdsaleGeneratorETH {
     }
     address assetAddress = minter.cloneToken(_assetURI, address(0));
     require(setCrowdsaleValues(assetAddress, startTime, _fundingLength, _amountToRaise));
-    require(setAssetValues(assetAddress, _assetURI, _operatorID, _assetManager, _assetManagerPerc, _amountToRaise));
-    //If escrow, lock
-    if(_escrow > 0){ require(lockEscrowInternal(_assetManager, assetAddress, _paymentToken, _escrow));}
-    events.asset('Asset funding started', _assetURI, assetAddress, _assetManager);
+    require(setAssetValues(assetAddress, _assetURI, _operatorID, msg.sender, _assetManagerPerc, _amountToRaise));
+    //Lock escrow
+    uint minEscrow = calculateEscrowETH(_amountToRaise, msg.sender, _operatorID);
+    require(lockEscrowETH(msg.sender, assetAddress, _paymentToken, _escrow, minEscrow));
+    events.asset('Asset funding started', _assetURI, assetAddress, msg.sender);
     return true;
   }
 
@@ -108,27 +107,44 @@ contract CrowdsaleGeneratorETH {
     return true;
   }
 
-  function lockEscrowInternal(address _assetManager, address _assetAddress, address _paymentTokenAddress, uint _amount)
+  function calculateEscrowETH(uint _amount, address _manager, bytes32 _operatorID)
+  private
+  view
+  returns (uint){
+    uint percent = database.uintStorage(keccak256(abi.encodePacked("collateral.base"))).add(database.uintStorage(keccak256(abi.encodePacked("collateral.level", database.uintStorage(keccak256(abi.encodePacked("manager.assets", _manager)))))));
+    if(!database.boolStorage(keccak256(abi.encodePacked("operator.payoutEther", _operatorID)))){
+      percent = percent.mul(3);
+    }
+    if(!database.boolStorage(keccak256(abi.encodePacked("operator.acceptsEther", _operatorID)))){
+      percent = percent.add(100);
+    }
+    return _amount.getFractionalAmount(percent);
+  }
+
+  function lockEscrowETH(address _assetManager, address _assetAddress, address _paymentTokenAddress, uint _amount, uint  _min)
   private
   returns (bool) {
     uint amount;
     bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetAddress, _assetManager));
     address platformTokenAddress = database.addressStorage(keccak256(abi.encodePacked("platform.token")));
+    if(_paymentTokenAddress == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)){
+      require(_amount >= _min, "Insufficient collateral for asset manager risk");
+    } else {
+      //Get conversion rate, and make sure converted amount is >= _amount
+      (uint rate,) = kyber.getExpectedRate(_paymentTokenAddress, address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE), _amount);
+      require(_amount.mul(rate).div(10**18) >= _min, "Insufficient collateral for asset manager risk after conversion");
+    }
     if(_paymentTokenAddress != platformTokenAddress){
-      //Setup platform token and get current balance for comparison
-      CrowdsaleGeneratorETH_ERC20 platformToken = CrowdsaleGeneratorETH_ERC20(platformTokenAddress);
-      uint balanceBefore = platformToken.balanceOf(this);
       //Convert the payment token into the platform token
       if(_paymentTokenAddress == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)){
-        kyber.trade.value(_amount)(_paymentTokenAddress, _amount, platformTokenAddress, address(this), 2**255, 0, 0); //Currently no minimum rate is set, so watch out for slippage!
+        amount = kyber.trade.value(_amount)(_paymentTokenAddress, _amount, platformTokenAddress, address(this), 2**255, 0, 0); //Currently no minimum rate is set, so watch out for slippage!
       } else {
         CrowdsaleGeneratorETH_ERC20 paymentToken = CrowdsaleGeneratorETH_ERC20(_paymentTokenAddress);
         require(paymentToken.transferFrom(_assetManager, address(this), _amount));
         require(paymentToken.approve(address(kyber), _amount));
-        kyber.trade(_paymentTokenAddress, _amount, platformTokenAddress, address(this), 2**255, 0, 0); //Currently no minimum rate is set, so watch out for slippage!
+        amount = kyber.trade(_paymentTokenAddress, _amount, platformTokenAddress, address(this), 2**255, 0, 0); //Currently no minimum rate is set, so watch out for slippage!
       }
-      amount = platformToken.balanceOf(this).sub(balanceBefore);
-      require(platformToken.transfer(database.addressStorage(keccak256(abi.encodePacked("contract", "EscrowReserve"))), amount));
+      require(CrowdsaleGeneratorETH_ERC20(platformTokenAddress).transfer(database.addressStorage(keccak256(abi.encodePacked("contract", "EscrowReserve"))), amount));
     } else {
       amount = _amount;
       require(CrowdsaleGeneratorETH_ERC20(platformTokenAddress).transferFrom(_assetManager, database.addressStorage(keccak256(abi.encodePacked("contract", "EscrowReserve"))), amount));
