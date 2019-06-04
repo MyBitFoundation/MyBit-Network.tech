@@ -35,6 +35,13 @@ contract API {
     database = DBView(_database);
   }
 
+  function getContract(string _name)
+  public
+  view
+  returns (address) {
+    return database.addressStorage(keccak256(abi.encodePacked('contract', _name)));
+  }
+
   function getAddr(bytes32 _key)
   public
   view

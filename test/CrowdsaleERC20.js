@@ -236,7 +236,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
 
   it('User1 funding', async() => {
     await erc20.approve(crowdsale.address, bn(5).times(ETH).times(1.03).toString(), {from:user1});
-    await crowdsale.buyAssetOrderERC20(assetAddress, user1, bn(5).times(ETH).times(1.03).toString(), erc20.address, {from:user1, gas:maxGas});
+    await crowdsale.buyAssetOrderERC20(assetAddress, bn(5).times(ETH).times(1.03).toString(), erc20.address, {from:user1, gas:maxGas});
     let user1Balance = await assetToken.balanceOf(user1);
     console.log('User 1 Balance: ', user1Balance);
     let user1AssetTokens = bn(user1Balance);
@@ -264,7 +264,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
   it('User2 funding', async() => {
     console.log(user2);
     await erc20.approve(crowdsale.address, bn(15).times(ETH).times(1.03).toString(), {from:user2});
-    await crowdsale.buyAssetOrderERC20(assetAddress, user2, bn(15).times(ETH).times(1.03).toString(), erc20.address, {from:user2, gas:maxGas});
+    await crowdsale.buyAssetOrderERC20(assetAddress, bn(15).times(ETH).times(1.03).toString(), erc20.address, {from:user2, gas:maxGas});
     let user2AssetTokens = bn(await assetToken.balanceOf(user2));
     console.log(user2AssetTokens.toNumber());
     assert.equal(user2AssetTokens.eq(bn(15).times(ETH)), true);
@@ -275,7 +275,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     let err;
     try{
       await erc20.approve(crowdsale.address, bn(5).times(ETH).times(1.03).toString(), {from:user3});
-      await crowdsale.buyAssetOrderERC20(assetAddress, user3, bn(5).times(ETH).times(1.03).toString(), erc20.address, {from:user3, gas:maxGas});
+      await crowdsale.buyAssetOrderERC20(assetAddress, bn(5).times(ETH).times(1.03).toString(), erc20.address, {from:user3, gas:maxGas});
     } catch(e){
       err = e;
     }
@@ -409,7 +409,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
 
   it('User3 funding', async() => {
     await erc20.approve(crowdsale.address, bn(5).times(ETH).times(1.03).toString(), {from:user3});
-    await crowdsale.buyAssetOrderERC20(assetAddress, user3, bn(5).times(ETH).times(1.03).toString(), erc20.address, {from:user3, gas:maxGas});
+    await crowdsale.buyAssetOrderERC20(assetAddress, bn(5).times(ETH).times(1.03).toString(), erc20.address, {from:user3, gas:maxGas});
     let user3assetTokens = bn(await assetToken.balanceOf(user3));
     assert.equal(user3assetTokens.eq(bn(5).times(ETH)), true);
   });
@@ -429,7 +429,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     let err;
     try{
       await erc20.approve(crowdsale.address, bn(5).times(ETH).times(1.03).toString(), {from:user1});
-      await crowdsale.buyAssetOrderERC20(assetAddress, user1, bn(5).times(ETH).times(1.03).toString(), erc20.address, {from:user1});
+      await crowdsale.buyAssetOrderERC20(assetAddress, bn(5).times(ETH).times(1.03).toString(), erc20.address, {from:user1});
     } catch(e){
       err = e;
     }
@@ -478,7 +478,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
   it('Fully fund no fee asset', async() => {
     await erc20.approve(crowdsale.address, bn(2).times(ETH).times(1.03).toString(), {from:user1});
     let platformWalletBalance = await erc20.balanceOf(owner);
-    await crowdsale.buyAssetOrderERC20(assetAddress, user1, bn(2).times(ETH).times(1.03).toString(), erc20.address, {from:user1, gas:maxGas});
+    await crowdsale.buyAssetOrderERC20(assetAddress, bn(2).times(ETH).times(1.03).toString(), erc20.address, {from:user1, gas:maxGas});
     await crowdsale.payoutERC20(assetAddress);
     let user1AssetTokens = bn(await assetToken.balanceOf(user1));
     let assetTokenSupply = bn(await assetToken.totalSupply());
@@ -516,7 +516,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
     assetToken = await AssetToken.at(assetAddress);
     //Fund
     await erc20.approve(crowdsale.address, bn(2).times(ETH).times(1.03).toString(), {from:user1});
-    await crowdsale.buyAssetOrderERC20(assetAddress, user1, bn(2).times(ETH).times(1.03).toString(), erc20.address, {from:user1, gas:maxGas});
+    await crowdsale.buyAssetOrderERC20(assetAddress, bn(2).times(ETH).times(1.03).toString(), erc20.address, {from:user1, gas:maxGas});
   });
 
   it('Fail to cancel', async() => {

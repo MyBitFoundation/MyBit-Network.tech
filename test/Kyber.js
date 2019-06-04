@@ -1136,6 +1136,8 @@ contract('Kyber', function(accounts) {
       assetToken = await AssetToken.at(assetAddress);
       logs = await events.getPastEvents('LogEscrow', {filter: {messageID: web3.utils.sha3('Escrow locked')}, fromBlock: block.number});
       console.log('Amount: ', BigNumber(logs[0].args.amount).toString());
+      assert.equal(BigNumber(await tokenInstance[1].balanceOf(crowdsaleGenERC20.address)).eq(0), true);
+      assert.equal(BigNumber(await web3.eth.getBalance(crowdsaleGenERC20.address)).eq(0), true);
     });
 
     it('Should make investment in asset with erc20', async() => {
@@ -1143,7 +1145,7 @@ contract('Kyber', function(accounts) {
 
       await tokenInstance[2].approve(crowdsaleERC20.address, BigNumber(1).times(ETH).toString(), {from:accounts[3]});
       let block = await web3.eth.getBlock('latest');
-      await crowdsaleERC20.buyAssetOrderERC20(assetAddress, accounts[3], BigNumber(1).times(ETH).toString(), tokenInstance[2].address, {from:accounts[3], gas:maxGas});
+      await crowdsaleERC20.buyAssetOrderERC20(assetAddress, BigNumber(1).times(ETH).toString(), tokenInstance[2].address, {from:accounts[3], gas:maxGas});
       let logs = await crowdsaleERC20.getPastEvents('Convert', {filter: {}, fromBlock:block.number});
       console.log(logs[0].args);
       let userAssetTokens = BigNumber(await assetToken.balanceOf(accounts[3]));

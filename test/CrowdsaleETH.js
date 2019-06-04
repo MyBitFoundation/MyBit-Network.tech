@@ -212,7 +212,7 @@ contract('Ether Crowdsale', async(accounts) => {
     //Start time hasn't been reached
     let err;
     try{
-      await crowdsale.buyAssetOrderETH(assetAddress, user1, {from:user1, value:bn(5).times(ETH).times(1.03)});
+      await crowdsale.buyAssetOrderETH(assetAddress, {from:user1, value:bn(5).times(ETH).times(1.03)});
     } catch(e){
       err = e;
     }
@@ -229,7 +229,7 @@ contract('Ether Crowdsale', async(accounts) => {
     });
     let tokenSupply = bn(await token.totalSupply());
     console.log('Token Supply: ' + tokenSupply.toNumber());
-    await crowdsale.buyAssetOrderETH(assetAddress, user1, {from:user1, value:bn(5).times(ETH).times(1.03), gas:maxGas});
+    await crowdsale.buyAssetOrderETH(assetAddress, {from:user1, value:bn(5).times(ETH).times(1.03), gas:maxGas});
     let user1Tokens = bn(await token.balanceOf(user1));
     assert.equal(user1Tokens.eq(bn(5).times(ETH)), true);
   });
@@ -247,7 +247,7 @@ contract('Ether Crowdsale', async(accounts) => {
 
   it('User2 funding', async() => {
     //console.log(web3.eth.getBalance(user2));
-    await crowdsale.buyAssetOrderETH(assetAddress, user2, {from:user2, value:bn(15).times(ETH).times(1.03), gas:maxGas});
+    await crowdsale.buyAssetOrderETH(assetAddress, {from:user2, value:bn(15).times(ETH).times(1.03), gas:maxGas});
     let user2Tokens = bn(await token.balanceOf(user2));
     assert.equal(user2Tokens.eq(bn(15).times(ETH)), true);
   });
@@ -256,7 +256,7 @@ contract('Ether Crowdsale', async(accounts) => {
     //Funding finished
     let err;
     try{
-      await crowdsale.buyAssetOrderETH(assetAddress, user3, {from:user3, value:bn(5).times(ETH), gas:maxGas});
+      await crowdsale.buyAssetOrderETH(assetAddress, {from:user3, value:bn(5).times(ETH), gas:maxGas});
     } catch(e){
       err = e;
     }
@@ -382,7 +382,7 @@ contract('Ether Crowdsale', async(accounts) => {
   });
 
   it('User3 funding', async() => {
-    await crowdsale.buyAssetOrderETH(assetAddress, user3, {from:user3, value:bn(5).times(ETH).times(1.03), gas:maxGas});
+    await crowdsale.buyAssetOrderETH(assetAddress, {from:user3, value:bn(5).times(ETH).times(1.03), gas:maxGas});
     let user3Tokens = bn(await token.balanceOf(user3));
     assert.equal(user3Tokens.eq(bn(5).times(ETH)), true);
   });
@@ -463,7 +463,7 @@ contract('Ether Crowdsale', async(accounts) => {
   it('User1 funding', async() => {
     let tokenSupply = await token.totalSupply()
     console.log('Token Supply: ' + tokenSupply);
-    await crowdsale.buyAssetOrderETH(assetAddress, user1, {from:user1, value:bn(2).times(ETH).times(1.03), gas:maxGas});
+    await crowdsale.buyAssetOrderETH(assetAddress, {from:user1, value:bn(2).times(ETH).times(1.03), gas:maxGas});
     await crowdsale.payoutETH(assetAddress, {from: assetManager});
     let user1Tokens = bn(await token.balanceOf(user1));
     console.log(user1Tokens.toNumber());
@@ -499,7 +499,7 @@ contract('Ether Crowdsale', async(accounts) => {
 
 
   it('User2 funding ', async() => {
-    await crowdsale.buyAssetOrderETH(assetAddress, user2, {from:user2, value:bn(2).times(ETH).times(1.03), gas:maxGas});
+    await crowdsale.buyAssetOrderETH(assetAddress, {from:user2, value:bn(2).times(ETH).times(1.03), gas:maxGas});
     await crowdsale.payoutETH(assetAddress, {from: assetManager});
     let user2Tokens = bn(await token.balanceOf(user2));
     assert.equal(user2Tokens.eq(bn(2).times(ETH)), true);
@@ -530,7 +530,7 @@ contract('Ether Crowdsale', async(accounts) => {
   });
 
   it('User3 funding 100 wei', async() => {
-    await crowdsale.buyAssetOrderETH(assetAddress, user3, {from:user3, value:103, gas:maxGas});
+    await crowdsale.buyAssetOrderETH(assetAddress, {from:user3, value:103, gas:maxGas});
     await crowdsale.payoutETH(assetAddress, {from: assetManager});
     let user3Balance = bn(await token.balanceOf(user3));
     assert.equal(user3Balance.eq(100), true);
@@ -550,7 +550,7 @@ contract('Ether Crowdsale', async(accounts) => {
     assetAddress = logs[0].args.asset;
     token = await Token.at(assetAddress);
     //Fund
-    await crowdsale.buyAssetOrderETH(assetAddress, user1, {from:user1, value:bn(2).times(ETH).times(1.03).toString(), gas:maxGas});
+    await crowdsale.buyAssetOrderETH(assetAddress, {from:user1, value:bn(2).times(ETH).times(1.03).toString(), gas:maxGas});
   });
 
 

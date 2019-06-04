@@ -40,7 +40,7 @@ contract CrowdsaleETH {
 
     // @notice Investors can send Ether here to fund asset, receiving an equivalent number of asset-tokens.
     // @param (bytes32) _assetAddress = The address of the asset which completed the crowdsale
-    function buyAssetOrderETH(address _assetAddress, address _investor)
+    function buyAssetOrderETH(address _assetAddress)
     external
     payable
     requiresEther
@@ -48,27 +48,26 @@ contract CrowdsaleETH {
     betweenDeadlines(_assetAddress)
     notFinalized(_assetAddress)
     returns (bool) {
-      require(msg.sender == _investor || database.boolStorage(keccak256(abi.encodePacked("approval", _investor, msg.sender, address(this), msg.sig))));
       uint fundingRemaining = database.uintStorage(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)));
       uint amount; //The number of tokens that will be minted
       if (msg.value < fundingRemaining) {
         amount = msg.value.mul(100).div(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee")))));
         database.setUint(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)), fundingRemaining.sub(msg.value));
         //Mint tokens equal to the msg.value
-        require(minter.mintAssetTokens(_assetAddress, _investor, amount), "Investor minting failed");
-        reserve.receiveETH.value(msg.value)(_investor);
+        require(minter.mintAssetTokens(_assetAddress, msg.sender, amount), "Investor minting failed");
+        reserve.receiveETH.value(msg.value)(msg.sender);
       } else {
         amount = fundingRemaining.mul(100).div(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee")))));
         //Funding complete, finalize crowdsale
         database.setBool(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress)), true);
         database.deleteUint(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)));
         //Since investor paid equal to or over the funding remaining, just mint for tokensRemaining
-        require(minter.mintAssetTokens(_assetAddress, _investor, amount), "Investor minting failed");
-        reserve.receiveETH.value(fundingRemaining)(_investor);
-        //Return leftover WEI after cost of tokens calculated and subtracted from msg.value to msg.sender *NOT _investor
+        require(minter.mintAssetTokens(_assetAddress, msg.sender, amount), "Investor minting failed");
+        reserve.receiveETH.value(fundingRemaining)(msg.sender);
+        //Return leftover WEI after cost of tokens calculated and subtracted from msg.value to msg.sender
         msg.sender.transfer(msg.value.sub(fundingRemaining));
       }
-      events.transaction('Asset purchased', address(this), _investor, amount, _assetAddress);
+      events.transaction('Asset purchased', address(this), msg.sender, amount, _assetAddress);
 
       return true;
     }

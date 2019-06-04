@@ -7,7 +7,7 @@ import '../math/SafeMath.sol';
 contract Operators {
 
   Database private database;
-  Events private events;
+  Events public events;
 
   constructor(address _database, address _events) public {
     database = Database(_database);
@@ -37,11 +37,13 @@ contract Operators {
 
   // @notice owners can remove operators from the platform here
   function removeOperator(bytes32 _operatorID)
-  external
-  onlyOwner {
+  external {
+    address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID)));
+    require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))) || msg.sender == operatorAddress);
+    database.deleteBytes32(keccak256(abi.encodePacked("operator", operatorAddress)));
     database.deleteAddress(keccak256(abi.encodePacked("operator", _operatorID)));
+    database.deleteAddress(keccak256(abi.encodePacked("referrer", _operatorID)));
     events.operator('Operator removed', _operatorID, '', msg.sender);
-    //emit LogOperatorRemoved(_operatorID, msg.sender);
   }
 
 

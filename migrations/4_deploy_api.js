@@ -35,11 +35,6 @@ module.exports = function(deployer, network, accounts) {
     }).then(function(instance) {
 
       cm = instance;
-      console.log('Adding API to contract manager...');
-      return cm.addContract('API', api.address, {from: accounts[0], gas:200000});
-
-    }).then(function() {
-
       console.log('Adding SingleOwned to contract manager...');
       return cm.addContract('SingleOwned', owned.address, {from: accounts[0], gas:200000});
 

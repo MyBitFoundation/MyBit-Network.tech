@@ -45,7 +45,7 @@ contract CrowdsaleERC20{
   // @dev investor must approve this contract to transfer tokens
   // @param (address) _assetAddress = The address of the asset tokens, investor wishes to purchase
   // @param (uint) _amount = The amount to spend purchasing this asset
-  function buyAssetOrderERC20(address _assetAddress, address _investor, uint _amount, address _paymentToken)
+  function buyAssetOrderERC20(address _assetAddress, uint _amount, address _paymentToken)
   external
   payable
   returns (bool) {
@@ -59,34 +59,33 @@ contract CrowdsaleERC20{
     } else {
       require(msg.value == 0, 'Msg.value should equal zero');
     }
-    require(msg.sender == _investor || database.boolStorage(keccak256(abi.encodePacked("approval", _investor, msg.sender, address(this), msg.sig))), "User not approved");
     ERC20 fundingToken = ERC20(DividendInterface(_assetAddress).getERC20());
     uint fundingRemaining = database.uintStorage(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)));
     uint collected; //This will be the value received by the contract after any conversions
     uint amount; //The number of tokens that will be minted
     //Check if the payment token is the same as the funding token. If not, convert, else just collect the funds
     if(_paymentToken == address(fundingToken)){
-      collected = collectPayment(_investor, _amount, fundingRemaining, fundingToken);
+      collected = collectPayment(msg.sender, _amount, fundingRemaining, fundingToken);
     } else {
-      collected = convertTokens(_investor, _amount, fundingToken, ERC20(_paymentToken), fundingRemaining);
+      collected = convertTokens(msg.sender, _amount, fundingToken, ERC20(_paymentToken), fundingRemaining);
     }
     require(collected > 0);
     if(collected < fundingRemaining){
       amount = collected.mul(100).div(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee")))));
       database.setUint(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)), fundingRemaining.sub(collected));
-      require(minter.mintAssetTokens(_assetAddress, _investor, amount), "Investor minting failed");
+      require(minter.mintAssetTokens(_assetAddress, msg.sender, amount), "Investor minting failed");
       require(fundingToken.transfer(address(reserve), collected));
     } else {
       amount = fundingRemaining.mul(100).div(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee")))));
       database.setBool(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress)), true);
       database.deleteUint(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)));
-      require(minter.mintAssetTokens(_assetAddress, _investor, amount), "Investor minting failed");   // Send remaining asset tokens to investor
+      require(minter.mintAssetTokens(_assetAddress, msg.sender, amount), "Investor minting failed");   // Send remaining asset tokens to investor
       require(fundingToken.transfer(address(reserve), fundingRemaining));
       if(collected > fundingRemaining){
-        require(fundingToken.transfer(_investor, collected.sub(fundingRemaining)));    // return extra funds
+        require(fundingToken.transfer(msg.sender, collected.sub(fundingRemaining)));    // return extra funds
       }
     }
-    events.transaction('Asset purchased', address(this), _investor, amount, _assetAddress);
+    events.transaction('Asset purchased', address(this), msg.sender, amount, _assetAddress);
     return true;
   }
 
