@@ -383,8 +383,8 @@ contract API {
   view
   returns(uint) {
     uint redeemed = getAssetManagerEscrowRedeemed(_managerEscrowID);
-    uint brokerEscrow = getAssetManagerEscrow(_managerEscrowID).sub(redeemed);
-    return brokerEscrow;
+    uint escrow = getAssetManagerEscrow(_managerEscrowID);
+    return escrow.sub(redeemed);
   }
 
   function getAssetManagerEscrowRedeemed(bytes32 _managerEscrowID)

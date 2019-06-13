@@ -187,7 +187,7 @@ contract('Ether Crowdsale', async(accounts) => {
 
   it('Set operator', async() => {
     let block = await web3.eth.getBlock('latest');
-    await operators.registerOperator(operator, 'Operator', 'Asset Type', '0x0000000000000000000000000000000000000000');
+    await operators.registerOperator(operator, 'Operator', 'QmHash', '0x0000000000000000000000000000000000000000');
     let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: owner}, fromBlock: block.number});
     operatorID = logs[0].args.operatorID;
     await operators.acceptEther(operatorID, true, {from: operator});
@@ -366,7 +366,7 @@ contract('Ether Crowdsale', async(accounts) => {
 
   it('Set operator', async() => {
     let block = await web3.eth.getBlock('latest');
-    await operators.registerOperator(operator, 'Operator', 'Asset Type', '0x0000000000000000000000000000000000000000');
+    await operators.registerOperator(operator, 'Operator', 'QmHash', '0x0000000000000000000000000000000000000000');
     let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: owner}, fromBlock: block.number});
     operatorID = logs[0].args.operatorID;
     await operators.acceptEther(operatorID, true, {from: operator});

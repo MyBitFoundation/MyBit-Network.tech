@@ -99,10 +99,6 @@
             {
                 "name": "_assetAddress",
                 "type": "address"
-            },
-            {
-                "name": "_assetManager",
-                "type": "address"
             }
         ],
         "name": "unlockEscrow",
@@ -115,7 +111,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0xb747efb6"
+        "signature": "0xbce12724"
     },
     {
         "constant": false,
@@ -137,7 +133,7 @@
                 "type": "bool"
             }
         ],
-        "name": "becomeAssetManager",
+        "name": "changeAssetManager",
         "outputs": [
             {
                 "name": "",
@@ -147,7 +143,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0xf0e01b67"
+        "signature": "0x350ca067"
     },
     {
         "constant": false,
@@ -159,10 +155,6 @@
             {
                 "name": "_oldAssetManager",
                 "type": "address"
-            },
-            {
-                "name": "_currentAssetManager",
-                "type": "address"
             }
         ],
         "name": "returnEscrow",
@@ -170,7 +162,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0xabc0bbf3"
+        "signature": "0xe4023714"
     },
     {
         "constant": false,
@@ -191,30 +183,6 @@
         "stateMutability": "nonpayable",
         "type": "function",
         "signature": "0x4a364354"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "name": "_assetAddress",
-                "type": "address"
-            },
-            {
-                "name": "_amountToBurn",
-                "type": "uint256"
-            }
-        ],
-        "name": "mutualBurn",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0xd753930d"
     },
     {
         "constant": false,

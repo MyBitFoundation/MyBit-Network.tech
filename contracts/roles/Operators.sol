@@ -2,11 +2,10 @@ pragma solidity ^0.4.24;
 
 import '../database/Database.sol';
 import '../database/Events.sol';
-import '../math/SafeMath.sol';
 
 contract Operators {
 
-  Database private database;
+  Database public database;
   Events public events;
 
   constructor(address _database, address _events) public {
@@ -16,14 +15,15 @@ contract Operators {
 
   // @notice allows the platform owners to onboard a new operator.
   // @notice operators will receive crowdfunding payments and are liable for producing/installing assets.
-  function registerOperator(address _operatorAddress, string _operatorURI, string _assetType, address _referrerAddress)
+  function registerOperator(address _operatorAddress, string _operatorURI, string _ipfs, address _referrerAddress)
   external
   onlyOwner {
     require(_operatorAddress != address(0));
     bytes32 operatorID = keccak256(abi.encodePacked("operator.uri", _operatorURI));
     require(database.addressStorage(keccak256(abi.encodePacked("operator", operatorID))) == address(0));
-    database.setAddress(keccak256(abi.encodePacked("operator", operatorID)), _operatorAddress);
     database.setBytes32(keccak256(abi.encodePacked("operator", _operatorAddress)), operatorID);
+    database.setAddress(keccak256(abi.encodePacked("operator", operatorID)), _operatorAddress);
+    database.setString(keccak256(abi.encodePacked("operator.ipfs", operatorID)), _ipfs);
     if(_referrerAddress == address(0)){
       database.setAddress(keccak256(abi.encodePacked("referrer", operatorID)), database.addressStorage(keccak256(abi.encodePacked("platform.wallet.assets"))));
     } else {
@@ -31,7 +31,7 @@ contract Operators {
     }
 
     events.operator('Operator registered', operatorID, _operatorURI, _operatorAddress);
-    events.operator('Asset type', operatorID, _assetType, _operatorAddress);
+    events.operator('Operator ipfs', operatorID, _ipfs, _operatorAddress);
     //emit LogOperatorRegistered(operatorID, _operatorURI);
   }
 
@@ -104,6 +104,14 @@ contract Operators {
   returns (bool) {
     database.setBool(keccak256(abi.encodePacked("operator.payoutEther", _operatorID)), _payout);
     return true;
+  }
+
+  function updateIPFS(bytes32 _operatorID, string _ipfs)
+  external
+  onlyOperator(_operatorID)
+  returns(bool){
+    database.setString(keccak256(abi.encodePacked("operator.ipfs", _operatorID)), _ipfs);
+    events.operator('Operator ipfs', operatorID, _ipfs, msg.sender);
   }
 
   function addAssetType(bytes32 _operatorID, string _assetType)

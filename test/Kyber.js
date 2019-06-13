@@ -1115,7 +1115,7 @@ contract('Kyber', function(accounts) {
       operators = await Operators.new(db.address, events.address);
       await cm.addContract('Operators', operators.address);
       let block = await web3.eth.getBlock('latest');
-      await operators.registerOperator(accounts[1], 'Operator', 'Asset Type', '0x0000000000000000000000000000000000000000');
+      await operators.registerOperator(accounts[1], 'Operator', 'QmHash', '0x0000000000000000000000000000000000000000');
       let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: accounts[0]}, fromBlock: block.number});
       operatorID = logs[0].args.operatorID;
       await operators.acceptERC20Token(operatorID, tokenInstance[1].address, true, {from: accounts[1]});
