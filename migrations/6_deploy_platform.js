@@ -33,7 +33,7 @@ module.exports = function(deployer, network, accounts) {
 
       tokenFactory = instance;
       console.log('MiniMeTokenFactory.sol: ' + tokenFactory.address);
-      return platform.setTokenFactory(tokenFactory.address);
+      return platform.setTokenFactory(tokenFactory.address, {from: accounts[0], gas:110000});
 
     }).then(function(){
 

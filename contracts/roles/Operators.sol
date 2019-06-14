@@ -111,7 +111,7 @@ contract Operators {
   onlyOperator(_operatorID)
   returns(bool){
     database.setString(keccak256(abi.encodePacked("operator.ipfs", _operatorID)), _ipfs);
-    events.operator('Operator ipfs', operatorID, _ipfs, msg.sender);
+    events.operator('Operator ipfs', _operatorID, _ipfs, msg.sender);
   }
 
   function addAssetType(bytes32 _operatorID, string _assetType)

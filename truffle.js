@@ -70,6 +70,12 @@ module.exports = {
       },
       network_id: 3
     },
+    rinkeby: {
+      provider: function() {
+        return new HDWalletProvider(MNEMONIC, "https://rinkeby.infura.io/v3/"+INFURA_API_KEY)
+      },
+      network_id: 4
+    },
     ethpm: {
       ipfs_host: "127.0.0.1",
       ipfs_protocol: "http",
