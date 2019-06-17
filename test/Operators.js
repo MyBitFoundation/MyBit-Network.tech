@@ -51,7 +51,7 @@ contract('Operators', async(accounts) => {
     let block = await web3.eth.getBlock('latest');
     await operators.registerOperator(operator, 'Operator', 'QmHash', '0x0000000000000000000000000000000000000000');
     let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: owner}, fromBlock: block.number});
-    operatorID = logs[0].args.operatorID;
+    operatorID = logs[0].args.id;
     let apiGeneratedID = await api.generateOperatorID('Operator');
     let apiOperatorID = await api.getOperatorID(operator);
     let apiOperatorAddress = await api.getOperatorAddress(operatorID);

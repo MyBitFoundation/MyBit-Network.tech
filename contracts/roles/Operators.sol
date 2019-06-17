@@ -30,9 +30,7 @@ contract Operators {
       database.setAddress(keccak256(abi.encodePacked("referrer", operatorID)), _referrerAddress);
     }
 
-    events.operator('Operator registered', operatorID, _operatorURI, _operatorAddress);
-    events.operator('Operator ipfs', operatorID, _ipfs, _operatorAddress);
-    //emit LogOperatorRegistered(operatorID, _operatorURI);
+    events.operator('Operator registered', operatorID, _operatorURI, _ipfs, _operatorAddress);
   }
 
   // @notice owners can remove operators from the platform here
@@ -43,7 +41,7 @@ contract Operators {
     database.deleteBytes32(keccak256(abi.encodePacked("operator", operatorAddress)));
     database.deleteAddress(keccak256(abi.encodePacked("operator", _operatorID)));
     database.deleteAddress(keccak256(abi.encodePacked("referrer", _operatorID)));
-    events.operator('Operator removed', _operatorID, '', msg.sender);
+    events.operator('Operator removed', _operatorID, '', '', msg.sender);
   }
 
 
@@ -56,9 +54,7 @@ contract Operators {
     database.setAddress(keccak256(abi.encodePacked("operator", _operatorID)), _newAddress);
     database.deleteBytes32(keccak256(abi.encodePacked("operator", oldAddress)));
     database.setBytes32(keccak256(abi.encodePacked("operator", _newAddress)), _operatorID);
-    events.operator('Operator address changed', _operatorID, '', _newAddress);
-    //events.transaction('Operator address changed', oldAddress, _newAddress, 0, _operatorID);
-    //emit LogOperatorAddressChanged(_operatorID, msg.sender, _newAddress);
+    events.operator('Operator address changed', _operatorID, '', '', _newAddress);
   }
 
   function changeReferrerAddress(bytes32 _operatorID, address _newAddress)
@@ -67,43 +63,7 @@ contract Operators {
     require(oldAddress != address(0));
     require(msg.sender == oldAddress || database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))));
     database.setAddress(keccak256(abi.encodePacked("referrer", _operatorID)), _newAddress);
-    events.operator('Referrer address changed', _operatorID, '', _newAddress);
-  }
-
-  // @notice operator can choose which ERC20 tokens he's willing to accept as payment
-  function acceptERC20Token(bytes32 _operatorID, address _tokenAddress, bool _accept)
-  external
-  onlyOperator(_operatorID)
-  returns (bool) {
-    database.setBool(keccak256(abi.encodePacked("operator.acceptsToken", _operatorID, _tokenAddress)), _accept);
-    return true;
-  }
-
-  // @notice operator can choose whether or not to accept Ether
-  function acceptEther(bytes32 _operatorID, bool _accept)
-  external
-  onlyOperator(_operatorID)
-  returns (bool) {
-    database.setBool(keccak256(abi.encodePacked("operator.acceptsEther", _operatorID)), _accept);
-    return true;
-  }
-
-  // @notice operator can choose which ERC20 tokens it pays out with
-  function payoutERC20Token(bytes32 _operatorID, address _tokenAddress, bool _payout)
-  external
-  onlyOperator(_operatorID)
-  returns (bool) {
-    database.setBool(keccak256(abi.encodePacked("operator.payoutToken", _operatorID, _tokenAddress)), _payout);
-    return true;
-  }
-
-  // @notice operator can choose whether or not to payout in Eth
-  function payoutEther(bytes32 _operatorID, bool _payout)
-  external
-  onlyOperator(_operatorID)
-  returns (bool) {
-    database.setBool(keccak256(abi.encodePacked("operator.payoutEther", _operatorID)), _payout);
-    return true;
+    events.operator('Referrer address changed', _operatorID, '', '', _newAddress);
   }
 
   function updateIPFS(bytes32 _operatorID, string _ipfs)
@@ -111,14 +71,54 @@ contract Operators {
   onlyOperator(_operatorID)
   returns(bool){
     database.setString(keccak256(abi.encodePacked("operator.ipfs", _operatorID)), _ipfs);
-    events.operator('Operator ipfs', _operatorID, _ipfs, msg.sender);
+    events.operator('Operator ipfs', _operatorID, '', _ipfs, msg.sender);
   }
 
-  function addAssetType(bytes32 _operatorID, string _assetType)
+  function addAsset(bytes32 _operatorID, string _name, string _ipfs, bool _acceptCrypto, bool _payoutCrypto, address _token)
   external
   onlyOperator(_operatorID)
   returns (bool) {
-    events.operator('Asset type', _operatorID, _assetType, msg.sender);
+    bytes32 modelID = keccak256(abi.encodePacked('model.id', _operatorID, _name));
+    require(database.addressStorage(keccak256(abi.encodePacked("model.operator", modelID))) == address(0));
+    database.setAddress(keccak256(abi.encodePacked("model.operator", modelID)), msg.sender);
+    database.setString(keccak256(abi.encodePacked('model.ipfs', modelID)), _ipfs);
+    acceptToken(modelID, _token, _acceptCrypto);
+    payoutToken(modelID, _token, _payoutCrypto);
+    events.operator('Asset added', modelID, _name, _ipfs, msg.sender);
+    return true;
+  }
+
+  function removeAsset(bytes32 _modelID)
+  external
+  onlyOperator(_modelID)
+  returns (bool) {
+    database.deleteAddress(keccak256(abi.encodePacked("model.operator", _modelID)));
+    database.deleteString(keccak256(abi.encodePacked('model.ipfs', _modelID)));
+    events.operator('Asset added', _modelID, '', '', msg.sender);
+  }
+
+  // @notice operator can choose which ERC20 tokens he's willing to accept as payment
+  function acceptToken(bytes32 _modelID, address _tokenAddress, bool _accept)
+  public
+  onlyOperator(_modelID)
+  returns (bool) {
+    if(_tokenAddress == address(0)){
+      database.setBool(keccak256(abi.encodePacked("model.acceptsEther", _modelID)), _accept);
+    }
+    database.setBool(keccak256(abi.encodePacked("model.acceptsToken", _modelID, _tokenAddress)), _accept);
+    return true;
+  }
+
+
+  // @notice operator can choose which ERC20 tokens it pays out with
+  function payoutToken(bytes32 _modelID, address _tokenAddress, bool _payout)
+  public
+  onlyOperator(_modelID)
+  returns (bool) {
+    if(_tokenAddress == address(0)){
+      database.setBool(keccak256(abi.encodePacked("model.payoutEther", _modelID)), _payout);
+    }
+    database.setBool(keccak256(abi.encodePacked("model.payoutToken", _modelID, _tokenAddress)), _payout);
     return true;
   }
 
@@ -140,9 +140,9 @@ contract Operators {
     _;
   }
 
-  // @notice Sender must be the operator address for this operatorID
-  modifier onlyOperator(bytes32 _operatorID) {
-    require(database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))) == msg.sender);
+  // @notice Sender must be the operator address for this operatorID or modelID
+  modifier onlyOperator(bytes32 _id) {
+    require(database.addressStorage(keccak256(abi.encodePacked("operator", _id))) == msg.sender || database.addressStorage(keccak256(abi.encodePacked("model.operator", _id))) == msg.sender);
     _;
   }
 

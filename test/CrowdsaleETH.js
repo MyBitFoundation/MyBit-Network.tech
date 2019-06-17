@@ -64,6 +64,7 @@ contract('Ether Crowdsale', async(accounts) => {
   let operators;
   let operatorID;
   let operatorHash;
+  let modelID;
   let assetURI;
   let assetAddress;
   let pausible;
@@ -189,9 +190,10 @@ contract('Ether Crowdsale', async(accounts) => {
     let block = await web3.eth.getBlock('latest');
     await operators.registerOperator(operator, 'Operator', 'QmHash', '0x0000000000000000000000000000000000000000');
     let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: owner}, fromBlock: block.number});
-    operatorID = logs[0].args.operatorID;
-    await operators.acceptEther(operatorID, true, {from: operator});
-    await operators.payoutEther(operatorID, true, {from: operator});
+    operatorID = logs[0].args.id;
+    await operators.addAsset(operatorID, 'Asset', 'QmHash', true, true, '0x0000000000000000000000000000000000000000', {from: operator});
+    logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Asset added'), origin: operator}, fromBlock: block.number});
+    modelID = logs[0].args.id;
   });
 
   //Start successful funding
@@ -202,7 +204,7 @@ contract('Ether Crowdsale', async(accounts) => {
     console.log(now);
     let startTime = now.plus(86400); //Startime is a day from now
     await platformToken.approve(crowdsaleGen.address, 10, {from:assetManager});
-    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 100, startTime, bn(20).times(ETH), assetManagerFee, 10, platformToken.address, {from:assetManager});
+    await crowdsaleGen.createAssetOrderETH(assetURI, modelID, 100, startTime, bn(20).times(ETH), assetManagerFee, 10, platformToken.address, {from:assetManager});
     let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: assetManager}, fromBlock: block.number});
     assetAddress = logs[0].args.asset;
     token = await Token.at(assetAddress);
@@ -238,7 +240,7 @@ contract('Ether Crowdsale', async(accounts) => {
     let err;
     //Fail because asset already exists
     try{
-      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 0, bn(20).times(ETH).times(1.03), assetManagerFee, 0, platformToken.address, {from:assetManager, gas:maxGas});
+      await crowdsaleGen.createAssetOrderETH(assetURI, modelID, 10, 0, bn(20).times(ETH).times(1.03), assetManagerFee, 0, platformToken.address, {from:assetManager, gas:maxGas});
     } catch(e){
       err = e;
     }
@@ -293,12 +295,14 @@ contract('Ether Crowdsale', async(accounts) => {
 
   it('Withdraw payout', async() => {
     ownerBalanceBefore = await web3.eth.getBalance(owner);
-    operatorBalanceBefore = await web3.eth.getBalance(operator);
-    await crowdsale.payoutETH(assetAddress, {from: assetManager});
+    assetManagerBalanceBefore = await web3.eth.getBalance(assetManager);
+    let tx = await crowdsale.payoutETH(assetAddress, {from: assetManager, gasPrice:1});
+    let gasDiff = bn(tx.receipt.gasUsed)
     ownerBalanceAfter = await web3.eth.getBalance(owner);
     assert.equal(bn(ownerBalanceAfter).minus(ownerBalanceBefore).isEqualTo(bn(ETH).multipliedBy(20).times(0.03)), true);
-    operatorBalanceAfter = await web3.eth.getBalance(operator);
-    assert.equal(bn(operatorBalanceAfter).minus(operatorBalanceBefore).isEqualTo(bn(ETH).multipliedBy(20)), true);
+    assetManagerBalanceAfter = await web3.eth.getBalance(assetManager);
+    assert.equal(bn(assetManagerBalanceAfter).minus(assetManagerBalanceBefore).plus(gasDiff).isEqualTo(bn(ETH).multipliedBy(20)), true);
+    await web3.eth.sendTransaction({from:assetManager, to:operator, value:bn(assetManagerBalanceAfter).minus(assetManagerBalanceBefore).plus(gasDiff).toString()})
   })
 
   it('Fail to refund', async() => {
@@ -352,30 +356,26 @@ contract('Ether Crowdsale', async(accounts) => {
   });
 
   //Start failed funding
-  it('Start funding without operator set', async() => {
+  it('Start funding without asset set', async() => {
     let err;
-    await operators.removeOperator(operatorID);
+    await operators.removeAsset(modelID, {from: operator});
     assetURI = 'Fail: No operator';
     try{
-      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 0, bn(20).times(ETH), assetManagerFee, 0, platformToken.address, {from:assetManager, gas:maxGas});
+      await crowdsaleGen.createAssetOrderETH(assetURI, modelID, 10, 0, bn(20).times(ETH), assetManagerFee, 0, platformToken.address, {from:assetManager, gas:maxGas});
     } catch(e){
       err = e;
     }
     assert.notEqual(err, undefined);
   });
 
-  it('Set operator', async() => {
-    let block = await web3.eth.getBlock('latest');
-    await operators.registerOperator(operator, 'Operator', 'QmHash', '0x0000000000000000000000000000000000000000');
-    let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: owner}, fromBlock: block.number});
-    operatorID = logs[0].args.operatorID;
-    await operators.acceptEther(operatorID, true, {from: operator});
+  it('Re-add asset', async() => {
+    await operators.addAsset(operatorID, 'Asset', 'QmHash', true, true, '0x0000000000000000000000000000000000000000', {from: operator});
   });
 
   it('Start funding that does not reach goal', async() => {
     assetURI = 'No Goal';
     let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 2, 0, bn(20).times(ETH), assetManagerFee, 0, platformToken.address, {from:assetManager, gas:maxGas});
+    await crowdsaleGen.createAssetOrderETH(assetURI, modelID, 2, 0, bn(20).times(ETH), assetManagerFee, 0, platformToken.address, {from:assetManager, gas:maxGas});
     let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: assetManager}, fromBlock: block.number});
     assetAddress = logs[0].args.asset;
     token = await Token.at(assetAddress);
@@ -454,7 +454,7 @@ contract('Ether Crowdsale', async(accounts) => {
     assetURI = 'Free Management';
     assetManagerFee = 0;
     let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 1, 0, bn(2).times(ETH), assetManagerFee, 0, platformToken.address, {from:assetManager});
+    await crowdsaleGen.createAssetOrderETH(assetURI, modelID, 1, 0, bn(2).times(ETH), assetManagerFee, 0, platformToken.address, {from:assetManager});
     let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: assetManager}, fromBlock: block.number});
     assetAddress = logs[0].args.asset;
     token = await Token.at(assetAddress);
@@ -478,7 +478,7 @@ contract('Ether Crowdsale', async(accounts) => {
     assetManagerFee = 100;
     let err;
     try {
-      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 1, 0, bn(2).times(ETH), assetManagerFee, 0, platformToken.address, {from:assetManager, gas:maxGas});
+      await crowdsaleGen.createAssetOrderETH(assetURI, modelID, 1, 0, bn(2).times(ETH), assetManagerFee, 0, platformToken.address, {from:assetManager, gas:maxGas});
     }
     catch(e) {
       err = e;
@@ -491,7 +491,7 @@ contract('Ether Crowdsale', async(accounts) => {
     assetURI = '98%managementfee.com';
     assetManagerFee = 98;
     let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 0, bn(2).times(ETH), assetManagerFee, 0, platformToken.address, {from:assetManager});
+    await crowdsaleGen.createAssetOrderETH(assetURI, modelID, 10, 0, bn(2).times(ETH), assetManagerFee, 0, platformToken.address, {from:assetManager});
     let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: assetManager}, fromBlock: block.number});
     assetAddress = logs[0].args.asset;
     token = await Token.at(assetAddress);
@@ -511,7 +511,7 @@ contract('Ether Crowdsale', async(accounts) => {
     assetManagerFee = 42;
     let err;
     try{
-      await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 0, 0, assetManagerFee, 0, platformToken.address, {from:assetManager, gas:maxGas});
+      await crowdsaleGen.createAssetOrderETH(assetURI, modelID, 10, 0, 0, assetManagerFee, 0, platformToken.address, {from:assetManager, gas:maxGas});
     } catch(e){
       err = e;
     }
@@ -523,7 +523,7 @@ contract('Ether Crowdsale', async(accounts) => {
     assetURI = 'lowgoals.com';
     assetManagerFee = 50;
     let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 10, 0, 100, assetManagerFee, 0, platformToken.address, {from:assetManager, gas:maxGas});
+    await crowdsaleGen.createAssetOrderETH(assetURI, modelID, 10, 0, 100, assetManagerFee, 0, platformToken.address, {from:assetManager, gas:maxGas});
     let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: assetManager}, fromBlock: block.number});
     assetAddress = logs[0].args.asset;
     token = await Token.at(assetAddress);
@@ -545,7 +545,7 @@ contract('Ether Crowdsale', async(accounts) => {
     assetURI = 'Cancelled';
     assetManagerFee = 0;
     let block = await web3.eth.getBlock('latest');
-    await crowdsaleGen.createAssetOrderETH(assetURI, operatorID, 100, 0, bn(10).times(ETH).toString(), assetManagerFee, 0, platformToken.address, {from:assetManager, gas:maxGas});
+    await crowdsaleGen.createAssetOrderETH(assetURI, modelID, 100, 0, bn(10).times(ETH).toString(), assetManagerFee, 0, platformToken.address, {from:assetManager, gas:maxGas});
     let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset funding started'), manager: assetManager}, fromBlock: block.number});
     assetAddress = logs[0].args.asset;
     token = await Token.at(assetAddress);
@@ -574,7 +574,7 @@ contract('Ether Crowdsale', async(accounts) => {
   });
 
   it('Set operator to not accept token for payment', async() => {
-    await operators.acceptEther(operatorID, false, {from: operator});
+    await operators.acceptToken(modelID, '0x0000000000000000000000000000000000000000', false, {from: operator});
   });
 
   it('Fail to create crowdsale, insufficient escrow (100%)', async() => {
@@ -590,12 +590,12 @@ contract('Ether Crowdsale', async(accounts) => {
 
   it('Create crowdsale with 100% escrow', async() => {
     await platformToken.approve(crowdsaleGen.address, bn(1).times(ETH), {from:assetManager});
-    await crowdsaleGen.createAssetOrderETH('100% escrow', operatorID, 5, 0, bn(1).times(ETH), assetManagerFee, bn(1).times(ETH), platformToken.address, {from:assetManager, gas:maxGas});
+    await crowdsaleGen.createAssetOrderETH('100% escrow', modelID, 5, 0, bn(1).times(ETH), assetManagerFee, bn(1).times(ETH), platformToken.address, {from:assetManager, gas:maxGas});
   });
 
   it('Set collateral on platform, change operator to accept crypto', async() => {
     await platform.setCollateralLevels(10, 25, 15, 10);
-    await operators.acceptEther(operatorID, true, {from: operator});
+    await operators.acceptToken(modelID, '0x0000000000000000000000000000000000000000', true, {from: operator});
     let assetCount = bn(await api.getManagerAssetCount(assetManager));
     let level = bn(await api.getCollateralLevel(assetManager));
     console.log('Count: ', assetCount.toString());
@@ -606,7 +606,7 @@ contract('Ether Crowdsale', async(accounts) => {
     let err;
     try{
       await platformToken.approve(crowdsaleGen.address, bn(0.35).times(ETH).minus(1), {from:assetManager});
-      await crowdsaleGen.createAssetOrderETH('35% escrow', operatorID, 5, 0, bn(1).times(ETH), assetManagerFee, bn(0.35).times(ETH).minus(1), platformToken.address, {from:assetManager, gas:maxGas});
+      await crowdsaleGen.createAssetOrderETH('35% escrow', modelID, 5, 0, bn(1).times(ETH), assetManagerFee, bn(0.35).times(ETH).minus(1), platformToken.address, {from:assetManager, gas:maxGas});
     } catch(e){
       err = e;
     }
@@ -615,18 +615,18 @@ contract('Ether Crowdsale', async(accounts) => {
 
   it('Create crowdsale with 35% escrow', async() => {
     await platformToken.approve(crowdsaleGen.address, bn(0.35).times(ETH), {from:assetManager});
-    await crowdsaleGen.createAssetOrderETH('35% escrow', operatorID, 5, 0, bn(1).times(ETH), assetManagerFee, bn(0.35).times(ETH), platformToken.address, {from:assetManager, gas:maxGas});
+    await crowdsaleGen.createAssetOrderETH('35% escrow', modelID, 5, 0, bn(1).times(ETH), assetManagerFee, bn(0.35).times(ETH), platformToken.address, {from:assetManager, gas:maxGas});
   });
 
-  it('Set platform to not payout in token', async() => {
-    await operators.payoutEther(operatorID, false, {from: operator});
+  it('Set operator to not payout in token', async() => {
+    await operators.payoutToken(modelID, '0x0000000000000000000000000000000000000000', false, {from: operator});
   });
 
   it('Fail to create crowdsale, insufficient escrow (35%*3)', async() => {
     let err;
     try{
       await platformToken.approve(crowdsaleGen.address, bn(1.05).times(ETH).minus(1), {from:assetManager});
-      await crowdsaleGen.createAssetOrderETH('105% escrow', operatorID, 5, 0, bn(1).times(ETH), assetManagerFee, bn(1.05).times(ETH).minus(1), platformToken.address, {from:assetManager, gas:maxGas});
+      await crowdsaleGen.createAssetOrderETH('105% escrow', modelID, 5, 0, bn(1).times(ETH), assetManagerFee, bn(1.05).times(ETH).minus(1), platformToken.address, {from:assetManager, gas:maxGas});
     } catch(e){
       err = e;
     }
@@ -635,18 +635,18 @@ contract('Ether Crowdsale', async(accounts) => {
 
   it('Create crowdsale with 35%*3 escrow', async() => {
     await platformToken.approve(crowdsaleGen.address, bn(1.05).times(ETH), {from:assetManager});
-    await crowdsaleGen.createAssetOrderETH('105% escrow', operatorID, 5, 0, bn(1).times(ETH), assetManagerFee, bn(1.05).times(ETH), platformToken.address, {from:assetManager, gas:maxGas});
+    await crowdsaleGen.createAssetOrderETH('105% escrow', modelID, 5, 0, bn(1).times(ETH), assetManagerFee, bn(1.05).times(ETH), platformToken.address, {from:assetManager, gas:maxGas});
   });
 
   it('Set platform to not accept or payout in token', async() => {
-    await operators.acceptEther(operatorID, false, {from: operator});
+    await operators.acceptToken(modelID, '0x0000000000000000000000000000000000000000', false, {from: operator});
   });
 
   it('Fail to create crowdsale, insufficient escrow (35%*3+100%)', async() => {
     let err;
     try{
       await platformToken.approve(crowdsaleGen.address, bn(2.05).times(ETH).minus(1), {from:assetManager});
-      await crowdsaleGen.createAssetOrderETH('205% escrow', operatorID, 5, 0, bn(1).times(ETH), assetManagerFee, bn(2.05).times(ETH).minus(1), platformToken.address, {from:assetManager, gas:maxGas});
+      await crowdsaleGen.createAssetOrderETH('205% escrow', modelID, 5, 0, bn(1).times(ETH), assetManagerFee, bn(2.05).times(ETH).minus(1), platformToken.address, {from:assetManager, gas:maxGas});
     } catch(e){
       err = e;
     }
@@ -655,7 +655,7 @@ contract('Ether Crowdsale', async(accounts) => {
 
   it('Create crowdsale with 35%*3+100% escrow', async() => {
     await platformToken.approve(crowdsaleGen.address, bn(2.05).times(ETH), {from:assetManager});
-    await crowdsaleGen.createAssetOrderETH('205% escrow', operatorID, 5, 0, bn(1).times(ETH), assetManagerFee, bn(2.05).times(ETH), platformToken.address, {from:assetManager, gas:maxGas});
+    await crowdsaleGen.createAssetOrderETH('205% escrow', modelID, 5, 0, bn(1).times(ETH), assetManagerFee, bn(2.05).times(ETH), platformToken.address, {from:assetManager, gas:maxGas});
   });
 
   // TODO: try to force integer rounding

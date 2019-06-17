@@ -72,7 +72,7 @@ contract CrowdsaleETH {
       return true;
     }
 
-    // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where operator & assetManager can withdraw
+    // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where receiver & assetManager can withdraw
     // @dev The contract manager needs to know  the address PlatformDistribution contract
     // @param (bytes32) _assetAddress = The address of the asset which completed the crowdsale
     function payoutETH(address _assetAddress)
@@ -89,23 +89,23 @@ contract CrowdsaleETH {
       require(platformAssetsWallet != address(0), "Platform assets wallet not set");
       require(minter.mintAssetTokens(_assetAddress, database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerTokens", _assetAddress)))), "Manager minting failed");
       require(minter.mintAssetTokens(_assetAddress, platformAssetsWallet, database.uintStorage(keccak256(abi.encodePacked("asset.platformTokens", _assetAddress)))), "Platform minting failed");
-      //Get the addresses for the operator and platform
-      address operator = database.addressStorage(keccak256(abi.encodePacked("asset.operator", _assetAddress)));
+      //Get the addresses for the receiver and platform
+      address receiver = database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress)));
       address platformFundsWallet = database.addressStorage(keccak256(abi.encodePacked("platform.wallet.funds")));
-      require(operator != address(0) && platformFundsWallet != address(0), "Operator or platform wallet not set");
-      //Calculate amounts for platform and operator
+      require(receiver != address(0) && platformFundsWallet != address(0), "Receiver or platform wallet not set");
+      //Calculate amounts for platform and receiver
       uint amount = database.uintStorage(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));
       uint platformFee = amount.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("platform.fee"))));
-      //Transfer funds to operator and platform
+      //Transfer funds to receiver and platform
       require(reserve.issueETH(platformFundsWallet, platformFee), 'Platform funds not paid');
-      require(reserve.issueETH(operator, amount), 'Operator funds not paid');
+      require(reserve.issueETH(receiver, amount), 'Operator funds not paid');
       //Delete crowdsale start time
       database.deleteUint(keccak256(abi.encodePacked("crowdsale.start", _assetAddress)));
       //Increase asset count for manager
       address manager = database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress)));
       database.setUint(keccak256(abi.encodePacked("manager.assets", manager)), database.uintStorage(keccak256(abi.encodePacked("manager.assets", manager))).add(1));
       //Emit event
-      events.transaction('Asset payout', _assetAddress, operator, amount, address(0));
+      events.transaction('Asset payout', _assetAddress, receiver, amount, address(0));
       return true;
     }
 

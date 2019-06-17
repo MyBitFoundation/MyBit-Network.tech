@@ -40,13 +40,13 @@ contract CrowdsaleGeneratorERC20 {
   // @notice AssetManagers can initiate a crowdfund for a new asset here
   // @dev the crowdsaleERC20 contract is granted rights to mint asset-tokens as it receives funding
   // @param (string) _assetURI = The location where information about the asset can be found
-  // @param (bytes32) _operatorID = The ID of the operator who is to create and install this asset
+  // @param (bytes32) _modelID = The modelID of the asset that will be used in the crowdsale
   // @param (uint) _fundingLength = The number of seconds this crowdsale is to go on for until it fails
   // @param (uint) _startTime = The timestamp at which funding for this asset begins
   // @param (uint) _amountToRaise = The amount of tokens required to raise for the crowdsale to be a success
   // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
   // @param (address) _fundingToken = The ERC20 token to be used to fund the crowdsale (Operator must accept this token as payment)
-  function createAssetOrderERC20(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc, uint _escrow, address _fundingToken, address _paymentToken)
+  function createAssetOrderERC20(string _assetURI, bytes32 _modelID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc, uint _escrow, address _fundingToken, address _paymentToken)
   payable
   external
   {
@@ -58,7 +58,7 @@ contract CrowdsaleGeneratorERC20 {
     //require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), "User not approved");
     require(_amountToRaise >= 100, "Crowdsale goal is too small");
     require((_assetManagerPerc + database.uintStorage(keccak256(abi.encodePacked("platform.percentage")))) < 100, "Manager percent need to be less than 100");
-    require(database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))) != address(0), "Operator does not exist");
+    require(database.addressStorage(keccak256(abi.encodePacked("model.operator", _modelID))) != address(0), "Model not set");
     require(!database.boolStorage(keccak256(abi.encodePacked("asset.uri", _assetURI))), "Asset URI is not unique"); //Check that asset URI is unique
     uint startTime;
     if(_startTime < now){
@@ -68,8 +68,8 @@ contract CrowdsaleGeneratorERC20 {
     }
     address assetAddress = minter.cloneToken(_assetURI, _fundingToken);
     require(setCrowdsaleValues(assetAddress, startTime, _fundingLength, _amountToRaise));
-    require(setAssetValues(assetAddress, _assetURI, _operatorID, msg.sender, _assetManagerPerc, _amountToRaise, _fundingToken));
-    uint minEscrow = calculateEscrowERC20(_amountToRaise, msg.sender, _operatorID, _fundingToken);
+    require(setAssetValues(assetAddress, _assetURI, _modelID, msg.sender, _assetManagerPerc, _amountToRaise, _fundingToken));
+    uint minEscrow = calculateEscrowERC20(_amountToRaise, msg.sender, _modelID, _fundingToken);
     require(lockEscrowERC20(msg.sender, assetAddress, _paymentToken, _fundingToken, _escrow, minEscrow));
     events.asset('Asset funding started', _assetURI, assetAddress, msg.sender);
   }
@@ -96,7 +96,7 @@ contract CrowdsaleGeneratorERC20 {
     return true;
   }
 
-  function setAssetValues(address _assetAddress, string _assetURI, bytes32 _operatorID, address _assetManager, uint _assetManagerPerc, uint _amountToRaise, address _fundingToken)
+  function setAssetValues(address _assetAddress, string _assetURI, bytes32 _modelID, address _assetManager, uint _assetManagerPerc, uint _amountToRaise, address _fundingToken)
   private
   returns (bool){
     uint totalTokens = _amountToRaise.mul(100).div(uint(100).sub(_assetManagerPerc).sub(database.uintStorage(keccak256(abi.encodePacked("platform.percentage")))));
@@ -104,25 +104,27 @@ contract CrowdsaleGeneratorERC20 {
     database.setUint(keccak256(abi.encodePacked("asset.managerTokens", _assetAddress)), totalTokens.getFractionalAmount(_assetManagerPerc));
     database.setUint(keccak256(abi.encodePacked("asset.platformTokens", _assetAddress)), totalTokens.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("platform.percentage")))));
     database.setAddress(keccak256(abi.encodePacked("asset.manager", _assetAddress)), _assetManager);
-    database.setAddress(keccak256(abi.encodePacked("asset.operator", _assetAddress)), database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))));
-    database.setBool(keccak256(abi.encodePacked("asset.uri", _assetURI)), true); //Set to ensure a unique asset URI
-    if(database.boolStorage(keccak256(abi.encodePacked("operator.acceptsToken", _operatorID, _fundingToken)))){
-      database.setAddress(keccak256(abi.encodePacked("asset.receiver", _assetAddress)), database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID))));
+    //database.setAddress(keccak256(abi.encodePacked("asset.operator", _assetAddress)), database.addressStorage(keccak256(abi.encodePacked("asset.operator", _modelID))));
+    /*
+    if(database.boolStorage(keccak256(abi.encodePacked("asset.acceptsToken", _modelID, _fundingToken)))){
+      database.setAddress(keccak256(abi.encodePacked("asset.receiver", _assetAddress)), database.addressStorage(keccak256(abi.encodePacked("model.operator", _modelID))));
     } else {
       database.setAddress(keccak256(abi.encodePacked("asset.receiver", _assetAddress)), _assetManager);
     }
+    */
+    database.setBool(keccak256(abi.encodePacked("asset.uri", _assetURI)), true); //Set to ensure a unique asset URI
     return true;
   }
 
-  function calculateEscrowERC20(uint _amount, address _manager, bytes32 _operatorID, address _fundingToken)
+  function calculateEscrowERC20(uint _amount, address _manager, bytes32 _modelID, address _fundingToken)
   private
   view
   returns (uint){
     uint percent = database.uintStorage(keccak256(abi.encodePacked("collateral.base"))).add(database.uintStorage(keccak256(abi.encodePacked("collateral.level", database.uintStorage(keccak256(abi.encodePacked("manager.assets", _manager)))))));
-    if(!database.boolStorage(keccak256(abi.encodePacked("operator.payoutToken", _operatorID, _fundingToken)))){
+    if(!database.boolStorage(keccak256(abi.encodePacked("model.payoutToken", _modelID, _fundingToken)))){
       percent = percent.mul(3);
     }
-    if(!database.boolStorage(keccak256(abi.encodePacked("operator.acceptsToken", _operatorID, _fundingToken)))){
+    if(!database.boolStorage(keccak256(abi.encodePacked("model.acceptsToken", _modelID, _fundingToken)))){
       percent = percent.add(100);
     }
     return _amount.getFractionalAmount(percent);
@@ -187,6 +189,6 @@ contract CrowdsaleGeneratorERC20 {
   //                                            Events
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  //event LogAssetFundingStarted(bytes32 indexed _assetID, address indexed _assetManager, string _assetURI, address indexed _tokenAddress);
+  //event LogAssetFundingStarted(bytes32 indexed _modelID, address indexed _assetManager, string _assetURI, address indexed _tokenAddress);
   //event LogSig(bytes4 _sig);
 }

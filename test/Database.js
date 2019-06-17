@@ -323,7 +323,7 @@ contract('Database', async (accounts) => {
   });
 
   it('Operator event', async() => {
-    await events.operator('Test', NULL_BYTES32, 'URI', NULL_ADDRESS);
+    await events.operator('Test', NULL_BYTES32, 'URI', 'IPFS', NULL_ADDRESS);
   });
 
   it('Consensus event', async() => {
