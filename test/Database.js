@@ -82,6 +82,7 @@ contract('Database', async (accounts) => {
 
   it('Deploy API', async() => {
     api = await API.new(database.address);
+    assert.equal(await api.contractOwner(manager1), true);
   });
 
   it('Deploy contract manage contract', async() => {
@@ -322,7 +323,7 @@ contract('Database', async (accounts) => {
   });
 
   it('Operator event', async() => {
-    await events.operator('Test', NULL_BYTES32, 'URI', NULL_ADDRESS);
+    await events.operator('Test', NULL_BYTES32, 'URI', 'IPFS', NULL_ADDRESS);
   });
 
   it('Consensus event', async() => {

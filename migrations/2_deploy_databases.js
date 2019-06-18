@@ -25,12 +25,13 @@ module.exports = function(deployer, network, accounts) {
       deployer.link(SafeMath,
                     MyBitToken);
 
-      if(network != 'mainnet' && network != 'mainnet-fork'){
-        return MyBitToken.new('MyBit', 'MYB', tokenSupply.toString());
-      } else {
+      if(network == 'mainnet' || network == 'mainnet-fork'){
         return MyBitToken.at('0x5d60d8d7ef6d37e16ebabc324de3be57f135e0bc');
+      } else if (network == 'ropsten' || network == 'ropsten-fork'){
+        return MyBitToken.at('0xC68D7C356e1b725F75cBaf1306A2603abd7157CA');
+      } else {
+        return MyBitToken.new('MyBit', 'MYB', tokenSupply.toString());
       }
-
     }).then(function(instance) {
 
       MyB = instance;
@@ -43,7 +44,6 @@ module.exports = function(deployer, network, accounts) {
         }
         return Database.new([accounts[0]], true);
       } else if(network == 'ropsten') {
-        MyB.transfer('0xBB64ac045539bC0e9FFfd04399347a8459e8282A', tokenSupply.dividedBy(2));
         return Database.new([accounts[0],'0xBB64ac045539bC0e9FFfd04399347a8459e8282A'], true);
       } else {
         return Database.new([accounts[0]], true);

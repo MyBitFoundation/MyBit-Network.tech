@@ -137,7 +137,7 @@
                 "type": "bool"
             }
         ],
-        "name": "becomeAssetManager",
+        "name": "changeAssetManager",
         "outputs": [
             {
                 "name": "",
@@ -147,7 +147,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0xf0e01b67"
+        "signature": "0x350ca067"
     },
     {
         "constant": false,
@@ -191,30 +191,6 @@
         "stateMutability": "nonpayable",
         "type": "function",
         "signature": "0x4a364354"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "name": "_assetAddress",
-                "type": "address"
-            },
-            {
-                "name": "_amountToBurn",
-                "type": "uint256"
-            }
-        ],
-        "name": "mutualBurn",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0xd753930d"
     },
     {
         "constant": false,

@@ -99,7 +99,7 @@ contract('AssetManager Escrow', async(accounts) => {
     operators = await Operators.new(db.address, events.address);
     await cm.addContract('Operators', operators.address);
     let block = await web3.eth.getBlock('latest');
-    await operators.registerOperator(operator, 'Operator', 'Asset Type', '0x0000000000000000000000000000000000000000');
+    await operators.registerOperator(operator, 'Operator', 'QmHash', '0x0000000000000000000000000000000000000000');
     let logs = await events.getPastEvents('LogOperator', {filter: {messageID: web3.utils.sha3('Operator registered'), origin: owner}, fromBlock: block.number});
     operatorID = logs[0].args.operatorID;
   });
@@ -134,7 +134,7 @@ contract('AssetManager Escrow', async(accounts) => {
   //Funding deadline is passed but didn't raise enough funds
   it("Unlock escrow", async() => {
     let balanceBefore = await burnToken.balanceOf(assetManager);
-    await escrow.unlockEscrow(assetAddress, assetManager, {from:assetManager});
+    await escrow.unlockEscrow(assetAddress, {from:assetManager});
     let balanceAfter = await burnToken.balanceOf(assetManager);
     let diff = bn(balanceAfter).minus(balanceBefore);
     assert.equal(diff.isEqualTo(bn(ETH).multipliedBy(2)), true);
@@ -196,7 +196,7 @@ contract('AssetManager Escrow', async(accounts) => {
     let err;
     //Fail because no ROI yet
     try{
-      tx = await escrow.unlockEscrow(assetAddress, assetManager, {from:assetManager});
+      tx = await escrow.unlockEscrow(assetAddress, {from:assetManager});
       console.log(tx);
     } catch(e){
       err = e;
@@ -212,7 +212,7 @@ contract('AssetManager Escrow', async(accounts) => {
     let err;
     //Fail because wrong user
     try{
-      await escrow.unlockEscrow(assetAddress, assetManager, {from:operator});
+      await escrow.unlockEscrow(assetAddress, {from:operator});
     } catch(e){
       err = e;
     }
@@ -229,7 +229,7 @@ contract('AssetManager Escrow', async(accounts) => {
     await db.setBool(finalizedHash, false);
     await db.setUint(fundingHash, currentTime.plus(10));
     try{
-      await escrow.unlockEscrow(assetAddress, assetManager, {from:assetManager});
+      await escrow.unlockEscrow(assetAddress, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -241,7 +241,7 @@ contract('AssetManager Escrow', async(accounts) => {
   it("Unlock half escrow", async() => {
     let assetManagerID = await api.getAssetManagerEscrowID(assetAddress, assetManager);
     let balanceBefore = await burnToken.balanceOf(assetManager);
-    await escrow.unlockEscrow(assetAddress, assetManager, {from:assetManager});
+    await escrow.unlockEscrow(assetAddress, {from:assetManager});
     console.log(bn(await api.getAssetManagerEscrowRemaining(assetManagerID)).toString());
     assert.equal(bn(await api.getAssetManagerEscrowRemaining(assetManagerID)).eq(ETH), true);
     let balanceAfter = await burnToken.balanceOf(assetManager);
@@ -253,7 +253,7 @@ contract('AssetManager Escrow', async(accounts) => {
   it("Fail to unlock more escrow without further income", async() => {
     let err;
     try{
-      await escrow.unlockEscrow(assetAddress, assetManager, {from:assetManager});
+      await escrow.unlockEscrow(assetAddress, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -270,7 +270,7 @@ contract('AssetManager Escrow', async(accounts) => {
   it("Fail to unlock more escrow without further income", async() => {
     let err;
     try{
-      await escrow.unlockEscrow(assetAddress, assetManager, {from:assetManager});
+      await escrow.unlockEscrow(assetAddress, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -285,7 +285,7 @@ contract('AssetManager Escrow', async(accounts) => {
 
   it("Unlock rest of escrow", async() => {
     let balanceBefore = await burnToken.balanceOf(assetManager);
-    await escrow.unlockEscrow(assetAddress, assetManager, {from:assetManager});
+    await escrow.unlockEscrow(assetAddress, {from:assetManager});
     let balanceAfter = await burnToken.balanceOf(assetManager);
     let diff = bn(balanceAfter).minus(balanceBefore);
     assert.equal(diff.isEqualTo(bn(ETH).multipliedBy(2).dividedBy(2)), true);
@@ -294,7 +294,7 @@ contract('AssetManager Escrow', async(accounts) => {
   it("Fail to unlock escrow after 200% ROI", async() => {
     let err;
     try{
-      await escrow.unlockEscrow(assetAddress, assetManager, {from:assetManager});
+      await escrow.unlockEscrow(assetAddress, {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -371,7 +371,7 @@ contract('AssetManager Escrow', async(accounts) => {
   });
 
   it("Return escrow to old manager", async() => {
-    await escrow.returnEscrow(assetAddress, assetManager, user1, {from: user1});
+    await escrow.returnEscrow(assetAddress, assetManager, {from: user1});
   });
 
   it("Burn", async() => {

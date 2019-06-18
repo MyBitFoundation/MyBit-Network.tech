@@ -9,18 +9,12 @@ module.exports = function(deployer, network, accounts) {
     const CrowdsaleERC20 = artifacts.require("./crowdsale/CrowdsaleERC20.sol");
     const AssetGenerator = artifacts.require("./ecosystem/AssetGenerator.sol");
     const ContractManager = artifacts.require("./database/ContractManager.sol");
+    const FakeKyber = artifacts.require("./test/FakeKyber.sol");
     const SafeMath = artifacts.require("./math/SafeMath.sol");
 
     let minter, crowdsaleETH, crowdsaleERC20, crowdsaleGeneratorETH,
-        crowdsaleGeneratorERC20, assetGenerator, cm;
-    let kyber = {
-      address: '0x0000000000000000000000000000000000000000'
-    };
-    if(network == 'mainnet' || network == 'mainnet-fork'){
-      kyber.address = '0x818E6FECD516Ecc3849DAf6845e3EC868087B755';
-    } else if(network == 'ropsten' || network == 'ropsten-fork'){
-      kyber.address = '0x818E6FECD516Ecc3849DAf6845e3EC868087B755';
-    }
+        crowdsaleGeneratorERC20, assetGenerator, cm, kyber;
+
     let contracts = JSON.parse(fs.readFileSync(`networks/${network}/contracts.json`, 'utf8'));
 
     deployer.then(function(){
@@ -40,6 +34,25 @@ module.exports = function(deployer, network, accounts) {
     }).then(function(instance) {
 
       cm = instance;
+      if(network == 'mybit'){
+        return FakeKyber.new();
+      } else {
+        return
+      }
+    }).then(function(instance) {
+
+      if(network == 'mybit'){
+        kyber = instance
+      } else {
+        kyber = {
+          address: '0x0000000000000000000000000000000000000000'
+        };
+        if(network == 'mainnet' || network == 'mainnet-fork'){
+          kyber.address = '0x818E6FECD516Ecc3849DAf6845e3EC868087B755';
+        } else if(network == 'ropsten' || network == 'ropsten-fork'){
+          kyber.address = '0x818E6FECD516Ecc3849DAf6845e3EC868087B755';
+        }
+      }
       return Minter.new(contracts['Database']);
 
     }).then(function(instance) {
