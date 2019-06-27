@@ -15,7 +15,7 @@ echo -e "\"use strict\";\n" > "lib/index.js"
 echo -e "Object.defineProperty(exports, \"__esModule\", {\n\tvalue: true\n});\n" >> "lib/index.js"
 
 #Set up mapping of used contracts
-declare -A map=( [API]=1 [MyBitToken]=1 [Database]=1 [Events]=1 [ContractManager]=1 [SingleOwned]=1 [Pausible]=1 [Platform]=1 [Operators]=1 [AssetManagerEscrow]=1 [AssetManagerFunds]=1 [CrowdsaleETH]=1 [CrowdsaleERC20]=1 [CrowdsaleGeneratorETH]=1 [CrowdsaleGeneratorERC20]=1 [AssetGenerator]=1 [DividendToken]=1 [DividendTokenERC20]=1 [DivToken]=1 [ERC20]=1)
+declare -A map=( [API]=1 [MyBitToken]=1 [Database]=1 [Events]=1 [ContractManager]=1 [SingleOwned]=1 [Pausible]=1 [Platform]=1 [Operators]=1 [AssetManagerEscrow]=1 [AssetManagerFunds]=1 [CrowdsaleETH]=1 [CrowdsaleERC20]=1 [CrowdsaleGeneratorETH]=1 [CrowdsaleGeneratorERC20]=1 [AssetGenerator]=1 [MiniMeToken]=1 [MiniMeTokenFactory]=1 [DivToken]=1 [ERC20]=1)
 
 # Generate raw JSON artifacts into JavaScript modules.
 for filename in build/contracts/*.json; do

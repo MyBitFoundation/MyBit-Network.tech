@@ -3,7 +3,7 @@ const fs = require('fs');
 module.exports = function(deployer, network, accounts) {
   if(network != 'coverage' && network != 'development'){
     const API = artifacts.require("./database/API.sol");
-    const SingleOwned = artifacts.require("./ownership/SingleOwned.sol");
+    const MultiOwned = artifacts.require("./ownership/MultiOwned.sol");
     const Pausible = artifacts.require("./ownership/Pausible.sol");
     const ContractManager = artifacts.require("./database/ContractManager.sol");
 
@@ -18,12 +18,12 @@ module.exports = function(deployer, network, accounts) {
 
       api = instance;
       console.log('API.sol: ' + api.address);
-      return SingleOwned.new(contracts['Database'], contracts['Events']);
+      return MultiOwned.new(contracts['Database'], contracts['Events']);
 
     }).then(function(instance) {
 
       owned = instance;
-      console.log('SingleOwned.sol: ' + owned.address);
+      console.log('MultiOwned.sol: ' + owned.address);
       return Pausible.new(contracts['Database'], contracts['Events']);
 
     }).then(function(instance) {
@@ -35,13 +35,8 @@ module.exports = function(deployer, network, accounts) {
     }).then(function(instance) {
 
       cm = instance;
-      console.log('Adding API to contract manager...');
-      return cm.addContract('API', api.address, {from: accounts[0], gas:200000});
-
-    }).then(function() {
-
-      console.log('Adding SingleOwned to contract manager...');
-      return cm.addContract('SingleOwned', owned.address, {from: accounts[0], gas:200000});
+      console.log('Adding MultiOwned to contract manager...');
+      return cm.addContract('MultiOwned', owned.address, {from: accounts[0], gas:200000});
 
     }).then(function() {
 
@@ -50,7 +45,7 @@ module.exports = function(deployer, network, accounts) {
 
     }).then(function() {
       contracts['API'] = api.address;
-      contracts['SingleOwned'] = owned.address;
+      contracts['MultiOwned'] = owned.address;
       contracts['Pausible'] = pausible.address;
       let contracts_json = JSON.stringify(contracts, null, 4);
 

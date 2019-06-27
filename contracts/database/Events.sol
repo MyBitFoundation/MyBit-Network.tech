@@ -57,10 +57,10 @@ contract Events {
       emit LogExchange(_message, keccak256(abi.encodePacked(_message)), _orderID, _assetAddress, _account, tx.origin);
   }
 
-  function operator(string _message, bytes32 _operatorID, string _operatorURI, address _account)
+  function operator(string _message, bytes32 _id, string _name, string _ipfs, address _account)
   external
   onlyApprovedContract {
-      emit LogOperator(_message, keccak256(abi.encodePacked(_message)), _operatorID, _operatorURI, _account, tx.origin);
+      emit LogOperator(_message, keccak256(abi.encodePacked(_message)), _id, _name, _ipfs, _account, tx.origin);
   }
 
   function consensus(string _message, bytes32 _executionID, bytes32 _votesID, uint _votes, uint _tokens, uint _quorum)
@@ -78,7 +78,7 @@ contract Events {
   event LogEscrow(string message, bytes32 indexed messageID, address asset, bytes32  escrowID, address indexed manager, uint amount, address indexed origin);
   event LogOrder(string message, bytes32 indexed messageID, bytes32 indexed orderID, uint amount, uint price, address indexed origin);
   event LogExchange(string message, bytes32 indexed messageID, bytes32 orderID, address indexed asset, address account, address indexed origin);
-  event LogOperator(string message, bytes32 indexed messageID, bytes32 operatorID, string operatorURI, address indexed account, address indexed origin);
+  event LogOperator(string message, bytes32 indexed messageID, bytes32 id, string name, string ipfs, address indexed account, address indexed origin);
   event LogConsensus(string message, bytes32 indexed messageID, bytes32 executionID, bytes32 votesID, uint votes, uint tokens, uint quorum, address indexed origin);
 
 

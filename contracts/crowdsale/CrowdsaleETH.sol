@@ -40,7 +40,7 @@ contract CrowdsaleETH {
 
     // @notice Investors can send Ether here to fund asset, receiving an equivalent number of asset-tokens.
     // @param (bytes32) _assetAddress = The address of the asset which completed the crowdsale
-    function buyAssetOrderETH(address _assetAddress, address _investor)
+    function buyAssetOrderETH(address _assetAddress)
     external
     payable
     requiresEther
@@ -48,32 +48,31 @@ contract CrowdsaleETH {
     betweenDeadlines(_assetAddress)
     notFinalized(_assetAddress)
     returns (bool) {
-      require(msg.sender == _investor || database.boolStorage(keccak256(abi.encodePacked("approval", _investor, msg.sender, address(this), msg.sig))));
       uint fundingRemaining = database.uintStorage(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)));
       uint amount; //The number of tokens that will be minted
       if (msg.value < fundingRemaining) {
         amount = msg.value.mul(100).div(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee")))));
         database.setUint(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)), fundingRemaining.sub(msg.value));
         //Mint tokens equal to the msg.value
-        require(minter.mintAssetTokens(_assetAddress, _investor, amount), "Investor minting failed");
-        reserve.receiveETH.value(msg.value)(_investor);
+        require(minter.mintAssetTokens(_assetAddress, msg.sender, amount), "Investor minting failed");
+        reserve.receiveETH.value(msg.value)(msg.sender);
       } else {
         amount = fundingRemaining.mul(100).div(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee")))));
         //Funding complete, finalize crowdsale
         database.setBool(keccak256(abi.encodePacked("crowdsale.finalized", _assetAddress)), true);
         database.deleteUint(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)));
         //Since investor paid equal to or over the funding remaining, just mint for tokensRemaining
-        require(minter.mintAssetTokens(_assetAddress, _investor, amount), "Investor minting failed");
-        reserve.receiveETH.value(fundingRemaining)(_investor);
-        //Return leftover WEI after cost of tokens calculated and subtracted from msg.value to msg.sender *NOT _investor
+        require(minter.mintAssetTokens(_assetAddress, msg.sender, amount), "Investor minting failed");
+        reserve.receiveETH.value(fundingRemaining)(msg.sender);
+        //Return leftover WEI after cost of tokens calculated and subtracted from msg.value to msg.sender
         msg.sender.transfer(msg.value.sub(fundingRemaining));
       }
-      events.transaction('Asset purchased', address(this), _investor, amount, _assetAddress);
+      events.transaction('Asset purchased', address(this), msg.sender, amount, _assetAddress);
 
       return true;
     }
 
-    // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where operator & assetManager can withdraw
+    // @notice This is called once funding has succeeded. Sends Ether to a distribution contract where receiver & assetManager can withdraw
     // @dev The contract manager needs to know  the address PlatformDistribution contract
     // @param (bytes32) _assetAddress = The address of the asset which completed the crowdsale
     function payoutETH(address _assetAddress)
@@ -90,28 +89,43 @@ contract CrowdsaleETH {
       require(platformAssetsWallet != address(0), "Platform assets wallet not set");
       require(minter.mintAssetTokens(_assetAddress, database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerFunds"))), database.uintStorage(keccak256(abi.encodePacked("asset.managerTokens", _assetAddress)))), "Manager minting failed");
       require(minter.mintAssetTokens(_assetAddress, platformAssetsWallet, database.uintStorage(keccak256(abi.encodePacked("asset.platformTokens", _assetAddress)))), "Platform minting failed");
-      require(minter.stopMint(_assetAddress), "Stop minting failed");
-      //Get the addresses for the operator and platform
-      address operator = database.addressStorage(keccak256(abi.encodePacked("asset.operator", _assetAddress)));
+      //Get the addresses for the receiver and platform
+      address receiver = database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress)));
       address platformFundsWallet = database.addressStorage(keccak256(abi.encodePacked("platform.wallet.funds")));
-      require(operator != address(0) && platformFundsWallet != address(0), "Operator or platform wallet not set");
-      //Calculate amounts for platform and operator
+      require(receiver != address(0) && platformFundsWallet != address(0), "Receiver or platform wallet not set");
+      //Calculate amounts for platform and receiver
       uint amount = database.uintStorage(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)));
       uint platformFee = amount.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("platform.fee"))));
-      //Transfer funds to operator and platform
+      //Transfer funds to receiver and platform
       require(reserve.issueETH(platformFundsWallet, platformFee), 'Platform funds not paid');
-      require(reserve.issueETH(operator, amount), 'Operator funds not paid');
+      require(reserve.issueETH(receiver, amount), 'Operator funds not paid');
       //Delete crowdsale start time
       database.deleteUint(keccak256(abi.encodePacked("crowdsale.start", _assetAddress)));
+      //Increase asset count for manager
+      address manager = database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress)));
+      database.setUint(keccak256(abi.encodePacked("manager.assets", manager)), database.uintStorage(keccak256(abi.encodePacked("manager.assets", manager))).add(1));
       //Emit event
-      events.transaction('Asset payout', _assetAddress, operator, amount, address(0));
+      events.transaction('Asset payout', _assetAddress, receiver, amount, address(0));
       return true;
+    }
+
+    function cancel(address _assetAddress, address _assetManager)
+    external
+    whenNotPaused
+    validAsset(_assetAddress)
+    beforeDeadline(_assetAddress)
+    notFinalized(_assetAddress)
+    returns (bool){
+      require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))));
+      require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), "User not approved");
+      database.setUint(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress)), 1);
+      refund(_assetAddress);
     }
 
     // @notice Contributors can retrieve their funds here if crowdsale has paased deadline and not reached its goal
     // @param (bytes32) _assetAddress = The address of the asset which completed the crowdsale
     function refund(address _assetAddress)
-    external
+    public
     whenNotPaused
     validAsset(_assetAddress)
     afterDeadline(_assetAddress)
@@ -140,13 +154,6 @@ contract CrowdsaleETH {
     external {
       events.transaction('CrowdsaleETH destroyed', address(this), msg.sender, address(this).balance, address(0));
       selfdestruct(msg.sender);
-    }
-
-    // @notice fallback function: reject ether
-    function ()
-    public
-    payable {
-      revert();
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -178,7 +185,13 @@ contract CrowdsaleETH {
       _;
     }
 
-    // @notice reverts if the funding deadline has already past
+    // @notice reverts if the funding deadline has not passed
+    modifier beforeDeadline(address _assetAddress) {
+      require(now < database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress))), "Before deadline");
+      _;
+    }
+
+    // @notice reverts if the funding deadline has already past or crowsale has not started
     modifier betweenDeadlines(address _assetAddress) {
       require(now <= database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress))), "Past deadline");
       require(now >= database.uintStorage(keccak256(abi.encodePacked("crowdsale.start", _assetAddress))), "Before start time");

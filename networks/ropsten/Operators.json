@@ -1,5 +1,35 @@
 [
     {
+        "constant": true,
+        "inputs": [],
+        "name": "database",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x713b563f"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "events",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xb5f8558c"
+    },
+    {
         "inputs": [
             {
                 "name": "_database",
@@ -27,8 +57,12 @@
                 "type": "string"
             },
             {
-                "name": "_assetType",
+                "name": "_ipfs",
                 "type": "string"
+            },
+            {
+                "name": "_referrerAddress",
+                "type": "address"
             }
         ],
         "name": "registerOperator",
@@ -36,7 +70,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x1e729af5"
+        "signature": "0x6699b2f6"
     },
     {
         "constant": false,
@@ -71,6 +105,25 @@
         "stateMutability": "nonpayable",
         "type": "function",
         "signature": "0x31c36002"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_operatorID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_newAddress",
+                "type": "address"
+            }
+        ],
+        "name": "changeReferrerAddress",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x62e603c9"
     },
     {
         "constant": false,
@@ -123,6 +176,58 @@
         "stateMutability": "nonpayable",
         "type": "function",
         "signature": "0xb00289fe"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_operatorID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_tokenAddress",
+                "type": "address"
+            },
+            {
+                "name": "_payout",
+                "type": "bool"
+            }
+        ],
+        "name": "payoutERC20Token",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x17953d10"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_operatorID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_payout",
+                "type": "bool"
+            }
+        ],
+        "name": "payoutEther",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x5be6f9e0"
     },
     {
         "constant": false,

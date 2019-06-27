@@ -1,7 +1,8 @@
 var bn = require('bignumber.js');
 bn.config({ EXPONENTIAL_AT: 80 });
 
-const Token = artifacts.require("./tokens/ERC20/DividendToken.sol");
+const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory.sol");
+const MiniMeToken = artifacts.require("MiniMeToken.sol");
 const ApproveAndCall = artifacts.require("./test/ApproveAndCallTest.sol");
 
 const ETH = bn(10**18);
@@ -21,14 +22,16 @@ contract('Dividend Token Ether', async(accounts) => {
   let tokenURI = 'https://mybit.io';
 
   it('Deploy Token', async() => {
-    token = await Token.new(tokenURI, owner, '0x0000000000000000000000000000000000000000');
+    tokenFactory = await MiniMeTokenFactory.new();
+    tx = await tokenFactory.createCloneToken('0x0000000000000000000000000000000000000000', 0, tokenURI, 18, tokenURI, true, '0x0000000000000000000000000000000000000000', {from:owner});
+    token = await MiniMeToken.at(tx.logs[0].args.token);
   });
 
   it("Spread tokens to users", async() => {
     let userBalance;
     for (var i = 0; i < tokenHolders.length; i++) {
       console.log(accounts[i]);
-      await token.mint(tokenHolders[i], tokenPerAccount.toString());
+      await token.generateTokens(tokenHolders[i], tokenPerAccount.toString());
       userBalance = bn(await token.balanceOf(tokenHolders[i]));
       assert.equal(userBalance.eq(tokenPerAccount), true);
     }
@@ -51,7 +54,7 @@ contract('Dividend Token Ether', async(accounts) => {
 
   //Test dividends functions
   it('View token uri', async() => {
-    let _tokenURI = await token.getTokenURI();
+    let _tokenURI = await token.name();
     assert.equal(tokenURI, _tokenURI);
     console.log(tokenURI);
   });
@@ -144,36 +147,23 @@ contract('Dividend Token Ether', async(accounts) => {
   });
 
   it('Approve user', async() => {
-    await token.approve(user1, 10000, {from: user2});
-    assert.equal(await token.allowance(user2, user1), 10000);
+    await token.approve(user1, 5000, {from: user2});
+    assert.equal(await token.allowance(user2, user1), 5000);
   });
 
   it('Transfer From', async() => {
     balance2 = await token.balanceOf(user2);
     console.log(Number(balance2));
     await token.transferFrom(user2, user1, 5000, {from: user1});
-    assert.equal(await token.allowance(user2, user1), 5000);
-  });
-
-  it('Decrease approval', async() => {
-    await token.decreaseApproval(user1, 2500, {from:user2})
-    assert.equal(await token.allowance(user2, user1), 2500);
-  });
-
-  it('Increase approval', async() => {
-    await token.increaseApproval(user1, 2500, {from:user2})
-    assert.equal(await token.allowance(user2, user1), 5000);
-  });
-
-  it('Decrease approval', async() => {
-    await token.decreaseApproval(user1, 10000, {from:user2})
     assert.equal(await token.allowance(user2, user1), 0);
   });
 
   it('Fail to transfer from', async() => {
     let err;
     try{
-      await token.transferFrom(user1, user2, bn(10000000).times(ETH).toString());
+      tx = await token.transferFrom(user1, user2, bn(10000000).times(ETH).toString(), {from:user2});
+      console.log(tx);
+      console.log(tx.logs[0].args);
     } catch(e){
       err = e;
     }
@@ -194,7 +184,7 @@ contract('Dividend Token Ether', async(accounts) => {
     let approveandcall = await ApproveAndCall.new();
     tx = await token.approveAndCall(approveandcall.address, 1000, '0x00000000');
     console.log(tx.logs[0].args);
-    assert.equal(tx.logs[0].args.value, 1000);
+    assert.equal(tx.logs[0].args._amount, 1000);
   });
 
 

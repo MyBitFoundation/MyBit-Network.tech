@@ -4,8 +4,8 @@ import "../math/SafeMath.sol";
 import "../interfaces/DBInterface.sol";
 import '../database/Events.sol';
 // import "../access/ERC20Burner.sol";
-import "../tokens/erc20/DividendToken.sol";
 import "../tokens/distribution/FixedDistribution.sol";
+import "../interfaces/MinterInterface.sol";
 
 // @title An asset generator contract for onboarding existing real-world assets
 // @notice This contract creates ERC20 dividend tokens and give sthem to the _tokenHolders provided
@@ -15,6 +15,7 @@ contract AssetGenerator {
 
   DBInterface private database;
   Events private events;
+  MinterInterface private minter;
 
 
   // @notice This contract
@@ -23,38 +24,36 @@ contract AssetGenerator {
   public{
       database = DBInterface(_database);
       events = Events(_events);
+      minter = MinterInterface(database.addressStorage(keccak256(abi.encodePacked("contract", "Minter"))));
   }
 
 
   // @notice users can on-board non-tradeable assets here
   // @dev creates an ERC20 dividend token (tradeable) or distribution token (not-tradeable)
-  function createAsset(string _tokenURI, address _assetManager, address[] _tokenHolders, uint[] _amount)
+  function createAsset(string _tokenURI, address[] _tokenHolders, uint[] _amount)
   external
   // burnRequired
   returns (bool) {
-    require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
     require (_tokenHolders.length == _amount.length && _tokenHolders.length <= 100);
     FixedDistribution assetInstance = new FixedDistribution(_tokenURI, _tokenHolders, _amount);
-    database.setAddress(keccak256(abi.encodePacked("asset.manager", address(assetInstance))), _assetManager);
-    events.asset('Asset created', _tokenURI, address(assetInstance), _assetManager);
+    database.setAddress(keccak256(abi.encodePacked("asset.manager", address(assetInstance))), msg.sender);
+    events.asset('Asset created', _tokenURI, address(assetInstance), msg.sender);
     return true;
   }
 
   // @notice users can on-board tradeable assets here
   // @dev creates an ERC20 dividend token (tradeable) or
-  function createTradeableAsset(string _tokenURI, address _assetManager, address[] _tokenHolders, uint[] _amount)
+  function createTradeableAsset(string _tokenURI, address[] _tokenHolders, uint[] _amount)
   external
   // burnRequired
   returns (bool) {
-    require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
     require (_tokenHolders.length == _amount.length && _tokenHolders.length <= uint8(100));
-    DividendToken assetInstance = new DividendToken(_tokenURI, address(this), address(0));   // Gives this contract all new asset tokens
+    address assetAddress = minter.cloneToken(_tokenURI, address(0));
     for (uint8 i = 0; i < _tokenHolders.length; i++) {
-      assetInstance.mint(_tokenHolders[i], _amount[i]);
+      minter.mintAssetTokens(assetAddress, _tokenHolders[i], _amount[i]);
     }
-    assetInstance.finishMinting();
-    database.setAddress(keccak256(abi.encodePacked("asset.manager", address(assetInstance))), _assetManager);
-    events.asset('Asset created', _tokenURI, address(assetInstance), _assetManager);
+    database.setAddress(keccak256(abi.encodePacked("asset.manager", assetAddress)), msg.sender);
+    events.asset('Asset created', _tokenURI, assetAddress, msg.sender);
     return true;
   }
 
@@ -78,10 +77,4 @@ contract AssetGenerator {
     require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))), "Not owner");
     _;
   }
-
-
-  //event LogAssetCreated(bytes32 indexed _assetAddress, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
-  //event LogTradeableAssetCreated(bytes32 indexed _assetAddress, address indexed _tokenAddress, address indexed _assetManager, string _tokenURI);
-
-
 }

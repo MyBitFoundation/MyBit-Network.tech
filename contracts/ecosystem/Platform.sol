@@ -56,6 +56,27 @@ contract Platform {
     database.setUint(keccak256(abi.encodePacked("platform.percentage")), _percent);
   }
 
+  function setTokenFactory(address _factory)
+  external
+  onlyOwner {
+    database.setAddress(keccak256(abi.encodePacked("platform.tokenFactory")), _factory);
+  }
+
+  function setCollateralLevels(uint _base, uint _low, uint _mid, uint _high)
+  external
+  onlyOwner {
+    database.setUint(keccak256(abi.encodePacked("collateral.base")), _base);
+    for(uint i=0; i<5; i++){
+      database.setUint(keccak256(abi.encodePacked("collateral.level", i)), _low);
+    }
+    for(i=5; i<10; i++){
+      database.setUint(keccak256(abi.encodePacked("collateral.level", i)), _mid);
+    }
+    for(i=10; i<25; i++){
+      database.setUint(keccak256(abi.encodePacked("collateral.level", i)), _high);
+    }
+  }
+
   /*
   function setBurnrate(uint _percent)
   external
