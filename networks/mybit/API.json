@@ -1029,22 +1029,6 @@
             {
                 "name": "_manager",
                 "type": "address"
-            },
-            {
-                "name": "_sender",
-                "type": "address"
-            },
-            {
-                "name": "_amount",
-                "type": "uint256"
-            },
-            {
-                "name": "_price",
-                "type": "uint256"
-            },
-            {
-                "name": "_buyOrder",
-                "type": "bool"
             }
         ],
         "name": "getManagerAssetCount",
@@ -1057,7 +1041,7 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0xc03fc785"
+        "signature": "0x71802cb3"
     },
     {
         "constant": true,
@@ -1177,12 +1161,7 @@
     },
     {
         "constant": true,
-        "inputs": [
-            {
-                "name": "_contractName",
-                "type": "string"
-            }
-        ],
+        "inputs": [],
         "name": "getPlatformAssetsWallet",
         "outputs": [
             {
@@ -1193,16 +1172,11 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0xdccd2864"
+        "signature": "0x1e2fc8cb"
     },
     {
         "constant": true,
-        "inputs": [
-            {
-                "name": "_contract",
-                "type": "address"
-            }
-        ],
+        "inputs": [],
         "name": "getPlatformFundsWallet",
         "outputs": [
             {
@@ -1213,7 +1187,7 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0x71c756cb"
+        "signature": "0xac1312c1"
     },
     {
         "constant": true,
