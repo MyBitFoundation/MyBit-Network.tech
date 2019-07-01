@@ -1,7 +1,6 @@
 const fs = require('fs');
 
 module.exports = function(deployer, network, accounts) {
-  console.log(accounts)
   if(network != 'coverage' && network != 'development'){
     const CrowdsaleReserve = artifacts.require("./database/CrowdsaleReserve.sol");
     const EscrowReserve = artifacts.require("./database/EscrowReserve.sol");

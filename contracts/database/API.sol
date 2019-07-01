@@ -436,12 +436,34 @@ contract API {
     return operatorAddress;
   }
 
+  function getOperatorIPFS(bytes32 _operatorID)
+  public
+  view
+  returns(string) {
+    return database.stringStorage(keccak256(abi.encodePacked("operator.ipfs", _operatorID)));
+  }
+
+  function generateModelID(string _modelURI, bytes32 _operatorID)
+  public
+  pure
+  returns(bytes32) {
+    bytes32 modelID = keccak256(abi.encodePacked('model.id', _operatorID, _modelURI));
+    return modelID;
+  }
+
   function getModelOperator(bytes32 _modelID)
   public
   view
   returns(address) {
     address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("model.operator", _modelID)));
     return operatorAddress;
+  }
+
+  function getModelIPFS(bytes32 _modelID)
+  public
+  view
+  returns(string) {
+    return database.stringStorage(keccak256(abi.encodePacked("model.ipfs", _modelID)));
   }
 
   function getManagerAssetCount(address _manager)
