@@ -60,7 +60,7 @@ module.exports = function(deployer, network, accounts) {
       minter = instance;
       console.log('Minter.sol: ' + minter.address);
       console.log('Adding Minter to contract manager...');
-      return cm.addContract('Minter', minter.address, {from: accounts[0], gas:200000});
+      return cm.addContract('Minter', minter.address, {from: accounts[0], gas:300000});
 
     }).then(function() {
 
@@ -95,27 +95,27 @@ module.exports = function(deployer, network, accounts) {
       assetGenerator = instance;
       console.log('AssetGenerator.sol: ' + assetGenerator.address);
       console.log('Adding CrowdsaleGeneratorETH to contract manager...');
-      return cm.addContract('CrowdsaleGeneratorETH', crowdsaleGeneratorETH.address, {from: accounts[0], gas:200000});
+      return cm.addContract('CrowdsaleGeneratorETH', crowdsaleGeneratorETH.address, {from: accounts[0], gas:300000});
 
     }).then(function() {
 
       console.log('Adding CrowdsaleETH to contract manager...');
-      return cm.addContract('CrowdsaleETH', crowdsaleETH.address, {from: accounts[0], gas:200000});
+      return cm.addContract('CrowdsaleETH', crowdsaleETH.address, {from: accounts[0], gas:300000});
 
     }).then(function() {
 
       console.log('Adding CrowdsaleGeneratorERC20 to contract manager...');
-      return cm.addContract('CrowdsaleGeneratorERC20', crowdsaleGeneratorERC20.address, {from: accounts[0], gas:200000});
+      return cm.addContract('CrowdsaleGeneratorERC20', crowdsaleGeneratorERC20.address, {from: accounts[0], gas:300000});
 
     }).then(function() {
 
       console.log('Adding CrowdsaleERC20 to contract manager...');
-      return cm.addContract('CrowdsaleERC20', crowdsaleERC20.address, {from: accounts[0], gas:200000});
+      return cm.addContract('CrowdsaleERC20', crowdsaleERC20.address, {from: accounts[0], gas:300000});
 
     }).then(function() {
 
       console.log('Adding AssetGenerator to contract manager...');
-      return cm.addContract('AssetGenerator', assetGenerator.address, {from: accounts[0], gas:200000});
+      return cm.addContract('AssetGenerator', assetGenerator.address, {from: accounts[0], gas:300000});
 
     }).then(function() {
       contracts['Minter'] = minter.address;

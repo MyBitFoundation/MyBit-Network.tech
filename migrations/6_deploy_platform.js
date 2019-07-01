@@ -23,7 +23,7 @@ module.exports = function(deployer, network, accounts) {
 
       cm = instance;
       console.log('Adding Platform to contract manager...');
-      return cm.addContract('Platform', platform.address, {from: accounts[0], gas:200000});
+      return cm.addContract('Platform', platform.address, {from: accounts[0], gas:300000});
 
     }).then(function(){
 

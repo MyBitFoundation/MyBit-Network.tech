@@ -37,7 +37,7 @@ module.exports = function(deployer, network, accounts) {
 
       cm = instance;
       console.log('Adding Operators to contract manager...');
-      return cm.addContract('Operators', operators.address, {from: accounts[0], gas:200000});
+      return cm.addContract('Operators', operators.address, {from: accounts[0], gas:300000});
 
     }).then(function() {
       if(network == 'ropsten' || network == 'ropsten-fork' || network == 'rinkeby' || network == 'rineby-fork'){
