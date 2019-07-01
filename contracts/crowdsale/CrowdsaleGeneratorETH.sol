@@ -102,6 +102,7 @@ contract CrowdsaleGeneratorETH {
     database.setUint(keccak256(abi.encodePacked("asset.managerTokens", _assetAddress)), totalTokens.getFractionalAmount(_assetManagerPerc));
     database.setUint(keccak256(abi.encodePacked("asset.platformTokens", _assetAddress)), totalTokens.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("platform.percentage")))));
     database.setAddress(keccak256(abi.encodePacked("asset.manager", _assetAddress)), _assetManager);
+    database.setBytes32(keccak256(abi.encodePacked("asset.modelID", _assetAddress)), _modelID);
     //database.setAddress(keccak256(abi.encodePacked("asset.operator", _assetAddress)), database.addressStorage(keccak256(abi.encodePacked("model.operator", _modelID))));
     /*
     if(database.boolStorage(keccak256(abi.encodePacked("model.acceptsToken", _modelID, address(0))))){

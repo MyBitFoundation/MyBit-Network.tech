@@ -378,12 +378,8 @@ contract('AssetManager Escrow', async(accounts) => {
     let escrowID = await api.getAssetManagerEscrowID(assetAddress, user1);
     let escrowBefore = await api.getAssetManagerEscrowRemaining(escrowID);
     assert.equal(bn(escrowBefore).gt(0), true);
-    escrow.voteToBurn(assetAddress, {from: owner});
+    await escrow.voteToBurn(assetAddress, {from: owner});
     let escrowAfter = bn(await api.getAssetManagerEscrowRemaining(escrowID));
-    console.log(bn(await api.getAssetManagerEscrow(escrowID)).toString());
-    console.log(bn(await api.getAssetManagerEscrowRedeemed(escrowID)).toString());
-    console.log(escrowAfter.toString());
-
     assert.equal(escrowAfter.eq(0), true);
   });
 

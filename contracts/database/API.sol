@@ -395,11 +395,20 @@ contract API {
     return escrowRedeemed;
   }
 
+  function getAssetModelID(address _assetAddress)
+  public
+  view
+  returns(bytes32) {
+    bytes32 modelID = database.bytes32Storage(keccak256(abi.encodePacked("asset.modelID", _assetAddress)));
+    return modelID;
+  }
+
   function getAssetOperator(address _assetAddress)
   public
   view
   returns(address) {
-    address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("asset.operator", _assetAddress)));
+    bytes32 modelID = getAssetModelID(_assetAddress);
+    address operatorAddress = getModelOperator(modelID);
     return operatorAddress;
   }
 
@@ -424,6 +433,14 @@ contract API {
   view
   returns(address) {
     address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("operator", _operatorID)));
+    return operatorAddress;
+  }
+
+  function getModelOperator(bytes32 _modelID)
+  public
+  view
+  returns(address) {
+    address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("model.operator", _modelID)));
     return operatorAddress;
   }
 

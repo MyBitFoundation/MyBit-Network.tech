@@ -911,6 +911,26 @@
                 "type": "address"
             }
         ],
+        "name": "getAssetModelID",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xe097ec0a"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            }
+        ],
         "name": "getAssetOperator",
         "outputs": [
             {
@@ -987,8 +1007,44 @@
         "constant": true,
         "inputs": [
             {
+                "name": "_modelID",
+                "type": "bytes32"
+            }
+        ],
+        "name": "getModelOperator",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x97f68e49"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
                 "name": "_manager",
                 "type": "address"
+            },
+            {
+                "name": "_sender",
+                "type": "address"
+            },
+            {
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "name": "_price",
+                "type": "uint256"
+            },
+            {
+                "name": "_buyOrder",
+                "type": "bool"
             }
         ],
         "name": "getManagerAssetCount",
@@ -1001,7 +1057,7 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0x71802cb3"
+        "signature": "0xc03fc785"
     },
     {
         "constant": true,
@@ -1121,7 +1177,12 @@
     },
     {
         "constant": true,
-        "inputs": [],
+        "inputs": [
+            {
+                "name": "_contractName",
+                "type": "string"
+            }
+        ],
         "name": "getPlatformAssetsWallet",
         "outputs": [
             {
@@ -1132,11 +1193,16 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0x1e2fc8cb"
+        "signature": "0xdccd2864"
     },
     {
         "constant": true,
-        "inputs": [],
+        "inputs": [
+            {
+                "name": "_contract",
+                "type": "address"
+            }
+        ],
         "name": "getPlatformFundsWallet",
         "outputs": [
             {
@@ -1147,7 +1213,7 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0xac1312c1"
+        "signature": "0x71c756cb"
     },
     {
         "constant": true,
