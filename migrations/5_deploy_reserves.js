@@ -49,22 +49,22 @@ module.exports = function(deployer, network, accounts) {
 
       cm = instance;
       console.log('Adding CrowdsaleReserve to contract manager...');
-      return cm.addContract('CrowdsaleReserve', crowdsaleReserve.address, {from: accounts[0], gas:200000});
+      return cm.addContract('CrowdsaleReserve', crowdsaleReserve.address, {from: accounts[0], gas:300000});
 
     }).then(function() {
 
       console.log('Adding EscrowReserve to contract manager...');
-      return cm.addContract('EscrowReserve', escrowReserve.address, {from: accounts[0], gas:200000});
+      return cm.addContract('EscrowReserve', escrowReserve.address, {from: accounts[0], gas:300000});
 
-    }).then(function(instance) {
+    }).then(function() {
 
       console.log('Adding AssetManagerEscrow to contract manager...');
-      return cm.addContract('AssetManagerEscrow', managerEscrow.address, {from: accounts[0], gas:200000});
+      return cm.addContract('AssetManagerEscrow', managerEscrow.address, {from: accounts[0], gas:300000});
 
-    }).then(function(instance) {
+    }).then(function() {
 
       console.log('Adding AssetManagerFunds to contract manager...');
-      return cm.addContract('AssetManagerFunds', managerFunds.address, {from: accounts[0], gas:200000});
+      return cm.addContract('AssetManagerFunds', managerFunds.address, {from: accounts[0], gas:300000});
 
     }).then(function() {
       contracts['CrowdsaleReserve'] = crowdsaleReserve.address;

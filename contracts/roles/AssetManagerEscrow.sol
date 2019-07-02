@@ -123,9 +123,9 @@ pragma solidity ^0.4.24;
       require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("asset.dao.admin", _assetAddress))), "Only the asset DAO adminstrator contract may change the asset manager");
       bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetAddress, database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress)))));
       uint escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("asset.escrowRedeemed", assetManagerEscrowID)));
-      uint unlockAmount = database.uintStorage(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID))).sub(escrowRedeemed);
-      require(reserve.burnERC20(unlockAmount, database.addressStorage(keccak256(abi.encodePacked("platform.token"))))); // burn manager tokens
-      database.setUint(keccak256(abi.encodePacked("asset.escrowRedeemed", assetManagerEscrowID)), database.uintStorage(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID))));  // mark burned _assetAddresss as redeemed
+      uint escrowAmount = database.uintStorage(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID)));
+      require(reserve.burnERC20(escrowAmount.sub(escrowRedeemed), database.addressStorage(keccak256(abi.encodePacked("platform.token"))))); // burn manager tokens
+      database.setUint(keccak256(abi.encodePacked("asset.escrowRedeemed", assetManagerEscrowID)), escrowAmount );  // mark burned _assetAddresss as redeemed
       return true;
     }
 

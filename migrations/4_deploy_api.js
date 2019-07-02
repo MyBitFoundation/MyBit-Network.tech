@@ -36,12 +36,12 @@ module.exports = function(deployer, network, accounts) {
 
       cm = instance;
       console.log('Adding MultiOwned to contract manager...');
-      return cm.addContract('MultiOwned', owned.address, {from: accounts[0], gas:200000});
+      return cm.addContract('MultiOwned', owned.address, {from: accounts[0], gas:300000});
 
     }).then(function() {
 
       console.log('Adding Pausible to contract manager...');
-      return cm.addContract('Pausible', pausible.address, {from: accounts[0], gas:200000});
+      return cm.addContract('Pausible', pausible.address, {from: accounts[0], gas:300000});
 
     }).then(function() {
       contracts['API'] = api.address;

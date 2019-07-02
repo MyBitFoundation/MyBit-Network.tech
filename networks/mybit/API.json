@@ -911,6 +911,26 @@
                 "type": "address"
             }
         ],
+        "name": "getAssetModelID",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xe097ec0a"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            }
+        ],
         "name": "getAssetOperator",
         "outputs": [
             {
@@ -982,6 +1002,90 @@
         "stateMutability": "view",
         "type": "function",
         "signature": "0xfb68bb72"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_operatorID",
+                "type": "bytes32"
+            }
+        ],
+        "name": "getOperatorIPFS",
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x7bd2ea1c"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_modelURI",
+                "type": "string"
+            },
+            {
+                "name": "_operatorID",
+                "type": "bytes32"
+            }
+        ],
+        "name": "generateModelID",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function",
+        "signature": "0x43fcb255"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_modelID",
+                "type": "bytes32"
+            }
+        ],
+        "name": "getModelOperator",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x97f68e49"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_modelID",
+                "type": "bytes32"
+            }
+        ],
+        "name": "getModelIPFS",
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x05873493"
     },
     {
         "constant": true,

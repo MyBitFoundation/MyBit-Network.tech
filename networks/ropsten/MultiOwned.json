@@ -38,10 +38,6 @@
             {
                 "name": "_events",
                 "type": "address"
-            },
-            {
-                "name": "_kyber",
-                "type": "address"
             }
         ],
         "payable": false,
@@ -53,49 +49,46 @@
         "constant": false,
         "inputs": [
             {
-                "name": "_assetURI",
-                "type": "string"
-            },
-            {
-                "name": "_modelID",
-                "type": "bytes32"
-            },
-            {
-                "name": "_fundingLength",
-                "type": "uint256"
-            },
-            {
-                "name": "_startTime",
-                "type": "uint256"
-            },
-            {
-                "name": "_amountToRaise",
-                "type": "uint256"
-            },
-            {
-                "name": "_assetManagerPerc",
-                "type": "uint256"
-            },
-            {
-                "name": "_escrow",
-                "type": "uint256"
-            },
-            {
-                "name": "_paymentToken",
+                "name": "_newOwner",
                 "type": "address"
             }
         ],
-        "name": "createAssetOrderETH",
-        "outputs": [
+        "name": "changeOwner",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xa6f9dae1"
+    },
+    {
+        "constant": false,
+        "inputs": [
             {
-                "name": "",
-                "type": "bool"
+                "name": "_newOwner",
+                "type": "address"
             }
         ],
-        "payable": true,
-        "stateMutability": "payable",
+        "name": "addOwner",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x1a232284"
+        "signature": "0x7065cb48"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_currentOwner",
+                "type": "address"
+            }
+        ],
+        "name": "removeOwner",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x173825d9"
     },
     {
         "constant": false,
