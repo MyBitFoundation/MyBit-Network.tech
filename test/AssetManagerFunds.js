@@ -28,7 +28,7 @@ contract('AssetManagerFunds', async(accounts) => {
   let maxGas;
   let id;
   let divToken;
-  let burnToken;
+  let erc20Token;
   let tokenFactory;
   let db;
   let events;
@@ -75,9 +75,9 @@ contract('AssetManagerFunds', async(accounts) => {
   });
 
   it("Deploy standard token", async() => {
-    burnToken = await MyBitToken.new('MyBit', 'MYB', bn(10000).times(ETH).toString());
-    await burnToken.transfer(operator, bn(100).times(ETH));
-    assert.equal(bn(await burnToken.balanceOf(operator)).eq(bn(100).times(ETH)), true);
+    erc20Token = await MyBitToken.new('MyBit', 'MYB', bn(10000).times(ETH).toString());
+    await erc20Token.transfer(operator, bn(100).times(ETH));
+    assert.equal(bn(await erc20Token.balanceOf(operator)).eq(bn(100).times(ETH)), true);
   });
 
   it('Deploy dividend Token', async() => {
@@ -113,7 +113,7 @@ contract('AssetManagerFunds', async(accounts) => {
     await cm.addContract('Platform', platform.address);
     await platform.setPlatformFundsWallet(owner);
     await platform.setPlatformAssetsWallet(owner);
-    await platform.setPlatformToken(burnToken.address);
+    await platform.setPlatformToken(erc20Token.address);
   });
 
   it('Set operator', async() => {
@@ -135,34 +135,28 @@ contract('AssetManagerFunds', async(accounts) => {
     await db.setAddress(assetManagerHash, assetManager);
     await db.setAddress(operatorHash, operator);
   });
-/*
-  it("Add multiple assets", async() => {
-    var number = 92; //We can test multiple assets to find the limit, the limit is 93 (92 + 1 from 'Generate assetID')
-    for(var i=0; i<number; i++){
-      //Add token
-      let testToken = await DivToken.new(i, owner);
-      //Mint
-      await testToken.mint(assetManagerFunds.address, tokenPerAccount);
-      let balance = await testToken.balanceOf(assetManagerFunds.address);
-      assert.equal(balance, tokenPerAccount);
-      let uri = ''+i;
-      let id = await hash.getAssetID(uri, 10*ETH, operatorID, {from:assetManager});
-      //console.log('Asset ID ', i, ': ', id);
-      assetsETH.push(id);
 
-      let tokenHash = await hash.stringBytes("tokenAddress", id);
-      let assetManagerHash = await hash.stringBytes("assetManager", id);
-      let operatorHash = await hash.stringBytes("operator", id);
-      await db.setAddress(tokenHash, testToken.address);
+  it("Add multiple assets", async() => {
+    var number = 20; //We can test multiple assets to find the limit, the limit is 93 (92 + 1 from 'Generate assetID')
+    for(var i=0; i<number; i++){
+      let uri = 'test'+i;
+      //Add token
+      tx = await tokenFactory.createCloneToken('0x0000000000000000000000000000000000000000', 0, uri, 18, uri, true, '0x0000000000000000000000000000000000000000', {from:owner});
+      let testToken = await MiniMeToken.at(tx.logs[0].args.token);
+      //Mint
+      await testToken.generateTokens(assetManagerFunds.address, tokenPerAccount.toString());
+      let balance = bn(await testToken.balanceOf(assetManagerFunds.address));
+      assert.equal(balance.eq(tokenPerAccount), true);
+      assetsETH.push(testToken.address);
+
+      let assetManagerHash = await hash.stringAddress("asset.manager", testToken.address);
+      let operatorHash = await hash.stringAddress("asset.operator", testToken.address);
       await db.setAddress(assetManagerHash, assetManager);
       await db.setAddress(operatorHash, operator);
 
-      await testToken.issueDividends({from:operator, value:0.1*ETH});
-
-
+      await testToken.issueDividends(bn(0.1).times(ETH).toString(), {from:operator, value:bn(0.1).times(ETH).toString()});
     }
   });
-  */
 
   it('Send money to token contract', async() => {
     //await web3.eth.sendTransaction({from:operator, to:divToken.address, value:10*ETH});
@@ -182,17 +176,55 @@ contract('AssetManagerFunds', async(accounts) => {
     assert.equal(bn(balanceAfter).isGreaterThan(balanceBefore), true);
   });
 
+  it("Fail to withdraw from assetManager asset: not asset manager", async() => {
+    let err;
+    try{
+      await assetManagerFunds.withdraw(divToken.address, {from:owner});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it("Fail to withdraw from assetManager asset: asset address cannot be zero", async() => {
+    let err;
+    try{
+      await assetManagerFunds.withdraw('0x0000000000000000000000000000000000000000', {from:assetManager});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it("Withdraw from single asset", async() => {
+    //Withdraw fails in solidity-coverage
+    if(id < 1500000000000){
+      let amountOwed = bn(await divToken.getAmountOwed(assetManagerFunds.address));
+      assert.notEqual(amountOwed.eq(0), true);
+      let balanceBefore = await web3.eth.getBalance(assetManager);
+      await assetManagerFunds.withdraw(divToken.address, {from:assetManager});
+      let balanceAfter = await web3.eth.getBalance(assetManager);
+      assert.equal(bn(balanceAfter).isGreaterThan(balanceBefore), true);
+    }
+  });
+
+  it("Fail to withdraw from assetManager asset: no funds", async() => {
+    let err;
+    try{
+      await assetManagerFunds.withdraw(divToken.address, {from:assetManager});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+
   it('Withdraw from assetManager assets (ETH)', async() => {
     //Withdraw fails in solidity-coverage
     if(id < 1500000000000){
       let balanceBefore = await web3.eth.getBalance(assetManager);
-      console.log('Balance Before: ', balanceBefore.toString());
-      let amountOwed = bn(await divToken.getAmountOwed(assetManagerFunds.address));
-      console.log('Amount Owed: ', amountOwed.toString());
-      assert.notEqual(amountOwed.eq(0), true);
-      await assetManagerFunds.retrieveAssetManagerETH(assetsETH, assetManager, {from:assetManager, gas:maxGas});
+      await assetManagerFunds.retrieveAssetManagerETH(assetsETH, {from:assetManager, gas:maxGas});
       let balanceAfter = await web3.eth.getBalance(assetManager);
-      console.log('Balance After: ', balanceAfter.toString());
       assert.equal(bn(balanceAfter).isGreaterThan(balanceBefore), true);
     }
   });
@@ -201,7 +233,7 @@ contract('AssetManagerFunds', async(accounts) => {
 
   it('Deploy dividendERC20 Token', async() => {
     assetURI = 'https://someurl.ch';
-    tx = await tokenFactory.createCloneToken('0x0000000000000000000000000000000000000000', 0, assetURI, 18, assetURI, true, burnToken.address, {from: owner});
+    tx = await tokenFactory.createCloneToken('0x0000000000000000000000000000000000000000', 0, assetURI, 18, assetURI, true, erc20Token.address, {from: owner});
     divToken = await MiniMeToken.at(tx.logs[0].args.token);
   });
 
@@ -224,6 +256,7 @@ contract('AssetManagerFunds', async(accounts) => {
 
   it("Setup asset array", async() => {
     assetsERC = [divToken.address];
+    assetsERC.push(divToken.address); //Add address a second time to test handling redundancy
   });
 
   it("Set asset variables", async() => {
@@ -235,66 +268,96 @@ contract('AssetManagerFunds', async(accounts) => {
 
   it('Send payment tokens to asset-token contract', async() => {
     let divERC20 = await divToken.getERC20();
-    console.log('ERC20: ', divERC20);
-    assert.equal(await divToken.getERC20(), burnToken.address);
-    await burnToken.approve(divToken.address, bn(5).times(ETH).toString(), {from: operator});
+    assert.equal(await divToken.getERC20(), erc20Token.address);
+    await erc20Token.approve(divToken.address, bn(5).times(ETH).toString(), {from: operator});
     await divToken.issueDividends(bn(5).times(ETH).toString(), {from: operator});
     assert.equal(bn(await divToken.assetIncome()).eq(5*ETH), true);
-    assert.equal(bn(await burnToken.balanceOf(divToken.address)).eq(5*ETH), true);
+    assert.equal(bn(await erc20Token.balanceOf(divToken.address)).eq(5*ETH), true);
   });
-/*
+
   it("Add multiple assets", async() => {
-    var number = 41; //We can test multiple assets to find the limit, the limit is 42 (41 + 1 from 'Generate assetID')
+    var number = 20; //We can test multiple assets to find the limit, the limit is 42 (41 + 1 from 'Generate assetID')
     for(var i=0; i<number; i++){
-      let uri = ''+i;
+      let uri = 'test'+i;
       //Add token
-      let erc20Token = await MyBitToken.new(uri, 10000*ETH, {from: operator});
-      let testToken = await DivToken.new(uri, owner, erc20Token.address);
+      tx = await tokenFactory.createCloneToken('0x0000000000000000000000000000000000000000', 0, uri, 18, uri, true, erc20Token.address, {from:owner});
+      let testToken = await MiniMeToken.at(tx.logs[0].args.token);
       //Mint
-      await testToken.mint(assetManagerFunds.address, tokenPerAccount);
+      await testToken.generateTokens(assetManagerFunds.address, tokenPerAccount.toString());
 
-      let balance = await testToken.balanceOf(assetManagerFunds.address);
-      assert.equal(balance, tokenPerAccount);
+      let balance = bn(await testToken.balanceOf(assetManagerFunds.address));
+      assert.equal(balance.eq(tokenPerAccount), true);
 
-      let id = await hash.getAssetID(uri, 10*ETH, operatorID, {from:assetManager});
-      //console.log('Asset ID ', i, ': ', id);
-      assetsERC.push(id);
+      assetsERC.push(testToken.address);
 
-      let tokenHash = await hash.stringBytes("tokenAddress", id);
-      let assetManagerHash = await hash.stringBytes("assetManager", id);
-      let operatorHash = await hash.stringBytes("operator", id);
-      await db.setAddress(tokenHash, testToken.address);
+      let assetManagerHash = await hash.stringAddress("asset.manager", testToken.address);
+      let operatorHash = await hash.stringAddress("asset.operator", testToken.address);
       await db.setAddress(assetManagerHash, assetManager);
       await db.setAddress(operatorHash, operator);
 
-      await erc20Token.approve(testToken.address, 1*ETH, {from: operator});
-      await testToken.issueDividends(0.1*ETH, {from:operator});
+      await erc20Token.approve(testToken.address, bn(0.1).times(ETH).toString(), {from: operator});
+      await testToken.issueDividends(bn(0.1).times(ETH).toString(), {from:operator});
     }
   });
-*/
+
   it("Withdraw dividends ERC20", async() => {
-    let balanceBefore = bn(await burnToken.balanceOf(user1));
+    let balanceBefore = bn(await erc20Token.balanceOf(user1));
     let amountOwed = await divToken.getAmountOwed(user1);
     assert.notEqual(amountOwed, 0);
-    console.log(amountOwed);
     let tx = await divToken.withdraw({from:user1});
-    let balanceAfter = bn(await burnToken.balanceOf(user1));
+    let balanceAfter = bn(await erc20Token.balanceOf(user1));
     //console.log(tx);
     assert.equal(balanceBefore.plus(amountOwed).eq(balanceAfter), true);
   });
 
+  it("Fail to withdraw from assetManager asset: not asset manager", async() => {
+    let err;
+    try{
+      await assetManagerFunds.withdraw(divToken.address, {from:owner});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it("Fail to withdraw from assetManager asset: asset address cannot be zero", async() => {
+    let err;
+    try{
+      await assetManagerFunds.withdraw('0x0000000000000000000000000000000000000000', {from:assetManager});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it("Withdraw from single asset", async() => {
+    let amountOwed = bn(await divToken.getAmountOwed(assetManagerFunds.address));
+    assert.notEqual(amountOwed.eq(0), true);
+    let balanceBefore = await erc20Token.balanceOf(assetManager);
+    await assetManagerFunds.withdraw(divToken.address, {from:assetManager});
+    let balanceAfter = await erc20Token.balanceOf(assetManager);
+    assert.equal(bn(balanceAfter).isGreaterThan(balanceBefore), true);
+  });
+
+
   it('Withdraw from assetManager assets ERC20', async() => {
-    let balanceBefore = bn(await burnToken.balanceOf(assetManager));
-    let amountOwed = await divToken.getAmountOwed(assetManagerFunds.address);
-    assert.notEqual(amountOwed, 0);
-    assert.equal(bn(await divToken.balanceOf(assetManagerFunds.address)).eq(tokenPerAccount), true);
-    console.log("amount owed");
-    console.log(amountOwed);
-    let tx = await assetManagerFunds.retrieveAssetManagerTokens(assetsERC, assetManager, {from:assetManager, gas:6721975});
-    //console.log(tx);
-    let balanceAfter = bn(await burnToken.balanceOf(assetManager));
-    console.log(balanceAfter.toNumber());
-    console.log(balanceBefore.toNumber());
-    assert.equal(balanceBefore.plus(amountOwed).eq(balanceAfter), true);
+    let balanceBefore = await erc20Token.balanceOf(assetManager);
+    await assetManagerFunds.retrieveAssetManagerTokens(assetsERC, {from:assetManager, gas:maxGas});
+    let balanceAfter = await erc20Token.balanceOf(assetManager);
+    assert.equal(bn(balanceAfter).isGreaterThan(balanceBefore), true);
+  });
+
+  it('Fail to destroy', async() => {
+    let err;
+    try{
+      await assetManagerFunds.destroy({from:assetManager});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it('Destroy', async() => {
+    await assetManagerFunds.destroy({from: owner});
   });
 });

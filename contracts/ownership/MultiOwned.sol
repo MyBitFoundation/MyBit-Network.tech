@@ -21,7 +21,7 @@ contract MultiOwned {
   function changeOwner(address _newOwner)
   public
   onlyOwner {
-    require(_newOwner != address(0));
+    require(_newOwner != address(0), "Cannnot add null address");
     database.setBool(keccak256(abi.encodePacked("owner", _newOwner)), true);
     database.setBool(keccak256(abi.encodePacked("owner", msg.sender)), false);
     events.transaction('Ownership transferred', msg.sender, _newOwner, 0, address(0));
@@ -30,7 +30,7 @@ contract MultiOwned {
   function addOwner(address _newOwner)
   public
   onlyOwner {
-    require(_newOwner != address(0));
+    require(_newOwner != address(0), "Cannnot add null address");
     database.setBool(keccak256(abi.encodePacked("owner", _newOwner)), true);
     events.transaction('Owner added', msg.sender, _newOwner, 0, address(0));
   }
@@ -38,7 +38,7 @@ contract MultiOwned {
   function removeOwner(address _currentOwner)
   public
   onlyOwner {
-    require(_currentOwner != msg.sender);
+    require(_currentOwner != msg.sender, "Owner cannot remove themselves");
     database.setBool(keccak256(abi.encodePacked("owner", _currentOwner)), false);
     events.transaction('Owner removed', msg.sender, _currentOwner, 0, address(0));
   }

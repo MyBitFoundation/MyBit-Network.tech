@@ -57,7 +57,7 @@ contract CrowdsaleReserve is CrowdsaleReserveInterface{
   }
   function approveERC20(address _receiver, uint256 _amount, address _tokenAddress) public returns (bool){
     require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("contract", "CrowdsaleERC20"))), 'Contract not authorized');
-    require(ERC20(_tokenAddress).approve(_receiver, _amount), 'Approval failed');
+    ERC20(_tokenAddress).approve(_receiver, _amount); //always returns true
     events.transaction("ERC20 approval given by crowdsale reserve", address(this), _receiver, _amount, _tokenAddress);
     return true;
   }
