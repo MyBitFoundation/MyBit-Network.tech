@@ -46,7 +46,6 @@ contract ContractManager{
   contractExists(database.addressStorage(keccak256(abi.encodePacked("contract", _name))))
   isUpgradeable
   anyOwner {
-    require(database.boolStorage(keccak256(abi.encodePacked("upgradeable"))));
     address contractToDelete = database.addressStorage(keccak256(abi.encodePacked("contract", _name)));
     database.deleteBool(keccak256(abi.encodePacked("contract", contractToDelete)));
     database.deleteAddress(keccak256(abi.encodePacked("contract", _name)));
@@ -62,7 +61,6 @@ contract ContractManager{
   contractExists(database.addressStorage(keccak256(abi.encodePacked("contract", _name))))
   isUpgradeable
   anyOwner {
-    require(database.boolStorage(keccak256(abi.encodePacked("upgradeable"))));
     address oldAddress = database.addressStorage(keccak256(abi.encodePacked("contract", _name)));
     database.setAddress(keccak256(abi.encodePacked("contract", _name)), _newContractAddress);
     database.setBool(keccak256(abi.encodePacked("contract", _newContractAddress)), true);
@@ -102,14 +100,6 @@ contract ContractManager{
   modifier anyOwner {
     require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))), "Not owner");
     _;
-  }
-
-  // @notice add this modifer to functions that you want multi-sig requirements for
-  // @dev function can only be called after at least n >= quorumLevel owners have agreed to call it
-  modifier isRestricted(bytes4 _methodID, bytes32 _parameterHash) {
-    require(database.boolStorage(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash))));  // owners must have agreed on function + parameters
-    _;
-    database.deleteBool(keccak256(abi.encodePacked(address(this), _methodID, _parameterHash)));
   }
 
   modifier contractExists(address _contract) {

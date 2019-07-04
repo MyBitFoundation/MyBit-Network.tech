@@ -3,17 +3,17 @@ var bn = require('bignumber.js');
 const Database = artifacts.require("./database/Database.sol");
 const Events = artifacts.require("./database/Events.sol");
 const ContractManager = artifacts.require("./database/ContractManager.sol");
-const SingleOwned = artifacts.require("./ownership/SingleOwned.sol");
+const MultiOwned = artifacts.require("./ownership/MultiOwned.sol");
 const HashFunctions = artifacts.require("./test/HashFunctions.sol");
 
-contract('SingleOwned', async(accounts) => {
+contract('MultiOwned', async(accounts) => {
   const owner = accounts[0];
   const newOwner = accounts[1];
 
   let db;
   let events;
   let cm;
-  let so;
+  let mo;
   let hash;
 
   it('Deploy hash contract', async() => {
@@ -33,15 +33,15 @@ contract('SingleOwned', async(accounts) => {
     await db.enableContractManagement(cm.address);
   });
 
-  it('Deploy SingleOwned', async() => {
-    so = await SingleOwned.new(db.address, events.address);
-    await cm.addContract('SingleOwned', so.address);
+  it('Deploy MultiOwned', async() => {
+    mo = await MultiOwned.new(db.address, events.address);
+    await cm.addContract('MultiOwned', mo.address);
   });
 
   it('Fail change owner', async() => {
     let err;
     try{
-      await so.changeOwner(newOwner, {from:newOwner});
+      await mo.changeOwner(newOwner, {from:newOwner});
     } catch(e){
       err = e;
     }
@@ -59,16 +59,60 @@ contract('SingleOwned', async(accounts) => {
   });
 
   it('Change owner', async() => {
-    await so.changeOwner(newOwner, {from:owner});
+    await mo.changeOwner(newOwner, {from:owner});
     let ownerHash = await hash.stringAddress('owner', newOwner);
     let ownerBool = await db.boolStorage(ownerHash);
     assert.equal(ownerBool, true);
   });
 
+  it('Fail add owner', async() => {
+    let err;
+    try{
+      await mo.addOwner(owner, {from:owner});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it('Fail add owner', async() => {
+    let err;
+    try{
+      await so.addOwner('0x0000000000000000000000000000000000000000', {from:newOwner});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it('Add owner', async() => {
+    await mo.addOwner(owner, {from:newOwner});
+    let ownerHash = await hash.stringAddress('owner', owner);
+    let ownerBool = await db.boolStorage(ownerHash);
+    assert.equal(ownerBool, true);
+  });
+
+  it('Fail remove owner', async() => {
+    let err;
+    try{
+      await mo.removeOwner(owner, {from:owner});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
+  it('Remove owner', async() => {
+    await mo.removeOwner(owner, {from:newOwner});
+    let ownerHash = await hash.stringAddress('owner', owner);
+    let ownerBool = await db.boolStorage(ownerHash);
+    assert.equal(ownerBool, false);
+  });
+
   it('Fail to destroy', async() => {
     let err;
     try{
-      await so.destroy({from:owner});
+      await mo.destroy({from:owner});
     } catch(e){
       err = e;
     }
@@ -76,7 +120,7 @@ contract('SingleOwned', async(accounts) => {
   });
 
   it('Destroy', async() => {
-    await so.destroy({from: newOwner});
+    await mo.destroy({from: newOwner});
   });
 
 });

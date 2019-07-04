@@ -349,7 +349,7 @@ contract('Ether Crowdsale', async(accounts) => {
   it('Asset manager withdraw dividends', async() => {
     if(id < 1500000000000){
       managerBalanceBefore = bn(await web3.eth.getBalance(assetManager));
-      await assetManagerFunds.withdraw(assetAddress, assetManager, {from:assetManager, gas:maxGas});
+      await assetManagerFunds.withdraw(assetAddress, {from:assetManager, gas:maxGas});
       managerBalanceAfter = bn(await web3.eth.getBalance(assetManager));
       assert.equal(managerBalanceAfter.isGreaterThan(managerBalanceBefore), true);
     }

@@ -368,7 +368,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
 
   it('Asset Manager withdraw dividends', async() => {
     managerBalanceBefore = await erc20.balanceOf(assetManager);
-    await assetManagerFunds.withdraw(assetAddress, assetManager, {from:assetManager});
+    await assetManagerFunds.withdraw(assetAddress, {from:assetManager});
     managerBalanceAfter = await erc20.balanceOf(assetManager);
     assert.equal(bn(managerBalanceAfter).isGreaterThan(managerBalanceBefore), true);
   });

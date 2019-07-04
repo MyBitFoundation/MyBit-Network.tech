@@ -40,7 +40,7 @@ contract EscrowReserve is EscrowReserveInterface{
   }
   function approveERC20(address _receiver, uint256 _amount, address _tokenAddress) external returns (bool){
     require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("contract", "AssetManagerEscrow"))));
-    require(BurnableERC20(_tokenAddress).approve(_receiver, _amount));
+    BurnableERC20(_tokenAddress).approve(_receiver, _amount); //always returns true
     events.transaction("ERC20 approval given by escrow reserve", address(this), _receiver, _amount, _tokenAddress);
     return true;
   }
