@@ -9,5 +9,10 @@ module.exports = {
     mybit : mybitContracts,
     ropsten : ropstenContracts,
     mainnet : mainnetContracts,
+  },
+  block : {
+    mybit : '0',
+    ropsten : '5901167',
+    mainnet : '0',
   }
 };
