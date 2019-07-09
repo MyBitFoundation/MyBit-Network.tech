@@ -45,7 +45,7 @@ contract CrowdsaleETH {
     payable
     requiresEther
     validAsset(_assetAddress)
-    betweenDeadlines(_assetAddress)
+    beforeDeadline(_assetAddress)
     notFinalized(_assetAddress)
     returns (bool) {
       uint fundingRemaining = database.uintStorage(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)));

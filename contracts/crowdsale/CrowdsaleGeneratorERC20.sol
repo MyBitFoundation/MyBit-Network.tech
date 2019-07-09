@@ -42,11 +42,10 @@ contract CrowdsaleGeneratorERC20 {
   // @param (string) _assetURI = The location where information about the asset can be found
   // @param (bytes32) _modelID = The modelID of the asset that will be used in the crowdsale
   // @param (uint) _fundingLength = The number of seconds this crowdsale is to go on for until it fails
-  // @param (uint) _startTime = The timestamp at which funding for this asset begins
   // @param (uint) _amountToRaise = The amount of tokens required to raise for the crowdsale to be a success
   // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
   // @param (address) _fundingToken = The ERC20 token to be used to fund the crowdsale (Operator must accept this token as payment)
-  function createAssetOrderERC20(string _assetURI, bytes32 _modelID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc, uint _escrow, address _fundingToken, address _paymentToken)
+  function createAssetOrderERC20(string _assetURI, string _ipfs, bytes32 _modelID, uint _fundingLength, uint _amountToRaise, uint _assetManagerPerc, uint _escrow, address _fundingToken, address _paymentToken)
   payable
   external
   {
@@ -60,18 +59,13 @@ contract CrowdsaleGeneratorERC20 {
     require((_assetManagerPerc + database.uintStorage(keccak256(abi.encodePacked("platform.percentage")))) < 100, "Manager percent need to be less than 100");
     require(database.addressStorage(keccak256(abi.encodePacked("model.operator", _modelID))) != address(0), "Model not set");
     require(!database.boolStorage(keccak256(abi.encodePacked("asset.uri", _assetURI))), "Asset URI is not unique"); //Check that asset URI is unique
-    uint startTime;
-    if(_startTime < now){
-      startTime = now;
-    } else {
-      startTime = _startTime;
-    }
     address assetAddress = minter.cloneToken(_assetURI, _fundingToken);
-    require(setCrowdsaleValues(assetAddress, startTime, _fundingLength, _amountToRaise));
-    require(setAssetValues(assetAddress, _assetURI, _modelID, msg.sender, _assetManagerPerc, _amountToRaise, _fundingToken));
+    require(setCrowdsaleValues(assetAddress, _fundingLength, _amountToRaise));
+    require(setAssetValues(assetAddress, _assetURI, _ipfs, _modelID, msg.sender, _assetManagerPerc, _amountToRaise, _fundingToken));
     uint minEscrow = calculateEscrowERC20(_amountToRaise, msg.sender, _modelID, _fundingToken);
     require(lockEscrowERC20(msg.sender, assetAddress, _paymentToken, _fundingToken, _escrow, minEscrow));
     events.asset('Asset funding started', _assetURI, assetAddress, msg.sender);
+    events.asset('New asset ipfs', _ipfs, assetAddress, msg.sender);
   }
 
   // @notice platform owners can destroy contract here
@@ -86,17 +80,17 @@ contract CrowdsaleGeneratorERC20 {
   //                                            Internal/ Private Functions
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function setCrowdsaleValues(address _assetAddress, uint _startTime, uint _fundingLength, uint _amountToRaise)
+  function setCrowdsaleValues(address _assetAddress, uint _fundingLength, uint _amountToRaise)
   private
   returns (bool){
-    database.setUint(keccak256(abi.encodePacked("crowdsale.start", _assetAddress)), _startTime);
-    database.setUint(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress)), _startTime.add(_fundingLength));
+    database.setUint(keccak256(abi.encodePacked("crowdsale.start", _assetAddress)), now);
+    database.setUint(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress)), now.add(_fundingLength));
     database.setUint(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)), _amountToRaise);
     database.setUint(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)), _amountToRaise.mul(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee"))))).div(100));
     return true;
   }
 
-  function setAssetValues(address _assetAddress, string _assetURI, bytes32 _modelID, address _assetManager, uint _assetManagerPerc, uint _amountToRaise, address _fundingToken)
+  function setAssetValues(address _assetAddress, string _assetURI, string _ipfs, bytes32 _modelID, address _assetManager, uint _assetManagerPerc, uint _amountToRaise, address _fundingToken)
   private
   returns (bool){
     uint totalTokens = _amountToRaise.mul(100).div(uint(100).sub(_assetManagerPerc).sub(database.uintStorage(keccak256(abi.encodePacked("platform.percentage")))));
@@ -105,6 +99,7 @@ contract CrowdsaleGeneratorERC20 {
     database.setUint(keccak256(abi.encodePacked("asset.platformTokens", _assetAddress)), totalTokens.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("platform.percentage")))));
     database.setAddress(keccak256(abi.encodePacked("asset.manager", _assetAddress)), _assetManager);
     database.setBytes32(keccak256(abi.encodePacked("asset.modelID", _assetAddress)), _modelID);
+    database.setString(keccak256(abi.encodePacked("asset.ipfs", _assetAddress)), _ipfs);
     //database.setAddress(keccak256(abi.encodePacked("asset.operator", _assetAddress)), database.addressStorage(keccak256(abi.encodePacked("asset.operator", _modelID))));
     /*
     if(database.boolStorage(keccak256(abi.encodePacked("asset.acceptsToken", _modelID, _fundingToken)))){
@@ -169,13 +164,6 @@ contract CrowdsaleGeneratorERC20 {
   //                                            Modifiers
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // // @notice reverts if AssetManager hasn't approved burner to burn platform token
-  // modifier burnRequired {
-  //   //emit LogSig(msg.sig);
-  //   require(burner.burn(msg.sender, database.uintStorage(keccak256(abi.encodePacked(msg.sig, address(this))))));
-  //   _;
-  // }
-
   // @notice Sender must be a registered owner
   modifier onlyOwner {
     require(database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))), "Not owner");
@@ -185,11 +173,4 @@ contract CrowdsaleGeneratorERC20 {
   modifier checkRequirements {
     _;
   }
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //                                            Events
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  //event LogAssetFundingStarted(bytes32 indexed _modelID, address indexed _assetManager, string _assetURI, address indexed _tokenAddress);
-  //event LogSig(bytes4 _sig);
 }
