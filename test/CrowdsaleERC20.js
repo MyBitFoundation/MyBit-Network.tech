@@ -517,7 +517,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
   it('Fail to cancel', async() => {
     let err;
     try{
-      await crowdsale.cancel(assetAddress, assetManager, {from: user1})
+      await crowdsale.cancel(assetAddress, {from: user1})
     } catch(e){
       err = e;
     }
@@ -527,7 +527,7 @@ contract('ERC20 Crowdsale', async(accounts) => {
   it('Cancel', async() => {
     //Cancel
     let balanceBefore = bn(await erc20.balanceOf(user1));
-    await crowdsale.cancel(assetAddress, assetManager, {from: assetManager});
+    await crowdsale.cancel(assetAddress, {from: assetManager});
     await assetToken.withdraw({from:user1});
     let balanceAfter = bn(await erc20.balanceOf(user1));
     console.log('Returned funds: ', balanceAfter.minus(balanceBefore).toString());
