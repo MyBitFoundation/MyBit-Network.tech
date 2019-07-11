@@ -9,6 +9,15 @@ module.exports = function(deployer, network, accounts) {
     let operators, cm;
     let contracts = JSON.parse(fs.readFileSync(`networks/${network}/contracts.json`, 'utf8'));
 
+    let dai = {}
+    if(network == 'mainnet' || network == 'mainnet-fork'){
+      dai.address = ''
+    } else if(network == 'ropsten' || network == 'ropten-fork'){
+      dai.address = ''
+    } else if(network == 'rinkeby' || network == 'rinkeby-fork'){
+      dai.address = ''
+    }
+
     deployer.then(function(){
 
       return deployer.deploy(SafeMath);
@@ -28,26 +37,20 @@ module.exports = function(deployer, network, accounts) {
 
       cm = instance;
       console.log('Adding Operators to contract manager...');
-      return cm.addContract('Operators', operators.address, {from: accounts[0], gas:200000});
+      return cm.addContract('Operators', operators.address, {from: accounts[0], gas:300000});
 
     }).then(function() {
-      if(network == 'ropsten'){
-        operators.registerOperator('0x396576A24FDdD9e2AEa0CCfC1aa1F795E8acC98C', 'General Bytes', 'Bitcoin ATM', {from: accounts[0], gas:190000});
-        operators.registerOperator('0x794C156557a3742B532427F735A27A874e67c9b9', 'The Collective', 'Co-Working Space', {from: accounts[0], gas:190000});
-        operators.registerOperator('0x52C213f43E2227Ee109A2971a31FCdf77A5237ef', 'Bitmain', 'Ethereum Miner', {from: accounts[0], gas:190000});
-        operators.registerOperator('0xE52c1E5082e835FaCcE21f5B9bf2E190Fab7617a', 'Pickens', 'Storage Unit', {from: accounts[0], gas:190000});
-        operators.registerOperator('0x15c9C83075b7214308fd4526731db4172299E2a4', 'Arabco', 'Smart Bench', {from: accounts[0], gas:190000});
+      if(network == 'ropsten' || network == 'ropsten-fork' || network == 'rinkeby' || network == 'rineby-fork'){
+        operators.registerOperator('0x396576A24FDdD9e2AEa0CCfC1aa1F795E8acC98C', 'General Bytes', 'Qmhash', accounts[0], {from: accounts[0], gas:190000});
+        operators.registerOperator('0x794C156557a3742B532427F735A27A874e67c9b9', 'The Collective', 'Qmhash', accounts[0], {from: accounts[0], gas:190000});
+        operators.registerOperator('0x52C213f43E2227Ee109A2971a31FCdf77A5237ef', 'Bitmain', 'Qmhash', accounts[0], {from: accounts[0], gas:190000});
+        operators.registerOperator('0xE52c1E5082e835FaCcE21f5B9bf2E190Fab7617a', 'Pickens', 'Qmhash', accounts[0], {from: accounts[0], gas:190000});
+        operators.registerOperator('0x15c9C83075b7214308fd4526731db4172299E2a4', 'Arabco', 'Qmhash', accounts[0], {from: accounts[0], gas:190000});
         return;
-      }else if(network == 'development' || network == 'mybit-chain'){
-        return operators.registerOperator(accounts[1], 'Test Operator', 'Test Asset Type', {from: accounts[0], gas:190000});
+      }else if(network == 'mybit'){
+        return operators.registerOperator(accounts[1], 'Test Operator', 'Qmhash', accounts[0], {from: accounts[0], gas:190000});
       }else {
-        operators.registerOperator('0x396576A24FDdD9e2AEa0CCfC1aa1F795E8acC98C', 'General Bytes', 'Bitcoin ATM', {from: accounts[0], gas:190000});
-        operators.registerOperator('0x794C156557a3742B532427F735A27A874e67c9b9', 'The Collective', 'Co-Working Space', {from: accounts[0], gas:190000});
-        operators.registerOperator('0x52C213f43E2227Ee109A2971a31FCdf77A5237ef', 'Bitmain', 'Ethereum Miner', {from: accounts[0], gas:190000});
-        operators.registerOperator('0xE52c1E5082e835FaCcE21f5B9bf2E190Fab7617a', 'Pickens', 'Storage Unit', {from: accounts[0], gas:190000});
-        operators.registerOperator('0x15c9C83075b7214308fd4526731db4172299E2a4', 'Arabco', 'Smart Bench', {from: accounts[0], gas:190000});
-        console.log('Registered operators')
-        return;
+        return operators.registerOperator('0xd9d2b28e09921a38ad7ab1b4138357408bda8ebd', 'MyBit Go', 'Qmhash', accounts[0], {from: accounts[0], gas:190000});
       }
     }).then(function() {
       contracts['Operators'] = operators.address;

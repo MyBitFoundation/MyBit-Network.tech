@@ -22,7 +22,7 @@ module.exports = function(deployer, network, accounts) {
 
       db = instance
       console.log('Enabling ContractManager...')
-      return db.enableContractManagement(cm.address, {from: accounts[0], gas:200000});
+      return db.enableContractManagement(cm.address, {from: accounts[0], gas:300000});
 
     }).then(function() {
       contracts['ContractManager'] = cm.address;

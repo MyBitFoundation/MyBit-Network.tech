@@ -44,7 +44,6 @@ pragma solidity ^0.4.24;
     // @dev anybody can make the assetManager escrow if he leaves this contract with approval to transfer
     function lockEscrow(address _assetAddress, address _assetManager, uint _amount)
     public
-    hasApproval(_assetManager, msg.sig)
     returns (bool) {
       require(lockEscrowInternal(_assetManager, _assetAddress, _amount));
       return true;
@@ -53,11 +52,10 @@ pragma solidity ^0.4.24;
     // @notice assetManager can unlock his escrow here once funding fails or asset returns sufficient ROI
     // @dev asset must have fundingDeadline = 0 or have ROI > 25%
     // @dev returns escrow according to ROI. 25% ROI returns 25% of escrow, 50% ROI returns 50% of escrow etc...
-    function unlockEscrow(address _assetAddress, address _assetManager)
+    function unlockEscrow(address _assetAddress)
     public
     returns (bool) {
-      require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), 'User not approved');
-      bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetAddress, _assetManager));
+      bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetAddress, msg.sender));
       require(database.uintStorage(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID))) != 0, 'Asset escrow is zero');
       //require(database.uintStorage(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress))) < now, 'Before crowdsale deadline');
       address platformToken = database.addressStorage(keccak256(abi.encodePacked("platform.token")));
@@ -71,7 +69,7 @@ pragma solidity ^0.4.24;
         //If we're past deadline but crowdsale did NOT finalize, release all escrow
         require(removeAssetManager(_assetAddress));
         require(removeEscrowData(assetManagerEscrowID));
-        require(reserve.issueERC20(_assetManager, unlockAmount, platformToken));
+        require(reserve.issueERC20(msg.sender, unlockAmount, platformToken));
         return true;
       } else {
         //Crowdsale finalized. Only pay back based on ROI
@@ -88,7 +86,7 @@ pragma solidity ^0.4.24;
         }
         require(unlockAmount > 0);
         database.setUint(keccak256(abi.encodePacked("asset.escrowRedeemed", assetManagerEscrowID)), escrowRedeemed.add(unlockAmount));
-        require(reserve.issueERC20(_assetManager, unlockAmount, platformToken));
+        require(reserve.issueERC20(msg.sender, unlockAmount, platformToken));
         return true;
       }
     }
@@ -99,7 +97,8 @@ pragma solidity ^0.4.24;
     function changeAssetManager(address _assetAddress, address _newAssetManager, uint256 _amount, bool _withhold)
     external
     returns (bool) {
-      require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("asset.dao.admin", _assetAddress))), "Only the asset DAO adminstration contract may change the asset manager");
+      require(_newAssetManager != address(0));
+      require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("asset.dao.admin", _assetAddress))), "Only the asset DAO adminstrator contract may change the asset manager");
       address currentAssetManager = database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress)));
       require(currentAssetManager != _newAssetManager, "New asset manager is the same");
       //Remove current asset manager
@@ -112,23 +111,22 @@ pragma solidity ^0.4.24;
       return true;
     }
 
-    function returnEscrow(address _assetAddress, address _oldAssetManager, address _currentAssetManager)
+    function returnEscrow(address _assetAddress, address _oldAssetManager)
     external
     {
-      require(msg.sender == _currentAssetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _currentAssetManager, msg.sender, address(this), msg.sig))), 'User not approved');
-      require(database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))) == _currentAssetManager);
+      require(database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))) == msg.sender);
       processEscrow(_assetAddress, _oldAssetManager);
     }
 
     function voteToBurn(address _assetAddress)
     external
     returns (bool) {
-      require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("asset.dao.admin", _assetAddress))), "Only the asset DAO adminstration contract may change the asset manager");
+      require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("asset.dao.admin", _assetAddress))), "Only the asset DAO adminstrator contract may change the asset manager");
       bytes32 assetManagerEscrowID = keccak256(abi.encodePacked(_assetAddress, database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress)))));
       uint escrowRedeemed = database.uintStorage(keccak256(abi.encodePacked("asset.escrowRedeemed", assetManagerEscrowID)));
-      uint unlockAmount = database.uintStorage(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID))).sub(escrowRedeemed);
-      require(reserve.burnERC20(unlockAmount, database.addressStorage(keccak256(abi.encodePacked("platform.token"))))); // burn manager tokens
-      database.setUint(keccak256(abi.encodePacked("asset.escrowRedeemed", assetManagerEscrowID)), escrowRedeemed.add(unlockAmount));  // mark burned _assetAddresss as redeemed
+      uint escrowAmount = database.uintStorage(keccak256(abi.encodePacked("asset.escrow", assetManagerEscrowID)));
+      require(reserve.burnERC20(escrowAmount.sub(escrowRedeemed), database.addressStorage(keccak256(abi.encodePacked("platform.token"))))); // burn manager tokens
+      database.setUint(keccak256(abi.encodePacked("asset.escrowRedeemed", assetManagerEscrowID)), escrowAmount );  // mark burned _assetAddresss as redeemed
       return true;
     }
 
@@ -207,12 +205,6 @@ pragma solidity ^0.4.24;
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                            Modifiers
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    // @notice This modifier checks is msg.sender has approval to call the function
-    modifier hasApproval(address _approver, bytes4 _sig){
-      require(msg.sender == _approver || database.boolStorage(keccak256(abi.encodePacked("approval", _approver, msg.sender, address(this), _sig))), "User not approved");
-      _;
-    }
 
     // @notice reverts if caller is not the owner
     modifier onlyOwner {

@@ -21,6 +21,7 @@ contract SingleOwned {
   function changeOwner(address _newOwner)
   public
   onlyOwner {
+    require(_newOwner != address(0));
     database.setBool(keccak256(abi.encodePacked("owner", _newOwner)), true);
     database.setBool(keccak256(abi.encodePacked("owner", msg.sender)), false);
     events.transaction('Ownership transferred', msg.sender, _newOwner, 0, address(0));

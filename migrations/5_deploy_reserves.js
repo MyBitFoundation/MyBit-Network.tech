@@ -31,10 +31,25 @@ module.exports = function(deployer, network, accounts) {
 
       escrowReserve = instance;
       console.log('EscrowReserve.sol: ' + escrowReserve.address);
-      return AssetManagerEscrow.new(contracts['Database'], contracts['Events']);
+      return ContractManager.at(contracts['ContractManager']);
 
     }).then(function(instance) {
 
+      cm = instance;
+      console.log('Adding CrowdsaleReserve to contract manager...');
+      return cm.addContract('CrowdsaleReserve', crowdsaleReserve.address, {from: accounts[0], gas:300000});
+
+    }).then(function() {
+
+      console.log('Adding EscrowReserve to contract manager...');
+      return cm.addContract('EscrowReserve', escrowReserve.address, {from: accounts[0], gas:300000});
+
+    }).then(function() {
+
+      return AssetManagerEscrow.new(contracts['Database'], contracts['Events']);
+
+    }).then(function(instance) {
+      
       managerEscrow = instance;
       console.log('AssetManagerEscrow.sol: ' + managerEscrow.address);
       return AssetManagerFunds.new(contracts['Database'], contracts['Events']);
@@ -43,28 +58,13 @@ module.exports = function(deployer, network, accounts) {
 
       managerFunds = instance;
       console.log('AssetManagerFunds.sol: ' + managerFunds.address);
-      return ContractManager.at(contracts['ContractManager']);
-
-    }).then(function(instance) {
-
-      cm = instance;
-      console.log('Adding CrowdsaleReserve to contract manager...');
-      return cm.addContract('CrowdsaleReserve', crowdsaleReserve.address, {from: accounts[0], gas:200000});
+      console.log('Adding AssetManagerEscrow to contract manager...');
+      return cm.addContract('AssetManagerEscrow', managerEscrow.address, {from: accounts[0], gas:300000});
 
     }).then(function() {
 
-      console.log('Adding EscrowReserve to contract manager...');
-      return cm.addContract('EscrowReserve', escrowReserve.address, {from: accounts[0], gas:200000});
-
-    }).then(function(instance) {
-
-      console.log('Adding AssetManagerEscrow to contract manager...');
-      return cm.addContract('AssetManagerEscrow', managerEscrow.address, {from: accounts[0], gas:200000});
-
-    }).then(function(instance) {
-
       console.log('Adding AssetManagerFunds to contract manager...');
-      return cm.addContract('AssetManagerFunds', managerFunds.address, {from: accounts[0], gas:200000});
+      return cm.addContract('AssetManagerFunds', managerFunds.address, {from: accounts[0], gas:300000});
 
     }).then(function() {
       contracts['CrowdsaleReserve'] = crowdsaleReserve.address;

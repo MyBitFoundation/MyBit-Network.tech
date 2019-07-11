@@ -1,8 +1,9 @@
 var bn = require('bignumber.js');
 bn.config({ EXPONENTIAL_AT: 80 });
 
-const Token = artifacts.require("./tokens/erc20/DividendToken.sol");
 const PlatformToken = artifacts.require("./tokens/erc20/MyBitToken.sol");
+const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory.sol");
+const Minter = artifacts.require("./database/Minter.sol");
 //const ERC20Burner = artifacts.require("./access/ERC20Burner.sol");
 const AssetGenerator = artifacts.require("./ecosystem/AssetGenerator.sol");
 const Database = artifacts.require("./database/Database.sol");
@@ -34,6 +35,8 @@ contract('Asset Generator', async(accounts) => {
 
   let token;
   let platformToken;
+  let tokenFactory;
+  let minter;
   let AssetGen;
   let db;
   let events;
@@ -82,10 +85,15 @@ contract('Asset Generator', async(accounts) => {
     assert.equal(ledgerTrue, true);
   });
 
+  it('Deploy token factory', async() => {
+    tokenFactory = await MiniMeTokenFactory.new();
+  });
+
   it('Deploy platform funds', async() => {
     platform = await Platform.new(db.address, events.address);
     await cm.addContract('Platform', platform.address);
     await platform.setPlatformToken(platformToken.address);
+    await platform.setTokenFactory(tokenFactory.address);
   });
 /*
   it('Deploy burner contract', async() => {
@@ -93,6 +101,11 @@ contract('Asset Generator', async(accounts) => {
     await cm.addContract("ERC20Burner", burner.address);
   });
 */
+  it('Deploy Minter', async() => {
+    minter = await Minter.new(db.address);
+    await cm.addContract("Minter", minter.address);
+  });
+
   it('Deploy AssetGenerator', async() => {
     assetGen = await AssetGenerator.new(db.address, events.address);
     await cm.addContract("AssetGenerator", assetGen.address);
@@ -110,7 +123,7 @@ contract('Asset Generator', async(accounts) => {
   it('Create Non-transferable Asset', async() => {
     assetURI = 'ASSET';
     let block = await web3.eth.getBlock('latest');
-    await assetGen.createAsset(assetURI, assetManager, tokenHolders, [assetManagerFee, tokenPerAccount.toString(), tokenPerAccount.toString(), tokenPerAccount.toString()], {from:assetManager});
+    await assetGen.createAsset(assetURI, tokenHolders, [assetManagerFee, tokenPerAccount.toString(), tokenPerAccount.toString(), tokenPerAccount.toString()], {from:assetManager});
     let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset created'), origin: assetManager}, fromBlock: block.number});
     token = await FixedDistribution.at(logs[0].args.asset);
     assetManagerBalance = await token.balanceOf(assetManager);
@@ -128,7 +141,7 @@ contract('Asset Generator', async(accounts) => {
     //Fail because user tokenHolder != amount
     try{
       assetURI = 'ASSETFail';
-      await assetGen.createAsset(assetURI, assetManager, tokenHolders, [tokenPerAccount.toString(), tokenPerAccount.toString(), tokenPerAccount.toString()], {from:assetManager});
+      await assetGen.createAsset(assetURI, tokenHolders, [tokenPerAccount.toString(), tokenPerAccount.toString(), tokenPerAccount.toString()], {from:assetManager});
     } catch(e){
       err = e;
     }
@@ -138,7 +151,7 @@ contract('Asset Generator', async(accounts) => {
   it('Create Tradeable Asset', async() => {
     assetURI = 'ASSETASSET';
     let block = await web3.eth.getBlock('latest');
-    await assetGen.createTradeableAsset(assetURI, assetManager, tokenHolders, [assetManagerFee, tokenPerAccount.toString(), tokenPerAccount.toString(), tokenPerAccount.toString()], {from:assetManager});
+    await assetGen.createTradeableAsset(assetURI, tokenHolders, [assetManagerFee, tokenPerAccount.toString(), tokenPerAccount.toString(), tokenPerAccount.toString()], {from:assetManager});
     let logs = await events.getPastEvents('LogAsset', {filter: {messageID: web3.utils.sha3('Asset created'), origin: assetManager}, fromBlock: block.number});
     token = await FixedDistribution.at(logs[0].args.asset);
     assetManagerBalance = await token.balanceOf(assetManager);
@@ -156,7 +169,7 @@ contract('Asset Generator', async(accounts) => {
     //Fail because user tokenHolder != amount
     try{
       assetURI = 'ASSETASSETFail';
-      await assetGen.createTradeableAsset(assetURI, assetManager, tokenHolders, [tokenPerAccount.toString(), tokenPerAccount.toString(), tokenPerAccount.toString()], {from:assetManager});
+      await assetGen.createTradeableAsset(assetURI, tokenHolders, [tokenPerAccount.toString(), tokenPerAccount.toString(), tokenPerAccount.toString()], {from:assetManager});
     } catch(e){
       err = e;
     }

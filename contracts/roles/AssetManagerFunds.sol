@@ -33,13 +33,12 @@ contract AssetManagerFunds {
 
   // @notice asset manager can withdraw his dividend fee from assets here
   // @param : address _assetAddress = the address of this asset on the platform
-  function withdraw(address _assetAddress, address _assetManager)
+  function withdraw(address _assetAddress)
   external
   nonReentrant
   returns (bool) {
-    require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
     require(_assetAddress != address(0));
-    require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))));
+    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))));
     DToken token = DToken( _assetAddress);
     uint amountOwed;
     uint balanceBefore;
@@ -50,7 +49,7 @@ contract AssetManagerFunds {
       uint balanceAfter = balanceBefore.add(amountOwed);
       require(token.withdraw());
       require(address(this).balance == balanceAfter);
-      _assetManager.transfer(amountOwed);
+      msg.sender.transfer(amountOwed);
     }
     else {
       amountOwed = token.getAmountOwed(address(this));
@@ -59,65 +58,65 @@ contract AssetManagerFunds {
       balanceBefore = fundingToken.balanceOf(address(this));
       require(token.withdraw());
       require(fundingToken.balanceOf(address(this)).sub(amountOwed) == balanceBefore);
-      fundingToken.transfer(_assetManager, amountOwed);
+      fundingToken.transfer(msg.sender, amountOwed);
     }
     return true;
   }
 
-  function retrieveAssetManagerTokens(address[] _assetAddress, address _assetManager)
+  function retrieveAssetManagerTokens(address[] _assetAddress)
   external
   nonReentrant
   returns (bool) {
-    require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
     require(_assetAddress.length <= 42);
     uint[] memory payoutAmounts = new uint[](_assetAddress.length);
     address[] memory tokenAddresses = new address[](_assetAddress.length);
     uint8 numEntries;
     for(uint8 i = 0; i < _assetAddress.length; i++){
-      require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress[i]))) );
+      require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress[i]))) );
       DToken token = DToken(_assetAddress[i]);
       require(address(token) != address(0));
       uint tokensOwed = token.getAmountOwed(address(this));
-      require(tokensOwed > 0);
-      DToken fundingToken = DToken(token.getERC20());
-      uint balanceBefore = fundingToken.balanceOf(address(this));
-      uint8 tokenIndex = containsAddress(tokenAddresses, address(token));
-      if (tokenIndex < _assetAddress.length) {  payoutAmounts[tokenIndex] = payoutAmounts[tokenIndex].add(tokensOwed); }
-      else {
-        tokenAddresses[numEntries] = address(fundingToken);
-        payoutAmounts[numEntries] = tokensOwed;
-        numEntries++;
+      if(tokensOwed > 0){
+        DToken fundingToken = DToken(token.getERC20());
+        uint balanceBefore = fundingToken.balanceOf(address(this));
+        uint8 tokenIndex = containsAddress(tokenAddresses, address(token));
+        if (tokenIndex < _assetAddress.length) {  payoutAmounts[tokenIndex] = payoutAmounts[tokenIndex].add(tokensOwed); }
+        else {
+          tokenAddresses[numEntries] = address(fundingToken);
+          payoutAmounts[numEntries] = tokensOwed;
+          numEntries++;
+        }
+        require(token.withdraw());
+        require(fundingToken.balanceOf(address(this)).sub(tokensOwed) == balanceBefore);
       }
-      require(token.withdraw());
-      require(fundingToken.balanceOf(address(this)).sub(tokensOwed) == balanceBefore);
     }
 
     for(i = 0; i < numEntries; i++){
-      require(ERC20(tokenAddresses[i]).transfer(_assetManager, payoutAmounts[i]));
+      require(ERC20(tokenAddresses[i]).transfer(msg.sender, payoutAmounts[i]));
     }
     return true;
   }
 
 
-  function retrieveAssetManagerETH(address[] _assetAddress, address _assetManager)
+  function retrieveAssetManagerETH(address[] _assetAddress)
   external
   nonReentrant
   returns (bool) {
     require(_assetAddress.length <= 93);
     uint weiOwed;
     for(uint8 i = 0; i < _assetAddress.length; i++){
-      require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))));
-      require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress[i]))));
+      require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress[i]))));
       DToken token = DToken(_assetAddress[i]);
       uint balanceBefore = address(this).balance;
       uint amountOwed = token.getAmountOwed(address(this));
-      require(amountOwed > 0);
-      uint balanceAfter = balanceBefore.add(amountOwed);
-      require(token.withdraw());
-      require(address(this).balance == balanceAfter);
-      weiOwed = weiOwed.add(amountOwed);
+      if(amountOwed > 0){
+        uint balanceAfter = balanceBefore.add(amountOwed);
+        require(token.withdraw());
+        require(address(this).balance == balanceAfter);
+        weiOwed = weiOwed.add(amountOwed);
+      }
     }
-    _assetManager.transfer(weiOwed);
+    msg.sender.transfer(weiOwed);
     return true;
   }
 
@@ -178,6 +177,10 @@ contract AssetManagerFunds {
 
   function ()
   payable
-  public {}
+  public {
+    emit EtherReceived(msg.sender, msg.value);
+  }
+
+  event EtherReceived(address sender, uint amount);
 
 }

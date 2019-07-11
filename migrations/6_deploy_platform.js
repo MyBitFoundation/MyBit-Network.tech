@@ -3,9 +3,10 @@ const fs = require('fs');
 module.exports = function(deployer, network, accounts) {
   if(network != 'coverage' && network != 'development'){
     const Platform = artifacts.require("./ecosystem/Platform.sol");
+    const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory.sol");
     const ContractManager = artifacts.require("./database/ContractManager.sol");
 
-    let platform, cm;
+    let platform, tokenFactory, cm;
     let contracts = JSON.parse(fs.readFileSync(`networks/${network}/contracts.json`, 'utf8'));
 
     deployer.then(function(){
@@ -22,7 +23,17 @@ module.exports = function(deployer, network, accounts) {
 
       cm = instance;
       console.log('Adding Platform to contract manager...');
-      return cm.addContract('Platform', platform.address, {from: accounts[0], gas:200000});
+      return cm.addContract('Platform', platform.address, {from: accounts[0], gas:300000});
+
+    }).then(function(){
+
+      return MiniMeTokenFactory.new();
+
+    }).then(function(instance){
+
+      tokenFactory = instance;
+      console.log('MiniMeTokenFactory.sol: ' + tokenFactory.address);
+      return platform.setTokenFactory(tokenFactory.address, {from: accounts[0], gas:110000});
 
     }).then(function(){
 
@@ -44,15 +55,11 @@ module.exports = function(deployer, network, accounts) {
 
       platform.setPlatformFee('3', {from: accounts[0], gas:110000});
       platform.setPlatformPercentage('1', {from: accounts[0], gas:110000});
-      if(network == 'ropsten'){
-        //Using Kyber MANA token as platform token to test Kyber functions
-        return platform.setPlatformToken('0x72fd6c7c1397040a66f33c2ecc83a0f71ee46d5c', {from: accounts[0], gas:110000});
-      } else {
-        return platform.setPlatformToken(contracts['MyBitToken'], {from: accounts[0], gas:110000});
-      }
+      return platform.setPlatformToken(contracts['MyBitToken'], {from: accounts[0], gas:110000});
 
     }).then(function() {
       contracts['Platform'] = platform.address;
+      contracts['MiniMeTokenFactory'] = tokenFactory.address;
       let contracts_json = JSON.stringify(contracts, null, 4);
 
       fs.writeFile(`networks/${network}/contracts.json`, contracts_json, (err) => {
@@ -60,7 +67,7 @@ module.exports = function(deployer, network, accounts) {
         console.log('Contracts Saved');
       });
 
-      instanceList = [platform];
+      instanceList = [platform, tokenFactory];
 
       for(let i=0; i<instanceList.length; i++){
         let instanceName = instanceList[i].constructor._json.contractName;

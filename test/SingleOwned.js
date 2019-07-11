@@ -48,6 +48,16 @@ contract('SingleOwned', async(accounts) => {
     assert.notEqual(err, undefined);
   });
 
+  it('Fail change owner', async() => {
+    let err;
+    try{
+      await so.changeOwner('0x0000000000000000000000000000000000000000', {from:owner});
+    } catch(e){
+      err = e;
+    }
+    assert.notEqual(err, undefined);
+  });
+
   it('Change owner', async() => {
     await so.changeOwner(newOwner, {from:owner});
     let ownerHash = await hash.stringAddress('owner', newOwner);
