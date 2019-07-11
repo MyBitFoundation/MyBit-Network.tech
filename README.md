@@ -51,27 +51,45 @@ yarn coverage
 ### [Mainnet](networks/mainnet/contracts.json)
 
 ### [Ropsten](networks/ropsten/contracts.json)
-**MyBitToken** - 0xC68D7C356e1b725F75cBaf1306A2603abd7157CA
-**Database** - 0xf63348C132aE8e0bD14b67308f8Ba0E5B4d2fD5d
-**Events** - 0x2f8bc59171837704147035EC5AceDF8B09E63A45
-**ContractManager** - 0x44ec50e1E2Bc1C9A991C9C6e247432cbB04989c6
-**API** - 0x1D8c4f0eE9199F62da8e77997EC1062Bd5323bB7
-**SingleOwned** - 0x9f0CEe759A91d77a1Ab3f77ee836e69Ed5C5d547
-**MultiOwned** - 0x3e97C2AfB575e312dE4F94D14ad02e9847c73CD4
-**Pausible** - 0x65C7CBE92227022D54cC605247DEf02BaeF2fDE3
-**Platform** - 0xCdfa75ce049E566074F9a064Cb2f4048ed8B3544
-**Operators** - 0x44719aEF63DA0E46bA95035787107de2409839D3
-**AssetManagerEscrow** - 0x0e1ddcf74242be4ba79ce27681aa8f7eef215cda
-**AssetManagerFunds** - 0xFcd8aF0dE75008340E644097b6fb6a6A4b2EfaAD
-**AssetGenerator** - 0x41705a8B43B15D37577ea858bfe8616b11a3aFb3
-**CrowdsaleETH** - 0xc470f70ae526171b56d08873417d619cd89b5001
-**CrowdsaleGeneratorETH** - 0x46fa9f2417f923b5b44290717b4b62acacb1c096
-**CrowdsaleERC20** - 0x6c9aeaa2d1edc1b203c36dfe086c77afb9d99c9e
-**CrowdsaleGeneratorERC20** - 0x4bf115a3966e72e24d20b1c25aef77075a61b11c
-**CrowdsaleReserve** - 0xF78Fbb1aa0c76C98CE0a9011186c108a468E724D
-**EscrowReserve** - 0xc0CB9A08636287Fb38D283c34e9f45a79438C87a
-**Minter** - 0x7e3D6F98F68357e2EdE07c624b3f7Ff1e5056915
-**MiniMeTokenFactory** - 0xa465498E89ddb202F303e30538b68A10574BD202
+**MyBitToken** 0xC68D7C356e1b725F75cBaf1306A2603abd7157CA
+
+**Database** 0xf63348C132aE8e0bD14b67308f8Ba0E5B4d2fD5d
+
+**Events** 0x2f8bc59171837704147035EC5AceDF8B09E63A45
+
+**ContractManager** 0x44ec50e1E2Bc1C9A991C9C6e247432cbB04989c6
+
+**API** 0x1D8c4f0eE9199F62da8e77997EC1062Bd5323bB7
+
+**MultiOwned** 0x3e97C2AfB575e312dE4F94D14ad02e9847c73CD4
+
+**Pausible** 0x65C7CBE92227022D54cC605247DEf02BaeF2fDE3
+
+**Platform** 0xCdfa75ce049E566074F9a064Cb2f4048ed8B3544
+
+**Operators** 0x44719aEF63DA0E46bA95035787107de2409839D3
+
+**AssetManagerEscrow** 0x0e1ddcf74242be4ba79ce27681aa8f7eef215cda
+
+**AssetManagerFunds** 0xFcd8aF0dE75008340E644097b6fb6a6A4b2EfaAD
+
+**AssetGenerator** 0x41705a8B43B15D37577ea858bfe8616b11a3aFb3
+
+**CrowdsaleETH** 0xc470f70ae526171b56d08873417d619cd89b5001
+
+**CrowdsaleGeneratorETH** 0x46fa9f2417f923b5b44290717b4b62acacb1c096
+
+**CrowdsaleERC20** 0x6c9aeaa2d1edc1b203c36dfe086c77afb9d99c9e
+
+**CrowdsaleGeneratorERC20** 0x4bf115a3966e72e24d20b1c25aef77075a61b11c
+
+**CrowdsaleReserve** 0xF78Fbb1aa0c76C98CE0a9011186c108a468E724D
+
+**EscrowReserve** 0xc0CB9A08636287Fb38D283c34e9f45a79438C87a
+
+**Minter** 0x7e3D6F98F68357e2EdE07c624b3f7Ff1e5056915
+
+**MiniMeTokenFactory** 0xa465498E89ddb202F303e30538b68A10574BD202
 
 ## [Roles](contracts/roles)
 There are generally 4 different roles on the platform. The `Investor`, the `AssetManager`, the `Operator`, and the `PlatformOwners`. `Investors` can contribute ETH or Erc20 tokens to invest in new asset crowdsales. The continued functioning of the asset is ensured by the `AssetManager`, who receives a fee for his work and escrows tokens as collateral to investors. The `Operator` receives funds from the crowdsale and produces and installs the asset. `PlatformOwners` can choose how assets are governed, and whether or not a contract upgrade should happen. The platform owner can be a single account or a contract governed by many accounts.
