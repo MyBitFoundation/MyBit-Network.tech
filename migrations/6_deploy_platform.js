@@ -55,12 +55,7 @@ module.exports = function(deployer, network, accounts) {
 
       platform.setPlatformFee('3', {from: accounts[0], gas:110000});
       platform.setPlatformPercentage('1', {from: accounts[0], gas:110000});
-      if(network == 'ropsten'){
-        //Using Kyber MANA token as platform token to test Kyber functions
-        return platform.setPlatformToken('0x72fd6c7c1397040a66f33c2ecc83a0f71ee46d5c', {from: accounts[0], gas:110000});
-      } else {
-        return platform.setPlatformToken(contracts['MyBitToken'], {from: accounts[0], gas:110000});
-      }
+      return platform.setPlatformToken(contracts['MyBitToken'], {from: accounts[0], gas:110000});
 
     }).then(function() {
       contracts['Platform'] = platform.address;
