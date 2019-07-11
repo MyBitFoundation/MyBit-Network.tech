@@ -65,6 +65,14 @@ contract CrowdsaleGeneratorETH {
     events.asset('New asset ipfs', _ipfs, assetAddress, msg.sender);
   }
 
+  function updateIPFS(address _assetAddress, string _ipfs)
+  external {
+    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))));
+    database.setString(keccak256(abi.encodePacked("asset.ipfs", _assetAddress)), _ipfs);
+    events.asset('New asset ipfs', _ipfs, _assetAddress, msg.sender);
+  }
+
+
   // @notice platform owners can destroy contract here
   function destroy()
   onlyOwner

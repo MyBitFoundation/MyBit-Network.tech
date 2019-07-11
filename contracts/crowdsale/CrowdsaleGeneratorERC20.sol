@@ -54,7 +54,6 @@ contract CrowdsaleGeneratorERC20 {
     } else {
       require(msg.value == 0);
     }
-    //require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))), "User not approved");
     require(_amountToRaise >= 100, "Crowdsale goal is too small");
     require((_assetManagerPerc + database.uintStorage(keccak256(abi.encodePacked("platform.percentage")))) < 100, "Manager percent need to be less than 100");
     require(database.addressStorage(keccak256(abi.encodePacked("model.operator", _modelID))) != address(0), "Model not set");
@@ -66,6 +65,13 @@ contract CrowdsaleGeneratorERC20 {
     require(lockEscrowERC20(msg.sender, assetAddress, _paymentToken, _fundingToken, _escrow, minEscrow));
     events.asset('Asset funding started', _assetURI, assetAddress, msg.sender);
     events.asset('New asset ipfs', _ipfs, assetAddress, msg.sender);
+  }
+
+  function updateIPFS(address _assetAddress, string _ipfs)
+  external {
+    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))));
+    database.setString(keccak256(abi.encodePacked("asset.ipfs", _assetAddress)), _ipfs);
+    events.asset('New asset ipfs', _ipfs, _assetAddress, msg.sender);
   }
 
   // @notice platform owners can destroy contract here

@@ -125,15 +125,14 @@ contract CrowdsaleERC20{
     return true;
   }
 
-  function cancel(address _assetAddress, address _assetManager)
+  function cancel(address _assetAddress)
   external
   whenNotPaused
   validAsset(_assetAddress)
   beforeDeadline(_assetAddress)
   notFinalized(_assetAddress)
   returns (bool){
-    require(_assetManager == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))));
-    require(msg.sender == _assetManager || database.boolStorage(keccak256(abi.encodePacked("approval", _assetManager, msg.sender, address(this), msg.sig))) || database.boolStorage(keccak256(abi.encodePacked("owner", msg.sender))), "User not approved");
+    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))));
     database.setUint(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress)), 1);
     refund(_assetAddress);
   }
