@@ -43,10 +43,9 @@ contract CrowdsaleGeneratorETH {
   // @param (uint) _fundingLength = The number of seconds this crowdsale is to go on for until it fails
   // @param (uint) _amountToRaise = The amount of WEI required to raise for the crowdsale to be a success
   // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
-  function createAssetOrderETH(string _assetURI, bytes32 _modelID, uint _fundingLength, uint _startTime, uint _amountToRaise, uint _assetManagerPerc, uint _escrow, address _paymentToken)
+  function createAssetOrderETH(string _assetURI, string _ipfs, bytes32 _modelID, uint _fundingLength, uint _amountToRaise, uint _assetManagerPerc, uint _escrow, address _paymentToken)
   external
-  payable
-  returns (bool) {
+  payable {
     if(_paymentToken == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)){
       require(msg.value == _escrow);
     } else {
@@ -56,21 +55,23 @@ contract CrowdsaleGeneratorETH {
     require((_assetManagerPerc + database.uintStorage(keccak256(abi.encodePacked("platform.percentage")))) < 100, "Manager percent need to be less than 100");
     require(database.addressStorage(keccak256(abi.encodePacked("model.operator", _modelID))) != address(0), "Operator does not exist");
     require(!database.boolStorage(keccak256(abi.encodePacked("asset.uri", _assetURI))), "Asset URI is not unique"); //Check that asset URI is unique
-    uint startTime;
-    if(_startTime < now){
-      startTime = now;
-    } else {
-      startTime = _startTime;
-    }
     address assetAddress = minter.cloneToken(_assetURI, address(0));
-    require(setCrowdsaleValues(assetAddress, startTime, _fundingLength, _amountToRaise));
-    require(setAssetValues(assetAddress, _assetURI, _modelID, msg.sender, _assetManagerPerc, _amountToRaise));
+    require(setCrowdsaleValues(assetAddress, _fundingLength, _amountToRaise));
+    require(setAssetValues(assetAddress, _assetURI, _ipfs, _modelID, msg.sender, _assetManagerPerc, _amountToRaise));
     //Lock escrow
     uint minEscrow = calculateEscrowETH(_amountToRaise, msg.sender, _modelID);
     require(lockEscrowETH(msg.sender, assetAddress, _paymentToken, _escrow, minEscrow));
     events.asset('Asset funding started', _assetURI, assetAddress, msg.sender);
-    return true;
+    events.asset('New asset ipfs', _ipfs, assetAddress, msg.sender);
   }
+
+  function updateIPFS(address _assetAddress, string _ipfs)
+  external {
+    require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress))));
+    database.setString(keccak256(abi.encodePacked("asset.ipfs", _assetAddress)), _ipfs);
+    events.asset('New asset ipfs', _ipfs, _assetAddress, msg.sender);
+  }
+
 
   // @notice platform owners can destroy contract here
   function destroy()
@@ -84,17 +85,17 @@ contract CrowdsaleGeneratorETH {
   //                                            Internal/ Private Functions
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function setCrowdsaleValues(address _assetAddress, uint _startTime, uint _fundingLength, uint _amountToRaise)
+  function setCrowdsaleValues(address _assetAddress, uint _fundingLength, uint _amountToRaise)
   private
   returns (bool){
-    database.setUint(keccak256(abi.encodePacked("crowdsale.start", _assetAddress)), _startTime);
-    database.setUint(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress)), _startTime.add(_fundingLength));
+    database.setUint(keccak256(abi.encodePacked("crowdsale.start", _assetAddress)), now);
+    database.setUint(keccak256(abi.encodePacked("crowdsale.deadline", _assetAddress)), now.add(_fundingLength));
     database.setUint(keccak256(abi.encodePacked("crowdsale.goal", _assetAddress)), _amountToRaise);
     database.setUint(keccak256(abi.encodePacked("crowdsale.remaining", _assetAddress)), _amountToRaise.mul(uint(100).add(database.uintStorage(keccak256(abi.encodePacked("platform.fee"))))).div(100));
     return true;
   }
 
-  function setAssetValues(address _assetAddress, string _assetURI, bytes32 _modelID, address _assetManager, uint _assetManagerPerc, uint _amountToRaise)
+  function setAssetValues(address _assetAddress, string _assetURI, string _ipfs, bytes32 _modelID, address _assetManager, uint _assetManagerPerc, uint _amountToRaise)
   private
   returns (bool){
     uint totalTokens = _amountToRaise.mul(100).div(uint(100).sub(_assetManagerPerc).sub(database.uintStorage(keccak256(abi.encodePacked("platform.percentage")))));
@@ -103,6 +104,7 @@ contract CrowdsaleGeneratorETH {
     database.setUint(keccak256(abi.encodePacked("asset.platformTokens", _assetAddress)), totalTokens.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("platform.percentage")))));
     database.setAddress(keccak256(abi.encodePacked("asset.manager", _assetAddress)), _assetManager);
     database.setBytes32(keccak256(abi.encodePacked("asset.modelID", _assetAddress)), _modelID);
+    database.setString(keccak256(abi.encodePacked("asset.ipfs", _assetAddress)), _ipfs);
     //database.setAddress(keccak256(abi.encodePacked("asset.operator", _assetAddress)), database.addressStorage(keccak256(abi.encodePacked("model.operator", _modelID))));
     /*
     if(database.boolStorage(keccak256(abi.encodePacked("model.acceptsToken", _modelID, address(0))))){

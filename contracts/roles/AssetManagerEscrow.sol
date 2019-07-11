@@ -97,6 +97,7 @@ pragma solidity ^0.4.24;
     function changeAssetManager(address _assetAddress, address _newAssetManager, uint256 _amount, bool _withhold)
     external
     returns (bool) {
+      require(_newAssetManager != address(0));
       require(msg.sender == database.addressStorage(keccak256(abi.encodePacked("asset.dao.admin", _assetAddress))), "Only the asset DAO adminstrator contract may change the asset manager");
       address currentAssetManager = database.addressStorage(keccak256(abi.encodePacked("asset.manager", _assetAddress)));
       require(currentAssetManager != _newAssetManager, "New asset manager is the same");
