@@ -35,6 +35,17 @@ module.exports = function(deployer, network, accounts) {
 
     }).then(function(instance) {
 
+      cm = instance;
+      console.log('Adding CrowdsaleReserve to contract manager...');
+      return cm.addContract('CrowdsaleReserve', crowdsaleReserve.address, {from: accounts[0], gas:300000});
+
+    }).then(function() {
+
+      console.log('Adding EscrowReserve to contract manager...');
+      return cm.addContract('EscrowReserve', escrowReserve.address, {from: accounts[0], gas:300000});
+
+    }).then(function(instance) {
+
       managerEscrow = instance;
       console.log('AssetManagerEscrow.sol: ' + managerEscrow.address);
       return AssetManagerFunds.new(contracts['Database'], contracts['Events']);
@@ -44,17 +55,6 @@ module.exports = function(deployer, network, accounts) {
       managerFunds = instance;
       console.log('AssetManagerFunds.sol: ' + managerFunds.address);
       return ContractManager.at(contracts['ContractManager']);
-
-    }).then(function(instance) {
-
-      cm = instance;
-      console.log('Adding CrowdsaleReserve to contract manager...');
-      return cm.addContract('CrowdsaleReserve', crowdsaleReserve.address, {from: accounts[0], gas:300000});
-
-    }).then(function() {
-
-      console.log('Adding EscrowReserve to contract manager...');
-      return cm.addContract('EscrowReserve', escrowReserve.address, {from: accounts[0], gas:300000});
 
     }).then(function() {
 
