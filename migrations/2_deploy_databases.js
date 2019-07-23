@@ -9,6 +9,17 @@ module.exports = function(deployer, network, accounts) {
     const Events = artifacts.require("./database/Events.sol");
     const SafeMath = artifacts.require("./math/SafeMath.sol");
 
+    let OWNERS
+    if(network == 'mainnet' || network == 'mainnet-fork'){
+      OWNERS = ['0xd9d2b28e09921a38ad7ab1b4138357408bda8ebd', '0xfd1e4b568bb3bcf706b0bac5960d4b91bacff96f']
+    } else if(network == 'ropsten' || network == 'ropsten-fork'){
+      OWNERS = ['0xBB64ac045539bC0e9FFfd04399347a8459e8282A', accounts[0]]
+    } else if(network == 'rinkeby' || network == 'rinkeby-fork'){
+      OWNERS = [accounts[0]]
+    } else {
+      OWNERS = [accounts[0]]
+    }
+
     const decimals = bn(1000000000000000000);
     const tokenSupply = bn(100000000).times(decimals);
     const tokenPerAccount = bn(10000).times(decimals);
@@ -42,12 +53,9 @@ module.exports = function(deployer, network, accounts) {
         for(let i=1; i<accounts.length; i++){
           MyB.transfer(accounts[i], tokenPerAccount);
         }
-        return Database.new([accounts[0]], true);
-      } else if(network == 'ropsten') {
-        return Database.new([accounts[0],'0xBB64ac045539bC0e9FFfd04399347a8459e8282A'], true);
-      } else {
-        return Database.new([accounts[0]], true);
       }
+
+      return Database.new(OWNERS, true);
 
     }).then(function(instance) {
 

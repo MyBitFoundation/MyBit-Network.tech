@@ -47,31 +47,85 @@ To see code-coverage run:
 yarn coverage
 ```
 
+## Deploying the MyBit Platform
+### Setup Web3 in Truffle
+Our truffle.js file is setup to provide web3 via HDWalletProvider. We have a mnemonic in a json file labelled `mnemonic.json`. It has the following format:
+```json
+{
+  "mnemonic": "your mnemonic here",
+  "infura": "your infura key here"
+}
+```
+
+However, if you prefer not to rely on a mnemonic you will have to setup a custom truffle.js file to handle your web3 provider.
+
+### Set Owners
+In the `migrations` folder, go to (2_deploy_databases.js)[migrations/2_deploy_databases.js] and find the line that sets `let OWNERS`. You'll want to change that value for the network you will be deploying on. The `OWNERS` value is an array of all the Ethereum addresses that have the right to add, remove, or update contracts on the platform and call special functions that set values to the database. For the deployment, you'll want one of the addresses to be the account you are deploying from (i.e. `accounts[0]`). You can remove that account after deployment is complete.
+
+### Set Platform Values
+Also in `migrations` is a file called (6_deploy_platform.js)[migrations/6_deploy_platform.js]. There are several variables you will need to set to deploy a platform that fits your needs.
+
+- **FUNDS_WALLET** The wallet where platform fees paid by investors will go.
+- **ASSETS_WALLET** The wallet where a percentage of asset tokens for the platform will go. This can be the same wallet as FUNDS_WALLET.
+- **PLATFORM_FEE** The percentage of an investors payment that goes to the platform.
+- **PLATFORM_PERCENTAGE** The percentage of an asset that goes to the platform.
+- **PLATFORM_TOKEN** The token that is used to hold an asset manager's collateral. This token should be burnable and available on Kyber to make use of all our contracts. Some functions will fail if it is not.
+- **BASE_COLLATERAL** The base percentage that all asset managers must put up as collateral regardless of the number of successful crowdsales they've completed.
+- **LOW_COLLATERAL** Extra collateral for asset managers that have completed 0-4 crowdsales
+- **MID_COLLATERAL** Extra collateral for asset managers that have completed 5-9 crowdsales
+- **HIGH_COLLATERAL** Extra collateral for asset managers that have completed 10-24 crowdsales
+
+For collateral, generally you'd want the collateral percentage to reduce as the asset managers manage more assets.
+
+### Deploy Platform
+Once these values are set, you simply call `truffle migrate` for the particular network you'd like to deploy on. e.g.:
+```bash
+truffle migrate --network ropsten
+```
+
 ## Deployed Contracts
 ### [Mainnet](networks/mainnet/contracts.json)
 
 ### [Ropsten](networks/ropsten/contracts.json)
-**MyBitToken** - 0xC68D7C356e1b725F75cBaf1306A2603abd7157CA
-**Database** - 0xf63348C132aE8e0bD14b67308f8Ba0E5B4d2fD5d
-**Events** - 0x2f8bc59171837704147035EC5AceDF8B09E63A45
-**ContractManager** - 0x44ec50e1E2Bc1C9A991C9C6e247432cbB04989c6
-**API** - 0x1D8c4f0eE9199F62da8e77997EC1062Bd5323bB7
-**SingleOwned** - 0x9f0CEe759A91d77a1Ab3f77ee836e69Ed5C5d547
-**MultiOwned** - 0x3e97C2AfB575e312dE4F94D14ad02e9847c73CD4
-**Pausible** - 0x65C7CBE92227022D54cC605247DEf02BaeF2fDE3
-**Platform** - 0xCdfa75ce049E566074F9a064Cb2f4048ed8B3544
-**Operators** - 0x44719aEF63DA0E46bA95035787107de2409839D3
-**AssetManagerEscrow** - 0x0e1ddcf74242be4ba79ce27681aa8f7eef215cda
-**AssetManagerFunds** - 0xFcd8aF0dE75008340E644097b6fb6a6A4b2EfaAD
-**AssetGenerator** - 0x41705a8B43B15D37577ea858bfe8616b11a3aFb3
-**CrowdsaleETH** - 0xc470f70ae526171b56d08873417d619cd89b5001
-**CrowdsaleGeneratorETH** - 0x46fa9f2417f923b5b44290717b4b62acacb1c096
-**CrowdsaleERC20** - 0x6c9aeaa2d1edc1b203c36dfe086c77afb9d99c9e
-**CrowdsaleGeneratorERC20** - 0x4bf115a3966e72e24d20b1c25aef77075a61b11c
-**CrowdsaleReserve** - 0xF78Fbb1aa0c76C98CE0a9011186c108a468E724D
-**EscrowReserve** - 0xc0CB9A08636287Fb38D283c34e9f45a79438C87a
-**Minter** - 0x7e3D6F98F68357e2EdE07c624b3f7Ff1e5056915
-**MiniMeTokenFactory** - 0xa465498E89ddb202F303e30538b68A10574BD202
+**MyBitToken** 0xC68D7C356e1b725F75cBaf1306A2603abd7157CA
+
+**Database** 0xf63348C132aE8e0bD14b67308f8Ba0E5B4d2fD5d
+
+**Events** 0x2f8bc59171837704147035EC5AceDF8B09E63A45
+
+**ContractManager** 0x44ec50e1E2Bc1C9A991C9C6e247432cbB04989c6
+
+**API** 0x1D8c4f0eE9199F62da8e77997EC1062Bd5323bB7
+
+**MultiOwned** 0x3e97C2AfB575e312dE4F94D14ad02e9847c73CD4
+
+**Pausible** 0x65C7CBE92227022D54cC605247DEf02BaeF2fDE3
+
+**Platform** 0xCdfa75ce049E566074F9a064Cb2f4048ed8B3544
+
+**Operators** 0x44719aEF63DA0E46bA95035787107de2409839D3
+
+**AssetManagerEscrow** 0x0e1ddcf74242be4ba79ce27681aa8f7eef215cda
+
+**AssetManagerFunds** 0xFcd8aF0dE75008340E644097b6fb6a6A4b2EfaAD
+
+**AssetGenerator** 0x41705a8B43B15D37577ea858bfe8616b11a3aFb3
+
+**CrowdsaleETH** 0xc470f70ae526171b56d08873417d619cd89b5001
+
+**CrowdsaleGeneratorETH** 0x46fa9f2417f923b5b44290717b4b62acacb1c096
+
+**CrowdsaleERC20** 0x6c9aeaa2d1edc1b203c36dfe086c77afb9d99c9e
+
+**CrowdsaleGeneratorERC20** 0x4bf115a3966e72e24d20b1c25aef77075a61b11c
+
+**CrowdsaleReserve** 0xF78Fbb1aa0c76C98CE0a9011186c108a468E724D
+
+**EscrowReserve** 0xc0CB9A08636287Fb38D283c34e9f45a79438C87a
+
+**Minter** 0x7e3D6F98F68357e2EdE07c624b3f7Ff1e5056915
+
+**MiniMeTokenFactory** 0xa465498E89ddb202F303e30538b68A10574BD202
 
 ## [Roles](contracts/roles)
 There are generally 4 different roles on the platform. The `Investor`, the `AssetManager`, the `Operator`, and the `PlatformOwners`. `Investors` can contribute ETH or Erc20 tokens to invest in new asset crowdsales. The continued functioning of the asset is ensured by the `AssetManager`, who receives a fee for his work and escrows tokens as collateral to investors. The `Operator` receives funds from the crowdsale and produces and installs the asset. `PlatformOwners` can choose how assets are governed, and whether or not a contract upgrade should happen. The platform owner can be a single account or a contract governed by many accounts.
