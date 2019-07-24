@@ -4,7 +4,6 @@ module.exports = {
     "Events": "0xeB6533f29A54C2c18BB2Ce2a100dE717692A518F",
     "ContractManager": "0xDAe939bBa0DC30695B3cBa66e16B9a6c2B15B7d3",
     "API": "0x7Ce414Fe52e549ec8E11F40F9910a62cBBcCc510",
-    "SingleOwned": "0x8Ebcce5EEFf9B702300e95ade35b04c75c0688b5",
     "Pausible": "0xb7DEe440fB88180B10c8104fE0587DD083914151",
     "CrowdsaleReserve": "0x4D10da0724D5DBaC5015b22D917e79a882f4E514",
     "EscrowReserve": "0x05C9fAA268CBc9aB9AF0ef844a208c28D0ad5aCf",

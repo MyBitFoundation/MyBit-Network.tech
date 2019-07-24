@@ -21,8 +21,8 @@ module.exports = function(deployer, network, accounts) {
     }
 
     const decimals = bn(1000000000000000000);
-    const tokenSupply = bn(100000000).times(decimals);
-    const tokenPerAccount = bn(10000).times(decimals);
+    const tokenSupply = bn(1000000000).times(decimals);
+    const tokenPerAccount = bn(1000000).times(decimals);
 
     let safemath, MyB, db, events;
 

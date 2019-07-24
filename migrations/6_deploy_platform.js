@@ -25,8 +25,7 @@ module.exports = function(deployer, network, accounts) {
 
     const PLATFORM_FEE = '3' //The fees charged to investors when they contribute to a crowdsale (as a percentage of the total amount invested)
     const PLATFORM_PERCENTAGE = '1' //The percentage of an asset that the platform receives upon successful funding of a crowdsale
-    const PLATFORM_TOKEN = contracts['MyBit'] //The token used to hold the collateral of the asset manager. It must be burnable and available on Kyber or you may encounter issues on some contracts
-
+    const PLATFORM_TOKEN = contracts['MyBitToken'] //The token used to hold the collateral of the asset manager. It must be burnable and available on Kyber or you may encounter issues on some contracts
     //Collateral requirements:
     //You can set the required collateral for an asset manager. The collateral requirements can change based on the number of successful crowdsales funded.
     //The base collateral is the minimum collateral (as a percent of the total asset) that all asset managers must pay regardless of the number of successful crowdsales
@@ -63,25 +62,18 @@ module.exports = function(deployer, network, accounts) {
       return platform.setTokenFactory(tokenFactory.address, {from: accounts[0], gas:300000});
 
     }).then(function(){
-      console.log('1')
       return platform.setPlatformFundsWallet(FUNDS_WALLET, {from: accounts[0], gas:300000});
 
     }).then(function(){
-      console.log('2')
       return platform.setPlatformAssetsWallet(ASSETS_WALLET, {from: accounts[0], gas:300000});
 
     }).then(function(){
-      console.log('3')
       platform.setPlatformFee(PLATFORM_FEE, {from: accounts[0], gas:300000});
-      console.log('4')
       platform.setPlatformPercentage(PLATFORM_PERCENTAGE, {from: accounts[0], gas:300000});
-      console.log('5')
       platform.setPlatformToken(PLATFORM_TOKEN, {from: accounts[0], gas:300000});
-      console.log('6')
       return platform.setCollateralLevels(BASE_COLLATERAL, LOW_COLLATERAL, MID_COLLATERAL, HIGH_COLLATERAL, {from: accounts[0], gas:3000000})
 
     }).then(function() {
-      console.log('7')
       contracts['Platform'] = platform.address;
       contracts['MiniMeTokenFactory'] = tokenFactory.address;
       let contracts_json = JSON.stringify(contracts, null, 4);

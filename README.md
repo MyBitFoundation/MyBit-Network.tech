@@ -85,47 +85,127 @@ truffle migrate --network ropsten
 
 ## Deployed Contracts
 ### [Mainnet](networks/mainnet/contracts.json)
+**MyBitToken** 0x5d60d8d7eF6d37E16EBABc324de3bE57f135e0BC
+
+**Database** 0x5FCebEB70b88e86dD880352684e775B0F4D57C71
+
+**Events** 0xeB6533f29A54C2c18BB2Ce2a100dE717692A518F
+
+**ContractManager** 0xDAe939bBa0DC30695B3cBa66e16B9a6c2B15B7d3
+
+**API** 0x7Ce414Fe52e549ec8E11F40F9910a62cBBcCc510
+
+**MultiOwned** 0x9Cb221402a45f3c2561D0634A56A3F3411e0805D
+
+**Pausible** 0xb7DEe440fB88180B10c8104fE0587DD083914151
+
+**CrowdsaleReserve** 0x4D10da0724D5DBaC5015b22D917e79a882f4E514
+
+**EscrowReserve** 0x05C9fAA268CBc9aB9AF0ef844a208c28D0ad5aCf
+
+**AssetManagerEscrow** 0x9aB994054db1f001e8662A83A36E77Bc27486f7A
+
+**AssetManagerFunds** 0x08ac59A726AcC3D8DB54B942d05d851A25e3CF60
+
+**Platform** 0x9C05dc7c7f6332CBc16Ce1e196Ff6928f3fCe5bF
+
+**Operators** 0x649170bdcE8af83CE0412Ed2bC63ea9e784aDEB7
+
+**Minter** 0x1405Ca0c8A3b5196A6A3365E971BfD9A8AdA500C
+
+**CrowdsaleGeneratorETH** 0xcA12697245B24ee09D97678f9A06997751dE50BE
+
+**CrowdsaleGeneratorERC20** 0xB855e1eFBD428b2253ED65C3c830bC55254E48c0
+
+**CrowdsaleETH** 0xC69D36d5FC019355cbE8572fc0d00C448B841542
+
+**CrowdsaleERC20** 0x6667980FDBFDDb2C8e0A1913187C63e4f77809dA
+
+**AssetGenerator** 0x59F67BDf80bAaBACd90967D35Ff2bc690E02d7F9
+
+**MiniMeTokenFactory** 0x3CeFefCbD7A6Cd0dfd1f244922A2932a00A233E6
 
 ### [Ropsten](networks/ropsten/contracts.json)
 **MyBitToken** 0xC68D7C356e1b725F75cBaf1306A2603abd7157CA
 
-**Database** 0xf63348C132aE8e0bD14b67308f8Ba0E5B4d2fD5d
+**Database** 0xe078984b0F02054Fa7514178f2541f08657Feb3e
 
-**Events** 0x2f8bc59171837704147035EC5AceDF8B09E63A45
+**Events** 0xEcA758673c1940425196FEd1DaE7eb7a1F442273
 
-**ContractManager** 0x44ec50e1E2Bc1C9A991C9C6e247432cbB04989c6
+**ContractManager** 0xf7D7545d7291A3082c72961Ef91395834BEd0202
 
-**API** 0x1D8c4f0eE9199F62da8e77997EC1062Bd5323bB7
+**API** 0x6b007597F865156eA250C69E80037448EDEe5948
 
-**MultiOwned** 0x3e97C2AfB575e312dE4F94D14ad02e9847c73CD4
+**MultiOwned** 0xe8F982F52dd9a493966BF2D474A94B922C56CA2D
 
-**Pausible** 0x65C7CBE92227022D54cC605247DEf02BaeF2fDE3
+**Pausible** 0x3EefF15E4b0F661B873E62A0B466BEC6a0E3ef86
 
-**Platform** 0xCdfa75ce049E566074F9a064Cb2f4048ed8B3544
+**Platform** 0xAee283f8f2a9EB65826042F44180616343D6DF4c
 
-**Operators** 0x44719aEF63DA0E46bA95035787107de2409839D3
+**Operators** 0xBfc6c2C5e3E57d1Ee793092fA457E544b813709B
 
-**AssetManagerEscrow** 0x0e1ddcf74242be4ba79ce27681aa8f7eef215cda
+**AssetManagerEscrow** 0xD6B42238faEbE197721934500612D5f535D57d94
 
-**AssetManagerFunds** 0xFcd8aF0dE75008340E644097b6fb6a6A4b2EfaAD
+**AssetManagerFunds** 0x097349F94E9A41C12E608AE5B4A4889e083651f8
 
-**AssetGenerator** 0x41705a8B43B15D37577ea858bfe8616b11a3aFb3
+**AssetGenerator** 0x2234b17aFFcaA806b90c539270Fc6e0270625ed2
 
-**CrowdsaleETH** 0xc470f70ae526171b56d08873417d619cd89b5001
+**CrowdsaleETH** 0x00bD1369423b2C1a12A48579105E247f83d0e5fA
 
-**CrowdsaleGeneratorETH** 0x46fa9f2417f923b5b44290717b4b62acacb1c096
+**CrowdsaleGeneratorETH** 0x3aE1Ec68512D5FbC3586918D59ddfE415713C241
 
-**CrowdsaleERC20** 0x6c9aeaa2d1edc1b203c36dfe086c77afb9d99c9e
+**CrowdsaleERC20** 0x68F7f67aB28Bd71f8e5E26a1468a17E8A7028870
 
-**CrowdsaleGeneratorERC20** 0x4bf115a3966e72e24d20b1c25aef77075a61b11c
+**CrowdsaleGeneratorERC20** 0xD361Dc2b0F0fE4EE92d6509Ffe44395DE40d332d
 
-**CrowdsaleReserve** 0xF78Fbb1aa0c76C98CE0a9011186c108a468E724D
+**CrowdsaleReserve** 0xee7A234DEBCfBD72DD94d7D9a38237E1A4d42274
 
-**EscrowReserve** 0xc0CB9A08636287Fb38D283c34e9f45a79438C87a
+**EscrowReserve** 0xC667949817C0b5909a751dcC178E164E078445c8
 
-**Minter** 0x7e3D6F98F68357e2EdE07c624b3f7Ff1e5056915
+**Minter** 0xf8dbA4d512524596612BFbf44cCfB81aa41FD48f
 
-**MiniMeTokenFactory** 0xa465498E89ddb202F303e30538b68A10574BD202
+**MiniMeTokenFactory** 0x5139f54527A782BD39DB7aFeF1B1322DbF994Ad8
+
+### [Rinkeby](networks/rinkeby/contracts.json)
+**MyBitToken** 0xE46A97127504f98a9C1d6F92689E3B50C81a1164
+
+**Database** 0xcd5099a7254089677B8DcE964F48188e49d36d6E
+
+**Events** 0xa9cd60b53A535507ABEDa25de9267eD614660A38
+
+**ContractManager** 0xa89188CaE0636b55C5c1d9335667F14759237dD8
+
+**API** 0xE42848b7fd2520eC47116275502C3F30c689d163
+
+**MultiOwned** 0x034405aCf7D768b33907A7C643aA04eFB4A5287f
+
+**Pausible** 0x2A6906518199D8694715b03d603BaDc5a6E8CE13
+
+**CrowdsaleReserve** 0x6c2a5EB3409fbe5C247364ab274B54c207e35c17
+
+**EscrowReserve** 0x8C46718f532230a7Cb5B85Dc17beCDfB6Df77170
+
+**AssetManagerEscrow** 0x779D29CF456f8A3B569a731EB95FdC220a0fAC75
+
+**AssetManagerFunds** 0x947879c5e40c36F575690AB7a33F636bd4902cCA
+
+**Platform** 0x31418128196d17bec88ebAc1cf9c46b19fbA67A5
+
+**MiniMeTokenFactory** 0x710345A8310C7D82890b5D501b0Af148962E4053
+
+**Operators** 0x506B08245C8B90D174c8b635aA00c9DC08883175
+
+**Minter** 0xF0BD0F90631D5e211D645e6CA1C34a3Cd9AC6304
+
+**CrowdsaleGeneratorETH** 0x72C90D984e03ef21aa9590762F02f9E7A7306b75
+
+**CrowdsaleGeneratorERC20** 0x79dF292191c9C0A9c0A3E2C16ac515ebd600E375
+
+**CrowdsaleETH** 0xDbC31a2d63D5223Bc705243e5a4d436bd08F2d5b
+
+**CrowdsaleERC20** 0x64fBcADD8D3d1B7e87cb340e30474BD5742341bc
+
+**AssetGenerator** 0x2DdEb014D5148fC87ddb7e014848bF991Ed1961d
 
 ## [Roles](contracts/roles)
 There are generally 4 different roles on the platform. The `Investor`, the `AssetManager`, the `Operator`, and the `PlatformOwners`. `Investors` can contribute ETH or Erc20 tokens to invest in new asset crowdsales. The continued functioning of the asset is ensured by the `AssetManager`, who receives a fee for his work and escrows tokens as collateral to investors. The `Operator` receives funds from the crowdsale and produces and installs the asset. `PlatformOwners` can choose how assets are governed, and whether or not a contract upgrade should happen. The platform owner can be a single account or a contract governed by many accounts.
