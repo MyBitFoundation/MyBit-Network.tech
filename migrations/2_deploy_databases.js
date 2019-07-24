@@ -11,7 +11,7 @@ module.exports = function(deployer, network, accounts) {
 
     let OWNERS
     if(network == 'mainnet' || network == 'mainnet-fork'){
-      OWNERS = ['0xd9d2b28e09921a38ad7ab1b4138357408bda8ebd', '0xfd1e4b568bb3bcf706b0bac5960d4b91bacff96f']
+      OWNERS = ['0x2ABE2A10E6A4791B7D413dE5088695Dd46E4A363', '0x06134Ad890B6eDb42Bc0487c4e8dBbc17e3E0326', accounts[0]]
     } else if(network == 'ropsten' || network == 'ropsten-fork'){
       OWNERS = ['0xBB64ac045539bC0e9FFfd04399347a8459e8282A', accounts[0]]
     } else if(network == 'rinkeby' || network == 'rinkeby-fork'){

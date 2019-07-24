@@ -62,19 +62,21 @@ module.exports = {
       },
       network_id: 1,
       gas: 8000000,
-      gasPrice: 20000000000
+      gasPrice: 40000000000
     },
     ropsten: {
       provider: function() {
         return new HDWalletProvider(MNEMONIC, "https://ropsten.infura.io/v3/"+INFURA_API_KEY)
       },
-      network_id: 3
+      network_id: 3,
+      gasPrice: 40000000000
     },
     rinkeby: {
       provider: function() {
         return new HDWalletProvider(MNEMONIC, "https://rinkeby.infura.io/v3/"+INFURA_API_KEY)
       },
-      network_id: 4
+      network_id: 4,
+      gasPrice: 40000000000
     },
     ethpm: {
       ipfs_host: "127.0.0.1",
