@@ -73,10 +73,6 @@
                 "type": "address"
             },
             {
-                "name": "_investor",
-                "type": "address"
-            },
-            {
                 "name": "_amount",
                 "type": "uint256"
             },
@@ -95,7 +91,7 @@
         "payable": true,
         "stateMutability": "payable",
         "type": "function",
-        "signature": "0xdbfaee12"
+        "signature": "0xa09d38c7"
     },
     {
         "constant": false,
@@ -116,6 +112,26 @@
         "stateMutability": "nonpayable",
         "type": "function",
         "signature": "0x0329cf4a"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            }
+        ],
+        "name": "cancel",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x4c33fe94"
     },
     {
         "constant": false,

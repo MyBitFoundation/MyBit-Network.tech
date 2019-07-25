@@ -9,15 +9,6 @@ module.exports = function(deployer, network, accounts) {
     let operators, cm;
     let contracts = JSON.parse(fs.readFileSync(`networks/${network}/contracts.json`, 'utf8'));
 
-    let dai = {}
-    if(network == 'mainnet' || network == 'mainnet-fork'){
-      dai.address = ''
-    } else if(network == 'ropsten' || network == 'ropten-fork'){
-      dai.address = ''
-    } else if(network == 'rinkeby' || network == 'rinkeby-fork'){
-      dai.address = ''
-    }
-
     deployer.then(function(){
 
       return deployer.deploy(SafeMath);
@@ -37,7 +28,7 @@ module.exports = function(deployer, network, accounts) {
 
       cm = instance;
       console.log('Adding Operators to contract manager...');
-      return cm.addContract('Operators', operators.address, {from: accounts[0], gas:300000});
+      return cm.addContract('Operators', operators.address, {from: accounts[0], gas:400000});
 
     }).then(function() {
       if(network == 'ropsten' || network == 'ropsten-fork' || network == 'rinkeby' || network == 'rineby-fork'){

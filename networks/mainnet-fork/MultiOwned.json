@@ -62,6 +62,36 @@
     },
     {
         "constant": false,
+        "inputs": [
+            {
+                "name": "_newOwner",
+                "type": "address"
+            }
+        ],
+        "name": "addOwner",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x7065cb48"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_currentOwner",
+                "type": "address"
+            }
+        ],
+        "name": "removeOwner",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x173825d9"
+    },
+    {
+        "constant": false,
         "inputs": [],
         "name": "destroy",
         "outputs": [],

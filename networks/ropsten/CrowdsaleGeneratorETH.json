@@ -57,15 +57,15 @@
                 "type": "string"
             },
             {
+                "name": "_ipfs",
+                "type": "string"
+            },
+            {
                 "name": "_modelID",
                 "type": "bytes32"
             },
             {
                 "name": "_fundingLength",
-                "type": "uint256"
-            },
-            {
-                "name": "_startTime",
                 "type": "uint256"
             },
             {
@@ -86,16 +86,30 @@
             }
         ],
         "name": "createAssetOrderETH",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bool"
-            }
-        ],
+        "outputs": [],
         "payable": true,
         "stateMutability": "payable",
         "type": "function",
-        "signature": "0x1a232284"
+        "signature": "0xa84d4286"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            },
+            {
+                "name": "_ipfs",
+                "type": "string"
+            }
+        ],
+        "name": "updateIPFS",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xf217caed"
     },
     {
         "constant": false,
