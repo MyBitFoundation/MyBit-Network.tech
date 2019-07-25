@@ -27,19 +27,15 @@
                 "type": "string"
             },
             {
-                "name": "_assetManager",
-                "type": "address"
+                "name": "_ipfs",
+                "type": "string"
             },
             {
-                "name": "_operatorID",
+                "name": "_modelID",
                 "type": "bytes32"
             },
             {
                 "name": "_fundingLength",
-                "type": "uint256"
-            },
-            {
-                "name": "_startTime",
                 "type": "uint256"
             },
             {
@@ -68,7 +64,26 @@
         "payable": true,
         "stateMutability": "payable",
         "type": "function",
-        "signature": "0x72bf3c57"
+        "signature": "0x978a8fe0"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_assetAddress",
+                "type": "address"
+            },
+            {
+                "name": "_ipfs",
+                "type": "string"
+            }
+        ],
+        "name": "updateIPFS",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xf217caed"
     },
     {
         "constant": false,

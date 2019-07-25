@@ -51,14 +51,28 @@
         "type": "fallback"
     },
     {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "sender",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "EtherReceived",
+        "type": "event",
+        "signature": "0x1e57e3bb474320be3d2c77138f75b7c3941292d647f5f9634e33a8e94e0e069b"
+    },
+    {
         "constant": false,
         "inputs": [
             {
                 "name": "_assetAddress",
-                "type": "address"
-            },
-            {
-                "name": "_assetManager",
                 "type": "address"
             }
         ],
@@ -72,7 +86,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0xf940e385"
+        "signature": "0x51cff8d9"
     },
     {
         "constant": false,
@@ -80,10 +94,6 @@
             {
                 "name": "_assetAddress",
                 "type": "address[]"
-            },
-            {
-                "name": "_assetManager",
-                "type": "address"
             }
         ],
         "name": "retrieveAssetManagerTokens",
@@ -96,7 +106,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x4afce61b"
+        "signature": "0x3daae280"
     },
     {
         "constant": false,
@@ -104,10 +114,6 @@
             {
                 "name": "_assetAddress",
                 "type": "address[]"
-            },
-            {
-                "name": "_assetManager",
-                "type": "address"
             }
         ],
         "name": "retrieveAssetManagerETH",
@@ -120,7 +126,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x8b436676"
+        "signature": "0x3da532cc"
     },
     {
         "constant": true,

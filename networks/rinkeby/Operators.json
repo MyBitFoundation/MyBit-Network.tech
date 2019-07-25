@@ -133,110 +133,6 @@
                 "type": "bytes32"
             },
             {
-                "name": "_tokenAddress",
-                "type": "address"
-            },
-            {
-                "name": "_accept",
-                "type": "bool"
-            }
-        ],
-        "name": "acceptERC20Token",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0xd908c95b"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "name": "_operatorID",
-                "type": "bytes32"
-            },
-            {
-                "name": "_accept",
-                "type": "bool"
-            }
-        ],
-        "name": "acceptEther",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0xb00289fe"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "name": "_operatorID",
-                "type": "bytes32"
-            },
-            {
-                "name": "_tokenAddress",
-                "type": "address"
-            },
-            {
-                "name": "_payout",
-                "type": "bool"
-            }
-        ],
-        "name": "payoutERC20Token",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x17953d10"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "name": "_operatorID",
-                "type": "bytes32"
-            },
-            {
-                "name": "_payout",
-                "type": "bool"
-            }
-        ],
-        "name": "payoutEther",
-        "outputs": [
-            {
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x5be6f9e0"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "name": "_operatorID",
-                "type": "bytes32"
-            },
-            {
                 "name": "_ipfs",
                 "type": "string"
             }
@@ -261,11 +157,27 @@
                 "type": "bytes32"
             },
             {
-                "name": "_assetType",
+                "name": "_name",
                 "type": "string"
+            },
+            {
+                "name": "_ipfs",
+                "type": "string"
+            },
+            {
+                "name": "_acceptCrypto",
+                "type": "bool"
+            },
+            {
+                "name": "_payoutCrypto",
+                "type": "bool"
+            },
+            {
+                "name": "_token",
+                "type": "address"
             }
         ],
-        "name": "addAssetType",
+        "name": "addAsset",
         "outputs": [
             {
                 "name": "",
@@ -275,7 +187,83 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x9dbf3b5f"
+        "signature": "0x814ba557"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_modelID",
+                "type": "bytes32"
+            }
+        ],
+        "name": "removeAsset",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x837592db"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_modelID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_tokenAddress",
+                "type": "address"
+            },
+            {
+                "name": "_accept",
+                "type": "bool"
+            }
+        ],
+        "name": "acceptToken",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x954a8e5c"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_modelID",
+                "type": "bytes32"
+            },
+            {
+                "name": "_tokenAddress",
+                "type": "address"
+            },
+            {
+                "name": "_payout",
+                "type": "bool"
+            }
+        ],
+        "name": "payoutToken",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x95bcae8c"
     },
     {
         "constant": false,

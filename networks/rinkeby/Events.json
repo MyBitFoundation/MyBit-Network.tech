@@ -330,12 +330,17 @@
             },
             {
                 "indexed": false,
-                "name": "operatorID",
+                "name": "id",
                 "type": "bytes32"
             },
             {
                 "indexed": false,
-                "name": "operatorURI",
+                "name": "name",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "ipfs",
                 "type": "string"
             },
             {
@@ -351,7 +356,7 @@
         ],
         "name": "LogOperator",
         "type": "event",
-        "signature": "0xd6426a3ba1f4047d5121b172d5742f9de82fb88d3893b3fb3c5a665ef4bf96f1"
+        "signature": "0x96e2c70791060763eab505df98c4e6f35e131a7a11afa82892c03d02a34d79e4"
     },
     {
         "anonymous": false,
@@ -609,11 +614,15 @@
                 "type": "string"
             },
             {
-                "name": "_operatorID",
+                "name": "_id",
                 "type": "bytes32"
             },
             {
-                "name": "_operatorURI",
+                "name": "_name",
+                "type": "string"
+            },
+            {
+                "name": "_ipfs",
                 "type": "string"
             },
             {
@@ -626,7 +635,7 @@
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x1dc071aa"
+        "signature": "0xe66330d3"
     },
     {
         "constant": false,
