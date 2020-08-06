@@ -74,19 +74,19 @@ contract Operators {
     events.operator('Operator ipfs', _operatorID, '', _ipfs, msg.sender);
   }
 
-  function addAsset(bytes32 _operatorID, string _name, string _ipfs, bool _acceptCrypto, bool _payoutCrypto, address _token)
-  external
-  onlyOperator(_operatorID)
-  returns (bool) {
-    bytes32 modelID = keccak256(abi.encodePacked('model.id', _operatorID, _name));
-    require(database.addressStorage(keccak256(abi.encodePacked("model.operator", modelID))) == address(0));
-    database.setAddress(keccak256(abi.encodePacked("model.operator", modelID)), msg.sender);
-    database.setString(keccak256(abi.encodePacked('model.ipfs', modelID)), _ipfs);
-    acceptToken(modelID, _token, _acceptCrypto);
-    payoutToken(modelID, _token, _payoutCrypto);
-    events.operator('Asset added', modelID, _name, _ipfs, msg.sender);
-    return true;
-  }
+  // function addAsset(bytes32 _operatorID, string _name, string _ipfs, bool _acceptCrypto, bool _payoutCrypto, address _token)
+  // external
+  // onlyOperator(_operatorID)
+  // returns (bool) {
+  //   bytes32 modelID = keccak256(abi.encodePacked('model.id', _operatorID, _name));
+  //   require(database.addressStorage(keccak256(abi.encodePacked("model.operator", modelID))) == address(0));
+  //   database.setAddress(keccak256(abi.encodePacked("model.operator", modelID)), msg.sender);
+  //   database.setString(keccak256(abi.encodePacked('model.ipfs', modelID)), _ipfs);
+  //   acceptToken(modelID, _token, _acceptCrypto);
+  //   payoutToken(modelID, _token, _payoutCrypto);
+  //   events.operator('Asset added', modelID, _name, _ipfs, msg.sender);
+  //   return true;
+  // }
 
   function removeAsset(bytes32 _modelID)
   external
