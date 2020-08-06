@@ -3,4 +3,69 @@ id: ownership_Pausible
 title: Pausible
 ---
 
-<div class="contract-doc"><div class="contract"><h2 class="contract-header"><span class="contract-kind">contract</span> Pausible</h2><div class="source">Source: <a href="https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.1.9/contracts/ownership/Pausible.sol" target="_blank">ownership/Pausible.sol</a></div></div><div class="index"><h2>Index</h2><ul><li><a href="ownership_Pausible.html#LogPaused">LogPaused</a></li><li><a href="ownership_Pausible.html#LogUnpaused">LogUnpaused</a></li><li><a href="ownership_Pausible.html#">fallback</a></li><li><a href="ownership_Pausible.html#onlyOwner">onlyOwner</a></li><li><a href="ownership_Pausible.html#pause">pause</a></li><li><a href="ownership_Pausible.html#unpause">unpause</a></li></ul></div><div class="reference"><h2>Reference</h2><div class="events"><h3>Events</h3><ul><li><div class="item event"><span id="LogPaused" class="anchor-marker"></span><h4 class="name">LogPaused</h4><div class="body"><code class="signature">event <strong>LogPaused</strong><span>(address _contract, address _owner) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_contract</code> - address</div><div><code>_owner</code> - address</div></dd></dl></div></div></li><li><div class="item event"><span id="LogUnpaused" class="anchor-marker"></span><h4 class="name">LogUnpaused</h4><div class="body"><code class="signature">event <strong>LogUnpaused</strong><span>(address _contract, address _owner) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_contract</code> - address</div><div><code>_owner</code> - address</div></dd></dl></div></div></li></ul></div><div class="modifiers"><h3>Modifiers</h3><ul><li><div class="item modifier"><span id="onlyOwner" class="anchor-marker"></span><h4 class="name">onlyOwner</h4><div class="body"><code class="signature">modifier <strong>onlyOwner</strong><span>() </span></code><hr/></div></div></li></ul></div><div class="functions"><h3>Functions</h3><ul><li><div class="item function"><span id="fallback" class="anchor-marker"></span><h4 class="name">fallback</h4><div class="body"><code class="signature">function <strong></strong><span>(address _database) </span><span>public </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_database</code> - address</div></dd></dl></div></div></li><li><div class="item function"><span id="pause" class="anchor-marker"></span><h4 class="name">pause</h4><div class="body"><code class="signature">function <strong>pause</strong><span>(address _contract) </span><span>public </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="ownership_Pausible.html#onlyOwner">onlyOwner </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_contract</code> - address</div></dd></dl></div></div></li><li><div class="item function"><span id="unpause" class="anchor-marker"></span><h4 class="name">unpause</h4><div class="body"><code class="signature">function <strong>unpause</strong><span>(address _contract) </span><span>public </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="ownership_Pausible.html#onlyOwner">onlyOwner </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_contract</code> - address</div></dd></dl></div></div></li></ul></div></div></div>
+# api\_ownership\_Pausible
+
+## contract Pausible
+
+is [MultiOwned](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/ownership_MultiOwned.html)Source: [ownership/Pausible.sol](https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.0.0/contracts/ownership/Pausible.sol)
+
+## Index
+
+* [LogPaused](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/ownership_Pausible.html#LogPaused)
+* [LogUnpaused](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/ownership_Pausible.html#LogUnpaused)
+* [fallback](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/ownership_Pausible.html)
+* [noZeroAddress](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/ownership_Pausible.html#noZeroAddress)
+* [pause](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/ownership_Pausible.html#pause)
+* [unpause](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/ownership_Pausible.html#unpause)
+* [whenNotPaused](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/ownership_Pausible.html#whenNotPaused)
+
+## Reference
+
+### Events
+
+* **LogPaused**
+
+  `event` **`LogPaused`**`(address _contract, address _owner)`
+
+  Parameters:`_contract` - address`_owner` - address
+
+* **LogUnpaused**
+
+  `event` **`LogUnpaused`**`(address _contract, address _owner)`
+
+  Parameters:`_contract` - address`_owner` - address
+
+### Modifiers
+
+* **noZeroAddress**
+
+  `modifier` **`noZeroAddress`**`(address _address)`
+
+  Parameters:`_address` - address
+
+* **whenNotPaused**
+
+  `modifier` **`whenNotPaused`**`(address _contract)`
+
+  Parameters:`_contract` - address
+
+### Functions
+
+* **fallback**
+
+  `function (address _database) public`
+
+  Parameters:`_database` - address
+
+* **pause**
+
+  `function` **`pause`**`(address _contract) public`
+
+  Modifiers:[anyOwner](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/ownership_MultiOwned.html#anyOwner)Parameters:`_contract` - address
+
+* **unpause**
+
+  `function` **`unpause`**`(address _contract) public`
+
+  Modifiers:[anyOwner](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/ownership_MultiOwned.html#anyOwner)Parameters:`_contract` - address
+

@@ -3,4 +3,144 @@ id: database_Database
 title: Database
 ---
 
-<div class="contract-doc"><div class="contract"><h2 class="contract-header"><span class="contract-kind">contract</span> Database</h2><div class="source">Source: <a href="https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.1.9/contracts/database/Database.sol" target="_blank">database/Database.sol</a></div></div><div class="index"><h2>Index</h2><ul><li><a href="database_Database.html#LogInitialized">LogInitialized</a></li><li><a href="database_Database.html#deleteAddress">deleteAddress</a></li><li><a href="database_Database.html#deleteBool">deleteBool</a></li><li><a href="database_Database.html#deleteBytes">deleteBytes</a></li><li><a href="database_Database.html#deleteBytes32">deleteBytes32</a></li><li><a href="database_Database.html#deleteInt">deleteInt</a></li><li><a href="database_Database.html#deleteString">deleteString</a></li><li><a href="database_Database.html#deleteUint">deleteUint</a></li><li><a href="database_Database.html#enableContractManagement">enableContractManagement</a></li><li><a href="database_Database.html#">fallback</a></li><li><a href="database_Database.html#onlyApprovedContract">onlyApprovedContract</a></li><li><a href="database_Database.html#setAddress">setAddress</a></li><li><a href="database_Database.html#setBool">setBool</a></li><li><a href="database_Database.html#setBytes">setBytes</a></li><li><a href="database_Database.html#setBytes32">setBytes32</a></li><li><a href="database_Database.html#setInt">setInt</a></li><li><a href="database_Database.html#setString">setString</a></li><li><a href="database_Database.html#setUint">setUint</a></li></ul></div><div class="reference"><h2>Reference</h2><div class="events"><h3>Events</h3><ul><li><div class="item event"><span id="LogInitialized" class="anchor-marker"></span><h4 class="name">LogInitialized</h4><div class="body"><code class="signature">event <strong>LogInitialized</strong><span>(address _owner, bool _upgradeable) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_owner</code> - address</div><div><code>_upgradeable</code> - bool</div></dd></dl></div></div></li></ul></div><div class="modifiers"><h3>Modifiers</h3><ul><li><div class="item modifier"><span id="onlyApprovedContract" class="anchor-marker"></span><h4 class="name">onlyApprovedContract</h4><div class="body"><code class="signature">modifier <strong>onlyApprovedContract</strong><span>() </span></code><hr/></div></div></li></ul></div><div class="functions"><h3>Functions</h3><ul><li><div class="item function"><span id="deleteAddress" class="anchor-marker"></span><h4 class="name">deleteAddress</h4><div class="body"><code class="signature">function <strong>deleteAddress</strong><span>(bytes32 _key) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_Database.html#onlyApprovedContract">onlyApprovedContract </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_key</code> - bytes32</div></dd></dl></div></div></li><li><div class="item function"><span id="deleteBool" class="anchor-marker"></span><h4 class="name">deleteBool</h4><div class="body"><code class="signature">function <strong>deleteBool</strong><span>(bytes32 _key) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_Database.html#onlyApprovedContract">onlyApprovedContract </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_key</code> - bytes32</div></dd></dl></div></div></li><li><div class="item function"><span id="deleteBytes" class="anchor-marker"></span><h4 class="name">deleteBytes</h4><div class="body"><code class="signature">function <strong>deleteBytes</strong><span>(bytes32 _key) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_Database.html#onlyApprovedContract">onlyApprovedContract </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_key</code> - bytes32</div></dd></dl></div></div></li><li><div class="item function"><span id="deleteBytes32" class="anchor-marker"></span><h4 class="name">deleteBytes32</h4><div class="body"><code class="signature">function <strong>deleteBytes32</strong><span>(bytes32 _key) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_Database.html#onlyApprovedContract">onlyApprovedContract </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_key</code> - bytes32</div></dd></dl></div></div></li><li><div class="item function"><span id="deleteInt" class="anchor-marker"></span><h4 class="name">deleteInt</h4><div class="body"><code class="signature">function <strong>deleteInt</strong><span>(bytes32 _key) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_Database.html#onlyApprovedContract">onlyApprovedContract </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_key</code> - bytes32</div></dd></dl></div></div></li><li><div class="item function"><span id="deleteString" class="anchor-marker"></span><h4 class="name">deleteString</h4><div class="body"><code class="signature">function <strong>deleteString</strong><span>(bytes32 _key) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_Database.html#onlyApprovedContract">onlyApprovedContract </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_key</code> - bytes32</div></dd></dl></div></div></li><li><div class="item function"><span id="deleteUint" class="anchor-marker"></span><h4 class="name">deleteUint</h4><div class="body"><code class="signature">function <strong>deleteUint</strong><span>(bytes32 _key) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_Database.html#onlyApprovedContract">onlyApprovedContract </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_key</code> - bytes32</div></dd></dl></div></div></li><li><div class="item function"><span id="enableContractManagement" class="anchor-marker"></span><h4 class="name">enableContractManagement</h4><div class="body"><code class="signature">function <strong>enableContractManagement</strong><span>(address _contractManager) </span><span>external </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_contractManager</code> - address</div></dd></dl></div></div></li><li><div class="item function"><span id="fallback" class="anchor-marker"></span><h4 class="name">fallback</h4><div class="body"><code class="signature">function <strong></strong><span>(address[] _owners, bool _upgradeable) </span><span>public </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_owners</code> - address[]</div><div><code>_upgradeable</code> - bool</div></dd></dl></div></div></li><li><div class="item function"><span id="setAddress" class="anchor-marker"></span><h4 class="name">setAddress</h4><div class="body"><code class="signature">function <strong>setAddress</strong><span>(bytes32 _key, address _value) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_Database.html#onlyApprovedContract">onlyApprovedContract </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_key</code> - bytes32</div><div><code>_value</code> - address</div></dd></dl></div></div></li><li><div class="item function"><span id="setBool" class="anchor-marker"></span><h4 class="name">setBool</h4><div class="body"><code class="signature">function <strong>setBool</strong><span>(bytes32 _key, bool _value) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_Database.html#onlyApprovedContract">onlyApprovedContract </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_key</code> - bytes32</div><div><code>_value</code> - bool</div></dd></dl></div></div></li><li><div class="item function"><span id="setBytes" class="anchor-marker"></span><h4 class="name">setBytes</h4><div class="body"><code class="signature">function <strong>setBytes</strong><span>(bytes32 _key, bytes _value) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_Database.html#onlyApprovedContract">onlyApprovedContract </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_key</code> - bytes32</div><div><code>_value</code> - bytes</div></dd></dl></div></div></li><li><div class="item function"><span id="setBytes32" class="anchor-marker"></span><h4 class="name">setBytes32</h4><div class="body"><code class="signature">function <strong>setBytes32</strong><span>(bytes32 _key, bytes32 _value) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_Database.html#onlyApprovedContract">onlyApprovedContract </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_key</code> - bytes32</div><div><code>_value</code> - bytes32</div></dd></dl></div></div></li><li><div class="item function"><span id="setInt" class="anchor-marker"></span><h4 class="name">setInt</h4><div class="body"><code class="signature">function <strong>setInt</strong><span>(bytes32 _key, int _value) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_Database.html#onlyApprovedContract">onlyApprovedContract </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_key</code> - bytes32</div><div><code>_value</code> - int</div></dd></dl></div></div></li><li><div class="item function"><span id="setString" class="anchor-marker"></span><h4 class="name">setString</h4><div class="body"><code class="signature">function <strong>setString</strong><span>(bytes32 _key, string _value) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_Database.html#onlyApprovedContract">onlyApprovedContract </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_key</code> - bytes32</div><div><code>_value</code> - string</div></dd></dl></div></div></li><li><div class="item function"><span id="setUint" class="anchor-marker"></span><h4 class="name">setUint</h4><div class="body"><code class="signature">function <strong>setUint</strong><span>(bytes32 _key, uint _value) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_Database.html#onlyApprovedContract">onlyApprovedContract </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_key</code> - bytes32</div><div><code>_value</code> - uint</div></dd></dl></div></div></li></ul></div></div></div>
+# api\_database\_Database
+
+## contract Database
+
+Source: [database/Database.sol](https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.0.0/contracts/database/Database.sol)
+
+## Index
+
+* [LogInitialized](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#LogInitialized)
+* [deleteAddress](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#deleteAddress)
+* [deleteBool](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#deleteBool)
+* [deleteBytes](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#deleteBytes)
+* [deleteBytes32](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#deleteBytes32)
+* [deleteInt](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#deleteInt)
+* [deleteString](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#deleteString)
+* [deleteUint](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#deleteUint)
+* [enableContractManagement](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#enableContractManagement)
+* [fallback](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html)
+* [onlyApprovedContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#onlyApprovedContract)
+* [setAddress](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#setAddress)
+* [setBool](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#setBool)
+* [setBytes](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#setBytes)
+* [setBytes32](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#setBytes32)
+* [setInt](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#setInt)
+* [setString](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#setString)
+* [setUint](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#setUint)
+
+## Reference
+
+### Events
+
+* **LogInitialized**
+
+  `event` **`LogInitialized`**`(address _owner, bool _upgradeable)`
+
+  Parameters:`_owner` - address`_upgradeable` - bool
+
+### Modifiers
+
+* **onlyApprovedContract**
+
+  `modifier` **`onlyApprovedContract`**`()`
+
+### Functions
+
+* **deleteAddress**
+
+  `function` **`deleteAddress`**`(bytes32 _key) external`
+
+  Modifiers:[onlyApprovedContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#onlyApprovedContract)Parameters:`_key` - bytes32
+
+* **deleteBool**
+
+  `function` **`deleteBool`**`(bytes32 _key) external`
+
+  Modifiers:[onlyApprovedContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#onlyApprovedContract)Parameters:`_key` - bytes32
+
+* **deleteBytes**
+
+  `function` **`deleteBytes`**`(bytes32 _key) external`
+
+  Modifiers:[onlyApprovedContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#onlyApprovedContract)Parameters:`_key` - bytes32
+
+* **deleteBytes32**
+
+  `function` **`deleteBytes32`**`(bytes32 _key) external`
+
+  Modifiers:[onlyApprovedContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#onlyApprovedContract)Parameters:`_key` - bytes32
+
+* **deleteInt**
+
+  `function` **`deleteInt`**`(bytes32 _key) external`
+
+  Modifiers:[onlyApprovedContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#onlyApprovedContract)Parameters:`_key` - bytes32
+
+* **deleteString**
+
+  `function` **`deleteString`**`(bytes32 _key) external`
+
+  Modifiers:[onlyApprovedContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#onlyApprovedContract)Parameters:`_key` - bytes32
+
+* **deleteUint**
+
+  `function` **`deleteUint`**`(bytes32 _key) external`
+
+  Modifiers:[onlyApprovedContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#onlyApprovedContract)Parameters:`_key` - bytes32
+
+* **enableContractManagement**
+
+  `function` **`enableContractManagement`**`(address _contractManager) external`
+
+  Parameters:`_contractManager` - address
+
+* **fallback**
+
+  `function (address[] _owners, bool _upgradeable) public`
+
+  Parameters:`_owners` - address\[\]`_upgradeable` - bool
+
+* **setAddress**
+
+  `function` **`setAddress`**`(bytes32 _key, address _value) external`
+
+  Modifiers:[onlyApprovedContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#onlyApprovedContract)Parameters:`_key` - bytes32`_value` - address
+
+* **setBool**
+
+  `function` **`setBool`**`(bytes32 _key, bool _value) external`
+
+  Modifiers:[onlyApprovedContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#onlyApprovedContract)Parameters:`_key` - bytes32`_value` - bool
+
+* **setBytes**
+
+  `function` **`setBytes`**`(bytes32 _key, bytes _value) external`
+
+  Modifiers:[onlyApprovedContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#onlyApprovedContract)Parameters:`_key` - bytes32`_value` - bytes
+
+* **setBytes32**
+
+  `function` **`setBytes32`**`(bytes32 _key, bytes32 _value) external`
+
+  Modifiers:[onlyApprovedContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#onlyApprovedContract)Parameters:`_key` - bytes32`_value` - bytes32
+
+* **setInt**
+
+  `function` **`setInt`**`(bytes32 _key, int _value) external`
+
+  Modifiers:[onlyApprovedContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#onlyApprovedContract)Parameters:`_key` - bytes32`_value` - int
+
+* **setString**
+
+  `function` **`setString`**`(bytes32 _key, string _value) external`
+
+  Modifiers:[onlyApprovedContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#onlyApprovedContract)Parameters:`_key` - bytes32`_value` - string
+
+* **setUint**
+
+  `function` **`setUint`**`(bytes32 _key, uint _value) external`
+
+  Modifiers:[onlyApprovedContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_Database.html#onlyApprovedContract)Parameters:`_key` - bytes32`_value` - uint
+

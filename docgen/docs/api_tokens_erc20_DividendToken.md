@@ -1,6 +1,146 @@
 ---
-id: tokens_erc20_DividendToken
+id: tokens_ERC20_DividendToken
 title: DividendToken
 ---
 
-<div class="contract-doc"><div class="contract"><h2 class="contract-header"><span class="contract-kind">contract</span> DividendToken</h2><p class="base-contracts"><span>is</span> <a href="tokens_erc20_MintableToken.html">MintableToken</a></p><div class="source">Source: <a href="https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.1.9/contracts/tokens/erc20/DividendToken.sol" target="_blank">tokens/erc20/DividendToken.sol</a></div></div><div class="index"><h2>Index</h2><ul><li><a href="tokens_erc20_DividendToken.html#LogIncomeCollected">LogIncomeCollected</a></li><li><a href="tokens_erc20_DividendToken.html#LogIncomeReceived">LogIncomeReceived</a></li><li><a href="tokens_erc20_DividendToken.html#approveAndCall">approveAndCall</a></li><li><a href="tokens_erc20_DividendToken.html#">fallback</a></li><li><a href="tokens_erc20_DividendToken.html#">fallback</a></li><li><a href="tokens_erc20_DividendToken.html#getAmountOwed">getAmountOwed</a></li><li><a href="tokens_erc20_DividendToken.html#getERC20">getERC20</a></li><li><a href="tokens_erc20_DividendToken.html#issueDividends">issueDividends</a></li><li><a href="tokens_erc20_DividendToken.html#transfer">transfer</a></li><li><a href="tokens_erc20_DividendToken.html#transferFrom">transferFrom</a></li><li><a href="tokens_erc20_DividendToken.html#updateIncomeClaimed">updateIncomeClaimed</a></li><li><a href="tokens_erc20_DividendToken.html#withdraw">withdraw</a></li></ul></div><div class="reference"><h2>Reference</h2><div class="events"><h3>Events</h3><ul><li><div class="item event"><span id="LogIncomeCollected" class="anchor-marker"></span><h4 class="name">LogIncomeCollected</h4><div class="body"><code class="signature">event <strong>LogIncomeCollected</strong><span>(address _address, uint _amount) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_address</code> - address</div><div><code>_amount</code> - uint</div></dd></dl></div></div></li><li><div class="item event"><span id="LogIncomeReceived" class="anchor-marker"></span><h4 class="name">LogIncomeReceived</h4><div class="body"><code class="signature">event <strong>LogIncomeReceived</strong><span>(address _sender, uint _paymentAmount) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_sender</code> - address</div><div><code>_paymentAmount</code> - uint</div></dd></dl></div></div></li></ul></div><div class="modifiers"><h3>Modifiers</h3><ul><li><div class="item modifier"><span id="updateIncomeClaimed" class="anchor-marker"></span><h4 class="name">updateIncomeClaimed</h4><div class="body"><code class="signature">modifier <strong>updateIncomeClaimed</strong><span>(address _investor) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_investor</code> - address</div></dd></dl></div></div></li></ul></div><div class="functions"><h3>Functions</h3><ul><li><div class="item function"><span id="approveAndCall" class="anchor-marker"></span><h4 class="name">approveAndCall</h4><div class="body"><code class="signature">function <strong>approveAndCall</strong><span>(address _spender, uint _amount, bytes _data) </span><span>public </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="tokens_erc20_DividendToken.html#updateIncomeClaimed">updateIncomeClaimed </a><a href="tokens_erc20_DividendToken.html#updateIncomeClaimed">updateIncomeClaimed </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_spender</code> - address</div><div><code>_amount</code> - uint</div><div><code>_data</code> - bytes</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li><li><div class="item function"><span id="fallback" class="anchor-marker"></span><h4 class="name">fallback</h4><div class="body"><code class="signature">function <strong></strong><span>(string _tokenURI, address _owner) </span><span>public </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_tokenURI</code> - string</div><div><code>_owner</code> - address</div></dd></dl></div></div></li><li><div class="item function"><span id="fallback" class="anchor-marker"></span><h4 class="name">fallback</h4><div class="body"><code class="signature">function <strong></strong><span>() </span><span>public </span><span>payable </span></code><hr/></div></div></li><li><div class="item function"><span id="getAmountOwed" class="anchor-marker"></span><h4 class="name">getAmountOwed</h4><div class="body"><code class="signature">function <strong>getAmountOwed</strong><span>(address _investor) </span><span>public </span><span>view </span><span>returns  (uint) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_investor</code> - address</div></dd><dt><span class="label-return">Returns:</span></dt><dd>uint</dd></dl></div></div></li><li><div class="item function"><span id="getERC20" class="anchor-marker"></span><h4 class="name">getERC20</h4><div class="body"><code class="signature">function <strong>getERC20</strong><span>() </span><span>external </span><span>pure </span><span>returns  (address) </span></code><hr/><dl><dt><span class="label-return">Returns:</span></dt><dd>address</dd></dl></div></div></li><li><div class="item function"><span id="issueDividends" class="anchor-marker"></span><h4 class="name">issueDividends</h4><div class="body"><code class="signature">function <strong>issueDividends</strong><span>() </span><span>public </span><span>payable </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li><li><div class="item function"><span id="transfer" class="anchor-marker"></span><h4 class="name">transfer</h4><div class="body"><code class="signature">function <strong>transfer</strong><span>(address _to, uint _amount) </span><span>public </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="tokens_erc20_DividendToken.html#updateIncomeClaimed">updateIncomeClaimed </a><a href="tokens_erc20_DividendToken.html#updateIncomeClaimed">updateIncomeClaimed </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_to</code> - address</div><div><code>_amount</code> - uint</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li><li><div class="item function"><span id="transferFrom" class="anchor-marker"></span><h4 class="name">transferFrom</h4><div class="body"><code class="signature">function <strong>transferFrom</strong><span>(address _from, address _to, uint _amount) </span><span>public </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="tokens_erc20_DividendToken.html#updateIncomeClaimed">updateIncomeClaimed </a><a href="tokens_erc20_DividendToken.html#updateIncomeClaimed">updateIncomeClaimed </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_from</code> - address</div><div><code>_to</code> - address</div><div><code>_amount</code> - uint</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li><li><div class="item function"><span id="withdraw" class="anchor-marker"></span><h4 class="name">withdraw</h4><div class="body"><code class="signature">function <strong>withdraw</strong><span>() </span><span>public </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="tokens_erc20_DividendToken.html#updateIncomeClaimed">updateIncomeClaimed </a></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li></ul></div></div></div>
+# api\_tokens\_ERC20\_DividendToken
+
+## contract DividendToken
+
+is [BurnableERC20](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/interfaces_BurnableERC20.html)Source: [tokens/ERC20/DividendToken.sol](https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.0.0/contracts/tokens/ERC20/DividendToken.sol)
+
+## Index
+
+* [LogIncomeCollected](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#LogIncomeCollected)
+* [LogIncomeReceived](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#LogIncomeReceived)
+* [\_burn](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#_burn)
+* [allowance](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#allowance)
+* [approve](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#approve)
+* [approveAndCall](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#approveAndCall)
+* [balanceOf](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#balanceOf)
+* [burnFrom](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#burnFrom)
+* [collectOwedDividends](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#collectOwedDividends)
+* [fallback](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html)
+* [fallback](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html)
+* [getOwedDividends](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#getOwedDividends)
+* [requiresEther](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#requiresEther)
+* [tokenURI](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#tokenURI)
+* [totalSupply](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#totalSupply)
+* [transfer](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#transfer)
+* [transferFrom](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#transferFrom)
+* [updateIncomeClaimed](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#updateIncomeClaimed)
+
+## Reference
+
+### Events
+
+* **LogIncomeCollected**
+
+  `event` **`LogIncomeCollected`**`(uint _block, address _address, uint _amount)`
+
+  Parameters:`_block` - uint`_address` - address`_amount` - uint
+
+* **LogIncomeReceived**
+
+  `event` **`LogIncomeReceived`**`(address _sender, uint _paymentAmount)`
+
+  Parameters:`_sender` - address`_paymentAmount` - uint
+
+### Modifiers
+
+* **requiresEther**
+
+  `modifier` **`requiresEther`**`()`
+
+* **updateIncomeClaimed**
+
+  `modifier` **`updateIncomeClaimed`**`(address _user)`
+
+  Parameters:`_user` - address
+
+### Functions
+
+* **\_burn**
+
+  `function` **`_burn`**`(uint256 _value) public`
+
+  Parameters:`_value` - uint256
+
+* **allowance**
+
+  `function` **`allowance`**`(address _tokenHolder, address _spender) public view returns (uint)`
+
+  Parameters:`_tokenHolder` - address`_spender` - addressReturns:uint
+
+* **approve**
+
+  `function` **`approve`**`(address _spender, uint _amount) public returns (bool)`
+
+  Parameters:`_spender` - address`_amount` - uintReturns:bool
+
+* **approveAndCall**
+
+  `function` **`approveAndCall`**`(address _spender, uint _amount, bytes _data) public returns (bool)`
+
+  Modifiers:[updateIncomeClaimed](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#updateIncomeClaimed) [updateIncomeClaimed](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#updateIncomeClaimed)Parameters:`_spender` - address`_amount` - uint`_data` - bytesReturns:bool
+
+* **balanceOf**
+
+  `function` **`balanceOf`**`(address _tokenHolder) public view returns (uint)`
+
+  Parameters:`_tokenHolder` - addressReturns:uint
+
+* **burnFrom**
+
+  `function` **`burnFrom`**`(address _from, uint256 _value) external returns (bool)`
+
+  Parameters:`_from` - address`_value` - uint256Returns:bool
+
+* **collectOwedDividends**
+
+  `function` **`collectOwedDividends`**`() public returns (uint)`
+
+  Modifiers:[updateIncomeClaimed](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#updateIncomeClaimed)Returns:uint
+
+* **fallback**
+
+  `function () public payable`
+
+  Modifiers:[requiresEther](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#requiresEther)
+
+* **fallback**
+
+  `function (string _tokenURI, uint _totalSupply, address _creator, address _database) public`
+
+  Parameters:`_tokenURI` - string`_totalSupply` - uint`_creator` - address`_database` - address
+
+* **getOwedDividends**
+
+  `function` **`getOwedDividends`**`(address _user) public view returns (uint)`
+
+  Parameters:`_user` - addressReturns:uint
+
+* **tokenURI**
+
+  `function` **`tokenURI`**`() external view returns (string)`
+
+  Returns:string
+
+* **totalSupply**
+
+  `function` **`totalSupply`**`() public view returns (uint)`
+
+  Returns:uint
+
+* **transfer**
+
+  `function` **`transfer`**`(address _to, uint _amount) public returns (bool)`
+
+  Modifiers:[updateIncomeClaimed](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#updateIncomeClaimed) [updateIncomeClaimed](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#updateIncomeClaimed)Parameters:`_to` - address`_amount` - uintReturns:bool
+
+* **transferFrom**
+
+  `function` **`transferFrom`**`(address _from, address _to, uint _amount) public returns (bool)`
+
+  Modifiers:[updateIncomeClaimed](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#updateIncomeClaimed) [updateIncomeClaimed](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/tokens_ERC20_DividendToken.html#updateIncomeClaimed)Parameters:`_from` - address`_to` - address`_amount` - uintReturns:bool
+

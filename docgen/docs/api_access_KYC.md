@@ -3,4 +3,39 @@ id: access_KYC
 title: KYC
 ---
 
-<div class="contract-doc"><div class="contract"><h2 class="contract-header"><span class="contract-kind">contract</span> KYC</h2><p class="base-contracts"><span>is</span> <a href="access_AccessHierarchy.html">AccessHierarchy</a></p><div class="source">Source: <a href="https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.1.9/contracts/access/KYC.sol" target="_blank">access/KYC.sol</a></div></div><div class="index"><h2>Index</h2><ul><li><a href="access_KYC.html#LogKYCApproved">LogKYCApproved</a></li><li><a href="access_KYC.html#approveKYC">approveKYC</a></li><li><a href="access_KYC.html#">fallback</a></li><li><a href="access_KYC.html#revokeKYC">revokeKYC</a></li></ul></div><div class="reference"><h2>Reference</h2><div class="events"><h3>Events</h3><ul><li><div class="item event"><span id="LogKYCApproved" class="anchor-marker"></span><h4 class="name">LogKYCApproved</h4><div class="body"><code class="signature">event <strong>LogKYCApproved</strong><span>(address _owner, address _user) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_owner</code> - address</div><div><code>_user</code> - address</div></dd></dl></div></div></li></ul></div><div class="functions"><h3>Functions</h3><ul><li><div class="item function"><span id="approveKYC" class="anchor-marker"></span><h4 class="name">approveKYC</h4><div class="body"><code class="signature">function <strong>approveKYC</strong><span>(address _user) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="access_AccessHierarchy.html#onlyOwner">onlyOwner </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_user</code> - address</div></dd></dl></div></div></li><li><div class="item function"><span id="fallback" class="anchor-marker"></span><h4 class="name">fallback</h4><div class="body"><code class="signature">function <strong></strong><span>(address _database) </span><span>public </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_database</code> - address</div></dd></dl></div></div></li><li><div class="item function"><span id="revokeKYC" class="anchor-marker"></span><h4 class="name">revokeKYC</h4><div class="body"><code class="signature">function <strong>revokeKYC</strong><span>(address _user) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="access_AccessHierarchy.html#onlyOwner">onlyOwner </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_user</code> - address</div></dd></dl></div></div></li></ul></div></div></div>
+# api\_access\_KYC
+
+## contract KYC
+
+is [AccessHierarchy](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html)Source: [access/KYC.sol](https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.0.0/contracts/access/KYC.sol)
+
+## Index
+
+* [LogKYCApproved](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_KYC.html#LogKYCApproved)
+* [approveKYC](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_KYC.html#approveKYC)
+* [revokeKYC](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_KYC.html#revokeKYC)
+
+## Reference
+
+### Events
+
+* **LogKYCApproved**
+
+  `event` **`LogKYCApproved`**`(address _owner, address _user)`
+
+  Parameters:`_owner` - address`_user` - address
+
+### Functions
+
+* **approveKYC**
+
+  `function` **`approveKYC`**`(address _user) external returns (bool)`
+
+  Modifiers:[onlyOwner](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#onlyOwner)Parameters:`_user` - addressReturns:bool
+
+* **revokeKYC**
+
+  `function` **`revokeKYC`**`(address _user) external returns (bool)`
+
+  Modifiers:[onlyOwner](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#onlyOwner)Parameters:`_user` - addressReturns:bool
+

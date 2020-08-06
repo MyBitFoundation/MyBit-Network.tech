@@ -3,4 +3,88 @@ id: interfaces_BurnableERC20
 title: BurnableERC20
 ---
 
-<div class="contract-doc"><div class="contract"><h2 class="contract-header"><span class="contract-kind">interface</span> BurnableERC20</h2><div class="source">Source: <a href="https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.1.9/contracts/interfaces/BurnableERC20.sol" target="_blank">interfaces/BurnableERC20.sol</a></div></div><div class="index"><h2>Index</h2><ul><li><a href="interfaces_BurnableERC20.html#Approval">Approval</a></li><li><a href="interfaces_BurnableERC20.html#LogBurn">LogBurn</a></li><li><a href="interfaces_BurnableERC20.html#Transfer">Transfer</a></li><li><a href="interfaces_BurnableERC20.html#allowance">allowance</a></li><li><a href="interfaces_BurnableERC20.html#approve">approve</a></li><li><a href="interfaces_BurnableERC20.html#balanceOf">balanceOf</a></li><li><a href="interfaces_BurnableERC20.html#burn">burn</a></li><li><a href="interfaces_BurnableERC20.html#burnFrom">burnFrom</a></li><li><a href="interfaces_BurnableERC20.html#totalSupply">totalSupply</a></li><li><a href="interfaces_BurnableERC20.html#transfer">transfer</a></li><li><a href="interfaces_BurnableERC20.html#transferFrom">transferFrom</a></li></ul></div><div class="reference"><h2>Reference</h2><div class="events"><h3>Events</h3><ul><li><div class="item event"><span id="Approval" class="anchor-marker"></span><h4 class="name">Approval</h4><div class="body"><code class="signature">event <strong>Approval</strong><span>(address owner, address spender, uint256 value) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>owner</code> - address</div><div><code>spender</code> - address</div><div><code>value</code> - uint256</div></dd></dl></div></div></li><li><div class="item event"><span id="LogBurn" class="anchor-marker"></span><h4 class="name">LogBurn</h4><div class="body"><code class="signature">event <strong>LogBurn</strong><span>(address _spender, uint256 _value) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_spender</code> - address</div><div><code>_value</code> - uint256</div></dd></dl></div></div></li><li><div class="item event"><span id="Transfer" class="anchor-marker"></span><h4 class="name">Transfer</h4><div class="body"><code class="signature">event <strong>Transfer</strong><span>(address from, address to, uint256 value) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>from</code> - address</div><div><code>to</code> - address</div><div><code>value</code> - uint256</div></dd></dl></div></div></li></ul></div><div class="functions"><h3>Functions</h3><ul><li><div class="item function"><span id="allowance" class="anchor-marker"></span><h4 class="name">allowance</h4><div class="body"><code class="signature"><span>abstract </span>function <strong>allowance</strong><span>(address tokenOwner, address spender) </span><span>external </span><span>view </span><span>returns  (uint) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>tokenOwner</code> - address</div><div><code>spender</code> - address</div></dd><dt><span class="label-return">Returns:</span></dt><dd>uint</dd></dl></div></div></li><li><div class="item function"><span id="approve" class="anchor-marker"></span><h4 class="name">approve</h4><div class="body"><code class="signature"><span>abstract </span>function <strong>approve</strong><span>(address _spender, uint256 _value) </span><span>external </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_spender</code> - address</div><div><code>_value</code> - uint256</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li><li><div class="item function"><span id="balanceOf" class="anchor-marker"></span><h4 class="name">balanceOf</h4><div class="body"><code class="signature"><span>abstract </span>function <strong>balanceOf</strong><span>(address _who) </span><span>external </span><span>view </span><span>returns  (uint256) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_who</code> - address</div></dd><dt><span class="label-return">Returns:</span></dt><dd>uint256</dd></dl></div></div></li><li><div class="item function"><span id="burn" class="anchor-marker"></span><h4 class="name">burn</h4><div class="body"><code class="signature"><span>abstract </span>function <strong>burn</strong><span>(uint _amount) </span><span>external </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_amount</code> - uint</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li><li><div class="item function"><span id="burnFrom" class="anchor-marker"></span><h4 class="name">burnFrom</h4><div class="body"><code class="signature"><span>abstract </span>function <strong>burnFrom</strong><span>(address _tokenHolder, uint _amount) </span><span>external </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_tokenHolder</code> - address</div><div><code>_amount</code> - uint</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li><li><div class="item function"><span id="totalSupply" class="anchor-marker"></span><h4 class="name">totalSupply</h4><div class="body"><code class="signature"><span>abstract </span>function <strong>totalSupply</strong><span>() </span><span>external </span><span>view </span><span>returns  (uint256) </span></code><hr/><dl><dt><span class="label-return">Returns:</span></dt><dd>uint256</dd></dl></div></div></li><li><div class="item function"><span id="transfer" class="anchor-marker"></span><h4 class="name">transfer</h4><div class="body"><code class="signature"><span>abstract </span>function <strong>transfer</strong><span>(address _to, uint256 _value) </span><span>external </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_to</code> - address</div><div><code>_value</code> - uint256</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li><li><div class="item function"><span id="transferFrom" class="anchor-marker"></span><h4 class="name">transferFrom</h4><div class="body"><code class="signature"><span>abstract </span>function <strong>transferFrom</strong><span>(address _from, address _to, uint256 _value) </span><span>external </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_from</code> - address</div><div><code>_to</code> - address</div><div><code>_value</code> - uint256</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li></ul></div></div></div>
+# api\_interfaces\_BurnableERC20
+
+## interface BurnableERC20
+
+Source: [interfaces/BurnableERC20.sol](https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.0.0/contracts/interfaces/BurnableERC20.sol)
+
+## Index
+
+* [Approval](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/interfaces_BurnableERC20.html#Approval)
+* [LogBurn](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/interfaces_BurnableERC20.html#LogBurn)
+* [Transfer](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/interfaces_BurnableERC20.html#Transfer)
+* [allowance](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/interfaces_BurnableERC20.html#allowance)
+* [approve](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/interfaces_BurnableERC20.html#approve)
+* [balanceOf](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/interfaces_BurnableERC20.html#balanceOf)
+* [burnFrom](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/interfaces_BurnableERC20.html#burnFrom)
+* [totalSupply](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/interfaces_BurnableERC20.html#totalSupply)
+* [transfer](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/interfaces_BurnableERC20.html#transfer)
+* [transferFrom](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/interfaces_BurnableERC20.html#transferFrom)
+
+## Reference
+
+### Events
+
+* **Approval**
+
+  `event` **`Approval`**`(address owner, address spender, uint256 value)`
+
+  Parameters:`owner` - address`spender` - address`value` - uint256
+
+* **LogBurn**
+
+  `event` **`LogBurn`**`(address _spender, uint256 _value)`
+
+  Parameters:`_spender` - address`_value` - uint256
+
+* **Transfer**
+
+  `event` **`Transfer`**`(address from, address to, uint256 value)`
+
+  Parameters:`from` - address`to` - address`value` - uint256
+
+### Functions
+
+* **allowance**
+
+  `abstract function` **`allowance`**`(address tokenOwner, address spender) external view returns (uint)`
+
+  Parameters:`tokenOwner` - address`spender` - addressReturns:uint
+
+* **approve**
+
+  `abstract function` **`approve`**`(address _spender, uint256 _value) external returns (bool)`
+
+  Parameters:`_spender` - address`_value` - uint256Returns:bool
+
+* **balanceOf**
+
+  `abstract function` **`balanceOf`**`(address _who) external view returns (uint256)`
+
+  Parameters:`_who` - addressReturns:uint256
+
+* **burnFrom**
+
+  `abstract function` **`burnFrom`**`(address _tokenHolder, uint _amount) external returns (bool)`
+
+  Parameters:`_tokenHolder` - address`_amount` - uintReturns:bool
+
+* **totalSupply**
+
+  `abstract function` **`totalSupply`**`() external view returns (uint256)`
+
+  Returns:uint256
+
+* **transfer**
+
+  `abstract function` **`transfer`**`(address _to, uint256 _value) external returns (bool)`
+
+  Parameters:`_to` - address`_value` - uint256Returns:bool
+
+* **transferFrom**
+
+  `abstract function` **`transferFrom`**`(address _from, address _to, uint256 _value) external returns (bool)`
+
+  Parameters:`_from` - address`_to` - address`_value` - uint256Returns:bool
+

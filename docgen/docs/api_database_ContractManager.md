@@ -3,4 +3,102 @@ id: database_ContractManager
 title: ContractManager
 ---
 
-<div class="contract-doc"><div class="contract"><h2 class="contract-header"><span class="contract-kind">contract</span> ContractManager</h2><div class="source">Source: <a href="https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.1.9/contracts/database/ContractManager.sol" target="_blank">database/ContractManager.sol</a></div></div><div class="index"><h2>Index</h2><ul><li><a href="database_ContractManager.html#LogContractAdded">LogContractAdded</a></li><li><a href="database_ContractManager.html#LogContractRemoved">LogContractRemoved</a></li><li><a href="database_ContractManager.html#LogContractStatePreferenceChanged">LogContractStatePreferenceChanged</a></li><li><a href="database_ContractManager.html#LogContractUpdated">LogContractUpdated</a></li><li><a href="database_ContractManager.html#LogNewContractLocation">LogNewContractLocation</a></li><li><a href="database_ContractManager.html#addContract">addContract</a></li><li><a href="database_ContractManager.html#anyOwner">anyOwner</a></li><li><a href="database_ContractManager.html#contractExists">contractExists</a></li><li><a href="database_ContractManager.html#">fallback</a></li><li><a href="database_ContractManager.html#isRestricted">isRestricted</a></li><li><a href="database_ContractManager.html#isTrue">isTrue</a></li><li><a href="database_ContractManager.html#removeContract">removeContract</a></li><li><a href="database_ContractManager.html#setContractStatePreferences">setContractStatePreferences</a></li><li><a href="database_ContractManager.html#updateContract">updateContract</a></li></ul></div><div class="reference"><h2>Reference</h2><div class="events"><h3>Events</h3><ul><li><div class="item event"><span id="LogContractAdded" class="anchor-marker"></span><h4 class="name">LogContractAdded</h4><div class="body"><code class="signature">event <strong>LogContractAdded</strong><span>(address _contractAddress, string _name, uint _blockNumber) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_contractAddress</code> - address</div><div><code>_name</code> - string</div><div><code>_blockNumber</code> - uint</div></dd></dl></div></div></li><li><div class="item event"><span id="LogContractRemoved" class="anchor-marker"></span><h4 class="name">LogContractRemoved</h4><div class="body"><code class="signature">event <strong>LogContractRemoved</strong><span>(address contractToDelete, string _name, uint _blockNumber) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>contractToDelete</code> - address</div><div><code>_name</code> - string</div><div><code>_blockNumber</code> - uint</div></dd></dl></div></div></li><li><div class="item event"><span id="LogContractStatePreferenceChanged" class="anchor-marker"></span><h4 class="name">LogContractStatePreferenceChanged</h4><div class="body"><code class="signature">event <strong>LogContractStatePreferenceChanged</strong><span>(address _user, bool _currentStateAcceptance, bool _ignoreStateChanges) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_user</code> - address</div><div><code>_currentStateAcceptance</code> - bool</div><div><code>_ignoreStateChanges</code> - bool</div></dd></dl></div></div></li><li><div class="item event"><span id="LogContractUpdated" class="anchor-marker"></span><h4 class="name">LogContractUpdated</h4><div class="body"><code class="signature">event <strong>LogContractUpdated</strong><span>(address oldAddress, string _name, uint _blockNumber) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>oldAddress</code> - address</div><div><code>_name</code> - string</div><div><code>_blockNumber</code> - uint</div></dd></dl></div></div></li><li><div class="item event"><span id="LogNewContractLocation" class="anchor-marker"></span><h4 class="name">LogNewContractLocation</h4><div class="body"><code class="signature">event <strong>LogNewContractLocation</strong><span>(address _contractAddress, string _name, uint _blockNumber) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_contractAddress</code> - address</div><div><code>_name</code> - string</div><div><code>_blockNumber</code> - uint</div></dd></dl></div></div></li></ul></div><div class="modifiers"><h3>Modifiers</h3><ul><li><div class="item modifier"><span id="anyOwner" class="anchor-marker"></span><h4 class="name">anyOwner</h4><div class="body"><code class="signature">modifier <strong>anyOwner</strong><span>() </span></code><hr/></div></div></li><li><div class="item modifier"><span id="contractExists" class="anchor-marker"></span><h4 class="name">contractExists</h4><div class="body"><code class="signature">modifier <strong>contractExists</strong><span>(address _contract) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_contract</code> - address</div></dd></dl></div></div></li><li><div class="item modifier"><span id="isRestricted" class="anchor-marker"></span><h4 class="name">isRestricted</h4><div class="body"><code class="signature">modifier <strong>isRestricted</strong><span>(bytes4 _methodID, bytes32 _parameterHash) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_methodID</code> - bytes4</div><div><code>_parameterHash</code> - bytes32</div></dd></dl></div></div></li><li><div class="item modifier"><span id="isTrue" class="anchor-marker"></span><h4 class="name">isTrue</h4><div class="body"><code class="signature">modifier <strong>isTrue</strong><span>(bool _conditional) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_conditional</code> - bool</div></dd></dl></div></div></li></ul></div><div class="functions"><h3>Functions</h3><ul><li><div class="item function"><span id="addContract" class="anchor-marker"></span><h4 class="name">addContract</h4><div class="body"><code class="signature">function <strong>addContract</strong><span>(string _name, address _contractAddress) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_ContractManager.html#isTrue">isTrue </a><a href="database_ContractManager.html#isTrue">isTrue </a><a href="database_ContractManager.html#anyOwner">anyOwner </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_name</code> - string</div><div><code>_contractAddress</code> - address</div></dd></dl></div></div></li><li><div class="item function"><span id="fallback" class="anchor-marker"></span><h4 class="name">fallback</h4><div class="body"><code class="signature">function <strong></strong><span>(address _database) </span><span>public </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_database</code> - address</div></dd></dl></div></div></li><li><div class="item function"><span id="removeContract" class="anchor-marker"></span><h4 class="name">removeContract</h4><div class="body"><code class="signature">function <strong>removeContract</strong><span>(string _name) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_ContractManager.html#isTrue">isTrue </a><a href="database_ContractManager.html#contractExists">contractExists </a><a href="database_ContractManager.html#anyOwner">anyOwner </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_name</code> - string</div></dd></dl></div></div></li><li><div class="item function"><span id="setContractStatePreferences" class="anchor-marker"></span><h4 class="name">setContractStatePreferences</h4><div class="body"><code class="signature">function <strong>setContractStatePreferences</strong><span>(bool _acceptCurrentState, bool _ignoreStateChanges) </span><span>external </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_acceptCurrentState</code> - bool</div><div><code>_ignoreStateChanges</code> - bool</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li><li><div class="item function"><span id="updateContract" class="anchor-marker"></span><h4 class="name">updateContract</h4><div class="body"><code class="signature">function <strong>updateContract</strong><span>(string _name, address _newContractAddress) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="database_ContractManager.html#isTrue">isTrue </a><a href="database_ContractManager.html#contractExists">contractExists </a><a href="database_ContractManager.html#anyOwner">anyOwner </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_name</code> - string</div><div><code>_newContractAddress</code> - address</div></dd></dl></div></div></li></ul></div></div></div>
+# api\_database\_ContractManager
+
+## contract ContractManager
+
+Source: [database/ContractManager.sol](https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.0.0/contracts/database/ContractManager.sol)
+
+## Index
+
+* [LogContractAdded](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#LogContractAdded)
+* [LogContractRemoved](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#LogContractRemoved)
+* [LogContractUpdated](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#LogContractUpdated)
+* [LogNewContractLocation](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#LogNewContractLocation)
+* [addContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#addContract)
+* [anyOwner](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#anyOwner)
+* [contractExists](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#contractExists)
+* [fallback](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html)
+* [noEmptyAddress](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#noEmptyAddress)
+* [noEmptyString](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#noEmptyString)
+* [removeContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#removeContract)
+* [updateContract](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#updateContract)
+
+## Reference
+
+### Events
+
+* **LogContractAdded**
+
+  `event` **`LogContractAdded`**`(address _contractAddress, string _name, uint _blockNumber)`
+
+  Parameters:`_contractAddress` - address`_name` - string`_blockNumber` - uint
+
+* **LogContractRemoved**
+
+  `event` **`LogContractRemoved`**`(address contractToDelete, string _name, uint _blockNumber)`
+
+  Parameters:`contractToDelete` - address`_name` - string`_blockNumber` - uint
+
+* **LogContractUpdated**
+
+  `event` **`LogContractUpdated`**`(address oldAddress, string _name, uint _blockNumber)`
+
+  Parameters:`oldAddress` - address`_name` - string`_blockNumber` - uint
+
+* **LogNewContractLocation**
+
+  `event` **`LogNewContractLocation`**`(address _contractAddress, string _name, uint _blockNumber)`
+
+  Parameters:`_contractAddress` - address`_name` - string`_blockNumber` - uint
+
+### Modifiers
+
+* **anyOwner**
+
+  `modifier` **`anyOwner`**`()`
+
+* **noEmptyAddress**
+
+  `modifier` **`noEmptyAddress`**`(address _contract)`
+
+  Parameters:`_contract` - address
+
+* **noEmptyString**
+
+  `modifier` **`noEmptyString`**`(string _name)`
+
+  Parameters:`_name` - string
+
+### Functions
+
+* **addContract**
+
+  `function` **`addContract`**`(string _name, address _contractAddress) external`
+
+  Modifiers:[noEmptyAddress](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#noEmptyAddress) [noEmptyString](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#noEmptyString) [anyOwner](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#anyOwner)Parameters:`_name` - string`_contractAddress` - address
+
+* **contractExists**
+
+  `function` **`contractExists`**`(address _contract) public view returns (bool)`
+
+  Parameters:`_contract` - addressReturns:bool
+
+* **fallback**
+
+  `function (address _database) public`
+
+  Modifiers:[noEmptyAddress](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#noEmptyAddress)Parameters:`_database` - address
+
+* **removeContract**
+
+  `function` **`removeContract`**`(string _name) external`
+
+  Modifiers:[noEmptyString](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#noEmptyString) [anyOwner](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#anyOwner)Parameters:`_name` - string
+
+* **updateContract**
+
+  `function` **`updateContract`**`(string _name, address _newContractAddress) external`
+
+  Modifiers:[noEmptyAddress](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#noEmptyAddress) [anyOwner](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/database_ContractManager.html#anyOwner)Parameters:`_name` - string`_newContractAddress` - address
+

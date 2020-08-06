@@ -3,4 +3,58 @@ id: math_SafeMath
 title: SafeMath
 ---
 
-<div class="contract-doc"><div class="contract"><h2 class="contract-header"><span class="contract-kind">library</span> SafeMath</h2><div class="source">Source: <a href="https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.1.9/contracts/math/SafeMath.sol" target="_blank">math/SafeMath.sol</a></div></div><div class="index"><h2>Index</h2><ul><li><a href="math_SafeMath.html#add">add</a></li><li><a href="math_SafeMath.html#div">div</a></li><li><a href="math_SafeMath.html#getFractionalAmount">getFractionalAmount</a></li><li><a href="math_SafeMath.html#mul">mul</a></li><li><a href="math_SafeMath.html#sub">sub</a></li></ul></div><div class="reference"><h2>Reference</h2><div class="functions"><h3>Functions</h3><ul><li><div class="item function"><span id="add" class="anchor-marker"></span><h4 class="name">add</h4><div class="body"><code class="signature">function <strong>add</strong><span>(uint256 a, uint256 b) </span><span>internal </span><span>pure </span><span>returns  (uint256) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>a</code> - uint256</div><div><code>b</code> - uint256</div></dd><dt><span class="label-return">Returns:</span></dt><dd>uint256</dd></dl></div></div></li><li><div class="item function"><span id="div" class="anchor-marker"></span><h4 class="name">div</h4><div class="body"><code class="signature">function <strong>div</strong><span>(uint256 a, uint256 b) </span><span>internal </span><span>pure </span><span>returns  (uint256) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>a</code> - uint256</div><div><code>b</code> - uint256</div></dd><dt><span class="label-return">Returns:</span></dt><dd>uint256</dd></dl></div></div></li><li><div class="item function"><span id="getFractionalAmount" class="anchor-marker"></span><h4 class="name">getFractionalAmount</h4><div class="body"><code class="signature">function <strong>getFractionalAmount</strong><span>(uint256 _amount, uint256 _percentage) </span><span>internal </span><span>pure </span><span>returns  (uint256) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_amount</code> - uint256</div><div><code>_percentage</code> - uint256</div></dd><dt><span class="label-return">Returns:</span></dt><dd>uint256</dd></dl></div></div></li><li><div class="item function"><span id="mul" class="anchor-marker"></span><h4 class="name">mul</h4><div class="body"><code class="signature">function <strong>mul</strong><span>(uint256 a, uint256 b) </span><span>internal </span><span>pure </span><span>returns  (uint256) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>a</code> - uint256</div><div><code>b</code> - uint256</div></dd><dt><span class="label-return">Returns:</span></dt><dd>uint256</dd></dl></div></div></li><li><div class="item function"><span id="sub" class="anchor-marker"></span><h4 class="name">sub</h4><div class="body"><code class="signature">function <strong>sub</strong><span>(uint256 a, uint256 b) </span><span>internal </span><span>pure </span><span>returns  (uint256) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>a</code> - uint256</div><div><code>b</code> - uint256</div></dd><dt><span class="label-return">Returns:</span></dt><dd>uint256</dd></dl></div></div></li></ul></div></div></div>
+# api\_math\_SafeMath
+
+## library SafeMath
+
+Source: [math/SafeMath.sol](https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.0.0/contracts/math/SafeMath.sol)
+
+## Index
+
+* [add](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/math_SafeMath.html#add)
+* [bytesToUint](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/math_SafeMath.html#bytesToUint)
+* [div](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/math_SafeMath.html#div)
+* [getFractionalAmount](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/math_SafeMath.html#getFractionalAmount)
+* [mul](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/math_SafeMath.html#mul)
+* [sub](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/math_SafeMath.html#sub)
+
+## Reference
+
+### Functions
+
+* **add**
+
+  `function` **`add`**`(uint256 a, uint256 b) internal pure returns (uint256)`
+
+  Parameters:`a` - uint256`b` - uint256Returns:uint256
+
+* **bytesToUint**
+
+  `function` **`bytesToUint`**`(bytes b) internal pure returns (uint256)`
+
+  Parameters:`b` - bytesReturns:uint256
+
+* **div**
+
+  `function` **`div`**`(uint256 a, uint256 b) internal pure returns (uint256)`
+
+  Parameters:`a` - uint256`b` - uint256Returns:uint256
+
+* **getFractionalAmount**
+
+  `function` **`getFractionalAmount`**`(uint256 _amount, uint256 _percentage) internal pure returns (uint256)`
+
+  Parameters:`_amount` - uint256`_percentage` - uint256Returns:uint256
+
+* **mul**
+
+  `function` **`mul`**`(uint256 a, uint256 b) internal pure returns (uint256)`
+
+  Parameters:`a` - uint256`b` - uint256Returns:uint256
+
+* **sub**
+
+  `function` **`sub`**`(uint256 a, uint256 b) internal pure returns (uint256)`
+
+  Parameters:`a` - uint256`b` - uint256Returns:uint256
+
