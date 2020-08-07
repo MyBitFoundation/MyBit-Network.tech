@@ -49,18 +49,18 @@ contract CrowdsaleGeneratorERC20 {
   external
   {
     if(_paymentToken == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)){
-      require(msg.value == _escrow);
+      require(msg.value == _escrow, "ETH amount is not matching with escrow needed.");
     } else {
-      require(msg.value == 0);
+      require(msg.value == 0, "ETH is not required when you pay with token");
     }
     require(_amountToRaise >= 100, "Crowdsale goal is too small");
     require((_assetManagerPerc + database.uintStorage(keccak256(abi.encodePacked("platform.percentage")))) < 100, "Manager percent need to be less than 100");
     require(!database.boolStorage(keccak256(abi.encodePacked("asset.uri", _assetURI))), "Asset URI is not unique"); //Check that asset URI is unique
     address assetAddress = minter.cloneToken(_assetURI, _fundingToken);
-    require(setCrowdsaleValues(assetAddress, _fundingLength, _amountToRaise));
-    require(setAssetValues(assetAddress, _assetURI, _ipfs, msg.sender, _assetManagerPerc, _amountToRaise, _fundingToken));
+    require(setCrowdsaleValues(assetAddress, _fundingLength, _amountToRaise), "Failed to set crowdsale values");
+    require(setAssetValues(assetAddress, _assetURI, _ipfs, msg.sender, _assetManagerPerc, _amountToRaise, _fundingToken), "Failed to set asset values");
     if (_escrow > 0) {
-      require(lockEscrowERC20(msg.sender, assetAddress, _paymentToken, _fundingToken, _escrow));
+      require(lockEscrowERC20(msg.sender, assetAddress, _paymentToken, _fundingToken, _escrow), "Failed to lock ERC20 escrow");
     }
     events.asset('Asset funding started', _assetURI, assetAddress, msg.sender);
     events.asset('New asset ipfs', _ipfs, assetAddress, msg.sender);

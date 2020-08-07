@@ -234,13 +234,6 @@ contract API {
     return database.uintStorage(keccak256(abi.encodePacked("manager.assets", _manager)));
   }
 
-  function getCollateralLevel(address _manager)
-  public
-  view
-  returns(uint) {
-    return database.uintStorage(keccak256(abi.encodePacked("collateral.base"))).add(database.uintStorage(keccak256(abi.encodePacked("collateral.level", getManagerAssetCount(_manager)))));
-  }
-
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //                                        Platform and Contract State

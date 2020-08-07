@@ -71,7 +71,6 @@ module.exports = function(deployer, network, accounts) {
       platform.setPlatformFee(PLATFORM_FEE, {from: accounts[0], gas:300000});
       platform.setPlatformPercentage(PLATFORM_PERCENTAGE, {from: accounts[0], gas:300000});
       platform.setPlatformToken(PLATFORM_TOKEN, {from: accounts[0], gas:300000});
-      return platform.setCollateralLevels(BASE_COLLATERAL, LOW_COLLATERAL, MID_COLLATERAL, HIGH_COLLATERAL, {from: accounts[0], gas:3000000})
 
     }).then(function() {
       contracts['Platform'] = platform.address;

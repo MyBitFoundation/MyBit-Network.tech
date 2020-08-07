@@ -561,8 +561,11 @@ contract('ERC20 Crowdsale', async(accounts) => {
   it('Create crowdsale with certain parameters', async() => {
     
     console.log(crowdsaleGen.address);
-    await platformToken.approve(crowdsaleGen.address, bn(74260665717845150), {from:assetManager});
-    await crowdsaleGen.createAssetOrderERC20('34CfYThxOZVVCRLPo3wg', 'ipfshash', 2592000, bn(123000000000000000000), 7, bn(74260665717845150), "0xad6d458402f60fd3bd25163575031acdce07538d", "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", {from:assetManager, gas:maxGas});
+    await crowdsaleGen.createAssetOrderERC20('34CfYThxOZVVCRLPo3wg', 'ipfshash', 2592000, bn(123000000000000000000), 7, bn(74260665717845150), "0xad6d458402f60fd3bd25163575031acdce07538d", "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", {
+      from:assetManager, 
+      gas:maxGas,
+      value: bn(74260665717845150)
+    });
   });
 
   it('Fail to destroy generator', async() => {

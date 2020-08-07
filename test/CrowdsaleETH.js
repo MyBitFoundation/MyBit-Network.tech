@@ -588,6 +588,13 @@ contract('Ether Crowdsale', async(accounts) => {
     await crowdsaleGen.createAssetOrderETH('205% escrow', 'QmHash', 100, bn(1).times(ETH), assetManagerFee, bn(2.05).times(ETH), platformToken.address, {from:assetManager, gas:maxGas});
   });
 
+  it('Create crowdsale with certain parameters', async() => {
+    
+    console.log(crowdsaleGen.address);
+    await platformToken.approve(crowdsaleGen.address, bn(74260665717845150), {from:assetManager});
+    await crowdsaleGen.createAssetOrderETH('34CfYThxOZVVCRLPo3wg', 'ipfshash', 2592000, bn(123000000000000000000), 7, bn(74260665717845150), platformToken.address, {from:assetManager, gas:maxGas});
+  });
+
   // TODO: try to force integer rounding
 
   it('Fail to destroy generator', async() => {
