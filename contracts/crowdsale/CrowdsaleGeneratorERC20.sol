@@ -51,7 +51,7 @@ contract CrowdsaleGeneratorERC20 {
     if(_paymentToken == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)){
       require(msg.value == _escrow, "ETH amount is not matching with escrow needed.");
     } else {
-      require(msg.value == 0, "ETH is not required when you pay with token");
+      require(msg.value == 0, "ETH is not required when paying with token");
     }
     require(_amountToRaise >= 100, "Crowdsale goal is too small");
     require((_assetManagerPerc + database.uintStorage(keccak256(abi.encodePacked("platform.percentage")))) < 100, "Manager percent need to be less than 100");

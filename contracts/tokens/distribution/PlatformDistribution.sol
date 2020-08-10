@@ -10,7 +10,7 @@ import "../../interfaces/BurnableERC20.sol";
 contract PlatformDistribution {
   using SafeMath for uint256;
 
-  address public constant foundationWallet = address(0xd9d2B28E09921A38aD7aB1B4138357408bda8EBD);
+  address public constant foundationWallet = address(0x94a9BE81250071A13E42639Cd0621211Ae3028aF);
   address public constant taskmarketWallet = address(0xFd1E4b568Bb3bcF706b0bac5960d4B91BacFF96F);
   //Any funds remaining after these percentages are sent, is burned as MYB
   //Combined value must not exceed 100 or funds sent here will never be retrieved

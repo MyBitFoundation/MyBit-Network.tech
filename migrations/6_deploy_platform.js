@@ -10,8 +10,8 @@ module.exports = function(deployer, network, accounts) {
 
     let FUNDS_WALLET, ASSETS_WALLET
     if(network == 'mainnet' || network == 'mainnet-fork'){
-      FUNDS_WALLET = '0xd9d2b28e09921a38ad7ab1b4138357408bda8ebd' //The wallet that receives fees paid by the investors
-      ASSETS_WALLET = '0xd9d2b28e09921a38ad7ab1b4138357408bda8ebd' //The wallet that receives a percentage of the asset tokens created during crowdsales
+      FUNDS_WALLET = '0x94a9BE81250071A13E42639Cd0621211Ae3028aF' //The wallet that receives fees paid by the investors
+      ASSETS_WALLET = '0x94a9BE81250071A13E42639Cd0621211Ae3028aF' //The wallet that receives a percentage of the asset tokens created during crowdsales
     } else if(network == 'ropsten' || network == 'ropsten-fork'){
       FUNDS_WALLET = '0xBB64ac045539bC0e9FFfd04399347a8459e8282A'
       ASSETS_WALLET = '0xBB64ac045539bC0e9FFfd04399347a8459e8282A'

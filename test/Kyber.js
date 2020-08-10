@@ -1161,19 +1161,19 @@ contract('Kyber', function(accounts) {
       let balanceAfter = BigNumber(await tokenInstance[1].balanceOf(platformDistribution.address));
       console.log('Balance after: ', balanceAfter.toString());
       assert.equal(balanceAfter.eq(0), true);
-      let foundationBalance = BigNumber(await tokenInstance[1].balanceOf('0xd9d2B28E09921A38aD7aB1B4138357408bda8EBD'));
+      let foundationBalance = BigNumber(await tokenInstance[1].balanceOf('0x94a9BE81250071A13E42639Cd0621211Ae3028aF'));
       assert.equal(balanceBefore.times(0.33).eq(foundationBalance), true);
     });
 
     it('Check eth in platform wallet', async() => {
       await web3.eth.sendTransaction({from:accounts[0], to:platformDistribution.address, value:BigNumber(1).times(ETH).toString()});
       let distribtionBalanceBefore = BigNumber(await web3.eth.getBalance(platformDistribution.address));
-      let foundationBalanceBefore = BigNumber(await web3.eth.getBalance('0xd9d2B28E09921A38aD7aB1B4138357408bda8EBD'));
+      let foundationBalanceBefore = BigNumber(await web3.eth.getBalance('0x94a9BE81250071A13E42639Cd0621211Ae3028aF'));
       console.log('Balance before: ', distribtionBalanceBefore.toString());
       assert.equal(distribtionBalanceBefore.gt(0), true);
       await platformDistribution.distributeETH();
       let distribtionBalanceAfter = BigNumber(await web3.eth.getBalance(platformDistribution.address));
-      let foundationBalanceAfter = BigNumber(await web3.eth.getBalance('0xd9d2B28E09921A38aD7aB1B4138357408bda8EBD'));
+      let foundationBalanceAfter = BigNumber(await web3.eth.getBalance('0x94a9BE81250071A13E42639Cd0621211Ae3028aF'));
       console.log('Balance after: ', distribtionBalanceAfter.toString());
       assert.equal(distribtionBalanceAfter.eq(0), true);
       let foundationChange = foundationBalanceAfter.minus(foundationBalanceBefore);
