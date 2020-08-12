@@ -23,6 +23,12 @@ module.exports = function(deployer, network, accounts) {
       ASSETS_WALLET = accounts[0]
     }
 
+    let PLATFORM_LISTING_FEE_TOKEN = '0x6b175474e89094c44da98b954eedeac495271d0f';
+    if (network == 'ropsten' || network == 'ropsten-fork') {
+      PLATFORM_LISTING_FEE_TOKEN = '0xad6d458402f60fd3bd25163575031acdce07538d';
+    }
+    
+    const PLATFORM_LISTING_FEE = web3.utils.toBN(5*1e18) //The fee charged to asset manager when he lists an asset in FEE_TOKEN (DAI) including decimal of 18
     const PLATFORM_FEE = '3' //The fees charged to investors when they contribute to a crowdsale (as a percentage of the total amount invested)
     const PLATFORM_PERCENTAGE = '1' //The percentage of an asset that the platform receives upon successful funding of a crowdsale
     const PLATFORM_TOKEN = contracts['MyBitToken'] //The token used to hold the collateral of the asset manager. It must be burnable and available on Kyber or you may encounter issues on some contracts
@@ -68,6 +74,8 @@ module.exports = function(deployer, network, accounts) {
       return platform.setPlatformAssetsWallet(ASSETS_WALLET, {from: accounts[0], gas:300000});
 
     }).then(function(){
+      platform.setPlatformListingFeeToken(PLATFORM_LISTING_FEE_TOKEN, {from: accounts[0], gas:300000});
+      platform.setPlatformListingFee(PLATFORM_LISTING_FEE, {from: accounts[0], gas:300000});
       platform.setPlatformFee(PLATFORM_FEE, {from: accounts[0], gas:300000});
       platform.setPlatformPercentage(PLATFORM_PERCENTAGE, {from: accounts[0], gas:300000});
       platform.setPlatformToken(PLATFORM_TOKEN, {from: accounts[0], gas:300000});

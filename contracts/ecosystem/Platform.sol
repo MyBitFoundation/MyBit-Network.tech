@@ -51,6 +51,22 @@ contract Platform {
     database.setUint(keccak256(abi.encodePacked("platform.fee")), _percent);
   }
 
+  // @notice Set the token address for the platform listing fee
+  function setPlatformListingFeeToken(address _tokenAddress)
+  external
+  onlyOwner {
+    //@dev Set the token address for the platform listing fee
+    database.setAddress(keccak256(abi.encodePacked("platform.listingFeeToken")), _tokenAddress);
+    events.registration('Platform listing fee token', _tokenAddress);
+  }
+
+  // @notice The amount of DAI the platform receives when an asset is listed
+  function setPlatformListingFee(uint _amount)
+  external
+  onlyOwner {
+    database.setUint(keccak256(abi.encodePacked("platform.listingFee")), _amount);
+  }
+
   // @notice The percentage of the asset tokens the platform receives from the crowdsale
   function setPlatformPercentage(uint _percent)
   external

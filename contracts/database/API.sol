@@ -263,6 +263,22 @@ contract API {
     return fee;
   }
 
+  function getPlatformListingFeeToken()
+  public
+  view
+  returns(address) {
+    address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platform.listingFeeToken")));
+    return tokenAddress;
+  }
+
+  function getPlatformListingFee()
+  public
+  view
+  returns(uint) {
+    uint fee = database.uintStorage(keccak256(abi.encodePacked("platform.listingFee")));
+    return fee;
+  }
+
   function getPlatformPercentage()
   public
   view

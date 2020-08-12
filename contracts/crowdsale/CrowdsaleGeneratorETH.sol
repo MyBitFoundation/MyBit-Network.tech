@@ -8,6 +8,7 @@ import "../interfaces/MinterInterface.sol";
 
 interface CrowdsaleGeneratorETH_ERC20 {
   function balanceOf(address _who) external view returns (uint256);
+  function allowance(address _owner, address _spender) external view returns (uint256);
   function approve(address _spender, uint256 _value) external returns (bool);
   function transfer(address _to, uint256 _value) external returns (bool);
   function transferFrom(address _from, address _to, uint256 _value) external returns (bool);
@@ -42,11 +43,11 @@ contract CrowdsaleGeneratorETH {
   // @param (uint) _fundingLength = The number of seconds this crowdsale is to go on for until it fails
   // @param (uint) _amountToRaise = The amount of WEI required to raise for the crowdsale to be a success
   // @param (uint) _assetManagerPerc = The percentage of the total revenue which is to go to the AssetManager if asset is a success
-  function createAssetOrderETH(string _assetURI, string _ipfs, uint _fundingLength, uint _amountToRaise, uint _assetManagerPerc, uint _escrow, address _paymentToken)
+  function createAssetOrderETH(string _assetURI, string _ipfs, uint _fundingLength, uint _amountToRaise, uint _assetManagerPerc, uint _escrowAndFee, address _paymentToken)
   external
   payable {
     if(_paymentToken == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)){
-      require(msg.value == _escrow);
+      require(msg.value == _escrowAndFee);
     } else {
       require(msg.value == 0);
     }
@@ -56,9 +57,12 @@ contract CrowdsaleGeneratorETH {
     address assetAddress = minter.cloneToken(_assetURI, address(0));
     require(setCrowdsaleValues(assetAddress, _fundingLength, _amountToRaise));
     require(setAssetValues(assetAddress, _assetURI, _ipfs, msg.sender, _assetManagerPerc, _amountToRaise));
+
+    uint fee = processListingFee(assetAddress, _paymentToken, _escrowAndFee);
+    uint escrow = _escrowAndFee - fee;
     //Lock escrow
-    if(_escrow > 0) {
-      require(lockEscrowETH(msg.sender, assetAddress, _paymentToken, _escrow));
+    if(escrow > 0) {
+      require(lockEscrowETH(msg.sender, assetAddress, _paymentToken, escrow));
     }
     events.asset('Asset funding started', _assetURI, assetAddress, msg.sender);
     events.asset('New asset ipfs', _ipfs, assetAddress, msg.sender);
@@ -106,6 +110,42 @@ contract CrowdsaleGeneratorETH {
     
     database.setBool(keccak256(abi.encodePacked("asset.uri", _assetURI)), true); //Set to ensure a unique asset URI
     return true;
+  }
+
+  function processListingFee(address _assetManager, address _paymentTokenAddress, uint _fromAmount)
+  private
+  returns (uint) { // returns left amount
+    uint listingFee = database.uintStorage(keccak256(abi.encodePacked("platform.listingFee")));
+    address listingFeeTokenAddress = database.addressStorage(keccak256(abi.encodePacked("platform.listingFeeToken")));
+    address platformFundsWallet = database.addressStorage(keccak256(abi.encodePacked("platform.wallet.funds")));
+    uint leftAmount;
+    uint usedAmount;
+    CrowdsaleGeneratorETH_ERC20 paymentToken;
+
+    if (_paymentTokenAddress != listingFeeTokenAddress) {
+      //Convert the payment token into the listing fee token
+      if(_paymentTokenAddress == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)){
+        uint balanceBefore = address(this).balance;
+        kyber.trade.value(_fromAmount)(_paymentTokenAddress, _fromAmount, listingFeeTokenAddress, platformFundsWallet, listingFee, 0, 0);
+
+        usedAmount = balanceBefore - address(this).balance; // used eth by kyber for swapping with token
+      } else {
+        paymentToken = CrowdsaleGeneratorETH_ERC20(_paymentTokenAddress);
+        require(paymentToken.transferFrom(_assetManager, address(this), _fromAmount));
+        require(paymentToken.approve(address(kyber), _fromAmount));
+        kyber.trade(_paymentTokenAddress, _fromAmount, listingFeeTokenAddress, platformFundsWallet, listingFee, 0, 0); //Currently no minimum rate is set, so watch out for slippage!
+
+        usedAmount = _fromAmount - paymentToken.allowance(address(this), address(kyber));
+      }
+    } else {
+      paymentToken = CrowdsaleGeneratorETH_ERC20(_paymentTokenAddress);
+      require(paymentToken.transferFrom(_assetManager, platformFundsWallet, listingFee), "Listing fee not paid");
+      usedAmount = listingFee;
+    }
+
+    require(_fromAmount > usedAmount, "Listing fee not paid");
+    leftAmount = _fromAmount - usedAmount;
+    return leftAmount;
   }
 
   function lockEscrowETH(address _assetManager, address _assetAddress, address _paymentTokenAddress, uint _amount)
