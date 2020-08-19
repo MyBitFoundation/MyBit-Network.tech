@@ -29,8 +29,8 @@ module.exports = function(deployer, network, accounts) {
     }
     
     const PLATFORM_LISTING_FEE = web3.utils.toBN(5*1e18) //The fee charged to asset manager when he lists an asset in FEE_TOKEN (DAI) including decimal of 18
-    const PLATFORM_FEE = '3' //The fees charged to investors when they contribute to a crowdsale (as a percentage of the total amount invested)
-    const PLATFORM_PERCENTAGE = '1' //The percentage of an asset that the platform receives upon successful funding of a crowdsale
+    const PLATFORM_FEE = '5' //The fees charged to investors when they contribute to a crowdsale (as a percentage of the total amount invested)
+    const PLATFORM_PERCENTAGE = '5' //The percentage of an asset that the platform receives upon successful funding of a crowdsale
     const PLATFORM_TOKEN = contracts['MyBitToken'] //The token used to hold the collateral of the asset manager. It must be burnable and available on Kyber or you may encounter issues on some contracts
     //Collateral requirements:
     //You can set the required collateral for an asset manager. The collateral requirements can change based on the number of successful crowdsales funded.

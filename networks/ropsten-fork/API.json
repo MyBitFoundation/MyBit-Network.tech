@@ -501,26 +501,6 @@
     },
     {
         "constant": true,
-        "inputs": [
-            {
-                "name": "_manager",
-                "type": "address"
-            }
-        ],
-        "name": "getCollateralLevel",
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xf0e6e6d5"
-    },
-    {
-        "constant": true,
         "inputs": [],
         "name": "getPlatformToken",
         "outputs": [
@@ -563,6 +543,36 @@
         "stateMutability": "view",
         "type": "function",
         "signature": "0x6ea8bc10"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "getPlatformListingFeeToken",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x883bd8c0"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "getPlatformListingFee",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x70e1ea67"
     },
     {
         "constant": true,

@@ -37,6 +37,12 @@ contract CrowdsaleGeneratorERC20 {
       kyber = KyberInterface(_kyber);
       minter = MinterInterface(database.addressStorage(keccak256(abi.encodePacked("contract", "Minter"))));
   }
+  
+  // @notice Do not send ether to this contract, this is for kyber exchange to get return
+  // @dev After collecting listing fee in token, remaining ether gets refunded from kyber
+  function() public payable {
+    
+  }
 
   // @notice AssetManagers can initiate a crowdfund for a new asset here
   // @dev the crowdsaleERC20 contract is granted rights to mint asset-tokens as it receives funding
