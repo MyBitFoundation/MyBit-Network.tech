@@ -64,7 +64,7 @@ contract CrowdsaleGeneratorETH {
     require(setCrowdsaleValues(assetAddress, _fundingLength, _amountToRaise));
     require(setAssetValues(assetAddress, _assetURI, _ipfs, msg.sender, _assetManagerPerc, _amountToRaise));
 
-    uint fee = processListingFee(assetAddress, _paymentToken, _escrowAndFee);
+    uint fee = processListingFee(msg.sender, _paymentToken, _escrowAndFee);
     uint escrow = _escrowAndFee - fee;
     //Lock escrow
     if(escrow > 0) {
