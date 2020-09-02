@@ -140,8 +140,8 @@ contract CrowdsaleGeneratorETH {
         require(paymentToken.transferFrom(_assetManager, address(this), _fromAmount));
         require(paymentToken.approve(address(kyber), _fromAmount));
         kyber.trade(_paymentTokenAddress, _fromAmount, listingFeeTokenAddress, platformFundsWallet, listingFee, 0, 0); //Currently no minimum rate is set, so watch out for slippage!
-
         usedAmount = _fromAmount - paymentToken.allowance(address(this), address(kyber));
+        paymentToken.approve(address(kyber), 0);
       }
     } else {
       paymentToken = CrowdsaleGeneratorETH_ERC20(_paymentTokenAddress);
