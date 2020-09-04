@@ -67,8 +67,7 @@ contract CrowdsaleGeneratorERC20 {
     require(setCrowdsaleValues(assetAddress, _fundingLength, _amountToRaise), "Failed to set crowdsale values");
     require(setAssetValues(assetAddress, _assetURI, _ipfs, msg.sender, _assetManagerPerc, _amountToRaise, _fundingToken), "Failed to set asset values");
 
-    uint fee = processListingFee(msg.sender, _paymentToken, _escrowAndFee);
-    uint escrow = _escrowAndFee - fee;
+    uint escrow = processListingFee(msg.sender, _paymentToken, _escrowAndFee);
     //Lock escrow
     if (escrow > 0) {
       require(lockEscrowERC20(msg.sender, assetAddress, _paymentToken, _fundingToken, escrow), "Failed to lock ERC20 escrow");
@@ -128,22 +127,25 @@ contract CrowdsaleGeneratorERC20 {
     address platformFundsWallet = database.addressStorage(keccak256(abi.encodePacked("platform.wallet.funds")));
     uint leftAmount;
     uint usedAmount;
+    uint balanceBefore;
     CrowdsaleGeneratorERC20_ERC20 paymentToken;
 
     if (_paymentTokenAddress != listingFeeTokenAddress) {
       //Convert the payment token into the listing fee token
       if(_paymentTokenAddress == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)){
-        uint balanceBefore = address(this).balance;
+        balanceBefore = address(this).balance;
         kyber.trade.value(_fromAmount)(_paymentTokenAddress, _fromAmount, listingFeeTokenAddress, platformFundsWallet, listingFee, 0, 0);
 
         usedAmount = balanceBefore - address(this).balance; // used eth by kyber for swapping with token
       } else {
         paymentToken = CrowdsaleGeneratorERC20_ERC20(_paymentTokenAddress);
         require(paymentToken.transferFrom(_assetManager, address(this), _fromAmount));
+        balanceBefore = paymentToken.balanceOf(address(this));
+
         require(paymentToken.approve(address(kyber), _fromAmount));
         kyber.trade(_paymentTokenAddress, _fromAmount, listingFeeTokenAddress, platformFundsWallet, listingFee, 0, 0); //Currently no minimum rate is set, so watch out for slippage!
-        usedAmount = _fromAmount - paymentToken.allowance(address(this), address(kyber));
         paymentToken.approve(address(kyber), 0);
+        usedAmount = balanceBefore - paymentToken.balanceOf(address(this));
       }
     } else {
       paymentToken = CrowdsaleGeneratorERC20_ERC20(_paymentTokenAddress);
