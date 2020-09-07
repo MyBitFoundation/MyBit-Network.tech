@@ -3,4 +3,46 @@ id: access_Expirable
 title: Expirable
 ---
 
-<div class="contract-doc"><div class="contract"><h2 class="contract-header"><span class="contract-kind">contract</span> Expirable</h2><p class="base-contracts"><span>is</span> <a href="access_AccessHierarchy.html">AccessHierarchy</a></p><div class="source">Source: <a href="https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.1.9/contracts/access/Expirable.sol" target="_blank">access/Expirable.sol</a></div></div><div class="index"><h2>Index</h2><ul><li><a href="access_Expirable.html#LogExpirationLengthChanged">LogExpirationLengthChanged</a></li><li><a href="access_Expirable.html#approveTemporaryUser">approveTemporaryUser</a></li><li><a href="access_Expirable.html#changeExpirationLength">changeExpirationLength</a></li><li><a href="access_Expirable.html#">fallback</a></li><li><a href="access_Expirable.html#removeTemporaryUser">removeTemporaryUser</a></li></ul></div><div class="reference"><h2>Reference</h2><div class="events"><h3>Events</h3><ul><li><div class="item event"><span id="LogExpirationLengthChanged" class="anchor-marker"></span><h4 class="name">LogExpirationLengthChanged</h4><div class="body"><code class="signature">event <strong>LogExpirationLengthChanged</strong><span>(uint _oldExpirationLength, uint _newExpirationLength) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_oldExpirationLength</code> - uint</div><div><code>_newExpirationLength</code> - uint</div></dd></dl></div></div></li></ul></div><div class="functions"><h3>Functions</h3><ul><li><div class="item function"><span id="approveTemporaryUser" class="anchor-marker"></span><h4 class="name">approveTemporaryUser</h4><div class="body"><code class="signature">function <strong>approveTemporaryUser</strong><span>(address _newUser, uint _accessLevel) </span><span>public </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="access_AccessHierarchy.html#onlyOwner">onlyOwner </a><a href="access_AccessHierarchy.html#noEmptyAddress">noEmptyAddress </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_newUser</code> - address</div><div><code>_accessLevel</code> - uint</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li><li><div class="item function"><span id="changeExpirationLength" class="anchor-marker"></span><h4 class="name">changeExpirationLength</h4><div class="body"><code class="signature">function <strong>changeExpirationLength</strong><span>(uint _newExpirationLength) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="access_AccessHierarchy.html#onlyOwner">onlyOwner </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_newExpirationLength</code> - uint</div></dd></dl></div></div></li><li><div class="item function"><span id="fallback" class="anchor-marker"></span><h4 class="name">fallback</h4><div class="body"><code class="signature">function <strong></strong><span>(address _database) </span><span>public </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_database</code> - address</div></dd></dl></div></div></li><li><div class="item function"><span id="removeTemporaryUser" class="anchor-marker"></span><h4 class="name">removeTemporaryUser</h4><div class="body"><code class="signature">function <strong>removeTemporaryUser</strong><span>(address _user) </span><span>public </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="access_AccessHierarchy.html#onlyOwner">onlyOwner </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_user</code> - address</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li></ul></div></div></div>
+# api\_access\_Expirable
+
+## contract Expirable
+
+is [AccessHierarchy](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html)Source: [access/Expirable.sol](https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.0.0/contracts/access/Expirable.sol)
+
+## Index
+
+* [LogExpirationLengthChanged](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_Expirable.html#LogExpirationLengthChanged)
+* [approveTemporaryUser](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_Expirable.html#approveTemporaryUser)
+* [changeExpirationLength](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_Expirable.html#changeExpirationLength)
+* [removeTemporaryUser](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_Expirable.html#removeTemporaryUser)
+
+## Reference
+
+### Events
+
+* **LogExpirationLengthChanged**
+
+  `event` **`LogExpirationLengthChanged`**`(uint _oldExpirationLength, uint _newExpirationLength)`
+
+  Parameters:`_oldExpirationLength` - uint`_newExpirationLength` - uint
+
+### Functions
+
+* **approveTemporaryUser**
+
+  `function` **`approveTemporaryUser`**`(address _newUser, uint _accessLevel) public returns (bool)`
+
+  Modifiers:[onlyOwner](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#onlyOwner) [noEmptyAddress](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#noEmptyAddress)Parameters:`_newUser` - address`_accessLevel` - uintReturns:bool
+
+* **changeExpirationLength**
+
+  `function` **`changeExpirationLength`**`(uint _newExpirationLength) external`
+
+  Modifiers:[onlyOwner](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#onlyOwner)Parameters:`_newExpirationLength` - uint
+
+* **removeTemporaryUser**
+
+  `function` **`removeTemporaryUser`**`(address _user) public returns (bool)`
+
+  Modifiers:[onlyOwner](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#onlyOwner)Parameters:`_user` - addressReturns:bool
+

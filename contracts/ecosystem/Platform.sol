@@ -51,6 +51,22 @@ contract Platform {
     database.setUint(keccak256(abi.encodePacked("platform.fee")), _percent);
   }
 
+  // @notice Set the token address for the platform listing fee
+  function setPlatformListingFeeToken(address _tokenAddress)
+  external
+  onlyOwner {
+    //@dev Set the token address for the platform listing fee
+    database.setAddress(keccak256(abi.encodePacked("platform.listingFeeToken")), _tokenAddress);
+    events.registration('Platform listing fee token', _tokenAddress);
+  }
+
+  // @notice The amount of DAI the platform receives when an asset is listed
+  function setPlatformListingFee(uint _amount)
+  external
+  onlyOwner {
+    database.setUint(keccak256(abi.encodePacked("platform.listingFee")), _amount);
+  }
+
   // @notice The percentage of the asset tokens the platform receives from the crowdsale
   function setPlatformPercentage(uint _percent)
   external
@@ -63,22 +79,6 @@ contract Platform {
   external
   onlyOwner {
     database.setAddress(keccak256(abi.encodePacked("platform.tokenFactory")), _factory);
-  }
-
-  // @notice Set the required collateral based on how many assets are managed by a user
-  function setCollateralLevels(uint _base, uint _low, uint _mid, uint _high)
-  external
-  onlyOwner {
-    database.setUint(keccak256(abi.encodePacked("collateral.base")), _base);
-    for(uint i=0; i<5; i++){
-      database.setUint(keccak256(abi.encodePacked("collateral.level", i)), _low);
-    }
-    for(i=5; i<10; i++){
-      database.setUint(keccak256(abi.encodePacked("collateral.level", i)), _mid);
-    }
-    for(i=10; i<25; i++){
-      database.setUint(keccak256(abi.encodePacked("collateral.level", i)), _high);
-    }
   }
 
   /*

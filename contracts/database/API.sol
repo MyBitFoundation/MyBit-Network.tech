@@ -196,23 +196,6 @@ contract API {
     return escrowRedeemed;
   }
 
-  function getAssetModelID(address _assetAddress)
-  public
-  view
-  returns(bytes32) {
-    bytes32 modelID = database.bytes32Storage(keccak256(abi.encodePacked("asset.modelID", _assetAddress)));
-    return modelID;
-  }
-
-  function getAssetOperator(address _assetAddress)
-  public
-  view
-  returns(address) {
-    bytes32 modelID = getAssetModelID(_assetAddress);
-    address operatorAddress = getModelOperator(modelID);
-    return operatorAddress;
-  }
-
   function generateOperatorID(string _operatorURI)
   public
   pure
@@ -244,41 +227,11 @@ contract API {
     return database.stringStorage(keccak256(abi.encodePacked("operator.ipfs", _operatorID)));
   }
 
-  function generateModelID(string _modelURI, bytes32 _operatorID)
-  public
-  pure
-  returns(bytes32) {
-    bytes32 modelID = keccak256(abi.encodePacked('model.id', _operatorID, _modelURI));
-    return modelID;
-  }
-
-  function getModelOperator(bytes32 _modelID)
-  public
-  view
-  returns(address) {
-    address operatorAddress = database.addressStorage(keccak256(abi.encodePacked("model.operator", _modelID)));
-    return operatorAddress;
-  }
-
-  function getModelIPFS(bytes32 _modelID)
-  public
-  view
-  returns(string) {
-    return database.stringStorage(keccak256(abi.encodePacked("model.ipfs", _modelID)));
-  }
-
   function getManagerAssetCount(address _manager)
   public
   view
   returns(uint) {
     return database.uintStorage(keccak256(abi.encodePacked("manager.assets", _manager)));
-  }
-
-  function getCollateralLevel(address _manager)
-  public
-  view
-  returns(uint) {
-    return database.uintStorage(keccak256(abi.encodePacked("collateral.base"))).add(database.uintStorage(keccak256(abi.encodePacked("collateral.level", getManagerAssetCount(_manager)))));
   }
 
 
@@ -307,6 +260,22 @@ contract API {
   view
   returns(uint) {
     uint fee = database.uintStorage(keccak256(abi.encodePacked("platform.fee")));
+    return fee;
+  }
+
+  function getPlatformListingFeeToken()
+  public
+  view
+  returns(address) {
+    address tokenAddress = database.addressStorage(keccak256(abi.encodePacked("platform.listingFeeToken")));
+    return tokenAddress;
+  }
+
+  function getPlatformListingFee()
+  public
+  view
+  returns(uint) {
+    uint fee = database.uintStorage(keccak256(abi.encodePacked("platform.listingFee")));
     return fee;
   }
 

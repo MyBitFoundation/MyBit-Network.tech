@@ -1,5 +1,6 @@
-const HDWalletProvider = require("truffle-hdwallet-provider");
+const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require('fs');
+
 /*
 if (fs.existsSync('secrets.json')) {
   const secrets = JSON.parse(fs.readFileSync('secrets.json', 'utf8'));
@@ -12,11 +13,13 @@ if (fs.existsSync('apiKey.json')) {
 }
 */
 
+let MNEMONIC;
+let INFURA_API_KEY;
 
 if (fs.existsSync('mnemonic.json')) {
-  var json = JSON.parse(fs.readFileSync('mnemonic.json', 'utf8'));
-  var MNEMONIC = json.mnemonic;
-  var INFURA_API_KEY = json.infura;
+  const json = JSON.parse(fs.readFileSync('mnemonic.json', 'utf8'));
+  MNEMONIC = json.mnemonic;
+  INFURA_API_KEY = json.infura;
 }
 
 
@@ -62,7 +65,7 @@ module.exports = {
       },
       network_id: 1,
       gas: 8000000,
-      gasPrice: 40000000000
+      gasPrice: 56000000000
     },
     ropsten: {
       provider: function() {

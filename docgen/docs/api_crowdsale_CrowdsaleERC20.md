@@ -3,4 +3,131 @@ id: crowdsale_CrowdsaleERC20
 title: CrowdsaleERC20
 ---
 
-<div class="contract-doc"><div class="contract"><h2 class="contract-header"><span class="contract-kind">contract</span> CrowdsaleERC20</h2><div class="source">Source: <a href="https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.1.9/contracts/crowdsale/CrowdsaleERC20.sol" target="_blank">crowdsale/CrowdsaleERC20.sol</a></div></div><div class="index"><h2>Index</h2><ul><li><a href="crowdsale_CrowdsaleERC20.html#LogAssetPayout">LogAssetPayout</a></li><li><a href="crowdsale_CrowdsaleERC20.html#LogAssetPurchased">LogAssetPurchased</a></li><li><a href="crowdsale_CrowdsaleERC20.html#LogDestruction">LogDestruction</a></li><li><a href="crowdsale_CrowdsaleERC20.html#afterDeadline">afterDeadline</a></li><li><a href="crowdsale_CrowdsaleERC20.html#beforeDeadline">beforeDeadline</a></li><li><a href="crowdsale_CrowdsaleERC20.html#burnRequired">burnRequired</a></li><li><a href="crowdsale_CrowdsaleERC20.html#buyAssetOrderERC20">buyAssetOrderERC20</a></li><li><a href="crowdsale_CrowdsaleERC20.html#destroy">destroy</a></li><li><a href="crowdsale_CrowdsaleERC20.html#">fallback</a></li><li><a href="crowdsale_CrowdsaleERC20.html#finalizeCrowdsale">finalizeCrowdsale</a></li><li><a href="crowdsale_CrowdsaleERC20.html#notFinalized">notFinalized</a></li><li><a href="crowdsale_CrowdsaleERC20.html#onlyOwner">onlyOwner</a></li><li><a href="crowdsale_CrowdsaleERC20.html#recoverTokens">recoverTokens</a></li><li><a href="crowdsale_CrowdsaleERC20.html#refund">refund</a></li><li><a href="crowdsale_CrowdsaleERC20.html#validAsset">validAsset</a></li><li><a href="crowdsale_CrowdsaleERC20.html#whenNotPaused">whenNotPaused</a></li></ul></div><div class="reference"><h2>Reference</h2><div class="events"><h3>Events</h3><ul><li><div class="item event"><span id="LogAssetPayout" class="anchor-marker"></span><h4 class="name">LogAssetPayout</h4><div class="body"><code class="signature">event <strong>LogAssetPayout</strong><span>(bytes32 _assetID, address _operator, uint _amount) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_assetID</code> - bytes32</div><div><code>_operator</code> - address</div><div><code>_amount</code> - uint</div></dd></dl></div></div></li><li><div class="item event"><span id="LogAssetPurchased" class="anchor-marker"></span><h4 class="name">LogAssetPurchased</h4><div class="body"><code class="signature">event <strong>LogAssetPurchased</strong><span>(bytes32 _assetID, address _sender, uint _amount) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_assetID</code> - bytes32</div><div><code>_sender</code> - address</div><div><code>_amount</code> - uint</div></dd></dl></div></div></li><li><div class="item event"><span id="LogDestruction" class="anchor-marker"></span><h4 class="name">LogDestruction</h4><div class="body"><code class="signature">event <strong>LogDestruction</strong><span>(uint _amountSent, address _caller) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_amountSent</code> - uint</div><div><code>_caller</code> - address</div></dd></dl></div></div></li></ul></div><div class="modifiers"><h3>Modifiers</h3><ul><li><div class="item modifier"><span id="afterDeadline" class="anchor-marker"></span><h4 class="name">afterDeadline</h4><div class="body"><code class="signature">modifier <strong>afterDeadline</strong><span>(bytes32 _assetID) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_assetID</code> - bytes32</div></dd></dl></div></div></li><li><div class="item modifier"><span id="beforeDeadline" class="anchor-marker"></span><h4 class="name">beforeDeadline</h4><div class="body"><code class="signature">modifier <strong>beforeDeadline</strong><span>(bytes32 _assetID) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_assetID</code> - bytes32</div></dd></dl></div></div></li><li><div class="item modifier"><span id="burnRequired" class="anchor-marker"></span><h4 class="name">burnRequired</h4><div class="body"><code class="signature">modifier <strong>burnRequired</strong><span>() </span></code><hr/></div></div></li><li><div class="item modifier"><span id="notFinalized" class="anchor-marker"></span><h4 class="name">notFinalized</h4><div class="body"><code class="signature">modifier <strong>notFinalized</strong><span>(bytes32 _assetID) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_assetID</code> - bytes32</div></dd></dl></div></div></li><li><div class="item modifier"><span id="onlyOwner" class="anchor-marker"></span><h4 class="name">onlyOwner</h4><div class="body"><code class="signature">modifier <strong>onlyOwner</strong><span>() </span></code><hr/></div></div></li><li><div class="item modifier"><span id="validAsset" class="anchor-marker"></span><h4 class="name">validAsset</h4><div class="body"><code class="signature">modifier <strong>validAsset</strong><span>(bytes32 _assetID) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_assetID</code> - bytes32</div></dd></dl></div></div></li><li><div class="item modifier"><span id="whenNotPaused" class="anchor-marker"></span><h4 class="name">whenNotPaused</h4><div class="body"><code class="signature">modifier <strong>whenNotPaused</strong><span>() </span></code><hr/></div></div></li></ul></div><div class="functions"><h3>Functions</h3><ul><li><div class="item function"><span id="buyAssetOrderERC20" class="anchor-marker"></span><h4 class="name">buyAssetOrderERC20</h4><div class="body"><code class="signature">function <strong>buyAssetOrderERC20</strong><span>(bytes32 _assetID, uint _amount) </span><span>external </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="crowdsale_CrowdsaleERC20.html#validAsset">validAsset </a><a href="crowdsale_CrowdsaleERC20.html#beforeDeadline">beforeDeadline </a><a href="crowdsale_CrowdsaleERC20.html#notFinalized">notFinalized </a><a href="crowdsale_CrowdsaleERC20.html#burnRequired">burnRequired </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_assetID</code> - bytes32</div><div><code>_amount</code> - uint</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li><li><div class="item function"><span id="destroy" class="anchor-marker"></span><h4 class="name">destroy</h4><div class="body"><code class="signature">function <strong>destroy</strong><span>() </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="crowdsale_CrowdsaleERC20.html#onlyOwner">onlyOwner </a></dd></dl></div></div></li><li><div class="item function"><span id="fallback" class="anchor-marker"></span><h4 class="name">fallback</h4><div class="body"><code class="signature">function <strong></strong><span>(address _database) </span><span>public </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_database</code> - address</div></dd></dl></div></div></li><li><div class="item function"><span id="finalizeCrowdsale" class="anchor-marker"></span><h4 class="name">finalizeCrowdsale</h4><div class="body"><code class="signature">function <strong>finalizeCrowdsale</strong><span>(bytes32 _assetID) </span><span>internal </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="crowdsale_CrowdsaleERC20.html#whenNotPaused">whenNotPaused </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_assetID</code> - bytes32</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li><li><div class="item function"><span id="recoverTokens" class="anchor-marker"></span><h4 class="name">recoverTokens</h4><div class="body"><code class="signature">function <strong>recoverTokens</strong><span>(address _erc20Token) </span><span>external </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="crowdsale_CrowdsaleERC20.html#onlyOwner">onlyOwner </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_erc20Token</code> - address</div></dd></dl></div></div></li><li><div class="item function"><span id="refund" class="anchor-marker"></span><h4 class="name">refund</h4><div class="body"><code class="signature">function <strong>refund</strong><span>(bytes32 _assetID) </span><span>external </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="crowdsale_CrowdsaleERC20.html#whenNotPaused">whenNotPaused </a><a href="crowdsale_CrowdsaleERC20.html#validAsset">validAsset </a><a href="crowdsale_CrowdsaleERC20.html#afterDeadline">afterDeadline </a><a href="crowdsale_CrowdsaleERC20.html#notFinalized">notFinalized </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_assetID</code> - bytes32</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li></ul></div></div></div>
+# api\_crowdsale\_CrowdsaleERC20
+
+## contract CrowdsaleERC20
+
+is [Crowdsale](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/interfaces_Crowdsale.html)Source: [crowdsale/CrowdsaleERC20.sol](https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.0.0/contracts/crowdsale/CrowdsaleERC20.sol)
+
+## Index
+
+* [LogAssetFundingStarted](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#LogAssetFundingStarted)
+* [LogAssetPayout](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#LogAssetPayout)
+* [LogAssetPurchased](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#LogAssetPurchased)
+* [LogDestruction](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#LogDestruction)
+* [LogRefund](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#LogRefund)
+* [afterDeadline](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#afterDeadline)
+* [beforeDeadline](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#beforeDeadline)
+* [buyAsset](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#buyAsset)
+* [destroy](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#destroy)
+* [fallback](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html)
+* [fallback](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html)
+* [onlyOwner](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#onlyOwner)
+* [payout](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#payout)
+* [refund](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#refund)
+* [requiresEther](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#requiresEther)
+* [startFundingPeriod](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#startFundingPeriod)
+* [whenNotPaused](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#whenNotPaused)
+
+## Reference
+
+### Events
+
+* **LogAssetFundingStarted**
+
+  `event` **`LogAssetFundingStarted`**`(bytes32 _assetID, address _broker, string _tokenURI)`
+
+  Parameters:`_assetID` - bytes32`_broker` - address`_tokenURI` - string
+
+* **LogAssetPayout**
+
+  `event` **`LogAssetPayout`**`(bytes32 _assetID, address _distributionContract, uint _amount)`
+
+  Parameters:`_assetID` - bytes32`_distributionContract` - address`_amount` - uint
+
+* **LogAssetPurchased**
+
+  `event` **`LogAssetPurchased`**`(bytes32 _assetID, address _sender, uint _amount)`
+
+  Parameters:`_assetID` - bytes32`_sender` - address`_amount` - uint
+
+* **LogDestruction**
+
+  `event` **`LogDestruction`**`(uint _amountSent, address _caller)`
+
+  Parameters:`_amountSent` - uint`_caller` - address
+
+* **LogRefund**
+
+  `event` **`LogRefund`**`(bytes32 _assetID, address _funder, uint _amount)`
+
+  Parameters:`_assetID` - bytes32`_funder` - address`_amount` - uint
+
+### Modifiers
+
+* **afterDeadline**
+
+  `modifier` **`afterDeadline`**`(bytes32 _assetID)`
+
+  Parameters:`_assetID` - bytes32
+
+* **beforeDeadline**
+
+  `modifier` **`beforeDeadline`**`(bytes32 _assetID)`
+
+  Parameters:`_assetID` - bytes32
+
+* **onlyOwner**
+
+  `modifier` **`onlyOwner`**`()`
+
+* **requiresEther**
+
+  `modifier` **`requiresEther`**`()`
+
+* **whenNotPaused**
+
+  `modifier` **`whenNotPaused`**`()`
+
+### Functions
+
+* **buyAsset**
+
+  `function` **`buyAsset`**`(bytes32 _assetID) external payable returns (bool)`
+
+  Modifiers:[requiresEther](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#requiresEther) [beforeDeadline](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#beforeDeadline)Parameters:`_assetID` - bytes32Returns:bool
+
+* **destroy**
+
+  `function` **`destroy`**`() public`
+
+  Modifiers:[onlyOwner](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#onlyOwner)
+
+* **fallback**
+
+  `function () public payable`
+
+* **fallback**
+
+  `function (address _database) public`
+
+  Parameters:`_database` - address
+
+* **payout**
+
+  `function` **`payout`**`(bytes32 _assetID, uint _amount) internal returns (bool)`
+
+  Modifiers:[whenNotPaused](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#whenNotPaused)Parameters:`_assetID` - bytes32`_amount` - uintReturns:bool
+
+* **refund**
+
+  `function` **`refund`**`(bytes32 _assetID) external returns (bool)`
+
+  Modifiers:[whenNotPaused](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#whenNotPaused) [afterDeadline](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/crowdsale_CrowdsaleERC20.html#afterDeadline)Parameters:`_assetID` - bytes32Returns:bool
+
+* **startFundingPeriod**
+
+  `function` **`startFundingPeriod`**`(string _assetURI, bytes32 _operatorID, uint _fundingLength, uint _amountToRaise) external returns (bool)`
+
+  Parameters:`_assetURI` - string`_operatorID` - bytes32`_fundingLength` - uint`_amountToRaise` - uintReturns:bool
+

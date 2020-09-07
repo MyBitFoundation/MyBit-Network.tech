@@ -3,4 +3,42 @@ id: Migrations
 title: Migrations
 ---
 
-<div class="contract-doc"><div class="contract"><h2 class="contract-header"><span class="contract-kind">contract</span> Migrations</h2><div class="source">Source: <a href="https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.1.9/contracts/Migrations.sol" target="_blank">Migrations.sol</a></div></div><div class="index"><h2>Index</h2><ul><li><a href="Migrations.html#">fallback</a></li><li><a href="Migrations.html#restricted">restricted</a></li><li><a href="Migrations.html#setCompleted">setCompleted</a></li><li><a href="Migrations.html#upgrade">upgrade</a></li></ul></div><div class="reference"><h2>Reference</h2><div class="modifiers"><h3>Modifiers</h3><ul><li><div class="item modifier"><span id="restricted" class="anchor-marker"></span><h4 class="name">restricted</h4><div class="body"><code class="signature">modifier <strong>restricted</strong><span>() </span></code><hr/></div></div></li></ul></div><div class="functions"><h3>Functions</h3><ul><li><div class="item function"><span id="fallback" class="anchor-marker"></span><h4 class="name">fallback</h4><div class="body"><code class="signature">function <strong></strong><span>() </span><span>public </span></code><hr/></div></div></li><li><div class="item function"><span id="setCompleted" class="anchor-marker"></span><h4 class="name">setCompleted</h4><div class="body"><code class="signature">function <strong>setCompleted</strong><span>(uint completed) </span><span>public </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="Migrations.html#restricted">restricted </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>completed</code> - uint</div></dd></dl></div></div></li><li><div class="item function"><span id="upgrade" class="anchor-marker"></span><h4 class="name">upgrade</h4><div class="body"><code class="signature">function <strong>upgrade</strong><span>(address new_address) </span><span>public </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="Migrations.html#restricted">restricted </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>new_address</code> - address</div></dd></dl></div></div></li></ul></div></div></div>
+# api\_Migrations
+
+## contract Migrations
+
+Source: [Migrations.sol](https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.0.0/contracts/Migrations.sol)
+
+## Index
+
+* [fallback](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/Migrations.html)
+* [restricted](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/Migrations.html#restricted)
+* [setCompleted](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/Migrations.html#setCompleted)
+* [upgrade](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/Migrations.html#upgrade)
+
+## Reference
+
+### Modifiers
+
+* **restricted**
+
+  `modifier` **`restricted`**`()`
+
+### Functions
+
+* **fallback**
+
+  `function () public`
+
+* **setCompleted**
+
+  `function` **`setCompleted`**`(uint completed) public`
+
+  Modifiers:[restricted](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/Migrations.html#restricted)Parameters:`completed` - uint
+
+* **upgrade**
+
+  `function` **`upgrade`**`(address new_address) public`
+
+  Modifiers:[restricted](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/Migrations.html#restricted)Parameters:`new_address` - address
+

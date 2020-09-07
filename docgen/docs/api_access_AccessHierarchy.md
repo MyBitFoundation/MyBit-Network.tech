@@ -3,4 +3,79 @@ id: access_AccessHierarchy
 title: AccessHierarchy
 ---
 
-<div class="contract-doc"><div class="contract"><h2 class="contract-header"><span class="contract-kind">contract</span> AccessHierarchy</h2><div class="source">Source: <a href="https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.1.9/contracts/access/AccessHierarchy.sol" target="_blank">access/AccessHierarchy.sol</a></div></div><div class="index"><h2>Index</h2><ul><li><a href="access_AccessHierarchy.html#LogUserApproved">LogUserApproved</a></li><li><a href="access_AccessHierarchy.html#LogUserRemoved">LogUserRemoved</a></li><li><a href="access_AccessHierarchy.html#approveUser">approveUser</a></li><li><a href="access_AccessHierarchy.html#">fallback</a></li><li><a href="access_AccessHierarchy.html#noEmptyAddress">noEmptyAddress</a></li><li><a href="access_AccessHierarchy.html#onlyOwner">onlyOwner</a></li><li><a href="access_AccessHierarchy.html#onlyPlatform">onlyPlatform</a></li><li><a href="access_AccessHierarchy.html#removeUser">removeUser</a></li><li><a href="access_AccessHierarchy.html#setUpperAccessLevel">setUpperAccessLevel</a></li></ul></div><div class="reference"><h2>Reference</h2><div class="events"><h3>Events</h3><ul><li><div class="item event"><span id="LogUserApproved" class="anchor-marker"></span><h4 class="name">LogUserApproved</h4><div class="body"><code class="signature">event <strong>LogUserApproved</strong><span>(address _user, uint _approvalLevel) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_user</code> - address</div><div><code>_approvalLevel</code> - uint</div></dd></dl></div></div></li><li><div class="item event"><span id="LogUserRemoved" class="anchor-marker"></span><h4 class="name">LogUserRemoved</h4><div class="body"><code class="signature">event <strong>LogUserRemoved</strong><span>(address _user, uint _accessLevel) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_user</code> - address</div><div><code>_accessLevel</code> - uint</div></dd></dl></div></div></li></ul></div><div class="modifiers"><h3>Modifiers</h3><ul><li><div class="item modifier"><span id="noEmptyAddress" class="anchor-marker"></span><h4 class="name">noEmptyAddress</h4><div class="body"><code class="signature">modifier <strong>noEmptyAddress</strong><span>(address _param) </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_param</code> - address</div></dd></dl></div></div></li><li><div class="item modifier"><span id="onlyOwner" class="anchor-marker"></span><h4 class="name">onlyOwner</h4><div class="body"><code class="signature">modifier <strong>onlyOwner</strong><span>() </span></code><hr/></div></div></li><li><div class="item modifier"><span id="onlyPlatform" class="anchor-marker"></span><h4 class="name">onlyPlatform</h4><div class="body"><code class="signature">modifier <strong>onlyPlatform</strong><span>() </span></code><hr/></div></div></li></ul></div><div class="functions"><h3>Functions</h3><ul><li><div class="item function"><span id="approveUser" class="anchor-marker"></span><h4 class="name">approveUser</h4><div class="body"><code class="signature">function <strong>approveUser</strong><span>(address _newUser, uint _accessLevel) </span><span>public </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="access_AccessHierarchy.html#onlyPlatform">onlyPlatform </a><a href="access_AccessHierarchy.html#noEmptyAddress">noEmptyAddress </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_newUser</code> - address</div><div><code>_accessLevel</code> - uint</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li><li><div class="item function"><span id="fallback" class="anchor-marker"></span><h4 class="name">fallback</h4><div class="body"><code class="signature">function <strong></strong><span>(address _database) </span><span>public </span></code><hr/><dl><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_database</code> - address</div></dd></dl></div></div></li><li><div class="item function"><span id="removeUser" class="anchor-marker"></span><h4 class="name">removeUser</h4><div class="body"><code class="signature">function <strong>removeUser</strong><span>(address _user) </span><span>public </span><span>returns  (bool) </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="access_AccessHierarchy.html#onlyOwner">onlyOwner </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_user</code> - address</div></dd><dt><span class="label-return">Returns:</span></dt><dd>bool</dd></dl></div></div></li><li><div class="item function"><span id="setUpperAccessLevel" class="anchor-marker"></span><h4 class="name">setUpperAccessLevel</h4><div class="body"><code class="signature">function <strong>setUpperAccessLevel</strong><span>(uint8 _newUpperLimit) </span><span>public </span></code><hr/><dl><dt><span class="label-modifiers">Modifiers:</span></dt><dd><a href="access_AccessHierarchy.html#onlyOwner">onlyOwner </a></dd><dt><span class="label-parameters">Parameters:</span></dt><dd><div><code>_newUpperLimit</code> - uint8</div></dd></dl></div></div></li></ul></div></div></div>
+# api\_access\_AccessHierarchy
+
+## contract AccessHierarchy
+
+Source: [access/AccessHierarchy.sol](https://github.com/MyBitFoundation/MyBit-Network.tech//blob/v0.0.0/contracts/access/AccessHierarchy.sol)
+
+## Index
+
+* [LogUserApproved](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#LogUserApproved)
+* [LogUserRemoved](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#LogUserRemoved)
+* [approveUser](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#approveUser)
+* [fallback](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html)
+* [noEmptyAddress](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#noEmptyAddress)
+* [onlyOwner](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#onlyOwner)
+* [onlyPlatform](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#onlyPlatform)
+* [removeUser](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#removeUser)
+* [setUpperAccessLevel](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#setUpperAccessLevel)
+
+## Reference
+
+### Events
+
+* **LogUserApproved**
+
+  `event` **`LogUserApproved`**`(address _user, uint _approvalLevel)`
+
+  Parameters:`_user` - address`_approvalLevel` - uint
+
+* **LogUserRemoved**
+
+  `event` **`LogUserRemoved`**`(address _user, uint _accessLevel)`
+
+  Parameters:`_user` - address`_accessLevel` - uint
+
+### Modifiers
+
+* **noEmptyAddress**
+
+  `modifier` **`noEmptyAddress`**`(address _param)`
+
+  Parameters:`_param` - address
+
+* **onlyOwner**
+
+  `modifier` **`onlyOwner`**`()`
+
+* **onlyPlatform**
+
+  `modifier` **`onlyPlatform`**`()`
+
+### Functions
+
+* **approveUser**
+
+  `function` **`approveUser`**`(address _newUser, uint _accessLevel) public returns (bool)`
+
+  Modifiers:[onlyPlatform](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#onlyPlatform) [noEmptyAddress](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#noEmptyAddress)Parameters:`_newUser` - address`_accessLevel` - uintReturns:bool
+
+* **fallback**
+
+  `function (address _database) public`
+
+  Parameters:`_database` - address
+
+* **removeUser**
+
+  `function` **`removeUser`**`(address _user) public returns (bool)`
+
+  Modifiers:[onlyOwner](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#onlyOwner)Parameters:`_user` - addressReturns:bool
+
+* **setUpperAccessLevel**
+
+  `function` **`setUpperAccessLevel`**`(uint8 _newUpperLimit) public`
+
+  Modifiers:[onlyOwner](https://github.com/MyBitFoundation/MyBit-Network.tech/tree/9bb35f4e2608f44c29e1b398fa64e00a295d0ed2/docgen/docs/access_AccessHierarchy.html#onlyOwner)Parameters:`_newUpperLimit` - uint8
+

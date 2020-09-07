@@ -98,7 +98,7 @@ contract CrowdsaleETH {
       uint platformFee = amount.getFractionalAmount(database.uintStorage(keccak256(abi.encodePacked("platform.fee"))));
       //Transfer funds to receiver and platform
       require(reserve.issueETH(platformFundsWallet, platformFee), 'Platform funds not paid');
-      require(reserve.issueETH(receiver, amount), 'Operator funds not paid');
+      require(reserve.issueETH(receiver, amount), 'Asset manager funds not paid');
       //Delete crowdsale start time
       database.deleteUint(keccak256(abi.encodePacked("crowdsale.start", _assetAddress)));
       //Increase asset count for manager
