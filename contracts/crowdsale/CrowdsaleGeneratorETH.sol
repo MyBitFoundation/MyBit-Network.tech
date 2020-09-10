@@ -128,13 +128,14 @@ contract CrowdsaleGeneratorETH {
     uint leftAmount;
     uint usedAmount;
     uint balanceBefore;
+    uint listingFeePaid;
     CrowdsaleGeneratorETH_ERC20 paymentToken;
 
     if (_paymentTokenAddress != listingFeeTokenAddress) {
       //Convert the payment token into the listing fee token
       if(_paymentTokenAddress == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)){
         balanceBefore = address(this).balance;
-        kyber.trade.value(_fromAmount)(_paymentTokenAddress, _fromAmount, listingFeeTokenAddress, platformFundsWallet, listingFee, 0, 0);
+        listingFeePaid = kyber.trade.value(_fromAmount)(_paymentTokenAddress, _fromAmount, listingFeeTokenAddress, platformFundsWallet, listingFee, 0, 0);
 
         usedAmount = balanceBefore - address(this).balance; // used eth by kyber for swapping with token
       } else {
@@ -142,7 +143,7 @@ contract CrowdsaleGeneratorETH {
         balanceBefore = paymentToken.balanceOf(address(this));
 
         require(paymentToken.approve(address(kyber), _fromAmount));
-        kyber.trade(_paymentTokenAddress, _fromAmount, listingFeeTokenAddress, platformFundsWallet, listingFee, 0, 0); //Currently no minimum rate is set, so watch out for slippage!
+        listingFeePaid = kyber.trade(_paymentTokenAddress, _fromAmount, listingFeeTokenAddress, platformFundsWallet, listingFee, 0, 0); //Currently no minimum rate is set, so watch out for slippage!
         paymentToken.approve(address(kyber), 0);
         usedAmount = balanceBefore - paymentToken.balanceOf(address(this));
       }
@@ -150,9 +151,10 @@ contract CrowdsaleGeneratorETH {
       paymentToken = CrowdsaleGeneratorETH_ERC20(_paymentTokenAddress);
       require(paymentToken.transfer(platformFundsWallet, listingFee), "Listing fee not paid");
       usedAmount = listingFee;
+      listingFeePaid = listingFee;
     }
 
-    require(_fromAmount >= usedAmount, "Listing fee not paid");
+    require(_fromAmount >= usedAmount && listingFeePaid >= listingFee, "Listing fee not paid");
     leftAmount = _fromAmount - usedAmount;
     return leftAmount;
   }
