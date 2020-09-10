@@ -64,8 +64,8 @@ module.exports = {
         return new HDWalletProvider(MNEMONIC, "https://mainnet.infura.io/v3/"+INFURA_API_KEY)
       },
       network_id: 1,
-      gas: 8000000,
-      gasPrice: 56000000000
+      // gas: 8000000,
+      gasPrice: 95000000000
     },
     ropsten: {
       provider: function() {

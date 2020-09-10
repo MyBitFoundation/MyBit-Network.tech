@@ -109,6 +109,36 @@
         "constant": false,
         "inputs": [
             {
+                "name": "_tokenAddress",
+                "type": "address"
+            }
+        ],
+        "name": "setPlatformListingFeeToken",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x29309d8b"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "setPlatformListingFee",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x2093f3c5"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
                 "name": "_percent",
                 "type": "uint256"
             }
@@ -134,33 +164,6 @@
         "stateMutability": "nonpayable",
         "type": "function",
         "signature": "0x2f73a9f8"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "name": "_base",
-                "type": "uint256"
-            },
-            {
-                "name": "_low",
-                "type": "uint256"
-            },
-            {
-                "name": "_mid",
-                "type": "uint256"
-            },
-            {
-                "name": "_high",
-                "type": "uint256"
-            }
-        ],
-        "name": "setCollateralLevels",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0xcb582f95"
     },
     {
         "constant": false,
