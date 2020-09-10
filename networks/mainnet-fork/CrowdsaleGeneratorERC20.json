@@ -20,6 +20,11 @@
         "signature": "constructor"
     },
     {
+        "payable": true,
+        "stateMutability": "payable",
+        "type": "fallback"
+    },
+    {
         "constant": false,
         "inputs": [
             {
@@ -29,10 +34,6 @@
             {
                 "name": "_ipfs",
                 "type": "string"
-            },
-            {
-                "name": "_modelID",
-                "type": "bytes32"
             },
             {
                 "name": "_fundingLength",
@@ -47,7 +48,7 @@
                 "type": "uint256"
             },
             {
-                "name": "_escrow",
+                "name": "_escrowAndFee",
                 "type": "uint256"
             },
             {
@@ -64,7 +65,7 @@
         "payable": true,
         "stateMutability": "payable",
         "type": "function",
-        "signature": "0x978a8fe0"
+        "signature": "0xa72c2d9c"
     },
     {
         "constant": false,
